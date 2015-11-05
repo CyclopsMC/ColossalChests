@@ -1,0 +1,35 @@
+language: java
+jdk: openjdk7
+notifications:
+  email: false
+  slack:
+    secure: TODO
+env:
+  global:
+  - TERM=dumb
+
+install: ./gradlew setupCIWorkspace -S
+script: ./gradlew build -S
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: ./gradlew curseforge -S
+    on:
+      all_branches: true
+      repo: CyclopsMC/ColossalChests
+      tags: true
+  - provider: releases
+    skip_cleanup: true
+    api_key:
+      secure: TODO
+    on:
+      all_branches: true
+      repo: CyclopsMC/ColossalChests
+      tags: true
+  - provider: script
+    skip_cleanup: true
+    script: ./gradlew uploadArchives -S
+    on:
+      all_branches: true
+      repo: CyclopsMC/ColossalChests
+      condition: "$TRAVIS_BRANCH =~ ^(master|release).*$"

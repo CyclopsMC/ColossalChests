@@ -1,0 +1,17 @@
+[
+{
+  "modid": "colossalchests",
+  "name": "Colossal Chests",
+  "description": "For when regular chests are too small",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "logoFile": "assets/evilcraft/textures/logo.png",
+  "url": "https://github.com/CyclopsMC/ColossalChests",
+  "updateUrl": "todo",
+  "authorList": [ "rubensworks (aka kroeserr)" ],
+  "credits": "kroeserr",
+  "parent": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

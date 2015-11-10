@@ -1,0 +1,7 @@
+# General
+itemGroup.colossalchests=Colossal Chests
+
+# Blocks
+tile.blocks.colossalchests.colossalChest.name=Colossal Chest
+tile.blocks.colossalchests.chestWall.name=Chest Wall
+tile.blocks.colossalchests.chestWall.info=Used to build a Colossal Chest structure

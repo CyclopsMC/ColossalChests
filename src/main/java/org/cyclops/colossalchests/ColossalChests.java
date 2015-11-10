@@ -9,6 +9,9 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.Level;
+import org.cyclops.colossalchests.block.ChestWallConfig;
+import org.cyclops.colossalchests.block.ColossalChestConfig;
+import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.IObjectReference;
 import org.cyclops.cyclopscore.init.ItemCreativeTab;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
@@ -49,7 +52,7 @@ public class ColossalChests extends ModBaseVersionable {
 
     @Override
     protected RecipeHandler constructRecipeHandler() {
-        return new RecipeHandler(ColossalChests._instance);
+        return new RecipeHandler(this);
     }
 
     /**
@@ -120,6 +123,12 @@ public class ColossalChests extends ModBaseVersionable {
                 return Item.getItemFromBlock(Blocks.chest);
             }
         });
+    }
+
+    @Override
+    public void onMainConfigsRegister(ConfigHandler configs) {
+        configs.add(new ChestWallConfig());
+        configs.add(new ColossalChestConfig());
     }
 
     @Override

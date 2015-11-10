@@ -11,6 +11,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumWorldBlockLayer;
+import net.minecraft.util.Vec3;
 import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -109,8 +110,13 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
             world.setBlockState(location, world.getBlockState(location).withProperty(ACTIVE, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class);
             if(tile != null) {
+                // TODO: validate cubic!
                 tile.setSize(valid ? size : Vec3i.NULL_VECTOR);
-                tile.setCenter(originCorner.add(1, 1, 1));
+                tile.setCenter(new Vec3(
+                        originCorner.getX() + ((double) size.getX()) / 2,
+                        originCorner.getY() + ((double) size.getY()) / 2,
+                        originCorner.getZ() + ((double) size.getZ()) / 2
+                ));
             }
         }
     }

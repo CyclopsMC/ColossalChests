@@ -7,10 +7,7 @@ import com.google.common.collect.Range;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -61,7 +58,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     @NBTPersist
     private Vec3i size = LocationHelpers.copyLocation(Vec3i.NULL_VECTOR);
     @NBTPersist
-    private Vec3i renderOffset = new Vec3i(0, 0, 0);
+    private Vec3 renderOffset = new Vec3(0, 0, 0);
     /**
      * The previous angle of the lid.
      */
@@ -89,9 +86,13 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         if(isStructureComplete()) {
             this.inventory = constructInventory();
         } else {
-            this.inventory = new SimpleInventory(0, "invalid", 0); // TODO ?
+            this.inventory = new SimpleInventory(0, "invalid", 0);
         }
         sendUpdate();
+    }
+
+    public int getSizeSingular() {
+        return getSize().getX() + 1;
     }
 
     protected INBTInventory constructInventory() {
@@ -100,7 +101,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     protected int calculateInventorySize() {
         // TODO: better size algorithm
-        return getSize().getX() * 10;
+        return getSizeSingular() * 10;
     }
 
     @Override
@@ -133,15 +134,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         }
 
         prevLidAngle = lidAngle;
-        float increaseAngle = 0.05F;
+        float increaseAngle = 0.15F / Math.min(5, getSizeSingular());
         if (playersUsing > 0 && lidAngle == 0.0F) {
             worldObj.playSoundEffect(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
                     "random.chestopen",
-                    0.5F,
-                    worldObj.rand.nextFloat() * 0.1F + 0.5F
+                    (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
+                    worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle
             );
         }
         if (playersUsing == 0 && lidAngle > 0.0F || playersUsing > 0 && lidAngle < 1.0F) {
@@ -161,8 +162,8 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
                         "random.chestclosed",
-                        0.5F,
-                        worldObj.rand.nextFloat() * 0.1F + 0.5F
+                        (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
+                        worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle
                 );
             }
             if (lidAngle < 0.0F) {
@@ -215,21 +216,23 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     @Override
     @SideOnly(Side.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
-        return new AxisAlignedBB(getPos().subtract(new Vec3i(3, 3, 3)), getPos().add(3, 6, 3));
+        int size = getSizeSingular();
+        return new AxisAlignedBB(getPos().subtract(new Vec3i(size, size, size)), getPos().add(size, size * 2, size));
     }
 
-    public void setCenter(BlockPos center) {
+    public void setCenter(Vec3 center) {
+        // TODO: this is called multiple times after forming a structure
         EnumFacing rotation = EnumFacing.NORTH;
-        if(center.getX() != getPos().getX()) {
-            rotation = DirectionHelpers.getEnumFacingFromXSign(center.getX() - getPos().getX());
-        } else if(center.getZ() != getPos().getZ()) {
-            rotation = DirectionHelpers.getEnumFacingFromZSing(center.getZ() - getPos().getZ());
+        if(center.xCoord + 0.5 - getPos().getX() >= getSizeSingular() / 2) {
+            rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.xCoord - getPos().getX()));
+        } else if(center.zCoord + 0.5 - getPos().getZ() >= getSizeSingular() / 2) {
+            rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.zCoord - getPos().getZ()));
         }
         this.setRotation(rotation);
-        this.renderOffset = getPos().subtract(center);
+        this.renderOffset = new Vec3(getPos().getX() - center.xCoord, getPos().getY() - center.yCoord, getPos().getZ() - center.zCoord);
     }
 
-    public Vec3i getRenderOffset() {
+    public Vec3 getRenderOffset() {
         return this.renderOffset;
     }
 

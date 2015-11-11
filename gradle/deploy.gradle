@@ -8,7 +8,7 @@ curseforge {
     }
 
     project {
-        id = "74610" // my project url is http://minecraft.curseforge.com/mc-mods/74610-evilcraft/
+        id = "237875" // my project url is http://minecraft.curseforge.com/mc-mods/237875-colossal-chests/
         releaseType = project.config.release_type
         mainArtifact(jar) {
             relations {

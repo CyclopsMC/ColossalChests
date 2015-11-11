@@ -2,6 +2,7 @@
 itemGroup.colossalchests=Colossal Chests
 
 # Blocks
-tile.blocks.colossalchests.colossalChest.name=Colossal Chest
+tile.blocks.colossalchests.colossalChest.name=Colossal Chest Core
+tile.blocks.colossalchests.colossalChest.info=Exactly one required to build a Colossal Chest structure
 tile.blocks.colossalchests.chestWall.name=Chest Wall
 tile.blocks.colossalchests.chestWall.info=Used to build a Colossal Chest structure

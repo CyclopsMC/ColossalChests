@@ -47,7 +47,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                     new AllowedBlock(ColossalChest.getInstance()).addCountValidator(new ExactBlockCountValidator(1))
             },
             Lists.newArrayList(ColossalChest.getInstance(), ChestWall.getInstance())
-    ).addSizeValidator(new MinimumSizeValidator(new Vec3i(1, 1, 1))).addSizeValidator(new CubeSizeValidator());
+    )
+            .addSizeValidator(new MinimumSizeValidator(new Vec3i(1, 1, 1)))
+            .addSizeValidator(new CubeSizeValidator())
+            .addSizeValidator(new MaximumSizeValidator(getMaxSize()) {
+                @Override
+                public Vec3i getMaximumSize() {
+                    return getMaxSize();
+                }
+            });
 
     @Delegate
     private final ITickingTile tickingTileComponent = new TickingTileComponent(this);
@@ -267,4 +275,10 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public boolean isStructureComplete() {
         return !getSize().equals(Vec3i.NULL_VECTOR);
     }
+
+    public static Vec3i getMaxSize() {
+        int size = ColossalChestConfig.maxSize;
+        return new Vec3i(size, size, size);
+    }
+
 }

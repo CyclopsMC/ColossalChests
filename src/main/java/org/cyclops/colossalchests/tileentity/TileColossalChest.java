@@ -128,7 +128,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             List<EntityPlayer> entities = this.worldObj.getEntitiesWithinAABB(
                     EntityPlayer.class,
                     new AxisAlignedBB(
-                            getPos().subtract(new Vec3i(range, range, range)),
+                            getPos().add(new Vec3i(-range, -range, -range)),
                             getPos().add(new Vec3i(1 + range, 1 + range, 1 + range))
                     )
             );

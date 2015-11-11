@@ -16,14 +16,12 @@ import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
-import org.cyclops.cyclopscore.block.AllowedBlock;
-import org.cyclops.cyclopscore.block.CubeDetector;
-import org.cyclops.cyclopscore.block.HollowCubeDetector;
+import org.cyclops.cyclopscore.block.multi.*;
 import org.cyclops.cyclopscore.helper.DirectionHelpers;
 import org.cyclops.cyclopscore.helper.LocationHelpers;
 import org.cyclops.cyclopscore.helper.WorldHelpers;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
-import org.cyclops.cyclopscore.inventory.SimpleInventory;
+import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
@@ -45,10 +43,10 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public static CubeDetector detector = new HollowCubeDetector(
             new AllowedBlock[]{
                     new AllowedBlock(ChestWall.getInstance()),
-                    new AllowedBlock(ColossalChest.getInstance()).setExactOccurences(1)
+                    new AllowedBlock(ColossalChest.getInstance()).addCountValidator(new ExactBlockCountValidator(1))
             },
             Lists.newArrayList(ColossalChest.getInstance(), ChestWall.getInstance())
-    ).setMinimumSize(new Vec3i(1, 1, 1));
+    ).addSizeValidator(new MinimumSizeValidator(new Vec3i(1, 1, 1))).addSizeValidator(new CubeSizeValidator());
 
     @Delegate
     private final ITickingTile tickingTileComponent = new TickingTileComponent(this);
@@ -86,7 +84,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         if(isStructureComplete()) {
             this.inventory = constructInventory();
         } else {
-            this.inventory = new SimpleInventory(0, "invalid", 0);
+            this.inventory = new LargeInventory(0, "invalid", 0);
         }
         sendUpdate();
     }
@@ -96,12 +94,11 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     protected INBTInventory constructInventory() {
-        return new SimpleInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+        return new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 
     protected int calculateInventorySize() {
-        // TODO: better size algorithm
-        return getSizeSingular() * 10;
+        return (int) (Math.pow(getSizeSingular(), 3) * 27);
     }
 
     @Override
@@ -221,7 +218,6 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     public void setCenter(Vec3 center) {
-        // TODO: this is called multiple times after forming a structure
         EnumFacing rotation = EnumFacing.NORTH;
         if(center.xCoord + 0.5 - getPos().getX() >= getSizeSingular() / 2) {
             rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.xCoord - getPos().getX()));

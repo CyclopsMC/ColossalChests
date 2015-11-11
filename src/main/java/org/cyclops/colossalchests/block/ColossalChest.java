@@ -19,7 +19,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.cyclops.colossalchests.client.gui.container.GuiColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
-import org.cyclops.cyclopscore.block.CubeDetector;
+import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainerGui;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
@@ -110,7 +110,6 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
             world.setBlockState(location, world.getBlockState(location).withProperty(ACTIVE, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class);
             if(tile != null) {
-                // TODO: validate cubic!
                 tile.setSize(valid ? size : Vec3i.NULL_VECTOR);
                 tile.setCenter(new Vec3(
                         originCorner.getX() + ((double) size.getX()) / 2,

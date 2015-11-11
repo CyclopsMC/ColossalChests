@@ -17,7 +17,10 @@ import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
-import org.cyclops.cyclopscore.helper.*;
+import org.cyclops.cyclopscore.helper.DirectionHelpers;
+import org.cyclops.cyclopscore.helper.LocationHelpers;
+import org.cyclops.cyclopscore.helper.MinecraftHelpers;
+import org.cyclops.cyclopscore.helper.WorldHelpers;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
@@ -252,8 +255,10 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     @Override
     public int[] getSlotsForFace(EnumFacing side) {
-        return ArrayUtils.toPrimitive((Integer[]) ContiguousSet.create(Range.closed(0, getSizeInventory()),
-                DiscreteDomain.integers()).toArray());
+        ContiguousSet<Integer> integers = ContiguousSet.create(
+                Range.closed(0, getSizeInventory()), DiscreteDomain.integers()
+        );
+        return ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()]));
     }
 
     /**

@@ -1,6 +1,5 @@
 package org.cyclops.colossalchests.client.render.tileentity;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import net.minecraft.client.model.ModelChest;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;

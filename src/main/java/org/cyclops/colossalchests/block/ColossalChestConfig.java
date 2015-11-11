@@ -11,6 +11,8 @@ import org.cyclops.cyclopscore.config.ConfigurableProperty;
 import org.cyclops.cyclopscore.config.ConfigurableTypeCategory;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockContainerConfig;
 
+import java.util.Calendar;
+
 /**
  * Config for the {@link ColossalChest}.
  * @author rubensworks
@@ -47,8 +49,9 @@ public class ColossalChestConfig extends BlockContainerConfig {
     public void onRegistered() {
         super.onRegistered();
         ModelChest model = new ModelChest();
-        //ResourceLocation texture = new ResourceLocation(Reference.MOD_ID, Reference.TEXTURE_PATH_MODELS + "colossalChest.png"); TODO ?
-        ResourceLocation texture = new ResourceLocation("textures/entity/chest/normal.png");
+        Calendar calendar = Calendar.getInstance();
+        boolean christmas = calendar.get(2) + 1 == 12 && calendar.get(5) >= 24 && calendar.get(5) <= 26;
+        ResourceLocation texture = new ResourceLocation("textures/entity/chest/" + (christmas ? "christmas" : "normal") + ".png");
         ColossalChests._instance.getProxy().registerRenderer(TileColossalChest.class, new RenderTileEntityColossalChest(model, texture));
     }
     

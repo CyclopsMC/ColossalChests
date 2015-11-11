@@ -2,12 +2,9 @@ language: java
 jdk: openjdk7
 notifications:
   email: false
-  slack:
-    secure: TODO
 env:
   global:
   - TERM=dumb
-
 install: ./gradlew setupCIWorkspace -S
 script: ./gradlew build -S
 deploy:
@@ -21,7 +18,7 @@ deploy:
   - provider: releases
     skip_cleanup: true
     api_key:
-      secure: TODO
+      secure: GR25BjeGJ27c/R5fpT/yMas8BfEKXsBR3ZrwsiHSI+X0LjncYZlHZYNkSnYN/KY48JoKsyCsAn2ZIhmTEqO96oKBIzWo4X6SOFU2wUZm+KKKY4I7EWVc9Ec8+27LNMWbOlwdriC8gK+vHuSyd/j2iLau7rpH/ce3ByL1++5u5OKLSnkfd/HTPhk0O+mCrdSaMXSwWxLmXXbqyf+yfoFKpaI2QhKPpAaZ5d/sW1yhAB9VnW4jnltatqNQAuuUy/O4DFjolUuBOZnD8smRiJJnjb9Qsd5ipgcVPZ5Y6uyFxnNAXUn39GCDJFKAiswp7vC5rKjYTzhXSxolmpF5I8boOh+vyB+6FHf8rsnTe1gBO9jwgLcAoDrSO3Zc66we3WMqji7QJ4pWn4qHP9YvSZ1fmqZ1AU0N6KqA/9+ZmMcamEWHMfulV8Z97ukSS5WMJo8QQ3IBfHd1dRrrAiJmoZohSS73/bYs8UoyiTuad2QRP+p6YgsrX6z7WzqY4HBXQtyoSxT5CtHTnCCD5f6CSiqCT0HyBbv5dcUvA73Gr+UOy0CSeBKIDon48N8PagRQzG8EnN7Yz4QejCfyOhqhxSPhlwHsmGOJ4hIL0gHxI3oCnkBYSUCsnc7d536LI2k1dBbdDs+5v7nyLPIxIjNjkeM51hFEfN/QkoN6wzw7IQ4BFyo=
     on:
       all_branches: true
       repo: CyclopsMC/ColossalChests

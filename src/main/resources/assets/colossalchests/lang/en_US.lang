@@ -1,5 +1,6 @@
 # General
 itemGroup.colossalchests=Colossal Chests
+general.colossalchests.colossalchest.name=Colossal Chest (%s)
 
 # Blocks
 tile.blocks.colossalchests.colossalChest.name=Colossal Chest Core

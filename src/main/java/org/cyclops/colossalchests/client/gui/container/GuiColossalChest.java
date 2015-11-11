@@ -1,9 +1,11 @@
 package org.cyclops.colossalchests.client.gui.container;
 
 import net.minecraft.entity.player.InventoryPlayer;
+import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.client.gui.container.ScrollingGuiContainer;
+import org.cyclops.cyclopscore.helper.L10NHelpers;
 import org.cyclops.cyclopscore.init.ModBase;
 
 /**
@@ -16,6 +18,8 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     private static final int TEXTUREWIDTH = 195;
     private static final int TEXTUREHEIGHT = 194;
 
+    private final TileColossalChest tile;
+
     /**
      * Make a new instance.
      * @param inventory The inventory of the player.
@@ -23,6 +27,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
      */
     public GuiColossalChest(InventoryPlayer inventory, TileColossalChest tile) {
         super(new ContainerColossalChest(inventory, tile));
+        this.tile = tile;
     }
 
     @Override
@@ -44,6 +49,18 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     @Override
     protected int getBaseYSize() {
         return TEXTUREHEIGHT;
+    }
+
+    protected void drawForgegroundString() {
+        fontRendererObj.drawString(
+                L10NHelpers.localize("general.colossalchests.colossalchest.name", tile.getSizeSingular()),
+                8 + offsetX, 4 + offsetY, 4210752);
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        drawForgegroundString();
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
     
 }

@@ -17,9 +17,7 @@ import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
-import org.cyclops.cyclopscore.helper.DirectionHelpers;
-import org.cyclops.cyclopscore.helper.LocationHelpers;
-import org.cyclops.cyclopscore.helper.WorldHelpers;
+import org.cyclops.cyclopscore.helper.*;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
@@ -84,6 +82,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         if(isStructureComplete()) {
             this.inventory = constructInventory();
         } else {
+            if(this.inventory != null) {
+                MinecraftHelpers.dropItems(getWorld(), this.inventory, getPos());
+            }
             this.inventory = new LargeInventory(0, "invalid", 0);
         }
         sendUpdate();
@@ -208,6 +209,11 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public boolean isUseableByPlayer(EntityPlayer entityPlayer) {
         return super.isUseableByPlayer(entityPlayer)
                 && (worldObj == null || worldObj.getTileEntity(getPos()) != this);
+    }
+
+    @Override
+    public boolean canInteractWith(EntityPlayer entityPlayer) {
+        return getSizeSingular() > 1 && super.canInteractWith(entityPlayer);
     }
 
     @Override

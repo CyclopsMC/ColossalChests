@@ -1,9 +1,6 @@
 package org.cyclops.colossalchests.tileentity;
 
-import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Range;
+import com.google.common.collect.*;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -28,6 +25,7 @@ import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A machine that can infuse things with blood.
@@ -77,6 +75,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private int playersUsing;
 
     private Block block = ColossalChest.getInstance();
+    private Map<Integer, int[]> facingSlots = Maps.newHashMap();
 
     /**
      * @return the size
@@ -90,6 +89,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
      */
     public void setSize(Vec3i size) {
         this.size = size;
+        facingSlots.clear();
         if(isStructureComplete()) {
             this.inventory = constructInventory();
         } else {
@@ -263,10 +263,13 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     @Override
     public int[] getSlotsForFace(EnumFacing side) {
-        ContiguousSet<Integer> integers = ContiguousSet.create(
-                Range.closed(0, getSizeInventory()), DiscreteDomain.integers()
-        );
-        return ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()]));
+        if(!facingSlots.containsKey(side.ordinal())) {
+            ContiguousSet<Integer> integers = ContiguousSet.create(
+                    Range.closed(0, getSizeInventory()), DiscreteDomain.integers()
+            );
+            facingSlots.put(side.ordinal(), ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()])));
+        }
+        return facingSlots.get(side.ordinal());
     }
 
     /**

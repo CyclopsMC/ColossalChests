@@ -7,3 +7,5 @@ tile.blocks.colossalchests.colossalChest.name=Colossal Chest Core
 tile.blocks.colossalchests.colossalChest.info=Exactly one required to build a Colossal Chest structure
 tile.blocks.colossalchests.chestWall.name=Chest Wall
 tile.blocks.colossalchests.chestWall.info=Used to build a Colossal Chest structure
+tile.blocks.colossalchests.interface.name=Chest Wall Interface
+tile.blocks.colossalchests.interface.info=To interact with pipes and hoppers

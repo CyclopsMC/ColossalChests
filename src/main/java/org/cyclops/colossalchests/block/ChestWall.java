@@ -17,13 +17,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
-
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlock;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
-import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 
 /**
@@ -118,18 +116,7 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumFacing side,
                                     float posX, float posY, float posZ) {
         if((Boolean) blockState.getValue(ACTIVE)) {
-            final Wrapper<BlockPos> tileLocationWrapper = new Wrapper<BlockPos>();
-            TileColossalChest.detector.detect(world, blockPos, null, new CubeDetector.IValidationAction() {
-
-                @Override
-                public void onValidate(BlockPos location, Block block) {
-                    if(block == ColossalChest.getInstance()) {
-                        tileLocationWrapper.set(location);
-                    }
-                }
-
-            }, false);
-            BlockPos tileLocation = tileLocationWrapper.get();
+            BlockPos tileLocation = ColossalChest.getCoreLocation(world, blockPos);
             if(tileLocation != null) {
                 world.getBlockState(tileLocation).getBlock().
                         onBlockActivated(world, tileLocation, world.getBlockState(tileLocation),

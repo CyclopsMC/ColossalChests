@@ -39,4 +39,31 @@
 		</output>
 	</recipe>
 
+	<recipe type="shaped">
+		<condition type="config">interface</condition>
+		<condition type="config">chestWall</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+				<gridrow>
+					<item type="oredict">cobblestone</item>
+					<item>colossalchests:chestWall</item>
+					<item type="oredict">cobblestone</item>
+				</gridrow>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item>colossalchests:interface</item>
+		</output>
+	</recipe>
+
 </recipes>

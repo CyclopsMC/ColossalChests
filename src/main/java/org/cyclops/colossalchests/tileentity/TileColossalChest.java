@@ -12,6 +12,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
+import org.cyclops.colossalchests.block.Interface;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
 import org.cyclops.cyclopscore.helper.DirectionHelpers;
@@ -42,9 +43,10 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public static CubeDetector detector = new HollowCubeDetector(
             new AllowedBlock[]{
                     new AllowedBlock(ChestWall.getInstance()),
-                    new AllowedBlock(ColossalChest.getInstance()).addCountValidator(new ExactBlockCountValidator(1))
+                    new AllowedBlock(ColossalChest.getInstance()).addCountValidator(new ExactBlockCountValidator(1)),
+                    new AllowedBlock(Interface.getInstance())
             },
-            Lists.newArrayList(ColossalChest.getInstance(), ChestWall.getInstance())
+            Lists.newArrayList(ColossalChest.getInstance(), ChestWall.getInstance(), Interface.getInstance())
     )
             .addSizeValidator(new MinimumSizeValidator(new Vec3i(1, 1, 1)))
             .addSizeValidator(new CubeSizeValidator())

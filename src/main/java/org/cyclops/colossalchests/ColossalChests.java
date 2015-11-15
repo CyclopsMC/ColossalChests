@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.event.*;
 import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests.block.ChestWallConfig;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
+import org.cyclops.colossalchests.block.InterfaceConfig;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.IObjectReference;
 import org.cyclops.cyclopscore.init.ItemCreativeTab;
@@ -129,6 +130,7 @@ public class ColossalChests extends ModBaseVersionable {
     public void onMainConfigsRegister(ConfigHandler configs) {
         configs.add(new ChestWallConfig());
         configs.add(new ColossalChestConfig());
+        configs.add(new InterfaceConfig());
     }
 
     @Override

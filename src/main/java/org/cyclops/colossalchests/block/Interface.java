@@ -4,60 +4,59 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.Vec3;
 import net.minecraft.util.Vec3i;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.cyclops.colossalchests.client.gui.container.GuiColossalChest;
-import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.colossalchests.tileentity.TileInterface;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
-import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainerGui;
+import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainer;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
-import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 
-import javax.annotation.Nullable;
-import java.util.Random;
-
 /**
- * A machine that can infuse stuff with blood.
- *
+ * Part of the Colossal Blood Chest multiblock structure.
  * @author rubensworks
+ *
  */
-public class ColossalChest extends ConfigurableBlockContainerGui implements CubeDetector.IDetectionListener {
+public class Interface extends ConfigurableBlockContainer implements CubeDetector.IDetectionListener {
 
     @BlockProperty
     public static final PropertyBool ACTIVE = PropertyBool.create("active");
 
-    private static ColossalChest _instance = null;
+    private static Interface _instance = null;
 
     /**
      * Get the unique instance.
-     *
      * @return The instance.
      */
-    public static ColossalChest getInstance() {
+    public static Interface getInstance() {
         return _instance;
     }
 
-    public ColossalChest(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.rock, TileColossalChest.class);
+    public Interface(ExtendedConfig<BlockConfig> eConfig) {
+        super(eConfig, Material.rock, TileInterface.class);
         this.setHardness(5.0F);
         this.setStepSound(soundTypeWood);
         this.setHarvestLevel("axe", 2); // Iron tier
-        this.setRotatable(false);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public EnumWorldBlockLayer getBlockLayer() {
+        return EnumWorldBlockLayer.CUTOUT_MIPPED;
     }
 
     @SideOnly(Side.CLIENT)
@@ -72,15 +71,9 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return false;
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
-    public EnumWorldBlockLayer getBlockLayer() {
-        return EnumWorldBlockLayer.CUTOUT_MIPPED;
-    }
-
-    @Override
-    public Item getItemDropped(IBlockState blockState, Random random, int zero) {
-        return Item.getItemFromBlock(this);
+    public boolean canCreatureSpawn(IBlockAccess world, BlockPos pos, EntityLiving.SpawnPlacementType type) {
+        return false;
     }
 
     private void triggerDetector(World world, BlockPos blockPos, boolean valid) {
@@ -109,49 +102,32 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     public void onDetect(World world, BlockPos location, Vec3i size, boolean valid, BlockPos originCorner) {
         Block block = world.getBlockState(location).getBlock();
         if(block == this) {
+            boolean change = !(Boolean) world.getBlockState(location).getValue(ACTIVE);
             world.setBlockState(location, world.getBlockState(location).withProperty(ACTIVE, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
-            TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class);
-            if(tile != null) {
-                tile.setSize(valid ? size : Vec3i.NULL_VECTOR);
-                tile.setCenter(new Vec3(
-                        originCorner.getX() + ((double) size.getX()) / 2,
-                        originCorner.getY() + ((double) size.getY()) / 2,
-                        originCorner.getZ() + ((double) size.getZ()) / 2
-                ));
+            if(change) {
+                BlockPos tileLocation = ColossalChest.getCoreLocation(world, location);
+                TileInterface tile = TileHelpers.getSafeTile(world, location, TileInterface.class);
+                if(tile != null && tileLocation != null) {
+                    tile.setCorePosition(tileLocation);
+                }
             }
         }
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerColossalChest.class;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public Class<? extends GuiScreen> getGui() {
-        return GuiColossalChest.class;
-    }
-
-    /**
-     * Get the core block location.
-     * @param world The world.
-     * @param blockPos The start position to search from.
-     * @return The found location.
-     */
-    public static @Nullable BlockPos getCoreLocation(World world, BlockPos blockPos) {
-        final Wrapper<BlockPos> tileLocationWrapper = new Wrapper<BlockPos>();
-        TileColossalChest.detector.detect(world, blockPos, null, new CubeDetector.IValidationAction() {
-
-            @Override
-            public void onValidate(BlockPos location, Block block) {
-                if(block == ColossalChest.getInstance()) {
-                    tileLocationWrapper.set(location);
-                }
+    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumFacing side,
+                                    float posX, float posY, float posZ) {
+        if((Boolean) blockState.getValue(ACTIVE)) {
+            TileInterface tile = TileHelpers.getSafeTile(world, blockPos, TileInterface.class);
+            if(tile != null && tile.getCorePosition() != null) {
+                BlockPos tileLocation = new BlockPos(tile.getCorePosition());
+                world.getBlockState(tileLocation).getBlock().
+                        onBlockActivated(world, tileLocation, world.getBlockState(tileLocation),
+                                player, side, posX, posY, posZ);
+                return true;
             }
-
-        }, false);
-        return tileLocationWrapper.get();
+        }
+        return super.onBlockActivated(world, blockPos, blockState, player, side, posX, posY, posZ);
     }
 
 }

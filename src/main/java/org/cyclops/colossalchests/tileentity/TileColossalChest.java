@@ -15,10 +15,7 @@ import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.Interface;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
-import org.cyclops.cyclopscore.helper.DirectionHelpers;
-import org.cyclops.cyclopscore.helper.LocationHelpers;
-import org.cyclops.cyclopscore.helper.MinecraftHelpers;
-import org.cyclops.cyclopscore.helper.WorldHelpers;
+import org.cyclops.cyclopscore.helper.*;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
@@ -66,6 +63,8 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private Vec3i size = LocationHelpers.copyLocation(Vec3i.NULL_VECTOR);
     @NBTPersist
     private Vec3 renderOffset = new Vec3(0, 0, 0);
+    @NBTPersist
+    private String customName = null;
     /**
      * The previous angle of the lid.
      */
@@ -286,4 +285,17 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         return new Vec3i(size, size, size);
     }
 
+    @Override
+    public boolean hasCustomName() {
+        return customName != null && customName.length() > 0;
+    }
+
+    public void setCustomName(String name) {
+        this.customName = name;
+    }
+
+    @Override
+    public String getCommandSenderName() {
+        return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.colossalchest.name", getSizeSingular());
+    }
 }

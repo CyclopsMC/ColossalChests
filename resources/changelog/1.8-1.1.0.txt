@@ -1,0 +1,8 @@
+Changes:
+* Standardize block names, Closes #10
+* Enable versionstats
+* Cache facing slots for efficiency, Closes #5
+
+Features:
+* Allow custom chest names when renamed in anvil, Closes #3
+* Add interface block for pipes and hoppers, Closes #1

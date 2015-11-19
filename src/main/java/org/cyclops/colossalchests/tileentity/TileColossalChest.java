@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.ArrayUtils;
+import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
@@ -18,6 +19,7 @@ import org.cyclops.cyclopscore.block.multi.*;
 import org.cyclops.cyclopscore.helper.*;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
@@ -57,7 +59,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     @Delegate
     private final ITickingTile tickingTileComponent = new TickingTileComponent(this);
 
-    private INBTInventory inventory = null;
+    @NBTPersist
+    private SimpleInventory lastValidInventory = null;
+    private SimpleInventory inventory = null; // No need to @NBTPersists, this is done because of its getter
 
     @NBTPersist
     private Vec3i size = LocationHelpers.copyLocation(Vec3i.NULL_VECTOR);
@@ -86,6 +90,8 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     /**
+     * Set the size.
+     * This will also handle the change in inventory size.
      * @param size the size to set
      */
     public void setSize(Vec3i size) {
@@ -93,9 +99,30 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         facingSlots.clear();
         if(isStructureComplete()) {
             this.inventory = constructInventory();
+
+            // Move all items from the last valid inventory into the new one
+            // If the new inventory would be smaller than the old one, the remaining
+            // items will be ejected into the world for slot index larger than the new size.
+            if(this.lastValidInventory != null) {
+                int slot = 0;
+                while(slot < Math.min(this.lastValidInventory.getSizeInventory(), this.inventory.getSizeInventory())) {
+                    this.inventory.setInventorySlotContents(slot, this.lastValidInventory.getStackInSlot(slot));
+                    this.lastValidInventory.setInventorySlotContents(slot, null);
+                    slot++;
+                }
+                if(slot < this.lastValidInventory.getSizeInventory()) {
+                    MinecraftHelpers.dropItems(getWorld(), this.lastValidInventory, getPos());
+                }
+                this.lastValidInventory = null;
+            }
         } else {
             if(this.inventory != null) {
-                MinecraftHelpers.dropItems(getWorld(), this.inventory, getPos());
+                if(GeneralConfig.ejectItemsOnDestroy) {
+                    MinecraftHelpers.dropItems(getWorld(), this.inventory, getPos());
+                    this.lastValidInventory = null;
+                } else {
+                    this.lastValidInventory = this.inventory;
+                }
             }
             this.inventory = new LargeInventory(0, "invalid", 0);
         }
@@ -106,7 +133,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         return getSize().getX() + 1;
     }
 
-    protected INBTInventory constructInventory() {
+    protected LargeInventory constructInventory() {
         return new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 

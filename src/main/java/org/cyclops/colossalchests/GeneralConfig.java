@@ -54,6 +54,12 @@ public class GeneralConfig extends DummyConfig {
     public static boolean versionChecker = true;
 
     /**
+     * If items should be ejected from the chests if one of the structure blocks are removed.
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "If items should be ejected from the chests if one of the structure blocks are removed.")
+    public static boolean ejectItemsOnDestroy = false;
+
+    /**
      * The type of this config.
      */
     public static ConfigurableType TYPE = ConfigurableType.DUMMY;

@@ -90,13 +90,14 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        triggerDetector(world, pos, true);
         if (stack.hasDisplayName()) {
             TileColossalChest tile = TileHelpers.getSafeTile(world, pos, TileColossalChest.class);
             if (tile != null) {
                 tile.setCustomName(stack.getDisplayName());
+                tile.setSize(Vec3i.NULL_VECTOR);
             }
         }
+        triggerDetector(world, pos, true);
     }
 
     @Override

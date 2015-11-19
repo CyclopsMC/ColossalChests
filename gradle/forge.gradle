@@ -2,6 +2,10 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven {
+        name "forge"
+        url "http://files.minecraftforge.net/maven/"
+    }
+    maven {
         name "RubensWorks FS"
         url "http://maven.rubensworks.net/"
     }
@@ -13,6 +17,7 @@ dependencies {
     } else {
         compile "org.cyclops.cyclopscore:CyclopsCore:${config.minecraft_version}-${config.cyclopscore_version}:deobf"
     }
+    compile "cpw.mods:ironchest:${config.minecraft_version}-${config.ironchest_version}:deobf" // http://files.minecraftforge.net/IronChests2/
 
     // Project lombok
     compile "org.projectlombok:lombok:1.14.4"

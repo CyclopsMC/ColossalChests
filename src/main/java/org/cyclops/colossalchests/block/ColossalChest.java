@@ -2,17 +2,17 @@ package org.cyclops.colossalchests.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.Vec3;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -21,14 +21,17 @@ import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
+import org.cyclops.cyclopscore.block.property.BlockPropertyManagerComponent;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainerGui;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
+import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -40,6 +43,8 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
 
     @BlockProperty
     public static final PropertyBool ACTIVE = PropertyBool.create("active");
+    @BlockProperty
+    public static final PropertyMaterial MATERIAL = PropertyMaterial.create("material", PropertyMaterial.Type.class);
 
     private static ColossalChest _instance = null;
 
@@ -83,8 +88,21 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return Item.getItemFromBlock(this);
     }
 
-    private void triggerDetector(World world, BlockPos blockPos, boolean valid) {
-        TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, true);
+    public static void triggerDetector(World world, BlockPos blockPos, boolean valid) {
+        final Wrapper<PropertyMaterial.Type> requiredMaterial = new Wrapper<PropertyMaterial.Type>(null);
+        TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, new CubeDetector.IValidationAction() {
+            @Override
+            public boolean onValidate(BlockPos blockPos, IBlockState blockState) {
+                PropertyMaterial.Type material = BlockHelpers.
+                        getSafeBlockStateProperty(blockState, ColossalChest.MATERIAL, null);
+                if(requiredMaterial.get() == null) {
+                    requiredMaterial.set(material);
+                    return true;
+                } else {
+                    return requiredMaterial.get() == material;
+                }
+            }
+        }, true);
     }
 
     @Override
@@ -119,6 +137,8 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
             world.setBlockState(location, world.getBlockState(location).withProperty(ACTIVE, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class);
             if(tile != null) {
+                tile.setMaterial(BlockHelpers.getSafeBlockStateProperty(
+                        world.getBlockState(location), ColossalChest.MATERIAL, PropertyMaterial.Type.WOOD));
                 tile.setSize(valid ? size : Vec3i.NULL_VECTOR);
                 tile.setCenter(new Vec3(
                         originCorner.getX() + ((double) size.getX()) / 2,
@@ -151,14 +171,40 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         TileColossalChest.detector.detect(world, blockPos, null, new CubeDetector.IValidationAction() {
 
             @Override
-            public void onValidate(BlockPos location, Block block) {
-                if (block == ColossalChest.getInstance()) {
+            public boolean onValidate(BlockPos location, IBlockState blockState) {
+                if (blockState.getBlock() == ColossalChest.getInstance()) {
                     tileLocationWrapper.set(location);
                 }
+                return true;
             }
 
         }, false);
         return tileLocationWrapper.get();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public void getSubBlocks(Item item, CreativeTabs creativeTabs, List list) {
+        for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
+            list.add(new ItemStack(getInstance(), 1, material.ordinal()));
+        }
+    }
+
+    @Override
+    protected BlockState createBlockState() {
+        return (propertyManager = new BlockPropertyManagerComponent(this,
+                new BlockPropertyManagerComponent.PropertyComparator() {
+                    @Override
+                    public int compare(IProperty o1, IProperty o2) {
+                        return o2.getName().compareTo(o1.getName());
+                    }
+                },
+                new BlockPropertyManagerComponent.UnlistedPropertyComparator())).createDelegatedBlockState();
+    }
+
+    @Override
+    public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        // Meta * 2 because we always want the inactive state
+        return super.onBlockPlaced(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer);
+    }
 }

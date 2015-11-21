@@ -2,11 +2,15 @@ package org.cyclops.colossalchests.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
@@ -16,15 +20,17 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.colossalchests.tileentity.TileInterface;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
+import org.cyclops.cyclopscore.block.property.BlockPropertyManagerComponent;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainer;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
+
+import java.util.List;
 
 /**
  * Part of the Colossal Blood Chest multiblock structure.
@@ -34,7 +40,9 @@ import org.cyclops.cyclopscore.helper.TileHelpers;
 public class Interface extends ConfigurableBlockContainer implements CubeDetector.IDetectionListener {
 
     @BlockProperty
-    public static final PropertyBool ACTIVE = PropertyBool.create("active");
+    public static final PropertyBool ACTIVE = ColossalChest.ACTIVE;
+    @BlockProperty
+    public static final PropertyMaterial MATERIAL = ColossalChest.MATERIAL;
 
     private static Interface _instance = null;
 
@@ -76,25 +84,21 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
         return false;
     }
 
-    private void triggerDetector(World world, BlockPos blockPos, boolean valid) {
-        TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, true);
-    }
-
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        triggerDetector(world, pos, true);
+        ColossalChest.triggerDetector(world, pos, true);
     }
 
     @Override
     public void onBlockAdded(World world, BlockPos blockPos, IBlockState blockState) {
         super.onBlockAdded(world, blockPos, blockState);
-        triggerDetector(world, blockPos, true);
+        ColossalChest.triggerDetector(world, blockPos, true);
     }
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if((Boolean)state.getValue(ACTIVE)) triggerDetector(world, pos, false);
+        if((Boolean)state.getValue(ACTIVE)) ColossalChest.triggerDetector(world, pos, false);
         super.breakBlock(world, pos, state);
     }
 
@@ -128,6 +132,32 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
             }
         }
         return super.onBlockActivated(world, blockPos, blockState, player, side, posX, posY, posZ);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public void getSubBlocks(Item item, CreativeTabs creativeTabs, List list) {
+        for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
+            list.add(new ItemStack(getInstance(), 1, material.ordinal()));
+        }
+    }
+
+    @Override
+    protected BlockState createBlockState() {
+        return (propertyManager = new BlockPropertyManagerComponent(this,
+                new BlockPropertyManagerComponent.PropertyComparator() {
+                    @Override
+                    public int compare(IProperty o1, IProperty o2) {
+                        return o2.getName().compareTo(o1.getName());
+                    }
+                },
+                new BlockPropertyManagerComponent.UnlistedPropertyComparator())).createDelegatedBlockState();
+    }
+
+    @Override
+    public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+        // Meta * 2 because we always want the inactive state
+        return super.onBlockPlaced(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer);
     }
 
 }

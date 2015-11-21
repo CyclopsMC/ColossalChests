@@ -4,8 +4,10 @@
     "transform": "forge:default-block"
   },
   "variants": {
-    "active=false": { "model": "colossalchests:colossalChest_on" },
-    "active=true": { "model": "colossalchests:colossalChest_off" },
-    "inventory": { "model": "colossalchests:colossalChest_on" }
+    "active=false,material=wood": { "model": "colossalchests:colossalChest_wood" },
+    "active=true,material=wood": { "model": "colossalchests:colossalChest_off" },
+    "active=false,material=iron": { "model": "colossalchests:colossalChest_iron" },
+    "active=true,material=iron": { "model": "colossalchests:colossalChest_off" },
+    "inventory": { "model": "colossalchests:colossalChest_wood" }
   }
 }

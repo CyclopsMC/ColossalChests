@@ -1,17 +1,26 @@
 package org.cyclops.colossalchests.block;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelChest;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityColossalChest;
+import org.cyclops.colossalchests.item.ItemBlockMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.config.ConfigurableProperty;
 import org.cyclops.cyclopscore.config.ConfigurableTypeCategory;
+import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockContainerConfig;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * Config for the {@link ColossalChest}.
@@ -45,6 +54,11 @@ public class ColossalChestConfig extends BlockContainerConfig {
     }
 
     @Override
+    public Class<? extends ItemBlock> getItemBlockClass() {
+        return ItemBlockMaterial.class;
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public void onRegistered() {
         super.onRegistered();
@@ -53,6 +67,38 @@ public class ColossalChestConfig extends BlockContainerConfig {
         boolean christmas = calendar.get(2) + 1 == 12 && calendar.get(5) >= 24 && calendar.get(5) <= 26;
         ResourceLocation texture = new ResourceLocation("textures/entity/chest/" + (christmas ? "christmas" : "normal") + ".png");
         ColossalChests._instance.getProxy().registerRenderer(TileColossalChest.class, new RenderTileEntityColossalChest(model, texture));
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void onInit(Step step, BlockConfig blockConfig) {
+        for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
+            Item item = Item.getItemFromBlock(blockConfig.getBlockInstance());
+            String modId = blockConfig.getMod().getModId();
+            int meta = material.ordinal();
+            String itemName = blockConfig.getModelName(new ItemStack(item, 1, meta));
+            ModelBakery.addVariantName(item, modId + ":" + itemName);
+            Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta,
+                    new ModelResourceLocation(modId + ":" + itemName, "inventory"));
+        }
+    }
+
+    public static String getModelNameSuffix(ItemStack itemStack) {
+        return "_" + PropertyMaterial.Type.values()[itemStack.getItemDamage()]
+                .toString().toLowerCase(Locale.ENGLISH);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void onInit(Step step) {
+        super.onInit(step);
+        if(step == Step.INIT) {
+            onInit(step, this);
+        }
+    }
+
+    @Override
+    public String getModelName(ItemStack itemStack) {
+        return super.getModelName(itemStack) + getModelNameSuffix(itemStack);
     }
     
 }

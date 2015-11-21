@@ -3,17 +3,16 @@ package org.cyclops.colossalchests.tileentity;
 import com.google.common.collect.*;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.ArrayUtils;
+import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
-import org.cyclops.colossalchests.block.ChestWall;
-import org.cyclops.colossalchests.block.ColossalChest;
-import org.cyclops.colossalchests.block.ColossalChestConfig;
-import org.cyclops.colossalchests.block.Interface;
+import org.cyclops.colossalchests.block.*;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
 import org.cyclops.cyclopscore.helper.*;
@@ -69,6 +68,12 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private Vec3 renderOffset = new Vec3(0, 0, 0);
     @NBTPersist
     private String customName = null;
+    @NBTPersist
+    private int materialId = 0;
+    @NBTPersist
+    private int _modVersion = 0; // For backwards compatibility
+    private static final int _MOD_VERSION = 1;
+
     /**
      * The previous angle of the lid.
      */
@@ -98,6 +103,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         this.size = size;
         facingSlots.clear();
         if(isStructureComplete()) {
+            this._modVersion = _MOD_VERSION;
             this.inventory = constructInventory();
 
             // Move all items from the last valid inventory into the new one
@@ -129,6 +135,14 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         sendUpdate();
     }
 
+    public void setMaterial(PropertyMaterial.Type material) {
+        this.materialId = material.ordinal();
+    }
+
+    public PropertyMaterial.Type getMaterial() {
+        return PropertyMaterial.Type.values()[this.materialId];
+    }
+
     public int getSizeSingular() {
         return getSize().getX() + 1;
     }
@@ -138,12 +152,31 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     protected int calculateInventorySize() {
-        return (int) (Math.pow(getSizeSingular(), 3) * 27);
+        return ((int) (Math.pow(getSizeSingular(), 3) * 27)) * getMaterial().getInventoryMultiplier();
     }
 
     @Override
     public void updateTileEntity() {
         super.updateTileEntity();
+
+        // Backwards-compatibility check
+        if(worldObj != null) {
+            if(this._modVersion != _MOD_VERSION && this.isStructureComplete()) {
+                ColossalChests.clog("Upgrading colossal chest from old mod version at " + getPos());
+                // In the old version, we only had wooden versions, so correctly set their properties.
+                TileColossalChest.detector.detect(getWorld(), getPos(), null, new CubeDetector.IValidationAction() {
+                    @Override
+                    public boolean onValidate(BlockPos location, IBlockState blockState) {
+                        getWorld().setBlockState(location, blockState.
+                                withProperty(ColossalChest.ACTIVE, true).
+                                withProperty(ColossalChest.MATERIAL, PropertyMaterial.Type.WOOD));
+                        return true;
+                    }
+                }, false);
+                this._modVersion = _MOD_VERSION;
+            }
+        }
+
         // Resynchronize clients with the server state, the last condition makes sure
         // not all chests are synced at the same time.
         if(worldObj != null
@@ -323,6 +356,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     @Override
     public String getCommandSenderName() {
-        return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.colossalchest.name", getSizeSingular());
+        return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.colossalchest.name",
+                getMaterial().getLocalizedName(), getSizeSingular());
     }
 }

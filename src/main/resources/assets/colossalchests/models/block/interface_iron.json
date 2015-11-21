@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "colossalchests:blocks/colossalChest"
+    "all": "colossalchests:blocks/interface_iron"
   }
 }

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <recipes>
 
+	<!-- WOOD -->
+
 	<recipe type="shaped">
 		<condition type="config">chestWall</condition>
 		<input>
@@ -66,25 +68,27 @@
 		</output>
 	</recipe>
 
+	<!-- COPPER -->
+
 	<recipe type="shaped">
 		<condition type="config">chestWall</condition>
 		<condition type="predefined">colossalchests:metalVariants</condition>
 		<input>
 			<grid>
 				<gridrow>
-					<item type="oredict">ingotIron</item>
-					<item type="oredict">ingotIron</item>
-					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotCopper</item>
+					<item type="oredict">ingotCopper</item>
+					<item type="oredict">ingotCopper</item>
 				</gridrow>
 				<gridrow>
-					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotCopper</item>
 					<item type="oredict">logWood</item>
-					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotCopper</item>
 				</gridrow>
 				<gridrow>
-					<item type="oredict">ingotIron</item>
-					<item type="oredict">ingotIron</item>
-					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotCopper</item>
+					<item type="oredict">ingotCopper</item>
+					<item type="oredict">ingotCopper</item>
 				</gridrow>
 			</grid>
 		</input>
@@ -131,6 +135,286 @@
 		</input>
 		<output>
 			<item meta="1">colossalchests:interface</item>
+		</output>
+	</recipe>
+
+	<!-- IRON -->
+
+	<recipe type="shaped">
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotIron</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">ingotIron</item>
+					<item type="oredict">logWood</item>
+					<item type="oredict">ingotIron</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotIron</item>
+					<item type="oredict">ingotIron</item>
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item amount="2" meta="2">colossalchests:chestWall</item>
+		</output>
+	</recipe>
+
+	<recipe type="shapeless">
+		<condition type="config">colossalChest</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<item meta="2">colossalchests:chestWall</item>
+			<item type="oredict">ingotIron</item>
+		</input>
+		<output>
+			<item meta="2">colossalchests:colossalChest</item>
+		</output>
+	</recipe>
+
+	<recipe type="shaped">
+		<condition type="config">interface</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+				<gridrow>
+					<item type="oredict">cobblestone</item>
+					<item meta="2">colossalchests:chestWall</item>
+					<item type="oredict">cobblestone</item>
+				</gridrow>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item meta="2">colossalchests:interface</item>
+		</output>
+	</recipe>
+
+	<!-- SILVER -->
+
+	<recipe type="shaped">
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item type="oredict">ingotSilver</item>
+					<item type="oredict">ingotSilver</item>
+					<item type="oredict">ingotSilver</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">ingotSilver</item>
+					<item type="oredict">logWood</item>
+					<item type="oredict">ingotSilver</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">ingotSilver</item>
+					<item type="oredict">ingotSilver</item>
+					<item type="oredict">ingotSilver</item>
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item amount="2" meta="3">colossalchests:chestWall</item>
+		</output>
+	</recipe>
+
+	<recipe type="shapeless">
+		<condition type="config">colossalChest</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<item meta="3">colossalchests:chestWall</item>
+			<item type="oredict">ingotIron</item>
+		</input>
+		<output>
+			<item meta="3">colossalchests:colossalChest</item>
+		</output>
+	</recipe>
+
+	<recipe type="shaped">
+		<condition type="config">interface</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+				<gridrow>
+					<item type="oredict">cobblestone</item>
+					<item meta="3">colossalchests:chestWall</item>
+					<item type="oredict">cobblestone</item>
+				</gridrow>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item meta="3">colossalchests:interface</item>
+		</output>
+	</recipe>
+
+	<!-- GOLD -->
+
+	<recipe type="shaped">
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item type="oredict">ingotGold</item>
+					<item type="oredict">ingotGold</item>
+					<item type="oredict">ingotGold</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">ingotGold</item>
+					<item type="oredict">logWood</item>
+					<item type="oredict">ingotGold</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">ingotGold</item>
+					<item type="oredict">ingotGold</item>
+					<item type="oredict">ingotGold</item>
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item amount="2" meta="4">colossalchests:chestWall</item>
+		</output>
+	</recipe>
+
+	<recipe type="shapeless">
+		<condition type="config">colossalChest</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<item meta="4">colossalchests:chestWall</item>
+			<item type="oredict">ingotIron</item>
+		</input>
+		<output>
+			<item meta="4">colossalchests:colossalChest</item>
+		</output>
+	</recipe>
+
+	<recipe type="shaped">
+		<condition type="config">interface</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+				<gridrow>
+					<item type="oredict">cobblestone</item>
+					<item meta="4">colossalchests:chestWall</item>
+					<item type="oredict">cobblestone</item>
+				</gridrow>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item meta="4">colossalchests:interface</item>
+		</output>
+	</recipe>
+
+	<!-- DIAMOND -->
+
+	<recipe type="shaped">
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item type="oredict">gemDiamond</item>
+					<item type="oredict">gemDiamond</item>
+					<item type="oredict">gemDiamond</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">gemDiamond</item>
+					<item type="oredict">logWood</item>
+					<item type="oredict">gemDiamond</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">gemDiamond</item>
+					<item type="oredict">gemDiamond</item>
+					<item type="oredict">gemDiamond</item>
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item amount="2" meta="5">colossalchests:chestWall</item>
+		</output>
+	</recipe>
+
+	<recipe type="shapeless">
+		<condition type="config">colossalChest</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<item meta="5">colossalchests:chestWall</item>
+			<item type="oredict">ingotIron</item>
+		</input>
+		<output>
+			<item meta="5">colossalchests:colossalChest</item>
+		</output>
+	</recipe>
+
+	<recipe type="shaped">
+		<condition type="config">interface</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+				<gridrow>
+					<item type="oredict">cobblestone</item>
+					<item meta="5">colossalchests:chestWall</item>
+					<item type="oredict">cobblestone</item>
+				</gridrow>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item meta="5">colossalchests:interface</item>
 		</output>
 	</recipe>
 

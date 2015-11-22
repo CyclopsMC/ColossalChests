@@ -12,4 +12,8 @@ tile.blocks.colossalchests.interface.info=To interact with pipes and hoppers
 
 # Materials
 material.colossalchests.wood=Wood
+material.colossalchests.copper=Copper
 material.colossalchests.iron=Iron
+material.colossalchests.silver=Silver
+material.colossalchests.gold=Gold
+material.colossalchests.diamond=Diamond

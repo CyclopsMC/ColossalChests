@@ -70,15 +70,19 @@ public class PropertyMaterial extends PropertyHelper {
     public enum Type {
 
         WOOD(1),
-        IRON(2);
+        COPPER(1.666),
+        IRON(2),
+        SILVER(2.666),
+        GOLD(3),
+        DIAMOND(4);
 
-        private final int inventoryMultiplier;
+        private final double inventoryMultiplier;
 
-        private Type(int inventoryMultiplier) {
+        private Type(double inventoryMultiplier) {
             this.inventoryMultiplier = inventoryMultiplier;
         }
 
-        public int getInventoryMultiplier() {
+        public double getInventoryMultiplier() {
             return this.inventoryMultiplier;
         }
 

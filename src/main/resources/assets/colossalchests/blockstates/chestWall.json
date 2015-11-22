@@ -6,8 +6,16 @@
   "variants": {
     "active=false,material=wood": { "model": "colossalchests:chestWall_wood" },
     "active=true,material=wood": { "model": "colossalchests:chestWall_off" },
+    "active=false,material=copper": { "model": "colossalchests:chestWall_copper" },
+    "active=true,material=copper": { "model": "colossalchests:chestWall_off" },
     "active=false,material=iron": { "model": "colossalchests:chestWall_iron" },
     "active=true,material=iron": { "model": "colossalchests:chestWall_off" },
+    "active=false,material=silver": { "model": "colossalchests:chestWall_silver" },
+    "active=true,material=silver": { "model": "colossalchests:chestWall_off" },
+    "active=false,material=gold": { "model": "colossalchests:chestWall_gold" },
+    "active=true,material=gold": { "model": "colossalchests:chestWall_off" },
+    "active=false,material=diamond": { "model": "colossalchests:chestWall_diamond" },
+    "active=true,material=diamond": { "model": "colossalchests:chestWall_off" },
     "inventory": { "model": "colossalchests:chestWall_wood" }
   }
 }

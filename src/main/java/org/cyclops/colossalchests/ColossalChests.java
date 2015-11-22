@@ -64,7 +64,14 @@ public class ColossalChests extends ModBaseVersionable {
 
     @Override
     protected RecipeHandler constructRecipeHandler() {
-        return new RecipeHandler(this, "recipes.xml");
+        return new RecipeHandler(this, "recipes.xml") {
+            protected void loadPredefineds(Map<String, ItemStack> predefinedItems, Set<String> predefinedValues) {
+                super.loadPredefineds(predefinedItems, predefinedValues);
+                if(GeneralConfig.metalVariants) {
+                    predefinedValues.add(Reference.MOD_ID + ":metalVariants");
+                }
+            }
+        };
     }
 
     /**

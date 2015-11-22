@@ -27,8 +27,7 @@ public class ItemBlockMaterial extends ItemBlockMetadata {
 
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        list.add(EnumChatFormatting.BLUE + L10NHelpers.localize("material." + Reference.MOD_ID + "." +
-                PropertyMaterial.Type.values()[itemStack.getItemDamage()].getLocalizedName()));
+        list.add(EnumChatFormatting.BLUE + PropertyMaterial.Type.values()[itemStack.getItemDamage()].getLocalizedName());
         super.addInformation(itemStack, entityPlayer, list, par4);
 
     }

@@ -36,6 +36,7 @@ public class Reference {
     public static final String MOD_CYCLOPSCORE = "cyclopscore";
     public static final String MOD_CYCLOPSCORE_VERSION = "@CYCLOPSCORE_VERSION@";
     public static final String MOD_CYCLOPSCORE_VERSION_MIN = "0.4.1";
+    public static final String MOD_IRONCHEST = "IronChest";
     
     // Dependencies
     public static final String MOD_DEPENDENCIES =

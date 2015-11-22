@@ -1,11 +1,19 @@
 package org.cyclops.colossalchests.client.render.tileentity;
 
+import com.google.common.collect.Maps;
 import net.minecraft.client.model.ModelChest;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
+import org.cyclops.colossalchests.ColossalChests;
+import org.cyclops.colossalchests.Reference;
+import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.client.render.tileentity.RenderTileEntityModel;
+import org.cyclops.cyclopscore.init.ModBase;
+
+import java.util.Calendar;
+import java.util.Map;
 
 /**
  * Renderer for the {@link org.cyclops.colossalchests.block.ColossalChest}.
@@ -14,13 +22,20 @@ import org.cyclops.cyclopscore.client.render.tileentity.RenderTileEntityModel;
  */
 public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileColossalChest, ModelChest> {
 
+    public static final Map<PropertyMaterial.Type, ResourceLocation> TEXTURES = Maps.newHashMap();
+    static {
+        Calendar calendar = Calendar.getInstance();
+        boolean christmas = calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) >= 24 && calendar.get(Calendar.DATE) <= 26;
+        TEXTURES.put(PropertyMaterial.Type.WOOD, new ResourceLocation("textures/entity/chest/" + (christmas ? "christmas" : "normal") + ".png"));
+        TEXTURES.put(PropertyMaterial.Type.IRON, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chestIron.png"));
+    }
+
 	/**
      * Make a new instance.
      * @param model The model to render.
-     * @param texture The texture to render the model with.
      */
-    public RenderTileEntityColossalChest(ModelChest model, ResourceLocation texture) {
-        super(model, texture);
+    public RenderTileEntityColossalChest(ModelChest model) {
+        super(model, null);
     }
 
     @Override
@@ -42,6 +57,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     @Override
     protected void renderModel(TileColossalChest chestTile, ModelChest model, float partialTick, int destroyStage) {
         if(chestTile.isStructureComplete()) {
+            bindTexture(TEXTURES.get(chestTile.getMaterial()));
             GlStateManager.pushMatrix();
             float lidangle = chestTile.prevLidAngle + (chestTile.lidAngle - chestTile.prevLidAngle) * partialTick;
             lidangle = 1.0F - lidangle;

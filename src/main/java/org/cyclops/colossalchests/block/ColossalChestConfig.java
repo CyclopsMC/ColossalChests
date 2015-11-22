@@ -7,7 +7,6 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.cyclops.colossalchests.ColossalChests;
@@ -19,7 +18,6 @@ import org.cyclops.cyclopscore.config.ConfigurableTypeCategory;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockContainerConfig;
 
-import java.util.Calendar;
 import java.util.Locale;
 
 /**
@@ -63,10 +61,7 @@ public class ColossalChestConfig extends BlockContainerConfig {
     public void onRegistered() {
         super.onRegistered();
         ModelChest model = new ModelChest();
-        Calendar calendar = Calendar.getInstance();
-        boolean christmas = calendar.get(2) + 1 == 12 && calendar.get(5) >= 24 && calendar.get(5) <= 26;
-        ResourceLocation texture = new ResourceLocation("textures/entity/chest/" + (christmas ? "christmas" : "normal") + ".png");
-        ColossalChests._instance.getProxy().registerRenderer(TileColossalChest.class, new RenderTileEntityColossalChest(model, texture));
+        ColossalChests._instance.getProxy().registerRenderer(TileColossalChest.class, new RenderTileEntityColossalChest(model));
     }
 
     @SideOnly(Side.CLIENT)

@@ -3,6 +3,7 @@ package org.cyclops.colossalchests;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -12,12 +13,17 @@ import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests.block.ChestWallConfig;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.InterfaceConfig;
+import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.IObjectReference;
 import org.cyclops.cyclopscore.init.ItemCreativeTab;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
 import org.cyclops.cyclopscore.init.RecipeHandler;
+import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The main mod class of this mod.
@@ -49,6 +55,11 @@ public class ColossalChests extends ModBaseVersionable {
 
     public ColossalChests() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
+    }
+
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        modCompatLoader.addModCompat(new IronChestModCompat());
     }
 
     @Override

@@ -60,6 +60,12 @@ public class GeneralConfig extends DummyConfig {
     public static boolean ejectItemsOnDestroy = false;
 
     /**
+     * If the higher tier metal variants can be crafted.
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "If the higher tier metal variants can be crafted.")
+    public static boolean metalVariants = true;
+
+    /**
      * The type of this config.
      */
     public static ConfigurableType TYPE = ConfigurableType.DUMMY;

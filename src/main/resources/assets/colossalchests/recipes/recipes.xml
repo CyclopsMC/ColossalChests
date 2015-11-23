@@ -418,4 +418,18 @@
 		</output>
 	</recipe>
 
+	<!-- UNCOLOSSAL CHEST -->
+
+	<recipe type="shapeless">
+		<condition type="config">uncolossalChest</condition>
+		<condition type="config">chestWall</condition>
+		<input>
+			<item>colossalchests:chestWall</item>
+			<item type="oredict">plankWood</item>
+		</input>
+		<output>
+			<item>colossalchests:uncolossalChest</item>
+		</output>
+	</recipe>
+
 </recipes>

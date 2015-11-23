@@ -1,6 +1,7 @@
 # General
 itemGroup.colossalchests=Colossal Chests
 general.colossalchests.colossalchest.name=%s Colossal Chest (%s)
+general.colossalchests.uncolossalchest.name=Uncolossal Chest
 
 # Blocks
 tile.blocks.colossalchests.colossalChest.name=Colossal Chest Core
@@ -9,6 +10,8 @@ tile.blocks.colossalchests.chestWall.name=Colossal Chest Wall
 tile.blocks.colossalchests.chestWall.info=Used to build a Colossal Chest structure
 tile.blocks.colossalchests.interface.name=Colossal Chest Interface
 tile.blocks.colossalchests.interface.info=To interact with pipes and hoppers
+tile.blocks.colossalchests.uncolossalChest.name=Uncolossal Chest
+tile.blocks.colossalchests.uncolossalChest.info=The most colossal of 'em all!
 
 # Materials
 material.colossalchests.wood=Wood

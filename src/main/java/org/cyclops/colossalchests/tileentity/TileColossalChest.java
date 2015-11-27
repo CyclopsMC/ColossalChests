@@ -296,10 +296,12 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     public void setCenter(Vec3 center) {
-        EnumFacing rotation = EnumFacing.NORTH;
-        if(center.xCoord + 0.5 - getPos().getX() >= getSizeSingular() / 2) {
+        EnumFacing rotation;
+        double dx = Math.abs(center.xCoord - getPos().getX());
+        double dz = Math.abs(center.zCoord - getPos().getZ());
+        if(dx >= dz) {
             rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.xCoord - getPos().getX()));
-        } else if(center.zCoord + 0.5 - getPos().getZ() >= getSizeSingular() / 2) {
+        } else {
             rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.zCoord - getPos().getZ()));
         }
         this.setRotation(rotation);

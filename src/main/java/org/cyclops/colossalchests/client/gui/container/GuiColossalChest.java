@@ -1,12 +1,15 @@
 package org.cyclops.colossalchests.client.gui.container;
 
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.InventoryPlayer;
-import org.cyclops.colossalchests.block.ColossalChest;
+import net.minecraft.util.MathHelper;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.cyclopscore.client.gui.component.button.GuiButtonArrow;
 import org.cyclops.cyclopscore.client.gui.container.ScrollingGuiContainer;
-import org.cyclops.cyclopscore.helper.L10NHelpers;
 import org.cyclops.cyclopscore.init.ModBase;
+
+import java.io.IOException;
 
 /**
  * GUI for the {@link org.cyclops.colossalchests.block.ColossalChest}.
@@ -20,6 +23,9 @@ public class GuiColossalChest extends ScrollingGuiContainer {
 
     private final TileColossalChest tile;
 
+    private GuiButtonArrow buttonUp;
+    private GuiButtonArrow buttonDown;
+
     /**
      * Make a new instance.
      * @param inventory The inventory of the player.
@@ -28,6 +34,22 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     public GuiColossalChest(InventoryPlayer inventory, TileColossalChest tile) {
         super(new ContainerColossalChest(inventory, tile));
         this.tile = tile;
+    }
+
+    @Override
+    public void initGui() {
+        super.initGui();
+        buttonList.add(buttonUp = new GuiButtonArrow(0, 289, 30, GuiButtonArrow.Direction.NORTH));
+        buttonList.add(buttonDown = new GuiButtonArrow(1, 289, 152, GuiButtonArrow.Direction.SOUTH));
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) throws IOException {
+        super.actionPerformed(button);
+        int i = (button == buttonUp) ? 1 : ((button == buttonDown ? -1 : 0));
+        this.currentScroll = (float)((double)this.currentScroll - (double)i / (double)getScrollStep());
+        this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
+        getScrollingInventoryContainer().scrollTo(this.currentScroll);
     }
 
     @Override

@@ -9,6 +9,8 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.event.HoverEvent;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,15 +22,14 @@ import org.cyclops.colossalchests.client.gui.container.GuiColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
+import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
 import org.cyclops.cyclopscore.block.property.BlockPropertyManagerComponent;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainerGui;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
-import org.cyclops.cyclopscore.helper.BlockHelpers;
-import org.cyclops.cyclopscore.helper.MinecraftHelpers;
-import org.cyclops.cyclopscore.helper.TileHelpers;
+import org.cyclops.cyclopscore.helper.*;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -88,21 +89,8 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return Item.getItemFromBlock(this);
     }
 
-    public static void triggerDetector(World world, BlockPos blockPos, boolean valid) {
-        final Wrapper<PropertyMaterial.Type> requiredMaterial = new Wrapper<PropertyMaterial.Type>(null);
-        TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, new CubeDetector.IValidationAction() {
-            @Override
-            public boolean onValidate(BlockPos blockPos, IBlockState blockState) {
-                PropertyMaterial.Type material = BlockHelpers.
-                        getSafeBlockStateProperty(blockState, ColossalChest.MATERIAL, null);
-                if(requiredMaterial.get() == null) {
-                    requiredMaterial.set(material);
-                    return true;
-                } else {
-                    return requiredMaterial.get() == material;
-                }
-            }
-        }, true);
+    public static DetectionResult triggerDetector(World world, BlockPos blockPos, boolean valid) {
+        return TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
     }
 
     @Override
@@ -171,15 +159,46 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         TileColossalChest.detector.detect(world, blockPos, null, new CubeDetector.IValidationAction() {
 
             @Override
-            public boolean onValidate(BlockPos location, IBlockState blockState) {
+            public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
                 if (blockState.getBlock() == ColossalChest.getInstance()) {
                     tileLocationWrapper.set(location);
                 }
-                return true;
+                return null;
             }
 
         }, false);
         return tileLocationWrapper.get();
+    }
+
+    /**
+     * Show the structure forming error in the given player chat window.
+     * @param world The world.
+     * @param blockPos The start position.
+     * @param player The player.
+     */
+    public static void addPlayerChatError(World world, BlockPos blockPos, EntityPlayer player) {
+        if(!world.isRemote && player.getHeldItem() == null) {
+            DetectionResult result = TileColossalChest.detector.detect(world, blockPos, null,  new MaterialValidationAction(), false);
+            if (result != null && result.getError() != null) {
+                IChatComponent chat = new ChatComponentText("");
+                IChatComponent prefix = new ChatComponentText(
+                        String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
+                ).setChatStyle(new ChatStyle().
+                        setColor(EnumChatFormatting.GRAY).
+                        setChatHoverEvent(new HoverEvent(
+                                HoverEvent.Action.SHOW_TEXT,
+                                new ChatComponentTranslation("multiblock.colossalchests.error.prefix.info")
+                        ))
+                );
+                IChatComponent error = new ChatComponentText(result.getError().localize());
+                chat.appendSibling(prefix);
+                chat.appendSibling(error);
+                player.addChatComponentMessage(chat);
+            } else {
+                player.addChatComponentMessage(new ChatComponentText(L10NHelpers.localize(
+                        "multiblock.colossalchests.error.unexpected")));
+            }
+        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -206,5 +225,34 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
         // Meta * 2 because we always want the inactive state
         return super.onBlockPlaced(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer);
+    }
+
+    @Override
+    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumFacing side, float par7, float par8, float par9) {
+        if(!((Boolean) blockState.getValue(ACTIVE))) {
+            ColossalChest.addPlayerChatError(world, blockPos, player);
+        }
+        return super.onBlockActivated(world, blockPos, blockState, player, side, par7, par8, par9);
+    }
+
+    private static class MaterialValidationAction implements CubeDetector.IValidationAction {
+        private final Wrapper<PropertyMaterial.Type> requiredMaterial;
+
+        public MaterialValidationAction() {
+            this.requiredMaterial = new Wrapper<PropertyMaterial.Type>(null);
+        }
+
+        @Override
+        public L10NHelpers.UnlocalizedString onValidate(BlockPos blockPos, IBlockState blockState) {
+            PropertyMaterial.Type material = BlockHelpers.
+                    getSafeBlockStateProperty(blockState, ColossalChest.MATERIAL, null);
+            if(requiredMaterial.get() == null) {
+                requiredMaterial.set(material);
+                return null;
+            }
+            return requiredMaterial.get() == material ? null : new L10NHelpers.UnlocalizedString(
+                    "multiblock.colossalchests.error.material", material.getLocalizedName(), LocationHelpers.toCompactString(blockPos),
+                    requiredMaterial.get().getLocalizedName());
+        }
     }
 }

@@ -20,3 +20,9 @@ material.colossalchests.iron=Iron
 material.colossalchests.silver=Silver
 material.colossalchests.gold=Gold
 material.colossalchests.diamond=Diamond
+
+# Multiblock
+multiblock.colossalchests.error.prefix=ColossalChests
+multiblock.colossalchests.error.prefix.info=Colossal Chest multiblock structure error
+multiblock.colossalchests.error.unexpected=Unexpected Colossal Chest structure error.
+multiblock.colossalchests.error.material=Found a block of material %s at %s, while %s was expected.

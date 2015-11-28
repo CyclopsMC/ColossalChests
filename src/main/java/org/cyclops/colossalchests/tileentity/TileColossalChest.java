@@ -166,11 +166,11 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                 // In the old version, we only had wooden versions, so correctly set their properties.
                 TileColossalChest.detector.detect(getWorld(), getPos(), null, new CubeDetector.IValidationAction() {
                     @Override
-                    public boolean onValidate(BlockPos location, IBlockState blockState) {
+                    public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
                         getWorld().setBlockState(location, blockState.
                                 withProperty(ColossalChest.ACTIVE, true).
                                 withProperty(ColossalChest.MATERIAL, PropertyMaterial.Type.WOOD));
-                        return true;
+                        return null;
                     }
                 }, false);
                 this._modVersion = _MOD_VERSION;

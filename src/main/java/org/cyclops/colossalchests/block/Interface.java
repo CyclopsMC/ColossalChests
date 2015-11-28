@@ -130,6 +130,8 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
                                 player, side, posX, posY, posZ);
                 return true;
             }
+        } else {
+            ColossalChest.addPlayerChatError(world, blockPos, player);
         }
         return super.onBlockActivated(world, blockPos, blockState, player, side, posX, posY, posZ);
     }

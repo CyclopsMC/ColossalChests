@@ -2,10 +2,17 @@ package org.cyclops.colossalchests.inventory.container;
 
 import com.google.common.collect.Lists;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ICrafting;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.play.server.S2FPacketSetSlot;
+import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.ColossalChest;
+import org.cyclops.colossalchests.network.packet.WindowItemsFragmentPacket;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainer;
 import org.cyclops.cyclopscore.inventory.slot.SlotExtended;
@@ -20,6 +27,8 @@ import java.util.regex.Pattern;
  *
  */
 public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
+
+    private static final int MAX_SLOTS_PER_PACKET = 5000;
 
     private static final int INVENTORY_OFFSET_X = 9;
     private static final int INVENTORY_OFFSET_Y = 112;
@@ -135,4 +144,30 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         enableSlot(elementIndex, row, column);
     }
 
+    @Override
+    public void onCraftGuiOpened(ICrafting listener) {
+        if (this.crafters.contains(listener)) {
+            throw new IllegalArgumentException("Listener already listening");
+        } else {
+            this.crafters.add(listener);
+            if(listener instanceof EntityPlayerMP) {
+                updateCraftingInventory((EntityPlayerMP) listener, getInventory());
+            } else {
+                listener.updateCraftingInventory(this, this.getInventory());
+            }
+            this.detectAndSendChanges();
+        }
+    }
+
+    // Modified from EntityPlayerMP#updateCraftingInventory
+    public void updateCraftingInventory(EntityPlayerMP player, List<ItemStack> allItems) {
+        // Custom packet sending to be able to handle large inventories
+        NetHandlerPlayServer playerNetServerHandler = player.playerNetServerHandler;
+        // Modification of logic in EntityPlayerMP#updateCraftingInventory
+        for(int i = 0; i < allItems.size(); i+= MAX_SLOTS_PER_PACKET) {
+            List<ItemStack> items = allItems.subList(i, Math.min(allItems.size(), i + MAX_SLOTS_PER_PACKET));
+            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, i, items), player);
+        }
+        playerNetServerHandler.sendPacket(new S2FPacketSetSlot(-1, -1, player.inventory.getItemStack()));
+    }
 }

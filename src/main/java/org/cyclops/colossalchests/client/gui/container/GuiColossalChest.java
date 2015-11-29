@@ -1,9 +1,14 @@
 package org.cyclops.colossalchests.client.gui.container;
 
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
+import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
+import org.cyclops.colossalchests.network.packet.ClickWindowPacketOverride;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.client.gui.component.button.GuiButtonArrow;
 import org.cyclops.cyclopscore.client.gui.container.ScrollingGuiContainer;
@@ -82,5 +87,23 @@ public class GuiColossalChest extends ScrollingGuiContainer {
         drawForgegroundString();
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
-    
+
+    @Override
+    protected void handleMouseClick(Slot slotIn, int slotId, int clickedButton, int clickType) {
+        if (slotIn != null) {
+            slotId = slotIn.slotNumber;
+        }
+        // Send our own packet, to avoid C0EPacketClickWindow to be sent to the server what would trigger an overflowable S30PacketWindowItems
+        windowClick(this.inventorySlots.windowId, slotId, clickedButton, clickType, this.mc.thePlayer);
+    }
+
+    // Adapted from PlayerControllerMP#windowClick
+    protected ItemStack windowClick(int windowId, int slotId, int mouseButtonClicked, int p_78753_4_, EntityPlayer playerIn) {
+        short short1 = playerIn.openContainer.getNextTransactionID(playerIn.inventory);
+        ItemStack itemstack = playerIn.openContainer.slotClick(slotId, mouseButtonClicked, p_78753_4_, playerIn);
+        // Original: this.netClientHandler.addToSendQueue(new C0EPacketClickWindow(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));
+        ColossalChests._instance.getPacketHandler().sendToServer(
+                new ClickWindowPacketOverride(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));
+        return itemstack;
+    }
 }

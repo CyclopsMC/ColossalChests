@@ -56,14 +56,20 @@ public class GeneralConfig extends DummyConfig {
     /**
      * If items should be ejected from the chests if one of the structure blocks are removed.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "If items should be ejected from the chests if one of the structure blocks are removed.")
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If items should be ejected from the chests if one of the structure blocks are removed.")
     public static boolean ejectItemsOnDestroy = false;
 
     /**
      * If the higher tier metal variants can be crafted.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "If the higher tier metal variants can be crafted.")
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the higher tier metal variants can be crafted.")
     public static boolean metalVariants = true;
+
+    /**
+     * Maximum number of slots per packet for inventory slots fragmentation.
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Maximum number of slots per packet for inventory slots fragmentation.")
+    public static int maxSlotsPerPacket = 5000;
 
     /**
      * The type of this config.

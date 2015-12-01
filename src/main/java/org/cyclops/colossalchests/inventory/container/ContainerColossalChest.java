@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.server.S2FPacketSetSlot;
 import org.cyclops.colossalchests.ColossalChests;
+import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.network.packet.WindowItemsFragmentPacket;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
@@ -27,8 +28,6 @@ import java.util.regex.Pattern;
  *
  */
 public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
-
-    private static final int MAX_SLOTS_PER_PACKET = 5000;
 
     private static final int INVENTORY_OFFSET_X = 9;
     private static final int INVENTORY_OFFSET_Y = 112;
@@ -161,11 +160,12 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
     // Modified from EntityPlayerMP#updateCraftingInventory
     public void updateCraftingInventory(EntityPlayerMP player, List<ItemStack> allItems) {
+        int max = GeneralConfig.maxSlotsPerPacket;
         // Custom packet sending to be able to handle large inventories
         NetHandlerPlayServer playerNetServerHandler = player.playerNetServerHandler;
         // Modification of logic in EntityPlayerMP#updateCraftingInventory
-        for(int i = 0; i < allItems.size(); i+= MAX_SLOTS_PER_PACKET) {
-            List<ItemStack> items = allItems.subList(i, Math.min(allItems.size(), i + MAX_SLOTS_PER_PACKET));
+        for(int i = 0; i < allItems.size(); i+= max) {
+            List<ItemStack> items = allItems.subList(i, Math.min(allItems.size(), i + max));
             ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, i, items), player);
         }
         playerNetServerHandler.sendPacket(new S2FPacketSetSlot(-1, -1, player.inventory.getItemStack()));

@@ -1,0 +1,15 @@
+Make sure to backup your world before updating!
+
+Changes:
+* Don't immediately eject inventory when a block is removed, only after reforming if the new size is smaller, Closes #7
+
+Features:
+* Allow multiblock debugging with an empty hand, Closes #2
+* Add scrolling buttons for large inventories, Closes #12
+* Add Uncolossal Chest, Closes #9 It's a very tiny chest
+* Add Iron Chest variants, does not require the Iron Chest mod, but will use its textures if available.
+
+Fixes:
+* Use custom packets for truly massive inventory sizes to avoid crashes with large inventories, Closes #8
+* Fix incorrect rotation, Closes #14
+* Fix #11, don't load last size from replaced core blocks

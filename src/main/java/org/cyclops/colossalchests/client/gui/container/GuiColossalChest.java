@@ -44,8 +44,8 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     @Override
     public void initGui() {
         super.initGui();
-        buttonList.add(buttonUp = new GuiButtonArrow(0, 289, 30, GuiButtonArrow.Direction.NORTH));
-        buttonList.add(buttonDown = new GuiButtonArrow(1, 289, 152, GuiButtonArrow.Direction.SOUTH));
+        buttonList.add(buttonUp = new GuiButtonArrow(0, this.guiLeft + 173, this.guiTop + 7, GuiButtonArrow.Direction.NORTH));
+        buttonList.add(buttonDown = new GuiButtonArrow(1, this.guiLeft + 173, this.guiTop + 129, GuiButtonArrow.Direction.SOUTH));
     }
 
     @Override

@@ -357,7 +357,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     @Override
-    public String getCommandSenderName() {
+    public String getName() {
         return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.colossalchest.name",
                 getMaterial().getLocalizedName(), getSizeSingular());
     }

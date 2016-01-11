@@ -164,13 +164,13 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
     }
 
     @Override
-    public String getCommandSenderName() {
+    public String getName() {
         return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.uncolossalchest.name");
     }
 
     @Override
     public IChatComponent getDisplayName() {
-        return new ChatComponentText(getCommandSenderName());
+        return new ChatComponentText(getName());
     }
 
     @Override

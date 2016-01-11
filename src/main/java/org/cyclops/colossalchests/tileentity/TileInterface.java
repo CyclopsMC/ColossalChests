@@ -91,12 +91,12 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     }
 
     @Override
-    public ItemStack getStackInSlotOnClosing(int index) {
+    public ItemStack removeStackFromSlot(int index) {
         ISidedInventory core =  getCore();
         if(core == null) {
             return null;
         }
-        return core.getStackInSlotOnClosing(index);
+        return core.removeStackFromSlot(index);
     }
 
     @Override
@@ -185,12 +185,12 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     }
 
     @Override
-    public String getCommandSenderName() {
-        ISidedInventory core =  getCore();
+    public String getName() {
+        ISidedInventory core = getCore();
         if(core == null) {
             return null;
         }
-        return core.getCommandSenderName();
+        return core.getName();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.client.gui.container;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -51,7 +52,8 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         super.actionPerformed(button);
-        int i = (button == buttonUp) ? 1 : ((button == buttonDown ? -1 : 0));
+        int multiplier = Minecraft.getMinecraft().thePlayer.isSneaking() ? 9 : 1;
+        int i = (button == buttonUp) ? 1 * multiplier : ((button == buttonDown ? -1 * multiplier : 0));
         this.currentScroll = (float)((double)this.currentScroll - (double)i / (double)getScrollStep());
         this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
         getScrollingInventoryContainer().scrollTo(this.currentScroll);

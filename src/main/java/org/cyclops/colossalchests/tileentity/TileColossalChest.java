@@ -278,12 +278,6 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer entityPlayer) {
-        return super.isUseableByPlayer(entityPlayer)
-                && (worldObj == null || worldObj.getTileEntity(getPos()) != this);
-    }
-
-    @Override
     public boolean canInteractWith(EntityPlayer entityPlayer) {
         return getSizeSingular() > 1 && super.canInteractWith(entityPlayer);
     }

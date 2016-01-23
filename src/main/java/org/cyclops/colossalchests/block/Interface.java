@@ -61,6 +61,11 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
         this.setHarvestLevel("axe", 2); // Iron tier
     }
 
+    @Override
+    public boolean isToolEffective(String type, IBlockState state) {
+        return ColossalChest.isToolEffectiveShared(type, state);
+    }
+
     @SideOnly(Side.CLIENT)
     @Override
     public EnumWorldBlockLayer getBlockLayer() {

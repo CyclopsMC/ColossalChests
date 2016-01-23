@@ -16,22 +16,22 @@ import java.util.Locale;
  * Material property for the chests
  * @author rubensworks
  */
-public class PropertyMaterial extends PropertyHelper {
+public class PropertyMaterial extends PropertyHelper<PropertyMaterial.Type> {
 
-    private final ImmutableSet allowedValues;
+    private final ImmutableSet<PropertyMaterial.Type> allowedValues;
 
-    protected PropertyMaterial(String name, Collection values) {
+    protected PropertyMaterial(String name, Collection<PropertyMaterial.Type> values) {
         super(name, Type.class);
         this.allowedValues = ImmutableSet.copyOf(values);
     }
 
-    public Collection getAllowedValues()
+    public Collection<PropertyMaterial.Type> getAllowedValues()
     {
         return this.allowedValues;
     }
 
     @Override
-    public String getName(Comparable value) {
+    public String getName(PropertyMaterial.Type value) {
         return value.toString();
     }
 

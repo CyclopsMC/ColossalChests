@@ -165,4 +165,9 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
         return super.onBlockPlaced(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer);
     }
 
+    @Override
+    public int damageDropped(IBlockState state) {
+        return state.getValue(ColossalChest.MATERIAL).ordinal();
+    }
+
 }

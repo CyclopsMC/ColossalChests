@@ -247,6 +247,11 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return super.onBlockActivated(world, blockPos, blockState, player, side, par7, par8, par9);
     }
 
+    @Override
+    public int damageDropped(IBlockState state) {
+        return state.getValue(ColossalChest.MATERIAL).ordinal();
+    }
+
     private static class MaterialValidationAction implements CubeDetector.IValidationAction {
         private final Wrapper<PropertyMaterial.Type> requiredMaterial;
 

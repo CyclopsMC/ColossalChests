@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.tileentity;
 
+import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
@@ -10,9 +11,14 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3i;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
+
+import java.util.Map;
 
 /**
  * A machine that can infuse things with blood.
@@ -28,6 +34,14 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     @Getter
     @Setter
     private Vec3i corePosition = null;
+    protected final Map<EnumFacing, IItemHandler> sidedInventoryHandlers;
+
+    public TileInterface() {
+        this.sidedInventoryHandlers = Maps.newHashMap();
+        for(EnumFacing side : EnumFacing.VALUES) {
+            this.sidedInventoryHandlers.put(side, new SidedInvWrapper(this, side));
+        }
+    }
 
     protected ISidedInventory getCore() {
         if(corePosition == null) {
@@ -209,5 +223,13 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
             return null;
         }
         return core.getDisplayName();
+    }
+
+    @Override
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        if(facing != null && capability == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return (T) sidedInventoryHandlers.get(facing);
+        }
+        return super.getCapability(capability, facing);
     }
 }

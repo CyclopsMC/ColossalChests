@@ -172,4 +172,9 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
         return state.getValue(ColossalChest.MATERIAL).ordinal();
     }
 
+    @Override
+    public boolean isKeepNBTOnDrop() {
+        return false;
+    }
+
 }

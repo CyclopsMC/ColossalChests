@@ -96,11 +96,6 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return EnumWorldBlockLayer.CUTOUT_MIPPED;
     }
 
-    @Override
-    public Item getItemDropped(IBlockState blockState, Random random, int zero) {
-        return Item.getItemFromBlock(this);
-    }
-
     public static DetectionResult triggerDetector(World world, BlockPos blockPos, boolean valid) {
         return TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
     }
@@ -250,6 +245,11 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     @Override
     public int damageDropped(IBlockState state) {
         return state.getValue(ColossalChest.MATERIAL).ordinal();
+    }
+
+    @Override
+    public boolean isKeepNBTOnDrop() {
+        return false;
     }
 
     private static class MaterialValidationAction implements CubeDetector.IValidationAction {

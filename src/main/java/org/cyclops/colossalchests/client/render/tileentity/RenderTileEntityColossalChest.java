@@ -72,4 +72,9 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
             GlStateManager.popMatrix();
         }
     }
+
+    @Override
+    public boolean func_181055_a() {
+        return true;
+    }
 }

@@ -33,7 +33,6 @@ import org.cyclops.cyclopscore.helper.*;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Random;
 
 /**
  * A machine that can infuse stuff with blood.
@@ -71,6 +70,16 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
             return "axe".equals(type);
         }
         return "pickaxe".equals(type);
+    }
+
+    public static boolean canPlace(World world, BlockPos pos) {
+        for(EnumFacing side : EnumFacing.VALUES) {
+            IBlockState blockState = world.getBlockState(pos.offset(side));
+            if(blockState.getProperties().containsKey(ACTIVE) && blockState.getValue(ACTIVE)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -250,6 +259,11 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     @Override
     public boolean isKeepNBTOnDrop() {
         return false;
+    }
+
+    @Override
+    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+        return super.canPlaceBlockAt(worldIn, pos) && canPlace(worldIn, pos);
     }
 
     private static class MaterialValidationAction implements CubeDetector.IValidationAction {

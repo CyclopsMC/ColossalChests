@@ -170,4 +170,8 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
         return state.getValue(ColossalChest.MATERIAL).ordinal();
     }
 
+    @Override
+    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+        return super.canPlaceBlockAt(worldIn, pos) && ColossalChest.canPlace(worldIn, pos);
+    }
 }

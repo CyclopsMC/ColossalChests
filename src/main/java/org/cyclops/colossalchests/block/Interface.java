@@ -177,4 +177,9 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
         return false;
     }
 
+    @Override
+    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
+        return super.canPlaceBlockAt(worldIn, pos) && ColossalChest.canPlace(worldIn, pos);
+    }
+
 }

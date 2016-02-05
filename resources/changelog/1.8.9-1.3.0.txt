@@ -1,0 +1,17 @@
+Make sure to backup your world before updating!
+Requires CyclopsCore version 0.5.0.
+
+Changes:
+* Make chest directions more flexible, Closes #20
+* Block structures from being placed next to each other, Fix #21 and Fix #22
+
+Features:
+* Add shift-click behaviour to gui arrows for faster scrolling, Closes #16
+* Add support for Forge's new IItemHandler to inventory tiles
+
+Fixes:
+* Possible fix for #6 where chests sometimes don't render
+* Don't remember chest state when breaking blocks, Closes #19
+* Drop blocks with correct metadata when broken
+* Fix tool effectiveness for different materials, Closes #18
+* Possible fix for SMP issue #17

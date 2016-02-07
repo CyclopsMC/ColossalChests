@@ -5,6 +5,7 @@ import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -175,6 +176,8 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
 
     @Override
     public EnumFacing getRotation() {
-        return BlockHelpers.getSafeBlockStateProperty(getWorld().getBlockState(getPos()), UncolossalChest.FACING, EnumFacing.NORTH);
+        IBlockState blockState = getWorld().getBlockState(getPos());
+        if(blockState.getBlock() != UncolossalChest.getInstance()) return EnumFacing.NORTH;
+        return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, EnumFacing.NORTH);
     }
 }

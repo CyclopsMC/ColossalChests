@@ -57,7 +57,7 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
         super(eConfig, Material.rock);
         this.setHardness(5.0F);
         this.setStepSound(soundTypeWood);
-        this.setHarvestLevel("axe", 2); // Iron tier
+        this.setHarvestLevel("axe", 0); // Wood tier
     }
 
     @Override

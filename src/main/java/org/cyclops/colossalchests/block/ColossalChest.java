@@ -61,7 +61,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         super(eConfig, Material.rock, TileColossalChest.class);
         this.setHardness(5.0F);
         this.setStepSound(soundTypeWood);
-        this.setHarvestLevel("axe", 2); // Iron tier
+        this.setHarvestLevel("axe", 0); // Wood tier
         this.setRotatable(false);
     }
 

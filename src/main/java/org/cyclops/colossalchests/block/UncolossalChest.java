@@ -36,7 +36,7 @@ public class UncolossalChest extends ConfigurableBlockContainerGui {
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     private static UncolossalChest _instance = null;
 
-    /**
+    /**L
      * Get the unique instance.
      *
      * @return The instance.
@@ -49,7 +49,7 @@ public class UncolossalChest extends ConfigurableBlockContainerGui {
         super(eConfig, Material.rock, TileUncolossalChest.class);
         this.setHardness(5.0F);
         this.setStepSound(soundTypeWood);
-        this.setHarvestLevel("axe", 2); // Iron tier
+        this.setHarvestLevel("axe", 0); // Wood tier
         this.setRotatable(true);
         setBlockBounds(0.3125F, 0F, 0.3125F, 0.6875F, 0.375F, 0.6875F);
     }

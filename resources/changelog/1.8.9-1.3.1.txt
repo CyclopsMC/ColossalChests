@@ -1,0 +1,8 @@
+Make sure to backup your world before updating!
+Requires CyclopsCore version 0.5.0.
+
+Changes:
+* Make blocks breakable with wood and stone tools as well
+
+Fixes:
+* Fix possible uncolossal chest breaking crash, Closes #23

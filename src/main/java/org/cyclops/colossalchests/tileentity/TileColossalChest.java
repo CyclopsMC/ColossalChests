@@ -271,6 +271,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     @Override
     public INBTInventory getInventory() {
+        if(lastValidInventory != null) {
+            return lastValidInventory;
+        }
         if(inventory == null) {
             inventory = constructInventory();
         }

@@ -6,8 +6,8 @@ repositories {
         url "http://files.minecraftforge.net/maven/"
     }
     maven {
-        name "RubensWorks FS"
-        url "http://maven.rubensworks.net/"
+        name "Cyclops Repo"
+        url "https://dl.bintray.com/cyclopsmc/dev/"
     }
 }
 dependencies {

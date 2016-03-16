@@ -281,6 +281,11 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     @Override
+    protected boolean canAccess(int slot, EnumFacing side) {
+        return getSizeSingular() > 1 && super.canAccess(slot, side);
+    }
+
+    @Override
     public boolean canInteractWith(EntityPlayer entityPlayer) {
         return getSizeSingular() > 1 && super.canInteractWith(entityPlayer);
     }

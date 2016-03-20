@@ -9,7 +9,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.play.server.S2FPacketSetSlot;
+import net.minecraft.network.play.server.SPacketSetSlot;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.ColossalChest;
@@ -169,6 +169,6 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             List<ItemStack> items = allItems.subList(i, Math.min(allItems.size(), i + max));
             ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, i, items), player);
         }
-        playerNetServerHandler.sendPacket(new S2FPacketSetSlot(-1, -1, player.inventory.getItemStack()));
+        playerNetServerHandler.sendPacket(new SPacketSetSlot(-1, -1, player.inventory.getItemStack()));
     }
 }

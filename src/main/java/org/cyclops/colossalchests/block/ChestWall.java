@@ -1,10 +1,11 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLiving;
@@ -12,10 +13,11 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -56,7 +58,7 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     public ChestWall(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig, Material.rock);
         this.setHardness(5.0F);
-        this.setStepSound(soundTypeWood);
+        this.setStepSound(SoundType.WOOD);
         this.setHarvestLevel("axe", 0); // Wood tier
     }
 
@@ -67,24 +69,24 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
 
     @SideOnly(Side.CLIENT)
     @Override
-    public EnumWorldBlockLayer getBlockLayer() {
-        return EnumWorldBlockLayer.CUTOUT_MIPPED;
+    public BlockRenderLayer getBlockLayer() {
+        return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public boolean isOpaqueCube() {
+    public boolean isOpaqueCube(IBlockState blockState) {
         return false;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public boolean isFullCube() {
+    public boolean isFullCube(IBlockState blockState) {
         return false;
     }
 
     @Override
-    public boolean canCreatureSpawn(IBlockAccess world, BlockPos pos, EntityLiving.SpawnPlacementType type) {
+    public boolean canCreatureSpawn(IBlockState blockState, IBlockAccess world, BlockPos pos, EntityLiving.SpawnPlacementType type) {
         return false;
     }
 
@@ -123,20 +125,21 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumFacing side,
+    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player,
+                                    EnumHand hand, ItemStack heldItem, EnumFacing side,
                                     float posX, float posY, float posZ) {
-        if((Boolean) blockState.getValue(ACTIVE)) {
+        if(blockState.getValue(ACTIVE)) {
             BlockPos tileLocation = ColossalChest.getCoreLocation(world, blockPos);
             if(tileLocation != null) {
                 world.getBlockState(tileLocation).getBlock().
                         onBlockActivated(world, tileLocation, world.getBlockState(tileLocation),
-                                player, side, posX, posY, posZ);
+                                player, hand, heldItem, side, posX, posY, posZ);
                 return true;
             }
         } else {
-            ColossalChest.addPlayerChatError(world, blockPos, player);
+            ColossalChest.addPlayerChatError(world, blockPos, player, hand);
         }
-        return super.onBlockActivated(world, blockPos, blockState, player, side, posX, posY, posZ);
+        return super.onBlockActivated(world, blockPos, blockState, player, hand, heldItem, side, posX, posY, posZ);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -148,7 +151,7 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     }
 
     @Override
-    protected BlockState createBlockState() {
+    protected BlockStateContainer createBlockState() {
         return (propertyManager = new BlockPropertyManagerComponent(this,
                 new BlockPropertyManagerComponent.PropertyComparator() {
                     @Override

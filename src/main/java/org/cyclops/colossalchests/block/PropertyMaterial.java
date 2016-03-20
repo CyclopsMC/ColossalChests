@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.block;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
@@ -25,14 +26,23 @@ public class PropertyMaterial extends PropertyHelper<PropertyMaterial.Type> {
         this.allowedValues = ImmutableSet.copyOf(values);
     }
 
-    public Collection<PropertyMaterial.Type> getAllowedValues()
-    {
+    public Collection<PropertyMaterial.Type> getAllowedValues() {
         return this.allowedValues;
     }
 
     @Override
+    public Optional<Type> parseValue(String value) {
+        for (PropertyMaterial.Type type : allowedValues) {
+            if(type.toString().equalsIgnoreCase(value)) {
+                return Optional.of(type);
+            }
+        }
+        return Optional.absent();
+    }
+
+    @Override
     public String getName(PropertyMaterial.Type value) {
-        return value.toString();
+        return value.toString().toLowerCase(Locale.ENGLISH);
     }
 
     /**

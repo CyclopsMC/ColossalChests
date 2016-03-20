@@ -8,7 +8,12 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import org.apache.commons.lang3.ArrayUtils;
+import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.helper.BlockHelpers;
@@ -84,11 +89,12 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
         prevLidAngle = lidAngle;
         float increaseAngle = 0.25F;
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            worldObj.playSoundEffect(
+            ColossalChests.proxy.playSound(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
-                    "random.chestopen",
+                    "block.chest.open",
+                    SoundCategory.BLOCKS,
                     0.5F,
                     worldObj.rand.nextFloat() * 0.2F + 1.15F
             );
@@ -105,11 +111,12 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                worldObj.playSoundEffect(
+                ColossalChests.proxy.playSound(
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
-                        "random.chestclosed",
+                        "block.chest.close",
+                        SoundCategory.BLOCKS,
                         0.5F,
                         worldObj.rand.nextFloat() * 0.2F + 1.15F
                 );
@@ -170,8 +177,8 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
     }
 
     @Override
-    public IChatComponent getDisplayName() {
-        return new ChatComponentText(getName());
+    public ITextComponent getDisplayName() {
+        return new TextComponentString(getName());
     }
 
     @Override

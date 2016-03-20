@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.block;
 
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.IBlockState;
@@ -8,9 +9,12 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumWorldBlockLayer;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -36,6 +40,8 @@ public class UncolossalChest extends ConfigurableBlockContainerGui {
     public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
     private static UncolossalChest _instance = null;
 
+    private final AxisAlignedBB bb = new AxisAlignedBB(0.3125F, 0F, 0.3125F, 0.6875F, 0.375F, 0.6875F);
+
     /**L
      * Get the unique instance.
      *
@@ -48,33 +54,37 @@ public class UncolossalChest extends ConfigurableBlockContainerGui {
     public UncolossalChest(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig, Material.rock, TileUncolossalChest.class);
         this.setHardness(5.0F);
-        this.setStepSound(soundTypeWood);
+        this.setStepSound(SoundType.WOOD);
         this.setHarvestLevel("axe", 0); // Wood tier
         this.setRotatable(true);
-        setBlockBounds(0.3125F, 0F, 0.3125F, 0.6875F, 0.375F, 0.6875F);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return bb;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public boolean isOpaqueCube() {
+    public boolean isOpaqueCube(IBlockState blockState) {
         return false;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public boolean isFullCube() {
+    public boolean isFullCube(IBlockState blockState) {
         return false;
     }
 
     @Override
-    public int getRenderType() {
-        return 2;
+    public EnumBlockRenderType getRenderType(IBlockState state) {
+        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public EnumWorldBlockLayer getBlockLayer() {
-        return EnumWorldBlockLayer.CUTOUT_MIPPED;
+    public BlockRenderLayer getBlockLayer() {
+        return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
     @Override

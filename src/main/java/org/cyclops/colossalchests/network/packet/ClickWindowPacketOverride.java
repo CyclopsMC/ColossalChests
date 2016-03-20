@@ -3,10 +3,11 @@ package org.cyclops.colossalchests.network.packet;
 import com.google.common.collect.Lists;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.play.server.S32PacketConfirmTransaction;
+import net.minecraft.network.play.server.SPacketConfirmTransaction;
 import net.minecraft.util.IntHashMap;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 
 /**
  * Packet for window clicks to the server as an alternative to
- * {@link net.minecraft.network.play.client.C0EPacketClickWindow}.
+ * {@link net.minecraft.network.play.client.CPacketClickWindow}.
  * @author rubensworks
  *
  */
@@ -37,19 +38,19 @@ public class ClickWindowPacketOverride extends PacketCodec {
 	@CodecField
 	private ItemStack clickedItem;
 	@CodecField
-	private int mode;
+	private String mode;
 
     public ClickWindowPacketOverride() {
 
     }
 
-    public ClickWindowPacketOverride(int windowId, int slotId, int usedButton, int mode, ItemStack clickedItem, short actionNumber) {
+    public ClickWindowPacketOverride(int windowId, int slotId, int usedButton, ClickType mode, ItemStack clickedItem, short actionNumber) {
         this.windowId = windowId;
 		this.slotId = slotId;
 		this.usedButton = usedButton;
 		this.clickedItem = clickedItem != null ? clickedItem.copy() : null;
 		this.actionNumber = actionNumber;
-		this.mode = mode;
+		this.mode = mode.name();
     }
 
 	@Override
@@ -72,15 +73,16 @@ public class ClickWindowPacketOverride extends PacketCodec {
 				ArrayList arraylist = Lists.newArrayList();
 
 				for (int i = 0; i < player.openContainer.inventorySlots.size(); ++i) {
-					arraylist.add(((Slot)player.openContainer.inventorySlots.get(i)).getStack());
+					arraylist.add((player.openContainer.inventorySlots.get(i)).getStack());
 				}
 
 				((ContainerColossalChest) player.openContainer).updateCraftingInventory(player, arraylist);
 			} else {
-				ItemStack itemstack = player.openContainer.slotClick(slotId, usedButton, mode, player);
+				// MCP: slotClick
+				ItemStack itemstack = player.openContainer.func_184996_a(slotId, usedButton, ClickType.valueOf(mode), player);
 
 				if (ItemStack.areItemStacksEqual(clickedItem, itemstack)) {
-					player.playerNetServerHandler.sendPacket(new S32PacketConfirmTransaction(windowId, actionNumber, true));
+					player.playerNetServerHandler.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, true));
 					player.isChangingQuantityOnly = true;
 					player.openContainer.detectAndSendChanges();
 					player.updateHeldItem();
@@ -88,7 +90,7 @@ public class ClickWindowPacketOverride extends PacketCodec {
 				} else {
 					IntHashMap field_147372_n = ReflectionHelper.getPrivateValue(NetHandlerPlayServer.class, player.playerNetServerHandler, "field_147372_n");
 					field_147372_n.addKey(player.openContainer.windowId, Short.valueOf(actionNumber));
-					player.playerNetServerHandler.sendPacket(new S32PacketConfirmTransaction(windowId, actionNumber, false));
+					player.playerNetServerHandler.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, false));
 					player.openContainer.setCanCraft(player, false);
 					ArrayList arraylist1 = Lists.newArrayList();
 

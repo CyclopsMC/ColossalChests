@@ -4,9 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.network.packet.ClickWindowPacketOverride;
@@ -91,7 +92,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     }
 
     @Override
-    protected void handleMouseClick(Slot slotIn, int slotId, int clickedButton, int clickType) {
+    protected void handleMouseClick(Slot slotIn, int slotId, int clickedButton, ClickType clickType) {
         if (slotIn != null) {
             slotId = slotIn.slotNumber;
         }
@@ -100,9 +101,10 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     }
 
     // Adapted from PlayerControllerMP#windowClick
-    protected ItemStack windowClick(int windowId, int slotId, int mouseButtonClicked, int p_78753_4_, EntityPlayer playerIn) {
+    protected ItemStack windowClick(int windowId, int slotId, int mouseButtonClicked, ClickType p_78753_4_, EntityPlayer playerIn) {
         short short1 = playerIn.openContainer.getNextTransactionID(playerIn.inventory);
-        ItemStack itemstack = playerIn.openContainer.slotClick(slotId, mouseButtonClicked, p_78753_4_, playerIn);
+        // MCP: slotClick
+        ItemStack itemstack = playerIn.openContainer.func_184996_a(slotId, mouseButtonClicked, p_78753_4_, playerIn);
         // Original: this.netClientHandler.addToSendQueue(new C0EPacketClickWindow(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));
         ColossalChests._instance.getPacketHandler().sendToServer(
                 new ClickWindowPacketOverride(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));

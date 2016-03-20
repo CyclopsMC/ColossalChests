@@ -3,8 +3,9 @@ package org.cyclops.colossalchests.client.render.tileentity;
 import com.google.common.collect.Maps;
 import net.minecraft.client.model.ModelChest;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.PropertyMaterial;
@@ -45,7 +46,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     @Override
     protected void preRotate(TileColossalChest chestTile) {
         if(chestTile.isStructureComplete()) {
-            Vec3 renderOffset = chestTile.getRenderOffset();
+            Vec3d renderOffset = chestTile.getRenderOffset();
             GlStateManager.translate(-renderOffset.xCoord, renderOffset.yCoord, renderOffset.zCoord);
         }
         GlStateManager.translate(0.5F, 0.3F, 0.5F);
@@ -74,7 +75,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     }
 
     @Override
-    public boolean func_181055_a() {
+    public boolean isGlobalRenderer(TileColossalChest tile) {
         return true;
     }
 }

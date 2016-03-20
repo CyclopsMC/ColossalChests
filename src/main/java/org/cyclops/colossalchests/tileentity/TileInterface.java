@@ -7,10 +7,10 @@ import lombok.experimental.Delegate;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
@@ -217,7 +217,7 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     }
 
     @Override
-    public IChatComponent getDisplayName() {
+    public ITextComponent getDisplayName() {
         ISidedInventory core =  getCore();
         if(core == null) {
             return null;

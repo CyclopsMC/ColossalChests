@@ -2,8 +2,8 @@ package org.cyclops.colossalchests.block;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelChest;
-import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.model.ModelBakery;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -71,7 +71,7 @@ public class ColossalChestConfig extends BlockContainerConfig {
             String modId = blockConfig.getMod().getModId();
             int meta = material.ordinal();
             String itemName = blockConfig.getModelName(new ItemStack(item, 1, meta));
-            ModelBakery.addVariantName(item, modId + ":" + itemName);
+            ModelBakery.registerItemVariants(item, new ModelResourceLocation(modId + ":" + itemName, "inventory"));
             Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta,
                     new ModelResourceLocation(modId + ":" + itemName, "inventory"));
         }

@@ -5,7 +5,12 @@ import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.*;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -65,7 +70,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     @NBTPersist
     private Vec3i size = LocationHelpers.copyLocation(Vec3i.NULL_VECTOR);
     @NBTPersist
-    private Vec3 renderOffset = new Vec3(0, 0, 0);
+    private Vec3d renderOffset = new Vec3d(0, 0, 0);
     @NBTPersist
     private String customName = null;
     @NBTPersist
@@ -206,11 +211,12 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         prevLidAngle = lidAngle;
         float increaseAngle = 0.15F / Math.min(5, getSizeSingular());
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            worldObj.playSoundEffect(
+            ColossalChests.proxy.playSound(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
-                    "random.chestopen",
+                    "block.chest.open",
+                    SoundCategory.BLOCKS,
                     (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
                     worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle
             );
@@ -227,11 +233,12 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                worldObj.playSoundEffect(
+                ColossalChests.proxy.playSound(
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
-                        "random.chestclosed",
+                        "block.chest.close",
+                        SoundCategory.BLOCKS,
                         (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
                         worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle
                 );
@@ -297,7 +304,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         return new AxisAlignedBB(getPos().subtract(new Vec3i(size, size, size)), getPos().add(size, size * 2, size));
     }
 
-    public void setCenter(Vec3 center) {
+    public void setCenter(Vec3d center) {
         EnumFacing rotation;
         double dx = Math.abs(center.xCoord - getPos().getX());
         double dz = Math.abs(center.zCoord - getPos().getZ());
@@ -308,10 +315,10 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.zCoord - getPos().getZ()));
         }
         this.setRotation(rotation);
-        this.renderOffset = new Vec3(getPos().getX() - center.xCoord, getPos().getY() - center.yCoord, getPos().getZ() - center.zCoord);
+        this.renderOffset = new Vec3d(getPos().getX() - center.xCoord, getPos().getY() - center.yCoord, getPos().getZ() - center.zCoord);
     }
 
-    public Vec3 getRenderOffset() {
+    public Vec3d getRenderOffset() {
         return this.renderOffset;
     }
 

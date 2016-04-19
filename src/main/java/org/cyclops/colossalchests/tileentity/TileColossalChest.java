@@ -5,6 +5,7 @@ import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -215,7 +216,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
-                    "block.chest.open",
+                    SoundEvents.block_chest_open,
                     SoundCategory.BLOCKS,
                     (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
                     worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle
@@ -237,7 +238,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
-                        "block.chest.close",
+                        SoundEvents.block_chest_close,
                         SoundCategory.BLOCKS,
                         (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
                         worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle

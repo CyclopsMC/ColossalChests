@@ -7,7 +7,9 @@ import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.*;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
@@ -93,7 +95,7 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
-                    "block.chest.open",
+                    SoundEvents.block_chest_open,
                     SoundCategory.BLOCKS,
                     0.5F,
                     worldObj.rand.nextFloat() * 0.2F + 1.15F
@@ -115,7 +117,7 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
-                        "block.chest.close",
+                        SoundEvents.block_chest_close,
                         SoundCategory.BLOCKS,
                         0.5F,
                         worldObj.rand.nextFloat() * 0.2F + 1.15F

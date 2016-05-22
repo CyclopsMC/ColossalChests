@@ -57,9 +57,9 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
     }
 
     public Interface(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.rock, TileInterface.class);
+        super(eConfig, Material.ROCK, TileInterface.class);
         this.setHardness(5.0F);
-        this.setStepSound(SoundType.WOOD);
+        this.setSoundType(SoundType.WOOD);
         this.setHarvestLevel("axe", 0); // Wood tier
     }
 

@@ -140,7 +140,7 @@ public class ColossalChests extends ModBaseVersionable {
         return new ItemCreativeTab(this, new IObjectReference<Item>() {
             @Override
             public Item getObject() {
-                return Item.getItemFromBlock(Blocks.chest);
+                return Item.getItemFromBlock(Blocks.CHEST);
             }
         });
     }

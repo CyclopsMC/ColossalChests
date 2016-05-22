@@ -103,8 +103,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     // Adapted from PlayerControllerMP#windowClick
     protected ItemStack windowClick(int windowId, int slotId, int mouseButtonClicked, ClickType p_78753_4_, EntityPlayer playerIn) {
         short short1 = playerIn.openContainer.getNextTransactionID(playerIn.inventory);
-        // MCP: slotClick
-        ItemStack itemstack = playerIn.openContainer.func_184996_a(slotId, mouseButtonClicked, p_78753_4_, playerIn);
+        ItemStack itemstack = playerIn.openContainer.slotClick(slotId, mouseButtonClicked, p_78753_4_, playerIn);
         // Original: this.netClientHandler.addToSendQueue(new C0EPacketClickWindow(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));
         ColossalChests._instance.getPacketHandler().sendToServer(
                 new ClickWindowPacketOverride(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));

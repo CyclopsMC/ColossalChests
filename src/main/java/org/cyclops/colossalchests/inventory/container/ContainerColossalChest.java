@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ICrafting;
+import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -145,11 +145,11 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     }
 
     @Override
-    public void onCraftGuiOpened(ICrafting listener) {
-        if (this.crafters.contains(listener)) {
+    public void addListener(IContainerListener listener) {
+        if (this.listeners.contains(listener)) {
             throw new IllegalArgumentException("Listener already listening");
         } else {
-            this.crafters.add(listener);
+            this.listeners.add(listener);
             if(listener instanceof EntityPlayerMP) {
                 updateCraftingInventory((EntityPlayerMP) listener, getInventory());
             } else {
@@ -163,7 +163,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     public void updateCraftingInventory(EntityPlayerMP player, List<ItemStack> allItems) {
         int max = GeneralConfig.maxSlotsPerPacket;
         // Custom packet sending to be able to handle large inventories
-        NetHandlerPlayServer playerNetServerHandler = player.playerNetServerHandler;
+        NetHandlerPlayServer playerNetServerHandler = player.connection;
         // Modification of logic in EntityPlayerMP#updateCraftingInventory
         for(int i = 0; i < allItems.size(); i+= max) {
             List<ItemStack> items = allItems.subList(i, Math.min(allItems.size(), i + max));

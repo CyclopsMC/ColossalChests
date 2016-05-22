@@ -52,9 +52,9 @@ public class UncolossalChest extends ConfigurableBlockContainerGui {
     }
 
     public UncolossalChest(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.rock, TileUncolossalChest.class);
+        super(eConfig, Material.ROCK, TileUncolossalChest.class);
         this.setHardness(5.0F);
-        this.setStepSound(SoundType.WOOD);
+        this.setSoundType(SoundType.WOOD);
         this.setHarvestLevel("axe", 0); // Wood tier
         this.setRotatable(true);
     }

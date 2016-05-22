@@ -65,9 +65,9 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     }
 
     public ColossalChest(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.rock, TileColossalChest.class);
+        super(eConfig, Material.ROCK, TileColossalChest.class);
         this.setHardness(5.0F);
-        this.setStepSound(SoundType.WOOD);
+        this.setSoundType(SoundType.WOOD);
         this.setHarvestLevel("axe", 0); // Wood tier
         this.setRotatable(false);
     }
@@ -207,9 +207,9 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
                 ITextComponent chat = new TextComponentString("");
                 ITextComponent prefix = new TextComponentString(
                         String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
-                ).setChatStyle(new Style().
+                ).setStyle(new Style().
                         setColor(TextFormatting.GRAY).
-                        setChatHoverEvent(new HoverEvent(
+                        setHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
                                 new TextComponentTranslation("multiblock.colossalchests.error.prefix.info")
                         ))

@@ -95,7 +95,7 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
-                    SoundEvents.block_chest_open,
+                    SoundEvents.BLOCK_CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     0.5F,
                     worldObj.rand.nextFloat() * 0.2F + 1.15F
@@ -117,7 +117,7 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
-                        SoundEvents.block_chest_close,
+                        SoundEvents.BLOCK_CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         0.5F,
                         worldObj.rand.nextFloat() * 0.2F + 1.15F

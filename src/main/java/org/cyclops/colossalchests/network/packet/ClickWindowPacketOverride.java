@@ -78,19 +78,18 @@ public class ClickWindowPacketOverride extends PacketCodec {
 
 				((ContainerColossalChest) player.openContainer).updateCraftingInventory(player, arraylist);
 			} else {
-				// MCP: slotClick
-				ItemStack itemstack = player.openContainer.func_184996_a(slotId, usedButton, ClickType.valueOf(mode), player);
+				ItemStack itemstack = player.openContainer.slotClick(slotId, usedButton, ClickType.valueOf(mode), player);
 
 				if (ItemStack.areItemStacksEqual(clickedItem, itemstack)) {
-					player.playerNetServerHandler.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, true));
+					player.connection.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, true));
 					player.isChangingQuantityOnly = true;
 					player.openContainer.detectAndSendChanges();
 					player.updateHeldItem();
 					player.isChangingQuantityOnly = false;
 				} else {
-					IntHashMap field_147372_n = ReflectionHelper.getPrivateValue(NetHandlerPlayServer.class, player.playerNetServerHandler, "field_147372_n");
+					IntHashMap field_147372_n = ReflectionHelper.getPrivateValue(NetHandlerPlayServer.class, player.connection, "field_147372_n");
 					field_147372_n.addKey(player.openContainer.windowId, Short.valueOf(actionNumber));
-					player.playerNetServerHandler.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, false));
+					player.connection.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, false));
 					player.openContainer.setCanCraft(player, false);
 					ArrayList arraylist1 = Lists.newArrayList();
 

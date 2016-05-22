@@ -216,7 +216,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
-                    SoundEvents.block_chest_open,
+                    SoundEvents.BLOCK_CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
                     worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle
@@ -238,7 +238,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
-                        SoundEvents.block_chest_close,
+                        SoundEvents.BLOCK_CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
                         worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle

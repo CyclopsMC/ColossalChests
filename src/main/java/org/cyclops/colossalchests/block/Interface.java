@@ -100,13 +100,20 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
     @Override
     public void onBlockAdded(World world, BlockPos blockPos, IBlockState blockState) {
         super.onBlockAdded(world, blockPos, blockState);
-        ColossalChest.triggerDetector(world, blockPos, true);
+        if(world.getBlockState(blockPos).getBlock() != blockState.getBlock()) {
+            ColossalChest.triggerDetector(world, blockPos, true);
+        }
     }
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         if((Boolean)state.getValue(ACTIVE)) ColossalChest.triggerDetector(world, pos, false);
         super.breakBlock(world, pos, state);
+    }
+
+    @Override
+    protected void onPreBlockDestroyed(World world, BlockPos blockPos) {
+        // Don't drop items in inventory.
     }
 
     @Override

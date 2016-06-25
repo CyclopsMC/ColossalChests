@@ -101,7 +101,7 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     @Override
     public void onBlockAdded(World world, BlockPos blockPos, IBlockState blockState) {
         super.onBlockAdded(world, blockPos, blockState);
-        if(!world.captureBlockSnapshots) {
+        if(!world.captureBlockSnapshots && blockState.getBlock() == this && !blockState.getValue(ACTIVE)) {
             ColossalChest.triggerDetector(world, blockPos, true);
         }
     }

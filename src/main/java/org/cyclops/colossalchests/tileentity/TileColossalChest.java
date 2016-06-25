@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -118,8 +119,11 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             if(this.lastValidInventory != null) {
                 int slot = 0;
                 while(slot < Math.min(this.lastValidInventory.getSizeInventory(), this.inventory.getSizeInventory())) {
-                    this.inventory.setInventorySlotContents(slot, this.lastValidInventory.getStackInSlot(slot));
-                    this.lastValidInventory.setInventorySlotContents(slot, null);
+                    ItemStack contents = this.lastValidInventory.getStackInSlot(slot);
+                    if (contents != null) {
+                        this.inventory.setInventorySlotContents(slot, contents);
+                        this.lastValidInventory.setInventorySlotContents(slot, null);
+                    }
                     slot++;
                 }
                 if(slot < this.lastValidInventory.getSizeInventory()) {

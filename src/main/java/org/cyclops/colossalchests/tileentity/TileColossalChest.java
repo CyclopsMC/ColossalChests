@@ -216,14 +216,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         prevLidAngle = lidAngle;
         float increaseAngle = 0.15F / Math.min(5, getSizeSingular());
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            ColossalChests.proxy.playSound(
+            worldObj.playSound(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
                     SoundEvents.BLOCK_CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
-                    worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle
+                    worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle,
+                    true
             );
         }
         if (playersUsing == 0 && lidAngle > 0.0F || playersUsing > 0 && lidAngle < 1.0F) {
@@ -238,14 +239,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                ColossalChests.proxy.playSound(
+                worldObj.playSound(
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
                         SoundEvents.BLOCK_CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
-                        worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle
+                        worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle,
+                        true
                 );
             }
             if (lidAngle < 0.0F) {

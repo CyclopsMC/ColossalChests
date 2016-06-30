@@ -91,14 +91,15 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
         prevLidAngle = lidAngle;
         float increaseAngle = 0.25F;
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            ColossalChests.proxy.playSound(
+            worldObj.playSound(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
                     SoundEvents.BLOCK_CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     0.5F,
-                    worldObj.rand.nextFloat() * 0.2F + 1.15F
+                    worldObj.rand.nextFloat() * 0.2F + 1.15F,
+                    false
             );
         }
         if (playersUsing == 0 && lidAngle > 0.0F || playersUsing > 0 && lidAngle < 1.0F) {
@@ -113,14 +114,15 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                ColossalChests.proxy.playSound(
+                worldObj.playSound(
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
                         SoundEvents.BLOCK_CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         0.5F,
-                        worldObj.rand.nextFloat() * 0.2F + 1.15F
+                        worldObj.rand.nextFloat() * 0.2F + 1.15F,
+                        false
                 );
             }
             if (lidAngle < 0.0F) {

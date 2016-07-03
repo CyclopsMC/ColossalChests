@@ -1,0 +1,9 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.7.0.
+
+Additions:
+* Create zh_CN.lang
+
+Fixes:
+* Fix rare crash when playing chest sounds, Closes #31
+* Fix breaking interface clearing all items, Closes #30

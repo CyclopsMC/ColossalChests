@@ -1,0 +1,5 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.7.0.
+
+Fixes:
+* Replace 1x1 empty.png with a 16x16 to fix mipmapping, by @unascribed

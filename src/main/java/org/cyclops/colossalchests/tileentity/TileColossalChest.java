@@ -316,7 +316,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         double dx = Math.abs(center.xCoord - getPos().getX());
         double dz = Math.abs(center.zCoord - getPos().getZ());
         boolean equal = (center.xCoord - getPos().getX()) == (center.zCoord - getPos().getZ());
-        if(dx > dz || !equal) {
+        if(dx > dz || (!equal && getSizeSingular() == 2)) {
             rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.xCoord - getPos().getX()));
         } else {
             rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.zCoord - getPos().getZ()));

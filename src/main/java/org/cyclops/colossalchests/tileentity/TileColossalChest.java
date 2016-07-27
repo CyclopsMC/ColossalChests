@@ -343,6 +343,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     @Override
     public int[] getSlotsForFace(EnumFacing side) {
+        if (side == null) {
+            side = EnumFacing.UP;
+        }
         if(!facingSlots.containsKey(side.ordinal())) {
             ContiguousSet<Integer> integers = ContiguousSet.create(
                     Range.closed(0, getSizeInventory()), DiscreteDomain.integers()

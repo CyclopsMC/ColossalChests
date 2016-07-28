@@ -1,0 +1,7 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.7.0 or higher.
+
+Fixes:
+* Fix directions of even sized chests
+* Fix NPE when using RFTools Inventory Scanner on chests, Closes #34
+

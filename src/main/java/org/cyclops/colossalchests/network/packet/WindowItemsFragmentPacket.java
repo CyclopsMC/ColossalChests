@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * Packet for sending fragmented window items as an alternative to
- * {@link net.minecraft.network.play.server.S30PacketWindowItems}.
+ * {@link net.minecraft.network.play.server.SPacketWindowItems}.
  * @author rubensworks
  *
  */

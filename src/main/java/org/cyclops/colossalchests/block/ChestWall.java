@@ -63,6 +63,11 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     }
 
     @Override
+    public boolean getUseNeighborBrightness(IBlockState state) {
+        return true;
+    }
+
+    @Override
     public boolean isToolEffective(String type, IBlockState state) {
         return ColossalChest.isToolEffectiveShared(type, state);
     }

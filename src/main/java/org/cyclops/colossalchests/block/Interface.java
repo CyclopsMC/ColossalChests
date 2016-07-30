@@ -64,6 +64,11 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
     }
 
     @Override
+    public boolean getUseNeighborBrightness(IBlockState state) {
+        return true;
+    }
+
+    @Override
     public boolean isToolEffective(String type, IBlockState state) {
         return ColossalChest.isToolEffectiveShared(type, state);
     }

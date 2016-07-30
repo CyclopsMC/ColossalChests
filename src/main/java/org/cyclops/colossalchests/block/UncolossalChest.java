@@ -60,6 +60,11 @@ public class UncolossalChest extends ConfigurableBlockContainerGui {
     }
 
     @Override
+    public boolean getUseNeighborBrightness(IBlockState state) {
+        return true;
+    }
+
+    @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
         return bb;
     }

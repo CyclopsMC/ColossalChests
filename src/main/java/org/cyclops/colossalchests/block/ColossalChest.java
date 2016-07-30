@@ -72,6 +72,11 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         this.setRotatable(false);
     }
 
+    @Override
+    public boolean getUseNeighborBrightness(IBlockState state) {
+        return true;
+    }
+
     public static boolean isToolEffectiveShared(String type, IBlockState state) {
         if(PropertyMaterial.Type.WOOD == state.getValue(MATERIAL)) {
             return "axe".equals(type);

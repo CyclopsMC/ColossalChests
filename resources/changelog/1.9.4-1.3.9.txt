@@ -1,0 +1,8 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.7.0 or higher.
+
+Additions:
+* Add Inventory Tweaks support, Closes #36
+
+Fixes:
+* Fix chests turning black

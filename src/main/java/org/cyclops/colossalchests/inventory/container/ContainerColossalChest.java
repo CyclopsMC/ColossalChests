@@ -1,6 +1,10 @@
 package org.cyclops.colossalchests.inventory.container;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import invtweaks.api.container.ChestContainer;
+import invtweaks.api.container.ContainerSection;
+import invtweaks.api.container.ContainerSectionCallback;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -20,6 +24,7 @@ import org.cyclops.cyclopscore.inventory.slot.SlotExtended;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -27,6 +32,7 @@ import java.util.regex.Pattern;
  * @author rubensworks
  *
  */
+@ChestContainer(isLargeChest = true)
 public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
     private static final int INVENTORY_OFFSET_X = 9;
@@ -170,5 +176,24 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, i, items), player);
         }
         playerNetServerHandler.sendPacket(new SPacketSetSlot(-1, -1, player.inventory.getItemStack()));
+    }
+
+    /**
+     * @return Container selection options for inventory tweaks.
+     */
+    @ContainerSectionCallback
+    public Map<ContainerSection, List<Slot>> getContainerSelection() {
+        Map<ContainerSection, List<Slot>> selection = Maps.newHashMap();
+        List<Slot> chest = Lists.newArrayList();
+        List<Slot> playerInventory = Lists.newArrayList();
+        for(int i = 0; i < getSizeInventory(); i++) {
+            chest.add(this.getSlot(i));
+        }
+        for(int i = getSizeInventory(); i < getSizeInventory() + 4 * 9; i++) {
+            playerInventory.add(this.getSlot(i));
+        }
+        selection.put(ContainerSection.CHEST, chest);
+        selection.put(ContainerSection.INVENTORY, playerInventory);
+        return selection;
     }
 }

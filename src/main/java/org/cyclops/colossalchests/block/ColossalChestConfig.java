@@ -39,6 +39,12 @@ public class ColossalChestConfig extends BlockContainerConfig {
     public static int maxSize = 11;
 
     /**
+     * If the chest should visually open when someone uses it.
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the chest should visually open when someone uses it.", isCommandable = true)
+    public static boolean chestAnimation = true;
+
+    /**
      * Make a new instance.
      */
     public ColossalChestConfig() {

@@ -3,11 +3,11 @@ package org.cyclops.colossalchests.client.render.tileentity;
 import com.google.common.collect.Maps;
 import net.minecraft.client.model.ModelChest;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.Reference;
+import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.client.render.tileentity.RenderTileEntityModel;
@@ -64,10 +64,12 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
         if(chestTile.isStructureComplete()) {
             bindTexture(TEXTURES.get(chestTile.getMaterial()));
             GlStateManager.pushMatrix();
-            float lidangle = chestTile.prevLidAngle + (chestTile.lidAngle - chestTile.prevLidAngle) * partialTick;
-            lidangle = 1.0F - lidangle;
-            lidangle = 1.0F - lidangle * lidangle * lidangle;
-            model.chestLid.rotateAngleX = -(lidangle * (float) Math.PI / 2.0F);
+            if (ColossalChestConfig.chestAnimation) {
+                float lidangle = chestTile.prevLidAngle + (chestTile.lidAngle - chestTile.prevLidAngle) * partialTick;
+                lidangle = 1.0F - lidangle;
+                lidangle = 1.0F - lidangle * lidangle * lidangle;
+                model.chestLid.rotateAngleX = -(lidangle * (float) Math.PI / 2.0F);
+            }
             GlStateManager.translate(0, -0.0625F * 8, 0);
             model.renderAll();
             GlStateManager.popMatrix();

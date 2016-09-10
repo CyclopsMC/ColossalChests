@@ -2,15 +2,14 @@ package org.cyclops.colossalchests.tileentity;
 
 import com.google.common.collect.Maps;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Delegate;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
@@ -18,6 +17,7 @@ import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 /**
@@ -32,9 +32,9 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
 
     @NBTPersist
     @Getter
-    @Setter
     private Vec3i corePosition = null;
     protected final Map<EnumFacing, IItemHandler> sidedInventoryHandlers;
+    private WeakReference<TileColossalChest> coreReference = new WeakReference<TileColossalChest>(null);
 
     public TileInterface() {
         this.sidedInventoryHandlers = Maps.newHashMap();
@@ -43,11 +43,20 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         }
     }
 
+    public void setCorePosition(Vec3i corePosition) {
+        this.corePosition = corePosition;
+        coreReference = new WeakReference<TileColossalChest>(null);
+    }
+
     protected ISidedInventory getCore() {
         if(corePosition == null) {
             return null;
         }
-        return TileHelpers.getSafeTile(getWorld(), new BlockPos(corePosition), TileColossalChest.class);
+        if (coreReference.get() == null) {
+            coreReference = new WeakReference<TileColossalChest>(
+                    TileHelpers.getSafeTile(getWorld(), new BlockPos(corePosition), TileColossalChest.class));
+        }
+        return coreReference.get();
     }
 
     @Override
@@ -232,4 +241,5 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         }
         return super.getCapability(capability, facing);
     }
+
 }

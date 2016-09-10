@@ -69,7 +69,7 @@ public class GeneralConfig extends DummyConfig {
      * Maximum number of slots per packet for inventory slots fragmentation.
      */
     @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Maximum number of slots per packet for inventory slots fragmentation.")
-    public static int maxSlotsPerPacket = 5000;
+    public static int maxSlotsPerPacket = 2500;
 
     /**
      * The type of this config.

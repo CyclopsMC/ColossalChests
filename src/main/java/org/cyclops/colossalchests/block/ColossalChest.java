@@ -260,6 +260,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side, float par7, float par8, float par9) {
         if(!(blockState.getValue(ACTIVE))) {
             ColossalChest.addPlayerChatError(world, blockPos, player, hand);
+            return false;
         }
         return super.onBlockActivated(world, blockPos, blockState, player, hand, heldItem, side, par7, par8, par9);
     }

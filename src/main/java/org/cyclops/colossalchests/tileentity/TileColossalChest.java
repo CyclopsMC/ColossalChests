@@ -22,6 +22,7 @@ import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.*;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
+import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
 import org.cyclops.cyclopscore.helper.*;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
@@ -92,7 +93,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private int playersUsing;
 
     private Block block = ColossalChest.getInstance();
-    private Map<Integer, int[]> facingSlots = Maps.newHashMap();
+    private EnumFacingMap<int[]> facingSlots = EnumFacingMap.newMap();
 
     /**
      * @return the size
@@ -346,13 +347,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         if (side == null) {
             side = EnumFacing.UP;
         }
-        if(!facingSlots.containsKey(side.ordinal())) {
+        int[] slots = facingSlots.get(side);
+        if(slots == null) {
             ContiguousSet<Integer> integers = ContiguousSet.create(
                     Range.closed(0, getSizeInventory()), DiscreteDomain.integers()
             );
-            facingSlots.put(side.ordinal(), ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()])));
+            slots = ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()]));
+            facingSlots.put(side, slots);
         }
-        return facingSlots.get(side.ordinal());
+        return slots;
     }
 
     /**

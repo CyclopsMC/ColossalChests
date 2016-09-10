@@ -1,0 +1,14 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.7.7 or higher.
+
+Additions:
+* Make chest opening animation disableable, Closes #38
+
+Changes:
+* Decrease default max slot count per packet, Closes #40
+* Improve interface inventory delegation efficiency
+* Improve chest slots retrieval efficiency
+
+Fixes:
+* Update Iron Chest mod id, Closes #42
+* Fix client-side desync when right-clicking on an unformed chest

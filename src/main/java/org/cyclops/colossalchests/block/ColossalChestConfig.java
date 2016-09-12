@@ -36,7 +36,7 @@ public class ColossalChestConfig extends BlockContainerConfig {
      * The maximum size a colossal chest can have.
      */
     @ConfigurableProperty(category = ConfigurableTypeCategory.MACHINE, comment = "The maximum size a colossal chest can have.", isCommandable = true)
-    public static int maxSize = 11;
+    public static int maxSize = 20;
 
     /**
      * If the chest should visually open when someone uses it.

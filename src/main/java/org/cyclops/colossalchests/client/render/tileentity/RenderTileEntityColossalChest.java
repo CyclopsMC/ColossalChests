@@ -49,7 +49,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
             Vec3d renderOffset = chestTile.getRenderOffset();
             GlStateManager.translate(-renderOffset.xCoord, renderOffset.yCoord, renderOffset.zCoord);
         }
-        GlStateManager.translate(0.5F, 0.3F, 0.5F);
+        GlStateManager.translate(0.5F, 0.5F - chestTile.getSizeSingular() * 0.0625F, 0.5F);
         float size = chestTile.getSizeSingular() * 1.125F;
         GlStateManager.scale(size, size, size);
     }

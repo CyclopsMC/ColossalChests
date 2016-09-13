@@ -13,7 +13,10 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
+import org.cyclops.colossalchests.Capabilities;
+import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.cyclopscore.helper.TileHelpers;
+import org.cyclops.cyclopscore.inventory.TileInventoryState;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 
@@ -41,6 +44,13 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         for(EnumFacing side : EnumFacing.VALUES) {
             this.sidedInventoryHandlers.put(side, new SidedInvWrapper(this, side));
         }
+        if (Capabilities.INVENTORY_STATE != null) {
+            addInventoryStateCapability();
+        }
+    }
+
+    protected void addInventoryStateCapability() {
+        addCapabilityInternal(Capabilities.INVENTORY_STATE, new TileInterfaceInventoryState(this));
     }
 
     public void setCorePosition(Vec3i corePosition) {
@@ -48,7 +58,7 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         coreReference = new WeakReference<TileColossalChest>(null);
     }
 
-    protected ISidedInventory getCore() {
+    protected TileColossalChest getCore() {
         if(corePosition == null) {
             return null;
         }
@@ -240,6 +250,29 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
             return (T) sidedInventoryHandlers.get(facing);
         }
         return super.getCapability(capability, facing);
+    }
+
+
+    /**
+     * {@link IInventoryState} implementation for the {@link TileInterface} that proxies a {@link TileColossalChest}.
+     * @author rubensworks
+     */
+    public static class TileInterfaceInventoryState implements IInventoryState {
+
+        private final TileInterface tile;
+
+        public TileInterfaceInventoryState(TileInterface tile) {
+            this.tile = tile;
+        }
+
+        @Override
+        public int getHash() {
+            TileColossalChest core = tile.getCore();
+            if (core != null) {
+                return core.getInventoryHash();
+            }
+            return -1;
+        }
     }
 
 }

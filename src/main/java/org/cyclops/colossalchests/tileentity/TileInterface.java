@@ -16,7 +16,6 @@ import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.cyclopscore.helper.TileHelpers;
-import org.cyclops.cyclopscore.inventory.TileInventoryState;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 

@@ -67,7 +67,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
 
     @Override
     public String getGuiTexture() {
-        return getContainer().getGuiProvider().getMod().getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
+        return getContainer().getGuiProvider().getModGui().getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
                 + "colossalChest.png";
     }
 

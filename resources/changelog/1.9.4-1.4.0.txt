@@ -1,0 +1,13 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.8.0 or higher.
+
+Additions:
+* Implement IInventoryState capability for interfaces, allows for more efficient item piping
+
+Changes:
+* Use new CyclopsCore gui provider interface
+* Increase default maximum chest size.
+
+Fixes:
+* Fix interfaces not correctly exposing the inventory capability
+* Fix large chests rendering with the wrong offset, Closes #43

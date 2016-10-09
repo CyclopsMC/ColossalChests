@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/CyclopsMC/ColossalChests.svg?branch=master-1.9)](https://travis-ci.org/rubensworks/ColossalChests)
 [![Download](https://api.bintray.com/packages/cyclopsmc/dev/ColossalChests/images/download.svg) ](https://bintray.com/cyclopsmc/dev/ColossalChests/_latestVersion)
+[![CurseForge](http://cf.way2muchnoise.eu/full_237875_downloads.svg)](http://minecraft.curseforge.com/projects/237875)
 
 For when regular chests are too small
 

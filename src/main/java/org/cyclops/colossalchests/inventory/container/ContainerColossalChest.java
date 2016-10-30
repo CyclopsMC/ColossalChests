@@ -12,6 +12,9 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import org.cyclops.colossalchests.ColossalChests;
@@ -165,15 +168,40 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
     }
 
+    protected int getTagSize(NBTTagCompound tag) {
+        return tag.toString().length();
+    }
+
     // Modified from EntityPlayerMP#updateCraftingInventory
     public void updateCraftingInventory(EntityPlayerMP player, List<ItemStack> allItems) {
-        int max = GeneralConfig.maxSlotsPerPacket;
+        int maxBufferSize = GeneralConfig.maxPacketBufferSize;
         // Custom packet sending to be able to handle large inventories
         NetHandlerPlayServer playerNetServerHandler = player.connection;
         // Modification of logic in EntityPlayerMP#updateCraftingInventory
-        for(int i = 0; i < allItems.size(); i+= max) {
-            List<ItemStack> items = allItems.subList(i, Math.min(allItems.size(), i + max));
-            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, i, items), player);
+        NBTTagCompound sendBuffer = new NBTTagCompound();
+        NBTTagList sendList = new NBTTagList();
+        sendBuffer.setTag("stacks", sendList);
+        int i = 0;
+        for (ItemStack itemStack : allItems) {
+            if (itemStack != null) {
+                NBTTagCompound tag = new NBTTagCompound();
+                tag.setInteger("slot", i);
+                tag.setTag("stack", itemStack.serializeNBT());
+                if (getTagSize(sendBuffer) + getTagSize(tag) + 100 < maxBufferSize) {
+                    sendList.appendTag(tag);
+                } else {
+                    // Flush
+                    ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, sendBuffer), player);
+                    sendBuffer = new NBTTagCompound();
+                    sendList = new NBTTagList();
+                    sendBuffer.setTag("stacks", sendList);
+                }
+            }
+            i++;
+        }
+        if (sendList.tagCount() > 0) {
+            // Flush
+            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, sendBuffer), player);
         }
         playerNetServerHandler.sendPacket(new SPacketSetSlot(-1, -1, player.inventory.getItemStack()));
     }

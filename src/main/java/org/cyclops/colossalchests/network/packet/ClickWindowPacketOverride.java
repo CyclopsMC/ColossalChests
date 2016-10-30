@@ -87,7 +87,7 @@ public class ClickWindowPacketOverride extends PacketCodec {
 					player.updateHeldItem();
 					player.isChangingQuantityOnly = false;
 				} else {
-					IntHashMap field_147372_n = ReflectionHelper.getPrivateValue(NetHandlerPlayServer.class, player.connection, "field_147372_n");
+					IntHashMap field_147372_n = ReflectionHelper.getPrivateValue(NetHandlerPlayServer.class, player.connection, "field_147372_n", "pendingTransactions");
 					field_147372_n.addKey(player.openContainer.windowId, Short.valueOf(actionNumber));
 					player.connection.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, false));
 					player.openContainer.setCanCraft(player, false);

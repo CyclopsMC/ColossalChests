@@ -12,9 +12,7 @@ import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.*;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import org.cyclops.colossalchests.ColossalChests;
@@ -25,6 +23,7 @@ import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainer;
 import org.cyclops.cyclopscore.inventory.slot.SlotExtended;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +53,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
     private final TileColossalChest tile;
     private final List<Slot> chestSlots;
+    private int lastInventoryHash = -2;
 
     /**
      * Make a new instance.
@@ -168,7 +168,46 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
     }
 
-    protected int getTagSize(NBTTagCompound tag) {
+    @Override
+    public void detectAndSendChanges() {
+        int newHash = tile.getInventoryHash();
+        if (lastInventoryHash != newHash) {
+            lastInventoryHash = newHash;
+            super.detectAndSendChanges();
+        }
+    }
+
+    protected int getTagSize(NBTBase tag) {
+        if (tag instanceof NBTBase.NBTPrimitive || tag instanceof NBTTagEnd) {
+            return 1;
+        }
+        if (tag instanceof NBTTagCompound) {
+            NBTTagCompound compound = (NBTTagCompound) tag;
+            int size = 0;
+            for (String key : compound.getKeySet()) {
+                size += getTagSize(compound.getTag(key));
+            }
+            return size;
+        }
+        if (tag instanceof NBTTagByteArray) {
+            return ((NBTTagByteArray) tag).getByteArray().length;
+        }
+        if (tag instanceof NBTTagIntArray) {
+            return ((NBTTagIntArray) tag).getIntArray().length * 32;
+        }
+        if (tag instanceof NBTTagList) {
+            NBTTagList list = (NBTTagList) tag;
+            int size = 0;
+            for (int i = 0; i < list.tagCount(); i++) {
+                size += getTagSize(list.get(i));
+            }
+            return size;
+        }
+        if (tag instanceof NBTTagString) {
+            try {
+                return ((NBTTagString) tag).getString().getBytes("UTF-8").length;
+            } catch (UnsupportedEncodingException e) {}
+        }
         return tag.toString().length();
     }
 
@@ -182,19 +221,24 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         NBTTagList sendList = new NBTTagList();
         sendBuffer.setTag("stacks", sendList);
         int i = 0;
+        int bufferSize = 0;
         for (ItemStack itemStack : allItems) {
             if (itemStack != null) {
                 NBTTagCompound tag = new NBTTagCompound();
                 tag.setInteger("slot", i);
                 tag.setTag("stack", itemStack.serializeNBT());
-                if (getTagSize(sendBuffer) + getTagSize(tag) + 100 < maxBufferSize) {
+                int tagSize = getTagSize(tag);
+                if (bufferSize + tagSize + 100 < maxBufferSize) {
                     sendList.appendTag(tag);
+                    bufferSize += tagSize;
                 } else {
                     // Flush
                     ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, sendBuffer), player);
                     sendBuffer = new NBTTagCompound();
                     sendList = new NBTTagList();
+                    sendList.appendTag(tag);
                     sendBuffer.setTag("stacks", sendList);
+                    bufferSize = tagSize;
                 }
             }
             i++;

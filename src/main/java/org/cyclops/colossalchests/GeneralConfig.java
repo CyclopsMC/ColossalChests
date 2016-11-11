@@ -66,10 +66,10 @@ public class GeneralConfig extends DummyConfig {
     public static boolean metalVariants = true;
 
     /**
-     * Maximum buffer size for adaptive inventory slots fragmentation.
+     * Maximum buffer byte size for adaptive inventory slots fragmentation.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Maximum buffer size for adaptive inventory slots fragmentation.")
-    public static int maxPacketBufferSize = 200000;
+    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Maximum buffer byte size for adaptive inventory slots fragmentation.")
+    public static int maxPacketBufferSize = 20000;
 
     /**
      * The type of this config.

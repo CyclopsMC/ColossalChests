@@ -222,6 +222,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         sendBuffer.setTag("stacks", sendList);
         int i = 0;
         int bufferSize = 0;
+        int sent = 0;
         for (ItemStack itemStack : allItems) {
             if (itemStack != null) {
                 NBTTagCompound tag = new NBTTagCompound();

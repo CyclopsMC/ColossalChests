@@ -9,6 +9,8 @@ import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -93,6 +95,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
      */
     public float lidAngle;
     private int playersUsing;
+    private boolean recreateNullInventory = true;
 
     private Block block = ColossalChest.getInstance();
     private EnumFacingMap<int[]> facingSlots = EnumFacingMap.newMap();
@@ -162,6 +165,35 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     protected LargeInventory constructInventory() {
         return new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+    }
+
+    protected LargeInventory constructInventoryDebug() {
+        LargeInventory inv = new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+        for (int i = 0; i < inv.getSizeInventory(); i++) {
+            inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(worldObj.rand)));
+        }
+        return inv;
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        // Don't send the inventory to the client.
+        // The client will receive the data once the gui is opened.
+        SimpleInventory oldInventory = this.inventory;
+        SimpleInventory oldLastInventory = this.lastValidInventory;
+        this.inventory = null;
+        this.lastValidInventory = null;
+        this.recreateNullInventory = false;
+        NBTTagCompound tag = super.getUpdateTag();
+        this.inventory = oldInventory;
+        this.lastValidInventory = oldLastInventory;
+        this.recreateNullInventory = true;
+        return tag;
+    }
+
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(getPos(), 1, getUpdateTag());
     }
 
     protected int calculateInventorySize() {
@@ -291,7 +323,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         if(lastValidInventory != null) {
             return lastValidInventory;
         }
-        if(inventory == null) {
+        if(inventory == null && this.recreateNullInventory) {
             inventory = constructInventory();
         }
         return inventory;

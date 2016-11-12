@@ -178,7 +178,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     }
 
     protected int getTagSize(NBTBase tag) {
-        if (tag instanceof NBTBase.NBTPrimitive || tag instanceof NBTTagEnd) {
+        if (tag instanceof NBTPrimitive || tag instanceof NBTTagEnd) {
             return 1;
         }
         if (tag instanceof NBTTagCompound) {

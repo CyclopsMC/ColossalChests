@@ -2,6 +2,7 @@ package org.cyclops.colossalchests.proxy;
 
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.network.packet.ClickWindowPacketOverride;
+import org.cyclops.colossalchests.network.packet.SetSlotLarge;
 import org.cyclops.colossalchests.network.packet.WindowItemsFragmentPacket;
 import org.cyclops.cyclopscore.init.ModBase;
 import org.cyclops.cyclopscore.network.PacketHandler;
@@ -26,6 +27,7 @@ public class CommonProxy extends CommonProxyComponent {
         // Register packets.
         packetHandler.register(WindowItemsFragmentPacket.class);
         packetHandler.register(ClickWindowPacketOverride.class);
+        packetHandler.register(SetSlotLarge.class);
     }
 
 }

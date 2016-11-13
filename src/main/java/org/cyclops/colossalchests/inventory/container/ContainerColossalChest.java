@@ -8,9 +8,7 @@ import invtweaks.api.container.ContainerSectionCallback;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.IContainerListener;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.network.NetHandlerPlayServer;
@@ -18,6 +16,7 @@ import net.minecraft.network.play.server.SPacketSetSlot;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.ColossalChest;
+import org.cyclops.colossalchests.network.packet.SetSlotLarge;
 import org.cyclops.colossalchests.network.packet.WindowItemsFragmentPacket;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainer;
@@ -173,7 +172,39 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         int newHash = tile.getInventoryHash();
         if (lastInventoryHash != newHash) {
             lastInventoryHash = newHash;
-            super.detectAndSendChanges();
+            detectAndSendChangesOverride();
+        }
+    }
+
+    // Custom implementation of Container#detectAndSendChanges
+    protected void detectAndSendChangesOverride() {
+        for (int i = 0; i < this.inventorySlots.size(); ++i) {
+            ItemStack itemstack = ((Slot)this.inventorySlots.get(i)).getStack();
+            ItemStack itemstack1 = (ItemStack)this.inventoryItemStacks.get(i);
+
+            if (!ItemStack.areItemStacksEqual(itemstack1, itemstack)) {
+                itemstack1 = itemstack == null ? null : itemstack.copy();
+                this.inventoryItemStacks.set(i, itemstack1);
+
+                for (int j = 0; j < this.listeners.size(); ++j) {
+                    IContainerListener listener = this.listeners.get(j);
+                    if (listener instanceof EntityPlayerMP) {
+                        sendSlotContentsToPlayer((EntityPlayerMP) listener, this, i, itemstack1);
+                    } else {
+                        listener.sendSlotContents(this, i, itemstack1);
+                    }
+                }
+            }
+        }
+    }
+
+    // Adapted from EntityPlayerMP#sendSlotContents
+    protected void sendSlotContentsToPlayer(EntityPlayerMP player, Container containerToSend, int slotInd, ItemStack stack) {
+        if (!(containerToSend.getSlot(slotInd) instanceof SlotCrafting)) {
+            if (!player.isChangingQuantityOnly) {
+                ColossalChests._instance.getPacketHandler().sendToPlayer(
+                        new SetSlotLarge(containerToSend.windowId, slotInd, stack), player);
+            }
         }
     }
 

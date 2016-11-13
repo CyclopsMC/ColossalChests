@@ -53,6 +53,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     private final TileColossalChest tile;
     private final List<Slot> chestSlots;
     private int lastInventoryHash = -2;
+    private boolean firstDetectionCheck = true;
 
     /**
      * Make a new instance.
@@ -186,16 +187,19 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                 itemstack1 = itemstack == null ? null : itemstack.copy();
                 this.inventoryItemStacks.set(i, itemstack1);
 
-                for (int j = 0; j < this.listeners.size(); ++j) {
-                    IContainerListener listener = this.listeners.get(j);
-                    if (listener instanceof EntityPlayerMP) {
-                        sendSlotContentsToPlayer((EntityPlayerMP) listener, this, i, itemstack1);
-                    } else {
-                        listener.sendSlotContents(this, i, itemstack1);
+                if (!firstDetectionCheck) {
+                    for (int j = 0; j < this.listeners.size(); ++j) {
+                        IContainerListener listener = this.listeners.get(j);
+                        if (listener instanceof EntityPlayerMP) {
+                            sendSlotContentsToPlayer((EntityPlayerMP) listener, this, i, itemstack1);
+                        } else {
+                            listener.sendSlotContents(this, i, itemstack1);
+                        }
                     }
                 }
             }
         }
+        firstDetectionCheck = false;
     }
 
     // Adapted from EntityPlayerMP#sendSlotContents

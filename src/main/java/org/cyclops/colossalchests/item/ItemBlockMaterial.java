@@ -24,7 +24,11 @@ public class ItemBlockMaterial extends ItemBlockMetadata {
 
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        list.add(TextFormatting.BLUE + PropertyMaterial.Type.values()[itemStack.getItemDamage()].getLocalizedName());
+        int materialIndex = itemStack.getItemDamage();
+        if (materialIndex > PropertyMaterial.Type.values().length) {
+            materialIndex = (materialIndex - 1) / 2;
+        }
+        list.add(TextFormatting.BLUE + PropertyMaterial.Type.values()[materialIndex].getLocalizedName());
         super.addInformation(itemStack, entityPlayer, list, par4);
 
     }

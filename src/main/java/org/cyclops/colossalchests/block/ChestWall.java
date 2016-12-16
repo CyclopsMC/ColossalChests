@@ -182,4 +182,9 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
         return super.canPlaceBlockAt(worldIn, pos) && ColossalChest.canPlace(worldIn, pos);
     }
+
+    @Override
+    public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+        return false;
+    }
 }

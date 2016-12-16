@@ -280,6 +280,11 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return super.canPlaceBlockAt(worldIn, pos) && canPlace(worldIn, pos);
     }
 
+    @Override
+    public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
+        return false;
+    }
+
     private static class MaterialValidationAction implements CubeDetector.IValidationAction {
         private final Wrapper<PropertyMaterial.Type> requiredMaterial;
 

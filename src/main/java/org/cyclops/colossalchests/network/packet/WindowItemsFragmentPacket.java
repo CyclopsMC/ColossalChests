@@ -56,7 +56,7 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 		for (int i = 0; i < list.tagCount(); i++) {
 			NBTTagCompound tag = list.getCompoundTagAt(i);
 			int slot = tag.getInteger("slot");
-			ItemStack stack = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("stack"));
+			ItemStack stack = new ItemStack(tag.getCompoundTag("stack"));
 			container.putStackInSlot(slot, stack);
 		}
 	}

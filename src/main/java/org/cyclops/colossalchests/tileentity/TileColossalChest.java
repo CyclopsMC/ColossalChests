@@ -170,7 +170,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     protected LargeInventory constructInventoryDebug() {
         LargeInventory inv = new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
         for (int i = 0; i < inv.getSizeInventory(); i++) {
-            inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(worldObj.rand)));
+            inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(world.rand)));
         }
         return inv;
     }
@@ -205,7 +205,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         super.updateTileEntity();
 
         // Backwards-compatibility check
-        if(worldObj != null) {
+        if(world != null) {
             if(this._modVersion != _MOD_VERSION && this.isStructureComplete()) {
                 ColossalChests.clog("Upgrading colossal chest from old mod version at " + getPos());
                 // In the old version, we only had wooden versions, so correctly set their properties.
@@ -224,14 +224,14 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
         // Resynchronize clients with the server state, the last condition makes sure
         // not all chests are synced at the same time.
-        if(worldObj != null
-                && !this.worldObj.isRemote
+        if(world != null
+                && !this.world.isRemote
                 && this.playersUsing != 0
-                && WorldHelpers.efficientTick(worldObj, TICK_MODULUS, getPos().hashCode())) {
+                && WorldHelpers.efficientTick(world, TICK_MODULUS, getPos().hashCode())) {
             this.playersUsing = 0;
             float range = 5.0F;
             @SuppressWarnings("unchecked")
-            List<EntityPlayer> entities = this.worldObj.getEntitiesWithinAABB(
+            List<EntityPlayer> entities = this.world.getEntitiesWithinAABB(
                     EntityPlayer.class,
                     new AxisAlignedBB(
                             getPos().add(new Vec3i(-range, -range, -range)),
@@ -245,20 +245,20 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                 }
             }
 
-            worldObj.addBlockEvent(getPos(), block, 1, playersUsing);
+            world.addBlockEvent(getPos(), block, 1, playersUsing);
         }
 
         prevLidAngle = lidAngle;
         float increaseAngle = 0.15F / Math.min(5, getSizeSingular());
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            worldObj.playSound(
+            world.playSound(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
                     SoundEvents.BLOCK_CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
-                    worldObj.rand.nextFloat() * 0.1F + 0.45F + increaseAngle,
+                    world.rand.nextFloat() * 0.1F + 0.45F + increaseAngle,
                     true
             );
         }
@@ -274,14 +274,14 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                worldObj.playSound(
+                world.playSound(
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
                         SoundEvents.BLOCK_CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
-                        worldObj.rand.nextFloat() * 0.05F + 0.45F + increaseAngle,
+                        world.rand.nextFloat() * 0.05F + 0.45F + increaseAngle,
                         true
                 );
             }
@@ -312,9 +312,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     private void triggerPlayerUsageChange(int change) {
-        if (worldObj != null) {
+        if (world != null) {
             playersUsing += change;
-            worldObj.addBlockEvent(getPos(), block, 1, playersUsing);
+            world.addBlockEvent(getPos(), block, 1, playersUsing);
         }
     }
 

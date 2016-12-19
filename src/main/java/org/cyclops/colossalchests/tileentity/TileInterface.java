@@ -98,6 +98,15 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     }
 
     @Override
+    public boolean isEmpty() {
+        ISidedInventory core = getCore();
+        if(core == null) {
+            return true;
+        }
+        return core.isEmpty();
+    }
+
+    @Override
     public ItemStack getStackInSlot(int index) {
         ISidedInventory core =  getCore();
         if(core == null) {
@@ -142,12 +151,12 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     }
 
     @Override
-    public boolean isUseableByPlayer(EntityPlayer player) {
-        ISidedInventory core =  getCore();
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        ISidedInventory core = getCore();
         if(core == null) {
             return false;
         }
-        return core.isUseableByPlayer(player);
+        return core.isUsableByPlayer(player);
     }
 
     @Override

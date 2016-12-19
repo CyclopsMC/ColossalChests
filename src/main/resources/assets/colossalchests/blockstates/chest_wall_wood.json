@@ -4,6 +4,6 @@
     "transform": "forge:default-block"
   },
   "variants": {
-    "inventory": { "model": "colossalchests:chestWall_wood" }
+    "inventory": { "model": "colossalchests:chest_wall_wood" }
   }
 }

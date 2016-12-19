@@ -126,16 +126,16 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         Slot slot = getSlot(slotIndex);
         // Yes I know this is ugly.
         // If you are reading this and know a better way, please tell me.
-        slot.xDisplayPosition = Integer.MIN_VALUE;
-        slot.yDisplayPosition = Integer.MIN_VALUE;
+        slot.xPos = Integer.MIN_VALUE;
+        slot.yPos = Integer.MIN_VALUE;
     }
 
     protected void enableSlot(int slotIndex, int row, int column) {
         Slot slot = getSlot(slotIndex);
         // Yes I know this is ugly.
         // If you are reading this and know a better way, please tell me.
-        slot.xDisplayPosition = CHEST_INVENTORY_OFFSET_X + column * 18;
-        slot.yDisplayPosition = CHEST_INVENTORY_OFFSET_Y + row * 18;
+        slot.xPos = CHEST_INVENTORY_OFFSET_X + column * 18;
+        slot.yPos = CHEST_INVENTORY_OFFSET_Y + row * 18;
     }
 
     @Override
@@ -184,7 +184,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             ItemStack itemstack1 = (ItemStack)this.inventoryItemStacks.get(i);
 
             if (!ItemStack.areItemStacksEqual(itemstack1, itemstack)) {
-                itemstack1 = itemstack == null ? null : itemstack.copy();
+                itemstack1 = itemstack.isEmpty() ? ItemStack.EMPTY : itemstack.copy();
                 this.inventoryItemStacks.set(i, itemstack1);
 
                 if (!firstDetectionCheck) {

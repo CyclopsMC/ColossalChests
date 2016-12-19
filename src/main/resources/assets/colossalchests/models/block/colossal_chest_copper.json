@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "colossalchests:blocks/colossal_chest_copper"
+  }
+}

@@ -15,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
@@ -131,25 +132,25 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
 
     @Override
     public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player,
-                                    EnumHand hand, ItemStack heldItem, EnumFacing side,
+                                    EnumHand hand, EnumFacing side,
                                     float posX, float posY, float posZ) {
         if(blockState.getValue(ACTIVE)) {
             BlockPos tileLocation = ColossalChest.getCoreLocation(world, blockPos);
             if(tileLocation != null) {
                 world.getBlockState(tileLocation).getBlock().
                         onBlockActivated(world, tileLocation, world.getBlockState(tileLocation),
-                                player, hand, heldItem, side, posX, posY, posZ);
+                                player, hand, side, posX, posY, posZ);
                 return true;
             }
         } else {
             ColossalChest.addPlayerChatError(world, blockPos, player, hand);
         }
-        return super.onBlockActivated(world, blockPos, blockState, player, hand, heldItem, side, posX, posY, posZ);
+        return super.onBlockActivated(world, blockPos, blockState, player, hand, side, posX, posY, posZ);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public void getSubBlocks(Item item, CreativeTabs creativeTabs, List list) {
+    public void getSubBlocks(Item item, CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
         for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
             list.add(new ItemStack(getInstance(), 1, material.ordinal()));
         }
@@ -168,9 +169,9 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     }
 
     @Override
-    public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         // Meta * 2 because we always want the inactive state
-        return super.onBlockPlaced(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer);
+        return super.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer, hand);
     }
 
     @Override

@@ -51,7 +51,7 @@ public class ColossalChestConfig extends BlockContainerConfig {
         super(
                 ColossalChests._instance,
         	true,
-            "colossalChest",
+            "colossal_chest",
             null,
             ColossalChest.class
         );

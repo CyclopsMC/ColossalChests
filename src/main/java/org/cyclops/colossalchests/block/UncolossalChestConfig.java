@@ -27,7 +27,7 @@ public class UncolossalChestConfig extends BlockContainerConfig {
         super(
                 ColossalChests._instance,
         	true,
-            "uncolossalChest",
+            "uncolossal_chest",
             null,
             UncolossalChest.class
         );

@@ -5,14 +5,14 @@ general.colossalchests.colossalchest.name=%s巨型箱子(%s)
 general.colossalchests.uncolossalchest.name=微缩箱子
 
 # Blocks
-tile.blocks.colossalchests.colossalChest.name=巨型箱子核心
-tile.blocks.colossalchests.colossalChest.info=每口巨型箱子仅需一个
-tile.blocks.colossalchests.chestWall.name=巨型箱子箱壁
-tile.blocks.colossalchests.chestWall.info=巨型箱子的主体结构
+tile.blocks.colossalchests.colossal_chest.name=巨型箱子核心
+tile.blocks.colossalchests.colossal_chest.info=每口巨型箱子仅需一个
+tile.blocks.colossalchests.chest_wall.name=巨型箱子箱壁
+tile.blocks.colossalchests.chest_wall.info=巨型箱子的主体结构
 tile.blocks.colossalchests.interface.name=巨型箱子交界面
 tile.blocks.colossalchests.interface.info=用于和管道或漏斗相连
-tile.blocks.colossalchests.uncolossalChest.name=微缩箱子
-tile.blocks.colossalchests.uncolossalChest.info=这才是最大的箱子！！！
+tile.blocks.colossalchests.uncolossal_chest.name=微缩箱子
+tile.blocks.colossalchests.uncolossal_chest.info=这才是最大的箱子！！！
 
 # Materials
 material.colossalchests.wood=木质

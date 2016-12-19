@@ -27,7 +27,7 @@ public class ChestWallConfig extends BlockConfig {
         super(
                 ColossalChests._instance,
         	true,
-            "chestWall",
+            "chest_wall",
             null,
             ChestWall.class
         );

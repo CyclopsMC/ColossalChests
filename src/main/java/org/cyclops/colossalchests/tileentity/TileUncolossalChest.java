@@ -64,14 +64,14 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
 
         // Resynchronize clients with the server state, the last condition makes sure
         // not all chests are synced at the same time.
-        if(worldObj != null
-                && !this.worldObj.isRemote
+        if(world != null
+                && !this.world.isRemote
                 && this.playersUsing != 0
-                && WorldHelpers.efficientTick(worldObj, TICK_MODULUS, getPos().hashCode())) {
+                && WorldHelpers.efficientTick(world, TICK_MODULUS, getPos().hashCode())) {
             this.playersUsing = 0;
             float range = 5.0F;
             @SuppressWarnings("unchecked")
-            List<EntityPlayer> entities = this.worldObj.getEntitiesWithinAABB(
+            List<EntityPlayer> entities = this.world.getEntitiesWithinAABB(
                     EntityPlayer.class,
                     new AxisAlignedBB(
                             getPos().add(new Vec3i(-range, -range, -range)),
@@ -85,20 +85,20 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
                 }
             }
 
-            worldObj.addBlockEvent(getPos(), block, 1, playersUsing);
+            world.addBlockEvent(getPos(), block, 1, playersUsing);
         }
 
         prevLidAngle = lidAngle;
         float increaseAngle = 0.25F;
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            worldObj.playSound(
+            world.playSound(
                     (double) getPos().getX() + 0.5D,
                     (double) getPos().getY() + 0.5D,
                     (double) getPos().getZ() + 0.5D,
                     SoundEvents.BLOCK_CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     0.5F,
-                    worldObj.rand.nextFloat() * 0.2F + 1.15F,
+                    world.rand.nextFloat() * 0.2F + 1.15F,
                     false
             );
         }
@@ -114,14 +114,14 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                worldObj.playSound(
+                world.playSound(
                         (double) getPos().getX() + 0.5D,
                         (double) getPos().getY() + 0.5D,
                         (double) getPos().getZ() + 0.5D,
                         SoundEvents.BLOCK_CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         0.5F,
-                        worldObj.rand.nextFloat() * 0.2F + 1.15F,
+                        world.rand.nextFloat() * 0.2F + 1.15F,
                         false
                 );
             }
@@ -152,9 +152,9 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
     }
 
     private void triggerPlayerUsageChange(int change) {
-        if (worldObj != null) {
+        if (world != null) {
             playersUsing += change;
-            worldObj.addBlockEvent(getPos(), block, 1, playersUsing);
+            world.addBlockEvent(getPos(), block, 1, playersUsing);
         }
     }
 

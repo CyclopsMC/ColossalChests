@@ -13,9 +13,9 @@ repositories {
 dependencies {
     // Add something like 'cyclopscore_version_local=0.1.0-DEV' to your gradle.properties if you want to use a custom local CyclopsCore version.
     if(project.hasProperty("cyclopscore_version_local")) {
-        compile "org.cyclops.cyclopscore:CyclopsCore:1.9.4-${project.cyclopscore_version_local}:deobf"
+        compile "org.cyclops.cyclopscore:CyclopsCore:${config.minecraft_version}-${project.cyclopscore_version_local}:deobf"
     } else {
-        compile "org.cyclops.cyclopscore:CyclopsCore:1.9.4-${config.cyclopscore_version}:deobf"
+        compile "org.cyclops.cyclopscore:CyclopsCore:${config.minecraft_version}-${config.cyclopscore_version}:deobf"
     }
     //deobfCompile "cpw.mods:ironchest:1.10.2-${config.ironchest_version}" // http://files.minecraftforge.net/IronChests2/
 

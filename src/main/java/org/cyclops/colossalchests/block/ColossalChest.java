@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -206,7 +207,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
      * @param hand The used hand.
      */
     public static void addPlayerChatError(World world, BlockPos blockPos, EntityPlayer player, EnumHand hand) {
-        if(!world.isRemote && player.getHeldItem(hand) == null) {
+        if(!world.isRemote && player.getHeldItem(hand).isEmpty()) {
             DetectionResult result = TileColossalChest.detector.detect(world, blockPos, null,  new MaterialValidationAction(), false);
             if (result != null && result.getError() != null) {
                 ITextComponent chat = new TextComponentString("");
@@ -222,9 +223,9 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
                 ITextComponent error = new TextComponentString(result.getError().localize());
                 chat.appendSibling(prefix);
                 chat.appendSibling(error);
-                player.addChatComponentMessage(chat);
+                player.sendMessage(chat);
             } else {
-                player.addChatComponentMessage(new TextComponentString(L10NHelpers.localize(
+                player.sendMessage(new TextComponentString(L10NHelpers.localize(
                         "multiblock.colossalchests.error.unexpected")));
             }
         }
@@ -232,7 +233,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public void getSubBlocks(Item item, CreativeTabs creativeTabs, List list) {
+    public void getSubBlocks(Item item, CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
         for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
             list.add(new ItemStack(getInstance(), 1, material.ordinal()));
         }
@@ -251,18 +252,18 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     }
 
     @Override
-    public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
+    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         // Meta * 2 because we always want the inactive state
-        return super.onBlockPlaced(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer);
+        return super.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer, hand);
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side, float par7, float par8, float par9) {
+    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player, EnumHand hand, EnumFacing side, float par7, float par8, float par9) {
         if(!(blockState.getValue(ACTIVE))) {
             ColossalChest.addPlayerChatError(world, blockPos, player, hand);
             return false;
         }
-        return super.onBlockActivated(world, blockPos, blockState, player, hand, heldItem, side, par7, par8, par9);
+        return super.onBlockActivated(world, blockPos, blockState, player, hand, side, par7, par8, par9);
     }
 
     @Override

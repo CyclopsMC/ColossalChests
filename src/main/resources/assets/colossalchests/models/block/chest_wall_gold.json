@@ -1,6 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "colossalchests:blocks/chestWall_gold"
+    "all": "colossalchests:blocks/chest_wall_gold"
   }
 }

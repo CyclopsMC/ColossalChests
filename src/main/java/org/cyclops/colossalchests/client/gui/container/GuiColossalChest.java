@@ -53,10 +53,10 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         super.actionPerformed(button);
-        int multiplier = Minecraft.getMinecraft().thePlayer.isSneaking() ? 9 : 1;
+        int multiplier = Minecraft.getMinecraft().player.isSneaking() ? 9 : 1;
         int i = (button == buttonUp) ? 1 * multiplier : ((button == buttonDown ? -1 * multiplier : 0));
         this.currentScroll = (float)((double)this.currentScroll - (double)i / (double)getScrollStep());
-        this.currentScroll = MathHelper.clamp_float(this.currentScroll, 0.0F, 1.0F);
+        this.currentScroll = MathHelper.clamp(this.currentScroll, 0.0F, 1.0F);
         getScrollingInventoryContainer().scrollTo(this.currentScroll);
     }
 
@@ -73,7 +73,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider().getModGui().getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-                + "colossalChest.png";
+                + "colossal_chest.png";
     }
 
     @Override
@@ -102,7 +102,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
             slotId = slotIn.slotNumber;
         }
         // Send our own packet, to avoid C0EPacketClickWindow to be sent to the server what would trigger an overflowable S30PacketWindowItems
-        windowClick(this.inventorySlots.windowId, slotId, clickedButton, clickType, this.mc.thePlayer);
+        windowClick(this.inventorySlots.windowId, slotId, clickedButton, clickType, this.mc.player);
     }
 
     // Adapted from PlayerControllerMP#windowClick

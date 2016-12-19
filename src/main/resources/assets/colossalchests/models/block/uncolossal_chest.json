@@ -1,7 +1,7 @@
 {
   "textures": {
     "texture": "minecraft:entity/chest/normal",
-    "particle": "colossalchests:blocks/chestWall_wood"
+    "particle": "colossalchests:blocks/chest_wall_wood"
   },
   "elements": [
     {

@@ -1,0 +1,16 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.8.1.
+
+Changes:
+* Optimize container slot rendering
+* Reduce number of packets sent when opening a chest, #46
+* Bump to MC 1.10.2
+* Don't send full inventory on chunk updates
+* Reduce packet count when opening a colossal chest
+* Implement adaptive window packet fragmentation, Closes #40
+
+Fixes:
+* Use correct version checker url
+* Avoid crash for incorrectly obtained chest component items, Closes #47
+* Don't allow silk touching of activated chest components, #47
+* Fix slot id overflow in vanilla inventory change detection packets

@@ -126,9 +126,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                 int slot = 0;
                 while(slot < Math.min(this.lastValidInventory.getSizeInventory(), this.inventory.getSizeInventory())) {
                     ItemStack contents = this.lastValidInventory.getStackInSlot(slot);
-                    if (contents != null) {
+                    if (!contents.isEmpty()) {
                         this.inventory.setInventorySlotContents(slot, contents);
-                        this.lastValidInventory.setInventorySlotContents(slot, null);
+                        this.lastValidInventory.setInventorySlotContents(slot, ItemStack.EMPTY);
                     }
                     slot++;
                 }

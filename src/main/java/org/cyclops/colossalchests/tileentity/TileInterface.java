@@ -110,7 +110,7 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     public ItemStack getStackInSlot(int index) {
         ISidedInventory core =  getCore();
         if(core == null) {
-            return null;
+            return ItemStack.EMPTY;
         }
         return core.getStackInSlot(index);
     }
@@ -119,7 +119,7 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     public ItemStack decrStackSize(int index, int count) {
         ISidedInventory core =  getCore();
         if(core == null) {
-            return null;
+            return ItemStack.EMPTY;
         }
         return core.decrStackSize(index, count);
     }
@@ -128,7 +128,7 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     public ItemStack removeStackFromSlot(int index) {
         ISidedInventory core =  getCore();
         if(core == null) {
-            return null;
+            return ItemStack.EMPTY;
         }
         return core.removeStackFromSlot(index);
     }

@@ -169,6 +169,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     protected LargeInventory constructInventory() {
+        if (GeneralConfig.creativeChests) {
+            return constructInventoryDebug();
+        }
         return new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 

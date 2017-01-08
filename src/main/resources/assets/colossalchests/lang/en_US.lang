@@ -46,6 +46,8 @@ config.colossalchests.modcompat.tooltip=Mod compatibility settings
 config.colossalchests.colossalChest.chestAnimation=Chest animation
 config.colossalchests.general.ejectItemsOnDestroy=Eject items on destroy
 config.colossalchests.general.metalVariants=Metal variants
+config.colossalchests.general.alwaysShowInterfaceOverlay=Render interface overlay
+config.colossalchests.general.creativeChests=Creative-mode chests
 
 ## Machine settings
 config.colossalchests.colossalChest.maxSize=Maximum colossal chest diameter

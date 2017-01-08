@@ -74,8 +74,14 @@ public class GeneralConfig extends DummyConfig {
     /**
      * If the interface input overlay should always be rendered on chests.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the interface input overlay should always be rendered on chests.")
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the interface input overlay should always be rendered on chests.", isCommandable = true)
     public static boolean alwaysShowInterfaceOverlay = true;
+
+    /**
+     * Always create full creative-mode chests when formed. Should not be used in survival worlds!
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "Always create full creative-mode chests when formed. Should not be used in survival worlds!", isCommandable = true)
+    public static boolean creativeChests = false;
 
     /**
      * The type of this config.

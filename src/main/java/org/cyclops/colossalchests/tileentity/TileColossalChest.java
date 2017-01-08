@@ -1,11 +1,13 @@
 package org.cyclops.colossalchests.tileentity;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,8 +37,8 @@ import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A machine that can infuse things with blood.
@@ -84,6 +86,8 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private int materialId = 0;
     @NBTPersist
     private int _modVersion = 0; // For backwards compatibility
+    @NBTPersist(useDefaultValue = false)
+    private List<Vec3i> interfaceLocations = Lists.newArrayList();
     private static final int _MOD_VERSION = 1;
 
     /**
@@ -138,6 +142,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                 this.lastValidInventory = null;
             }
         } else {
+            interfaceLocations.clear();
             if(this.inventory != null) {
                 if(GeneralConfig.ejectItemsOnDestroy) {
                     MinecraftHelpers.dropItems(getWorld(), this.inventory, getPos());
@@ -417,5 +422,13 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public String getName() {
         return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.colossalchest.name",
                 getMaterial().getLocalizedName(), getSizeSingular());
+    }
+
+    public void addInterface(Vec3i blockPos) {
+        interfaceLocations.add(blockPos);
+    }
+
+    public List<Vec3i> getInterfaceLocations() {
+        return Collections.unmodifiableList(interfaceLocations);
     }
 }

@@ -35,7 +35,7 @@ public class RenderTileEntityUncolossalChest extends RenderTileEntityModel<TileU
 
     @Override
     protected void renderModel(TileUncolossalChest chestTile, ModelChest model, float partialTick, int destroyStage) {
-        bindTexture(RenderTileEntityColossalChest.TEXTURES.get(PropertyMaterial.Type.WOOD));
+        bindTexture(RenderTileEntityColossalChest.TEXTURES_CHEST.get(PropertyMaterial.Type.WOOD));
         GlStateManager.pushMatrix();
         float lidangle = chestTile.prevLidAngle + (chestTile.lidAngle - chestTile.prevLidAngle) * partialTick;
         lidangle = 1.0F - lidangle;

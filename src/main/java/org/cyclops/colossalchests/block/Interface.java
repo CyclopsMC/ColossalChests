@@ -22,6 +22,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.colossalchests.tileentity.TileInterface;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.property.BlockProperty;
@@ -132,6 +133,10 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
                 TileInterface tile = TileHelpers.getSafeTile(world, location, TileInterface.class);
                 if(tile != null && tileLocation != null) {
                     tile.setCorePosition(tileLocation);
+                    TileColossalChest core = TileHelpers.getSafeTile(world, tileLocation, TileColossalChest.class);
+                    if (core != null) {
+                        core.addInterface(location);
+                    }
                 }
             }
         }

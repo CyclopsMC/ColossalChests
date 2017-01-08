@@ -72,6 +72,12 @@ public class GeneralConfig extends DummyConfig {
     public static int maxPacketBufferSize = 20000;
 
     /**
+     * If the interface input overlay should always be rendered on chests.
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the interface input overlay should always be rendered on chests.")
+    public static boolean alwaysShowInterfaceOverlay = true;
+
+    /**
      * The type of this config.
      */
     public static ConfigurableType TYPE = ConfigurableType.DUMMY;

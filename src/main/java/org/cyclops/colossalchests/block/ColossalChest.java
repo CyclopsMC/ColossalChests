@@ -161,6 +161,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
                         originCorner.getY() + ((double) size.getY()) / 2,
                         originCorner.getZ() + ((double) size.getZ()) / 2
                 ));
+                tile.addInterface(location);
             }
         }
     }

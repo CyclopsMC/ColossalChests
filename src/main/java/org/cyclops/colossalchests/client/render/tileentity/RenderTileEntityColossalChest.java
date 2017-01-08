@@ -97,7 +97,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     @Override
     public void renderTileEntityAt(TileColossalChest tile, double x, double y, double z, float partialTick, int destroyStage) {
         super.renderTileEntityAt(tile, x, y, z, partialTick, destroyStage);
-        if(tile.isStructureComplete() && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getMinecraft().thePlayer.isSneaking())) {
+        if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getMinecraft().thePlayer.isSneaking())) {
             GlStateManager.enableRescaleNormal();
             GlStateManager.alphaFunc(516, 0.1F);
             GlStateManager.enableBlend();

@@ -74,6 +74,11 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         this.addChestSlots(tile.getSizeInventory() / CHEST_INVENTORY_COLUMNS, CHEST_INVENTORY_COLUMNS);
         this.addPlayerInventory(inventory, INVENTORY_OFFSET_X, INVENTORY_OFFSET_Y);
         updateFilter("");
+
+        // Make sure our inventory is clear, because the server will only send the non-empty slots.
+        if (tile.getWorld().isRemote) {
+            tile.getInventory().clear();
+        }
     }
 
     @SuppressWarnings("unchecked")

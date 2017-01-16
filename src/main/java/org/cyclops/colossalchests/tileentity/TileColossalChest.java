@@ -200,6 +200,25 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        SimpleInventory oldInventory = this.inventory;
+        SimpleInventory oldLastInventory = this.lastValidInventory;
+        if (getWorld() != null && getWorld().isRemote) {
+            // Don't read the inventory on the client.
+            // The client will receive the data once the gui is opened.
+            this.inventory = null;
+            this.lastValidInventory = null;
+            this.recreateNullInventory = false;
+        }
+        super.readFromNBT(tag);
+        if (getWorld() != null && getWorld().isRemote) {
+            this.inventory = oldInventory;
+            this.lastValidInventory = oldLastInventory;
+            this.recreateNullInventory = true;
+        }
+    }
+
+    @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
         return new SPacketUpdateTileEntity(getPos(), 1, getUpdateTag());
     }

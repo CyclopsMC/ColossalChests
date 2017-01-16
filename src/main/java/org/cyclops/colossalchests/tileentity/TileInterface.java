@@ -13,10 +13,12 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
+import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 
+import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 
 /**
@@ -39,10 +41,17 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         if (Capabilities.INVENTORY_STATE != null) {
             addInventoryStateCapability();
         }
+        if (Capabilities.SLOTLESS_ITEMHANDLER != null) {
+            addSlotlessItemHandlerCapability();
+        }
     }
 
     protected void addInventoryStateCapability() {
         addCapabilityInternal(Capabilities.INVENTORY_STATE, new TileInterfaceInventoryState(this));
+    }
+
+    protected void addSlotlessItemHandlerCapability() {
+        addCapabilityInternal(Capabilities.SLOTLESS_ITEMHANDLER, new TileInterfaceSlotlessItemHandler(this));
     }
 
     public void setCorePosition(Vec3i corePosition) {
@@ -256,6 +265,45 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
                 return core.getInventoryHash();
             }
             return -1;
+        }
+    }
+
+    /**
+     * {@link IInventoryState} implementation for the {@link TileInterface} that proxies a {@link TileColossalChest}.
+     * @author rubensworks
+     */
+    public static class TileInterfaceSlotlessItemHandler implements ISlotlessItemHandler {
+
+        private final TileInterface tile;
+
+        public TileInterfaceSlotlessItemHandler(TileInterface tile) {
+            this.tile = tile;
+        }
+
+        protected @Nullable ISlotlessItemHandler getHandler() {
+            TileColossalChest core = tile.getCore();
+            if (core != null) {
+                return core.hasCapability(Capabilities.SLOTLESS_ITEMHANDLER, null) ? core.getCapability(Capabilities.SLOTLESS_ITEMHANDLER, null) : null;
+            }
+            return null;
+        }
+
+        @Override
+        public ItemStack insertItem(ItemStack stack, boolean simulate) {
+            ISlotlessItemHandler handler = getHandler();
+            return handler != null ? handler.insertItem(stack, simulate) : stack;
+        }
+
+        @Override
+        public ItemStack extractItem(int amount, boolean simulate) {
+            ISlotlessItemHandler handler = getHandler();
+            return handler != null ? handler.extractItem(amount, simulate) : null;
+        }
+
+        @Override
+        public ItemStack extractItem(ItemStack matchStack, int matchFlags, boolean simulate) {
+            ISlotlessItemHandler handler = getHandler();
+            return handler != null ? handler.extractItem(matchStack, matchFlags, simulate) : null;
         }
     }
 

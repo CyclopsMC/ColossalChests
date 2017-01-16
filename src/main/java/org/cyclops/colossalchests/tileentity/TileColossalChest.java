@@ -4,6 +4,7 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import gnu.trove.map.TIntObjectMap;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -22,7 +23,10 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.ArrayUtils;
+import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.*;
@@ -30,15 +34,14 @@ import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
 import org.cyclops.cyclopscore.helper.*;
-import org.cyclops.cyclopscore.inventory.INBTInventory;
-import org.cyclops.cyclopscore.inventory.LargeInventory;
-import org.cyclops.cyclopscore.inventory.SimpleInventory;
+import org.cyclops.cyclopscore.inventory.*;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A machine that can infuse things with blood.
@@ -104,6 +107,48 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private Block block = ColossalChest.getInstance();
     private EnumFacingMap<int[]> facingSlots = EnumFacingMap.newMap();
 
+    public TileColossalChest() {
+        if (Capabilities.SLOTLESS_ITEMHANDLER != null) {
+            addSlotlessItemHandlerCapability();
+        }
+    }
+
+    protected void addSlotlessItemHandlerCapability() {
+        IItemHandler itemHandler = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        addCapabilityInternal(Capabilities.SLOTLESS_ITEMHANDLER,
+                new IndexedSlotlessItemHandlerWrapper(itemHandler, new IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference() {
+                    @Override
+                    public int getInventoryStackLimit() {
+                        return getInventory().getInventoryStackLimit();
+                    }
+
+                    @Override
+                    public Map<Item, TIntObjectMap<ItemStack>> getIndex() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getIndex();
+                    }
+
+                    @Override
+                    public int getFirstEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getFirstEmptySlot();
+                    }
+
+                    @Override
+                    public int getLastEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getLastEmptySlot();
+                    }
+
+                    @Override
+                    public int getFirstNonEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getFirstNonEmptySlot();
+                    }
+
+                    @Override
+                    public int getLastNonEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getLastNonEmptySlot();
+                    }
+                }));
+    }
+
     /**
      * @return the size
      */
@@ -168,15 +213,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         return getSize().getX() + 1;
     }
 
-    protected LargeInventory constructInventory() {
+    protected IndexedInventory constructInventory() {
         if (GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        return new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+        return new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 
-    protected LargeInventory constructInventoryDebug() {
-        LargeInventory inv = new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+    protected IndexedInventory constructInventoryDebug() {
+        IndexedInventory inv = new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
         for (int i = 0; i < inv.getSizeInventory(); i++) {
             inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(worldObj.rand)));
         }

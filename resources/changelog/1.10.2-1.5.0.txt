@@ -1,0 +1,11 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.9.1 or higher.
+
+Additions:
+* Expose slotless item handler for improved item transfer efficiency
+* Add option to create creative-mode chests
+* Render interface and core as overlay on formed chests, Closes #37 Always rendering these overlays can be disabled, after which they only render when holding shift.
+
+Fixes:
+* Fix client sometimes desyncing after chunk update, #54
+* Fix clients seeing stacks in slots that are actually empty

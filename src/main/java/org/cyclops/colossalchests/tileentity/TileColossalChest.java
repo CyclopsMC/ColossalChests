@@ -1,11 +1,14 @@
 package org.cyclops.colossalchests.tileentity;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
+import gnu.trove.map.TIntObjectMap;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,7 +23,10 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import org.apache.commons.lang3.ArrayUtils;
+import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.block.*;
@@ -28,13 +34,12 @@ import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.*;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
 import org.cyclops.cyclopscore.helper.*;
-import org.cyclops.cyclopscore.inventory.INBTInventory;
-import org.cyclops.cyclopscore.inventory.LargeInventory;
-import org.cyclops.cyclopscore.inventory.SimpleInventory;
+import org.cyclops.cyclopscore.inventory.*;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +89,8 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     private int materialId = 0;
     @NBTPersist
     private int _modVersion = 0; // For backwards compatibility
+    @NBTPersist(useDefaultValue = false)
+    private List<Vec3i> interfaceLocations = Lists.newArrayList();
     private static final int _MOD_VERSION = 1;
 
     /**
@@ -99,6 +106,48 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     private Block block = ColossalChest.getInstance();
     private EnumFacingMap<int[]> facingSlots = EnumFacingMap.newMap();
+
+    public TileColossalChest() {
+        if (Capabilities.SLOTLESS_ITEMHANDLER != null) {
+            addSlotlessItemHandlerCapability();
+        }
+    }
+
+    protected void addSlotlessItemHandlerCapability() {
+        IItemHandler itemHandler = getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        addCapabilityInternal(Capabilities.SLOTLESS_ITEMHANDLER,
+                new IndexedSlotlessItemHandlerWrapper(itemHandler, new IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference() {
+                    @Override
+                    public int getInventoryStackLimit() {
+                        return getInventory().getInventoryStackLimit();
+                    }
+
+                    @Override
+                    public Map<Item, TIntObjectMap<ItemStack>> getIndex() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getIndex();
+                    }
+
+                    @Override
+                    public int getFirstEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getFirstEmptySlot();
+                    }
+
+                    @Override
+                    public int getLastEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getLastEmptySlot();
+                    }
+
+                    @Override
+                    public int getFirstNonEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getFirstNonEmptySlot();
+                    }
+
+                    @Override
+                    public int getLastNonEmptySlot() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getLastNonEmptySlot();
+                    }
+                }));
+    }
 
     /**
      * @return the size
@@ -138,6 +187,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                 this.lastValidInventory = null;
             }
         } else {
+            interfaceLocations.clear();
             if(this.inventory != null) {
                 if(GeneralConfig.ejectItemsOnDestroy) {
                     MinecraftHelpers.dropItems(getWorld(), this.inventory, getPos());
@@ -163,12 +213,15 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         return getSize().getX() + 1;
     }
 
-    protected LargeInventory constructInventory() {
-        return new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+    protected IndexedInventory constructInventory() {
+        if (GeneralConfig.creativeChests) {
+            return constructInventoryDebug();
+        }
+        return new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 
-    protected LargeInventory constructInventoryDebug() {
-        LargeInventory inv = new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+    protected IndexedInventory constructInventoryDebug() {
+        IndexedInventory inv = new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
         for (int i = 0; i < inv.getSizeInventory(); i++) {
             inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(world.rand)));
         }
@@ -189,6 +242,25 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         this.lastValidInventory = oldLastInventory;
         this.recreateNullInventory = true;
         return tag;
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        SimpleInventory oldInventory = this.inventory;
+        SimpleInventory oldLastInventory = this.lastValidInventory;
+        if (getWorld() != null && getWorld().isRemote) {
+            // Don't read the inventory on the client.
+            // The client will receive the data once the gui is opened.
+            this.inventory = null;
+            this.lastValidInventory = null;
+            this.recreateNullInventory = false;
+        }
+        super.readFromNBT(tag);
+        if (getWorld() != null && getWorld().isRemote) {
+            this.inventory = oldInventory;
+            this.lastValidInventory = oldLastInventory;
+            this.recreateNullInventory = true;
+        }
     }
 
     @Override
@@ -417,5 +489,13 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public String getName() {
         return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.colossalchest.name",
                 getMaterial().getLocalizedName(), getSizeSingular());
+    }
+
+    public void addInterface(Vec3i blockPos) {
+        interfaceLocations.add(blockPos);
+    }
+
+    public List<Vec3i> getInterfaceLocations() {
+        return Collections.unmodifiableList(interfaceLocations);
     }
 }

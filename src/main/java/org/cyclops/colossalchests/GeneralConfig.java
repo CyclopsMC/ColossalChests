@@ -20,7 +20,7 @@ public class GeneralConfig extends DummyConfig {
      * The current mod version, will be used to check if the player's config isn't out of date and
      * warn the player accordingly.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Config version for " + Reference.MOD_NAME +".\nDO NOT EDIT MANUALLY!")
+    @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Config version for " + Reference.MOD_NAME +".\nDO NOT EDIT MANUALLY!", showInGui = false)
     public static String version = Reference.MOD_VERSION;
 
     /**
@@ -70,6 +70,18 @@ public class GeneralConfig extends DummyConfig {
      */
     @ConfigurableProperty(category = ConfigurableTypeCategory.CORE, comment = "Maximum buffer byte size for adaptive inventory slots fragmentation.")
     public static int maxPacketBufferSize = 20000;
+
+    /**
+     * If the interface input overlay should always be rendered on chests.
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the interface input overlay should always be rendered on chests.", isCommandable = true)
+    public static boolean alwaysShowInterfaceOverlay = true;
+
+    /**
+     * Always create full creative-mode chests when formed. Should not be used in survival worlds!
+     */
+    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "Always create full creative-mode chests when formed. Should not be used in survival worlds!", isCommandable = true)
+    public static boolean creativeChests = false;
 
     /**
      * The type of this config.

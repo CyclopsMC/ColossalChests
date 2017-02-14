@@ -124,7 +124,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
     @Override
     public int getPageSize() {
-        return 5;
+        return CHEST_INVENTORY_ROWS;
     }
 
     protected void disableSlot(int slotIndex) {

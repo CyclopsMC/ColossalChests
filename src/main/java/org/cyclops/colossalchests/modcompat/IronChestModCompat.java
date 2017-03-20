@@ -29,15 +29,15 @@ public class IronChestModCompat implements IModCompat {
 	private void overrideTextures() {
 		String prefix = "textures/model/";
 		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.COPPER,
-				new ResourceLocation("ironchest", prefix + "copperchest.png"));
+				new ResourceLocation("ironchest", prefix + "copper_chest.png"));
 		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.IRON,
-				new ResourceLocation("ironchest", prefix + "ironchest.png"));
+				new ResourceLocation("ironchest", prefix + "iron_chest.png"));
 		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.SILVER,
-				new ResourceLocation("ironchest", prefix + "silverchest.png"));
+				new ResourceLocation("ironchest", prefix + "silver_chest.png"));
 		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.GOLD,
-				new ResourceLocation("ironchest", prefix + "goldchest.png"));
+				new ResourceLocation("ironchest", prefix + "gold_chest.png"));
 		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.DIAMOND,
-				new ResourceLocation("ironchest", prefix + "diamondchest.png"));
+				new ResourceLocation("ironchest", prefix + "diamond_chest.png"));
 	}
 
 	@Override

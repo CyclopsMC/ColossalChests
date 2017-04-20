@@ -192,7 +192,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
             VertexBuffer worldRenderer = Tessellator.getInstance().getBuffer();
             worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
             float indent = -0.2F;
-            if (side == EnumFacing.UP) indent = 0F;
+            if (side == EnumFacing.UP) indent = -15.8F;
             if (side == EnumFacing.DOWN) indent *= 2;
             int alpha = core ? 255 : 150;
             float posMin = core ? 5F : 6F;

@@ -302,7 +302,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         for(int i = 0; i < getSizeInventory(); i++) {
             chest.add(this.getSlot(i));
         }
-        for(int i = getSizeInventory(); i < getSizeInventory() + 4 * 9; i++) {
+        for(int i = getSizeInventory(); i < getSizeInventory() + player.inventory.mainInventory.length; i++) {
             playerInventory.add(this.getSlot(i));
         }
         selection.put(ContainerSection.CHEST, chest);

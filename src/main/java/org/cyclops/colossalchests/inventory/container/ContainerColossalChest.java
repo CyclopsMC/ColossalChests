@@ -124,7 +124,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
     @Override
     public int getPageSize() {
-        return 5;
+        return CHEST_INVENTORY_ROWS;
     }
 
     protected void disableSlot(int slotIndex) {
@@ -302,7 +302,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         for(int i = 0; i < getSizeInventory(); i++) {
             chest.add(this.getSlot(i));
         }
-        for(int i = getSizeInventory(); i < getSizeInventory() + 4 * 9; i++) {
+        for(int i = getSizeInventory(); i < getSizeInventory() + player.inventory.mainInventory.size(); i++) {
             playerInventory.add(this.getSlot(i));
         }
         selection.put(ContainerSection.CHEST, chest);

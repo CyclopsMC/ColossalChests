@@ -296,17 +296,25 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
      */
     @ContainerSectionCallback
     public Map<ContainerSection, List<Slot>> getContainerSelection() {
-        Map<ContainerSection, List<Slot>> selection = Maps.newHashMap();
-        List<Slot> chest = Lists.newArrayList();
-        List<Slot> playerInventory = Lists.newArrayList();
-        for(int i = 0; i < getSizeInventory(); i++) {
-            chest.add(this.getSlot(i));
+        try {
+            Map<ContainerSection, List<Slot>> selection = Maps.newHashMap();
+            List<Slot> chest = Lists.newArrayList();
+            List<Slot> playerInventory = Lists.newArrayList();
+            for (int i = 0; i < getSizeInventory(); i++) {
+                chest.add(this.getSlot(i));
+            }
+
+            for (int i = getSizeInventory(); i < getSizeInventory() + player.inventory.mainInventory.length; i++) {
+                playerInventory.add(this.getSlot(i));
+            }
+            selection.put(ContainerSection.CHEST, chest);
+            selection.put(ContainerSection.INVENTORY, playerInventory);
+            return selection;
+        } catch (RuntimeException e) {
+            System.out.println("Size inv " + getSizeInventory());
+            System.out.println("Player size inv " + player.inventory.mainInventory.length);
+            System.out.println("Available slots " + inventorySlots.size());
+            throw e;
         }
-        for(int i = getSizeInventory(); i < getSizeInventory() + player.inventory.mainInventory.length; i++) {
-            playerInventory.add(this.getSlot(i));
-        }
-        selection.put(ContainerSection.CHEST, chest);
-        selection.put(ContainerSection.INVENTORY, playerInventory);
-        return selection;
     }
 }

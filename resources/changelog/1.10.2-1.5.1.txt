@@ -1,0 +1,6 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.10.1 or higher.
+
+Fixes:
+* Add safety when player inventory size is changed, #77
+* Fix bottom interface texture overlays having offset, Closes #74

@@ -269,7 +269,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     protected int calculateInventorySize() {
-        return (int) Math.ceil((Math.pow(getSizeSingular(), 3) * 27) * getMaterial().getInventoryMultiplier());
+        return (int) Math.ceil((Math.pow(getSizeSingular(), 3) * 27) * getMaterial().getInventoryMultiplier() / 9) * 9;
     }
 
     @Override

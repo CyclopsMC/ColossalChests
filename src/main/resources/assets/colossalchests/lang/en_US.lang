@@ -20,6 +20,7 @@ material.colossalchests.iron=Iron
 material.colossalchests.silver=Silver
 material.colossalchests.gold=Gold
 material.colossalchests.diamond=Diamond
+material.colossalchests.obsidian=Obsidian
 
 # Multiblock
 multiblock.colossalchests.error.prefix=ColossalChests

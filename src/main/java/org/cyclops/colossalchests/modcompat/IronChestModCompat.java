@@ -38,6 +38,8 @@ public class IronChestModCompat implements IModCompat {
 				new ResourceLocation("ironchest", prefix + "goldchest.png"));
 		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.DIAMOND,
 				new ResourceLocation("ironchest", prefix + "diamondchest.png"));
+		RenderTileEntityColossalChest.TEXTURES_CHEST.put(PropertyMaterial.Type.OBSIDIAN,
+				new ResourceLocation("ironchest", prefix + "obsidianchest.png"));
 	}
 
 	@Override

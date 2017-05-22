@@ -418,6 +418,76 @@
 		</output>
 	</recipe>
 
+	<!-- OBSIDIAN -->
+
+	<recipe type="shaped">
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item type="oredict">obsidian</item>
+					<item type="oredict">obsidian</item>
+					<item type="oredict">obsidian</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">obsidian</item>
+					<item meta="5">colossalchests:chestWall</item>
+					<item type="oredict">obsidian</item>
+				</gridrow>
+				<gridrow>
+					<item type="oredict">obsidian</item>
+					<item type="oredict">obsidian</item>
+					<item type="oredict">obsidian</item>
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item amount="2" meta="6">colossalchests:chestWall</item>
+		</output>
+	</recipe>
+
+	<recipe type="shapeless">
+		<condition type="config">colossalChest</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<item meta="6">colossalchests:chestWall</item>
+			<item type="oredict">ingotIron</item>
+		</input>
+		<output>
+			<item meta="6">colossalchests:colossalChest</item>
+		</output>
+	</recipe>
+
+	<recipe type="shaped">
+		<condition type="config">interface</condition>
+		<condition type="config">chestWall</condition>
+		<condition type="predefined">colossalchests:metalVariants</condition>
+		<input>
+			<grid>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+				<gridrow>
+					<item type="oredict">cobblestone</item>
+					<item meta="6">colossalchests:chestWall</item>
+					<item type="oredict">cobblestone</item>
+				</gridrow>
+				<gridrow>
+					<item />
+					<item type="oredict">cobblestone</item>
+					<item />
+				</gridrow>
+			</grid>
+		</input>
+		<output>
+			<item meta="6">colossalchests:interface</item>
+		</output>
+	</recipe>
+
 	<!-- UNCOLOSSAL CHEST -->
 
 	<recipe type="shapeless">

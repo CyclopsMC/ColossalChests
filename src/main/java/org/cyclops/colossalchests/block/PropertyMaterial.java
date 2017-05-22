@@ -84,7 +84,8 @@ public class PropertyMaterial extends PropertyHelper<PropertyMaterial.Type> {
         IRON(2),
         SILVER(2.666),
         GOLD(3),
-        DIAMOND(4);
+        DIAMOND(4),
+        OBSIDIAN(4);
 
         private final double inventoryMultiplier;
 
@@ -98,6 +99,10 @@ public class PropertyMaterial extends PropertyHelper<PropertyMaterial.Type> {
 
         public String getLocalizedName() {
             return L10NHelpers.localize("material." + Reference.MOD_ID + "." + toString().toLowerCase(Locale.ENGLISH));
+        }
+
+        public boolean isExplosionResistant() {
+            return this == OBSIDIAN;
         }
 
     }

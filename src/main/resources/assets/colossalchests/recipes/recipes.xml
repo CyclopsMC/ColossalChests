@@ -502,4 +502,29 @@
 		</output>
 	</recipe>
 
+	<!-- TOOLS -->
+
+	<recipe type="shapeless">
+		<condition type="config">upgradeTool</condition>
+		<condition type="config">chestWall</condition>
+		<input>
+			<item type="oredict">stickWood</item>
+			<item>colossalchests:chestWall</item>
+			<item type="oredict">stickWood</item>
+		</input>
+		<output>
+			<item>colossalchests:upgradeTool</item>
+		</output>
+	</recipe>
+
+	<recipe type="shapeless">
+		<condition type="config">upgradeTool</condition>
+		<input>
+			<item meta="0">colossalchests:upgradeTool</item>
+		</input>
+		<output>
+			<item meta="1">colossalchests:upgradeTool</item>
+		</output>
+	</recipe>
+
 </recipes>

@@ -13,6 +13,12 @@ tile.blocks.colossalchests.interface.info=To interact with pipes and hoppers
 tile.blocks.colossalchests.uncolossalChest.name=Uncolossal Chest
 tile.blocks.colossalchests.uncolossalChest.info=The most colossal of 'em all!
 
+# Items
+item.items.colossalchests.upgradeTool.name=Chest Upgrade Tool
+item.items.colossalchests.upgradeTool.info=Upgrade a Colossal Chest to the next tier when having all required items in your inventory.
+item.items.colossalchests.upgradeTool.reverse.name=Chest Downgrade Tool
+item.items.colossalchests.upgradeTool.reverse.info=Downgrade a Colossal Chest to the previous tier when having all required items in your inventory.
+
 # Materials
 material.colossalchests.wood=Wood
 material.colossalchests.copper=Copper
@@ -27,6 +33,8 @@ multiblock.colossalchests.error.prefix=ColossalChests
 multiblock.colossalchests.error.prefix.info=Colossal Chest multiblock structure error
 multiblock.colossalchests.error.unexpected=Unexpected Colossal Chest structure error.
 multiblock.colossalchests.error.material=Found a block of material %s at %s, while %s was expected.
+multiblock.colossalchests.error.upgrade=Not enough items for upgrading this chest, you need %s cores, %s interfaces and %s walls of the material %s.
+multiblock.colossalchests.error.upgradeLimit=You can not transform this chest anymore.
 
 # Configuration
 config.colossalchests=%s configuration

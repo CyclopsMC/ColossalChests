@@ -14,6 +14,7 @@ import org.cyclops.colossalchests.block.ChestWallConfig;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.InterfaceConfig;
 import org.cyclops.colossalchests.block.UncolossalChestConfig;
+import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
 import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.IObjectReference;
@@ -151,6 +152,7 @@ public class ColossalChests extends ModBaseVersionable {
         configs.add(new ColossalChestConfig());
         configs.add(new InterfaceConfig());
         configs.add(new UncolossalChestConfig());
+        configs.add(new ItemUpgradeToolConfig());
     }
 
     @Override

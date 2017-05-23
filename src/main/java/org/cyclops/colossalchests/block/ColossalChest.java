@@ -212,25 +212,29 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         if(!world.isRemote && player.getHeldItem(hand) == null) {
             DetectionResult result = TileColossalChest.detector.detect(world, blockPos, null,  new MaterialValidationAction(), false);
             if (result != null && result.getError() != null) {
-                ITextComponent chat = new TextComponentString("");
-                ITextComponent prefix = new TextComponentString(
-                        String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
-                ).setStyle(new Style().
-                        setColor(TextFormatting.GRAY).
-                        setHoverEvent(new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
-                                new TextComponentTranslation("multiblock.colossalchests.error.prefix.info")
-                        ))
-                );
-                ITextComponent error = new TextComponentString(result.getError().localize());
-                chat.appendSibling(prefix);
-                chat.appendSibling(error);
-                player.addChatComponentMessage(chat);
+                addPlayerChatError(player, result.getError());
             } else {
                 player.addChatComponentMessage(new TextComponentString(L10NHelpers.localize(
                         "multiblock.colossalchests.error.unexpected")));
             }
         }
+    }
+
+    public static void addPlayerChatError(EntityPlayer player, L10NHelpers.UnlocalizedString unlocalizedError) {
+        ITextComponent chat = new TextComponentString("");
+        ITextComponent prefix = new TextComponentString(
+                String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
+        ).setStyle(new Style().
+                        setColor(TextFormatting.GRAY).
+                        setHoverEvent(new HoverEvent(
+                                HoverEvent.Action.SHOW_TEXT,
+                                new TextComponentTranslation("multiblock.colossalchests.error.prefix.info")
+                        ))
+        );
+        ITextComponent error = new TextComponentString(unlocalizedError.localize());
+        chat.appendSibling(prefix);
+        chat.appendSibling(error);
+        player.addChatComponentMessage(chat);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

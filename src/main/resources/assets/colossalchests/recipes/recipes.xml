@@ -443,7 +443,7 @@
 			</grid>
 		</input>
 		<output>
-			<item amount="2" meta="6">colossalchests:chestWall</item>
+			<item amount="1" meta="6">colossalchests:chestWall</item>
 		</output>
 	</recipe>
 

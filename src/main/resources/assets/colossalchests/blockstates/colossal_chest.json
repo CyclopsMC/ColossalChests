@@ -16,6 +16,8 @@
     "active=true,material=gold": { "model": "colossalchests:colossal_chest_off" },
     "active=false,material=diamond": { "model": "colossalchests:colossal_chest_diamond" },
     "active=true,material=diamond": { "model": "colossalchests:colossal_chest_off" },
+    "active=false,material=obsidian": { "model": "colossalchests:colossal_chest_obsidian" },
+    "active=true,material=obsidian": { "model": "colossalchests:colossal_chest_off" },
     "inventory": { "model": "colossalchests:colossal_chest_wood" }
   }
 }

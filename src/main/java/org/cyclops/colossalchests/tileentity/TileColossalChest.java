@@ -392,6 +392,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     @Override
     public INBTInventory getInventory() {
+        if (getWorld().isRemote && (inventory == null || inventory.getSizeInventory() != calculateInventorySize())) {
+            return inventory = constructInventory();
+        }
         if(lastValidInventory != null) {
             return lastValidInventory;
         }

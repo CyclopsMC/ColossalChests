@@ -16,6 +16,8 @@
     "active=true,material=gold": { "model": "colossalchests:interface_off" },
     "active=false,material=diamond": { "model": "colossalchests:interface_diamond" },
     "active=true,material=diamond": { "model": "colossalchests:interface_off" },
+    "active=false,material=obsidian": { "model": "colossalchests:interface_obsidian" },
+    "active=true,material=obsidian": { "model": "colossalchests:interface_off" },
     "inventory": { "model": "colossalchests:interface_wood" }
   }
 }

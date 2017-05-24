@@ -9,6 +9,7 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -23,6 +24,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.*;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -211,25 +213,29 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         if(!world.isRemote && player.getHeldItem(hand).isEmpty()) {
             DetectionResult result = TileColossalChest.detector.detect(world, blockPos, null,  new MaterialValidationAction(), false);
             if (result != null && result.getError() != null) {
-                ITextComponent chat = new TextComponentString("");
-                ITextComponent prefix = new TextComponentString(
-                        String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
-                ).setStyle(new Style().
-                        setColor(TextFormatting.GRAY).
-                        setHoverEvent(new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
-                                new TextComponentTranslation("multiblock.colossalchests.error.prefix.info")
-                        ))
-                );
-                ITextComponent error = new TextComponentString(result.getError().localize());
-                chat.appendSibling(prefix);
-                chat.appendSibling(error);
-                player.sendMessage(chat);
+                addPlayerChatError(player, result.getError());
             } else {
                 player.sendMessage(new TextComponentString(L10NHelpers.localize(
                         "multiblock.colossalchests.error.unexpected")));
             }
         }
+    }
+
+    public static void addPlayerChatError(EntityPlayer player, L10NHelpers.UnlocalizedString unlocalizedError) {
+        ITextComponent chat = new TextComponentString("");
+        ITextComponent prefix = new TextComponentString(
+                String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
+        ).setStyle(new Style().
+                        setColor(TextFormatting.GRAY).
+                        setHoverEvent(new HoverEvent(
+                                HoverEvent.Action.SHOW_TEXT,
+                                new TextComponentTranslation("multiblock.colossalchests.error.prefix.info")
+                        ))
+        );
+        ITextComponent error = new TextComponentString(unlocalizedError.localize());
+        chat.appendSibling(prefix);
+        chat.appendSibling(error);
+        player.sendMessage(chat);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -285,6 +291,14 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
     @Override
     public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
         return false;
+    }
+
+    @Override
+    public float getExplosionResistance(World world, BlockPos pos, Entity exploder, Explosion explosion) {
+        if (world.getBlockState(pos).getValue(ColossalChest.MATERIAL).isExplosionResistant()) {
+            return 10000F;
+        }
+        return super.getExplosionResistance(world, pos, exploder, explosion);
     }
 
     private static class MaterialValidationAction implements CubeDetector.IValidationAction {

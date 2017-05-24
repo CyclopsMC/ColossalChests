@@ -44,6 +44,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
         TEXTURES_CHEST.put(PropertyMaterial.Type.SILVER, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_silver.png"));
         TEXTURES_CHEST.put(PropertyMaterial.Type.GOLD, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_gold.png"));
         TEXTURES_CHEST.put(PropertyMaterial.Type.DIAMOND, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_diamond.png"));
+        TEXTURES_CHEST.put(PropertyMaterial.Type.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_obsidian.png"));
 
         TEXTURES_INTERFACE.put(PropertyMaterial.Type.WOOD, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_wood.png"));
         TEXTURES_INTERFACE.put(PropertyMaterial.Type.COPPER, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_copper.png"));
@@ -51,6 +52,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
         TEXTURES_INTERFACE.put(PropertyMaterial.Type.SILVER, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_silver.png"));
         TEXTURES_INTERFACE.put(PropertyMaterial.Type.GOLD, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_gold.png"));
         TEXTURES_INTERFACE.put(PropertyMaterial.Type.DIAMOND, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_diamond.png"));
+        TEXTURES_INTERFACE.put(PropertyMaterial.Type.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_obsidian.png"));
     }
 
 	/**

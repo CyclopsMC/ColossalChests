@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "colossalchests:blocks/chest_wall_obsidian"
+  }
+}

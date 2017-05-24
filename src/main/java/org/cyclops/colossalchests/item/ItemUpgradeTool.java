@@ -1,6 +1,5 @@
 package org.cyclops.colossalchests.item;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.block.state.IBlockState;

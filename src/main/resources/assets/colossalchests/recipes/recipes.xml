@@ -527,4 +527,14 @@
 		</output>
 	</recipe>
 
+	<recipe type="shapeless">
+		<condition type="config">upgradeTool</condition>
+		<input>
+			<item meta="1">colossalchests:upgradeTool</item>
+		</input>
+		<output>
+			<item meta="0">colossalchests:upgradeTool</item>
+		</output>
+	</recipe>
+
 </recipes>

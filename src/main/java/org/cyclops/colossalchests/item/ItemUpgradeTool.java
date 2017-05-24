@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.item;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.block.state.IBlockState;
@@ -67,11 +68,9 @@ public class ItemUpgradeTool extends ConfigurableItem {
             // Determine the chest core location
             BlockPos tileLocation = ColossalChest.getCoreLocation(world, pos);
             final TileColossalChest tile = TileHelpers.getSafeTile(world, tileLocation, TileColossalChest.class);
-            Vec3i size = tile.getSize();
 
             // Determine the new material type
-            int currentItemMeta = tile.getMaterial().ordinal();
-            final PropertyMaterial.Type newType = transformType(itemStack, tile.getMaterial());
+            PropertyMaterial.Type newType = transformType(itemStack, tile.getMaterial());
             if (newType == null) {
                 if(world.isRemote) {
                     return EnumActionResult.PASS;
@@ -80,75 +79,96 @@ public class ItemUpgradeTool extends ConfigurableItem {
                         "multiblock.colossalchests.error.upgradeLimit"));
                 return EnumActionResult.FAIL;
             }
-            int requiredItemMeta = newType.ordinal();
 
-            // Calculate required item blocks
-            final ItemStack requiredCores = new ItemStack(ColossalChest.getInstance(), 0, requiredItemMeta);
-            final ItemStack requiredInterfaces = new ItemStack(Interface.getInstance(), 0, requiredItemMeta);
-            final ItemStack requiredWalls = new ItemStack(ChestWall.getInstance(), 0, requiredItemMeta);
+            // Loop over the up/downgrade tiers until one works.
+            L10NHelpers.UnlocalizedString firstError = null;
+            do {
+                L10NHelpers.UnlocalizedString error = attemptTransform(world, pos, player, tile, newType, tile.getMaterial());
+                if (error != null) {
+                    if (firstError == null) {
+                        firstError = error;
+                    }
+                } else {
+                    return world.isRemote ? EnumActionResult.PASS : EnumActionResult.SUCCESS;
+                }
+            } while((newType = transformType(itemStack, newType)) != null);
+
+            ColossalChest.addPlayerChatError(player, firstError);
+            return world.isRemote ? EnumActionResult.PASS : EnumActionResult.FAIL;
+        }
+        return world.isRemote ? EnumActionResult.PASS : EnumActionResult.SUCCESS;
+    }
+
+    protected L10NHelpers.UnlocalizedString attemptTransform(final World world, BlockPos pos, EntityPlayer player,
+                                                final TileColossalChest tile, final PropertyMaterial.Type newType,
+                                                final PropertyMaterial.Type currentType) {
+        int currentItemMeta = currentType.ordinal();
+        int requiredItemMeta = newType.ordinal();
+        Vec3i size = tile.getSize();
+
+        // Calculate required item blocks
+        final ItemStack requiredCores = new ItemStack(ColossalChest.getInstance(), 0, requiredItemMeta);
+        final ItemStack requiredInterfaces = new ItemStack(Interface.getInstance(), 0, requiredItemMeta);
+        final ItemStack requiredWalls = new ItemStack(ChestWall.getInstance(), 0, requiredItemMeta);
+        TileColossalChest.detector.detect(world, pos, null, new CubeDetector.IValidationAction() {
+            @Override
+            public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
+                if (blockState.getBlock() == ColossalChest.getInstance()) {
+                    requiredCores.stackSize++;
+                } else if (blockState.getBlock() == Interface.getInstance()) {
+                    requiredInterfaces.stackSize++;
+                } else if (blockState.getBlock() == ChestWall.getInstance()) {
+                    requiredWalls.stackSize++;
+                }
+                return null;
+            }
+        }, false);
+
+        // Check required items in inventory
+        if (!(consumeItems(player, requiredCores, true)
+                && consumeItems(player, requiredInterfaces, true)
+                && consumeItems(player, requiredWalls, true))) {
+            return new L10NHelpers.UnlocalizedString(
+                    "multiblock.colossalchests.error.upgrade", requiredCores.stackSize,
+                    requiredInterfaces.stackSize, requiredWalls.stackSize, newType.getLocalizedName());
+        }
+
+        // Actually consume the items
+        consumeItems(player, requiredCores.copy(), false);
+        consumeItems(player, requiredInterfaces.copy(), false);
+        consumeItems(player, requiredWalls.copy(), false);
+
+        // Update the chest material
+        if(!world.isRemote) {
+            tile.setSize(Vec3i.NULL_VECTOR);
+            tile.setMaterial(newType);
             TileColossalChest.detector.detect(world, pos, null, new CubeDetector.IValidationAction() {
                 @Override
                 public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
-                    if (blockState.getBlock() == ColossalChest.getInstance()) {
-                        requiredCores.stackSize++;
-                    } else if (blockState.getBlock() == Interface.getInstance()) {
-                        requiredInterfaces.stackSize++;
-                    } else if (blockState.getBlock() == ChestWall.getInstance()) {
-                        requiredWalls.stackSize++;
+                    world.setBlockState(location, blockState.withProperty(ColossalChest.MATERIAL, newType),
+                            MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
+                    if (blockState.getBlock() == ColossalChest.getInstance()
+                            || blockState.getBlock() == Interface.getInstance()) {
+                        tile.addInterface(location);
                     }
                     return null;
                 }
             }, false);
-
-            // Check required items in inventory
-            if (!(consumeItems(player, requiredCores, true)
-                    && consumeItems(player, requiredInterfaces, true)
-                    && consumeItems(player, requiredWalls, true))) {
-                if(world.isRemote) {
-                    return EnumActionResult.PASS;
-                }
-                ColossalChest.addPlayerChatError(player, new L10NHelpers.UnlocalizedString(
-                        "multiblock.colossalchests.error.upgrade", requiredCores.stackSize,
-                        requiredInterfaces.stackSize, requiredWalls.stackSize, newType.getLocalizedName()));
-                return EnumActionResult.FAIL;
-            }
-
-            // Actually consume the items
-            consumeItems(player, requiredCores.copy(), false);
-            consumeItems(player, requiredInterfaces.copy(), false);
-            consumeItems(player, requiredWalls.copy(), false);
-
-            // Update the chest material
-            if(!world.isRemote) {
-                tile.setSize(Vec3i.NULL_VECTOR);
-                tile.setMaterial(newType);
-                TileColossalChest.detector.detect(world, tileLocation, null, new CubeDetector.IValidationAction() {
-                    @Override
-                    public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
-                        world.setBlockState(location, blockState.withProperty(ColossalChest.MATERIAL, newType),
-                                MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
-                        if (blockState.getBlock() == ColossalChest.getInstance()
-                                || blockState.getBlock() == Interface.getInstance()) {
-                            tile.addInterface(location);
-                        }
-                        return null;
-                    }
-                }, false);
-                tile.setSize(size); // To trigger the chest size to be updated
-            }
-
-            // Add the lower tier items to the players inventory again.
-            ItemStack returnedCores = requiredCores.copy();
-            ItemStack returnedInterfaces = requiredInterfaces.copy();
-            ItemStack returnedWalls = requiredWalls.copy();
-            returnedCores.setItemDamage(currentItemMeta);
-            returnedInterfaces.setItemDamage(currentItemMeta);
-            returnedWalls.setItemDamage(currentItemMeta);
-            InventoryHelpers.tryReAddToStack(player, null, returnedCores);
-            InventoryHelpers.tryReAddToStack(player, null, returnedInterfaces);
-            InventoryHelpers.tryReAddToStack(player, null, returnedWalls);
+            tile.setSize(size); // To trigger the chest size to be updated
         }
-        return world.isRemote ? EnumActionResult.PASS : EnumActionResult.SUCCESS;
+
+        // Add the lower tier items to the players inventory again.
+        ItemStack returnedCores = requiredCores.copy();
+        ItemStack returnedInterfaces = requiredInterfaces.copy();
+        ItemStack returnedWalls = requiredWalls.copy();
+        returnedCores.setItemDamage(currentItemMeta);
+        returnedInterfaces.setItemDamage(currentItemMeta);
+        returnedWalls.setItemDamage(currentItemMeta);
+        InventoryHelpers.tryReAddToStack(player, null, returnedCores);
+        InventoryHelpers.tryReAddToStack(player, null, returnedInterfaces);
+        InventoryHelpers.tryReAddToStack(player, null, returnedWalls);
+
+        return null;
     }
 
     protected boolean consumeItems(EntityPlayer player, ItemStack consumeStack, boolean simulate) {

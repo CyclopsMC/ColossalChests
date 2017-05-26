@@ -513,7 +513,7 @@
 			<item type="oredict">stickWood</item>
 		</input>
 		<output>
-			<item>colossalchests:upgradeTool</item>
+			<item>colossalchests:upgrade_tool</item>
 		</output>
 	</recipe>
 

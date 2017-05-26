@@ -1,0 +1,9 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.10.4 or higher.
+
+Additions:
+* Add Upgrade and Downgrade tools
+  This allows chests to be upgraded/downgraded by right-clicking them.
+  The tool will look for the corresponding chests's blocks for respectively the next and previous tiers and replace those with the blocks in the chest.
+* Add Obsidian Colossal Chest variant
+

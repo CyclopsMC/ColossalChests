@@ -1,4 +1,3 @@
-
 # General
 itemGroup.colossalchests=巨型箱子
 general.colossalchests.colossalchest.name=%s巨型箱子(%s)
@@ -9,10 +8,16 @@ tile.blocks.colossalchests.colossalChest.name=巨型箱子核心
 tile.blocks.colossalchests.colossalChest.info=每口巨型箱子仅需一个
 tile.blocks.colossalchests.chestWall.name=巨型箱子箱壁
 tile.blocks.colossalchests.chestWall.info=巨型箱子的主体结构
-tile.blocks.colossalchests.interface.name=巨型箱子交界面
+tile.blocks.colossalchests.interface.name=巨型箱子接口
 tile.blocks.colossalchests.interface.info=用于和管道或漏斗相连
 tile.blocks.colossalchests.uncolossalChest.name=微缩箱子
 tile.blocks.colossalchests.uncolossalChest.info=这才是最大的箱子！！！
+
+# Items
+item.items.colossalchests.upgradeTool.name=箱子升级工具
+item.items.colossalchests.upgradeTool.info=当你的背包中有足够的物品时可将一个巨型箱子升到下一级。
+item.items.colossalchests.upgradeTool.reverse.name=箱子降级工具
+item.items.colossalchests.upgradeTool.reverse.info=当你的背包中有足够的物品时可将一个巨型箱子降到上一级。警告：如果箱子容量太小物品可能会弹出。
 
 # Materials
 material.colossalchests.wood=木质
@@ -21,9 +26,49 @@ material.colossalchests.iron=铁
 material.colossalchests.silver=银
 material.colossalchests.gold=金
 material.colossalchests.diamond=钻石
+material.colossalchests.obsidian=黑曜石
 
 # Multiblock
 multiblock.colossalchests.error.prefix=巨型箱子
 multiblock.colossalchests.error.prefix.info=巨型箱子结构错误
 multiblock.colossalchests.error.unexpected=不可预料的巨型箱子结构错误。
 multiblock.colossalchests.error.material=在%2$s发现了材料：%1$s，但那里本应使用%3$s。
+multiblock.colossalchests.error.upgrade=没有足够的物品去升级这个箱子，你需要%s个核心，%s个接口和%s个箱壁，其材料至少为%s。
+multiblock.colossalchests.error.upgradeLimit=你不能继续转化这个箱子了。
+
+# Configuration
+config.colossalchests=%s配置文件
+
+## Config categories
+config.colossalchests.block=方块设置
+config.colossalchests.block.tooltip=方块设置
+config.colossalchests.general=常规设置
+config.colossalchests.general.tooltip=常规设置
+config.colossalchests.machine=机器设置
+config.colossalchests.machine.tooltip=机器设置
+config.colossalchests.core=核心设置
+config.colossalchests.core.tooltip=核心设置
+config.colossalchests.modcompat=Mod兼容设置
+config.colossalchests.modcompat.tooltip=Mod兼容设置
+
+## General settings
+config.colossalchests.colossalChest.chestAnimation=箱子动画
+config.colossalchests.general.ejectItemsOnDestroy=破坏时喷出物品
+config.colossalchests.general.metalVariants=金属变体
+config.colossalchests.general.alwaysShowInterfaceOverlay=渲染接口图像
+config.colossalchests.general.creativeChests=创造模式箱子
+
+## Machine settings
+config.colossalchests.colossalChest.maxSize=巨型箱子最大直径
+
+## Core settings
+config.colossalchests.general.analytics=发送匿名分析
+config.colossalchests.general.crashOnInvalidRecipe=无效合成崩溃
+config.colossalchests.general.crashOnModCompatCrash=兼容性问题崩溃
+config.colossalchests.general.debug=开发模式
+config.colossalchests.general.maxPacketBufferSize=包缓冲区最大大小
+config.colossalchests.general.version=版本
+config.colossalchests.general.versionChecker=版本检查
+
+## Mod compatibility settings
+config.colossalchests.ironchest=Iron Chests

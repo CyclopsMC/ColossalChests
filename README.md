@@ -1,6 +1,6 @@
 ## Colossal Chests
 
-[![Build Status](https://travis-ci.org/CyclopsMC/ColossalChests.svg?branch=master-1.10)](https://travis-ci.org/rubensworks/ColossalChests)
+[![Build Status](https://travis-ci.org/CyclopsMC/ColossalChests.svg?branch=master-1.11)](https://travis-ci.org/rubensworks/ColossalChests)
 [![Download](https://api.bintray.com/packages/cyclopsmc/dev/ColossalChests/images/download.svg) ](https://bintray.com/cyclopsmc/dev/ColossalChests/_latestVersion)
 [![CurseForge](http://cf.way2muchnoise.eu/full_237875_downloads.svg)](https://minecraft.curseforge.com/projects/colossal-chests)
 

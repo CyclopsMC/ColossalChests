@@ -12,13 +12,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
@@ -32,9 +31,8 @@ import org.cyclops.cyclopscore.block.property.BlockPropertyManagerComponent;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlock;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
+import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
-
-import java.util.List;
 
 /**
  * Part of the Colossal Blood Chest multiblock structure.
@@ -65,6 +63,7 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
         this.setHarvestLevel("axe", 0); // Wood tier
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean getUseNeighborBrightness(IBlockState state) {
         return true;
@@ -81,12 +80,14 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
+    @SuppressWarnings("deprecation")
     @SideOnly(Side.CLIENT)
     @Override
     public boolean isOpaqueCube(IBlockState blockState) {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     @SideOnly(Side.CLIENT)
     @Override
     public boolean isFullCube(IBlockState blockState) {
@@ -152,7 +153,8 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public void getSubBlocks(Item item, CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
+    public void getSubBlocks(CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
+        if (!BlockHelpers.isValidCreativeTab(this, creativeTabs)) return;
         for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
             list.add(new ItemStack(getInstance(), 1, material.ordinal()));
         }

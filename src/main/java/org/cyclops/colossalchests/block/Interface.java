@@ -33,6 +33,7 @@ import org.cyclops.cyclopscore.block.property.BlockPropertyManagerComponent;
 import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainer;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
+import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 
@@ -67,6 +68,7 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
         this.setHarvestLevel("axe", 0); // Wood tier
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean getUseNeighborBrightness(IBlockState state) {
         return true;
@@ -83,12 +85,14 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
+    @SuppressWarnings("deprecation")
     @SideOnly(Side.CLIENT)
     @Override
     public boolean isOpaqueCube(IBlockState blockState) {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     @SideOnly(Side.CLIENT)
     @Override
     public boolean isFullCube(IBlockState blockState) {
@@ -165,7 +169,8 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public void getSubBlocks(Item item, CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
+    public void getSubBlocks(CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
+        if (!BlockHelpers.isValidCreativeTab(this, creativeTabs)) return;
         for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
             list.add(new ItemStack(getInstance(), 1, material.ordinal()));
         }

@@ -13,7 +13,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
@@ -42,7 +41,6 @@ import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.*;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * A machine that can infuse stuff with blood.
@@ -75,6 +73,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         this.setRotatable(false);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean getUseNeighborBrightness(IBlockState state) {
         return true;
@@ -102,12 +101,14 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return isToolEffectiveShared(type, state);
     }
 
+    @SuppressWarnings("deprecation")
     @SideOnly(Side.CLIENT)
     @Override
     public boolean isOpaqueCube(IBlockState blockState) {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     @SideOnly(Side.CLIENT)
     @Override
     public boolean isFullCube(IBlockState blockState) {
@@ -240,7 +241,8 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public void getSubBlocks(Item item, CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
+    public void getSubBlocks(CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
+        if (!BlockHelpers.isValidCreativeTab(this, creativeTabs)) return;
         for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
             list.add(new ItemStack(getInstance(), 1, material.ordinal()));
         }

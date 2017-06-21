@@ -3,13 +3,12 @@ package org.cyclops.colossalchests.client.render.tileentity;
 import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelChest;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.cyclops.colossalchests.ColossalChests;
@@ -18,7 +17,6 @@ import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
-import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.client.render.tileentity.RenderTileEntityModel;
 import org.cyclops.cyclopscore.init.ModBase;
 import org.lwjgl.opengl.GL11;
@@ -67,7 +65,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     protected void preRotate(TileColossalChest chestTile) {
         if(chestTile.isStructureComplete()) {
             Vec3d renderOffset = chestTile.getRenderOffset();
-            GlStateManager.translate(-renderOffset.xCoord, renderOffset.yCoord, renderOffset.zCoord);
+            GlStateManager.translate(-renderOffset.x, renderOffset.y, renderOffset.z);
         }
         GlStateManager.translate(0.5F, 0.5F - chestTile.getSizeSingular() * 0.0625F, 0.5F);
         float size = chestTile.getSizeSingular() * 1.125F;
@@ -97,8 +95,8 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     }
 
     @Override
-    public void renderTileEntityAt(TileColossalChest tile, double x, double y, double z, float partialTick, int destroyStage) {
-        super.renderTileEntityAt(tile, x, y, z, partialTick, destroyStage);
+    public void render(TileColossalChest tile, double x, double y, double z, float partialTick, int destroyStage, float alpha) {
+        super.render(tile, x, y, z, partialTick, destroyStage, alpha);
         if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getMinecraft().player.isSneaking())) {
             GlStateManager.enableRescaleNormal();
             GlStateManager.alphaFunc(516, 0.1F);
@@ -191,7 +189,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
             GlStateManager.scale(1, -1, 1);
 
             setMatrixOrientation(side);
-            VertexBuffer worldRenderer = Tessellator.getInstance().getBuffer();
+            BufferBuilder worldRenderer = Tessellator.getInstance().getBuffer();
             worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
             float indent = -0.2F;
             if (side == EnumFacing.UP) indent = -15.8F;

@@ -1,9 +1,11 @@
 package org.cyclops.colossalchests.item;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.cyclopscore.item.ItemBlockMetadata;
 
@@ -23,13 +25,13 @@ public class ItemBlockMaterial extends ItemBlockMetadata {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
+    public void addInformation(ItemStack itemStack, World world, List<String> list, ITooltipFlag flag) {
         int materialIndex = itemStack.getItemDamage();
         if (materialIndex > PropertyMaterial.Type.values().length) {
             materialIndex = (materialIndex - 1) / 2;
         }
         list.add(TextFormatting.BLUE + PropertyMaterial.Type.values()[materialIndex].getLocalizedName());
-        super.addInformation(itemStack, entityPlayer, list, par4);
+        super.addInformation(itemStack, world, list, flag);
 
     }
 }

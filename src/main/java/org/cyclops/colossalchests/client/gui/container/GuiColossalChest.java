@@ -87,7 +87,7 @@ public class GuiColossalChest extends ScrollingGuiContainer {
     }
 
     protected void drawForgegroundString() {
-        fontRendererObj.drawString(tile.getName(), 8 + offsetX, 6 + offsetY, 4210752);
+        fontRenderer.drawString(tile.getName(), 8 + offsetX, 6 + offsetY, 4210752);
     }
 
     @Override

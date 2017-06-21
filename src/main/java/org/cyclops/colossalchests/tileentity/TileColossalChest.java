@@ -423,16 +423,16 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     public void setCenter(Vec3d center) {
         EnumFacing rotation;
-        double dx = Math.abs(center.xCoord - getPos().getX());
-        double dz = Math.abs(center.zCoord - getPos().getZ());
-        boolean equal = (center.xCoord - getPos().getX()) == (center.zCoord - getPos().getZ());
+        double dx = Math.abs(center.x - getPos().getX());
+        double dz = Math.abs(center.z - getPos().getZ());
+        boolean equal = (center.x - getPos().getX()) == (center.z - getPos().getZ());
         if(dx > dz || (!equal && getSizeSingular() == 2)) {
-            rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.xCoord - getPos().getX()));
+            rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.x - getPos().getX()));
         } else {
-            rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.zCoord - getPos().getZ()));
+            rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.z - getPos().getZ()));
         }
         this.setRotation(rotation);
-        this.renderOffset = new Vec3d(getPos().getX() - center.xCoord, getPos().getY() - center.yCoord, getPos().getZ() - center.zCoord);
+        this.renderOffset = new Vec3d(getPos().getX() - center.x, getPos().getY() - center.y, getPos().getZ() - center.z);
     }
 
     public Vec3d getRenderOffset() {

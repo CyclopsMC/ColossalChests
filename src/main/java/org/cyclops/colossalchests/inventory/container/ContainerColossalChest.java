@@ -167,7 +167,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             if(listener instanceof EntityPlayerMP) {
                 updateCraftingInventory((EntityPlayerMP) listener, getInventory());
             } else {
-                listener.updateCraftingInventory(this, this.getInventory());
+                listener.sendAllContents(this, this.getInventory());
             }
             this.detectAndSendChanges();
         }

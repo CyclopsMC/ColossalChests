@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -24,8 +23,6 @@ import org.cyclops.cyclopscore.config.configurable.ConfigurableItem;
 import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
 import org.cyclops.cyclopscore.helper.*;
 import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
-
-import java.util.List;
 
 /**
  * An item to upgrade chests to the next tier.
@@ -196,9 +193,10 @@ public class ItemUpgradeTool extends ConfigurableItem {
     }
 
     @Override
-    public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        super.getSubItems(itemIn, tab, subItems);
-        subItems.add(new ItemStack(itemIn, 1, 1));
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
+        if (!ItemStackHelpers.isValidCreativeTab(this, tab)) return;
+        super.getSubItems(tab, subItems);
+        subItems.add(new ItemStack(this, 1, 1));
     }
 
     protected PropertyMaterial.Type transformType(ItemStack itemStack, PropertyMaterial.Type type) {

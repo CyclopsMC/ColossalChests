@@ -421,7 +421,7 @@
 	<!-- OBSIDIAN -->
 
 	<recipe type="shaped">
-		<condition type="config">chestWall</condition>
+		<condition type="config">chest_wall</condition>
 		<condition type="predefined">colossalchests:metalVariants</condition>
 		<input>
 			<grid>
@@ -432,7 +432,7 @@
 				</gridrow>
 				<gridrow>
 					<item type="oredict">obsidian</item>
-					<item meta="5">colossalchests:chestWall</item>
+					<item meta="5">colossalchests:chest_wall</item>
 					<item type="oredict">obsidian</item>
 				</gridrow>
 				<gridrow>
@@ -443,26 +443,26 @@
 			</grid>
 		</input>
 		<output>
-			<item amount="1" meta="6">colossalchests:chestWall</item>
+			<item amount="1" meta="6">colossalchests:chest_wall</item>
 		</output>
 	</recipe>
 
 	<recipe type="shapeless">
-		<condition type="config">colossalChest</condition>
-		<condition type="config">chestWall</condition>
+		<condition type="config">colossal_chest</condition>
+		<condition type="config">chest_wall</condition>
 		<condition type="predefined">colossalchests:metalVariants</condition>
 		<input>
-			<item meta="6">colossalchests:chestWall</item>
+			<item meta="6">colossalchests:chest_wall</item>
 			<item type="oredict">ingotIron</item>
 		</input>
 		<output>
-			<item meta="6">colossalchests:colossalChest</item>
+			<item meta="6">colossalchests:colossal_chest</item>
 		</output>
 	</recipe>
 
 	<recipe type="shaped">
 		<condition type="config">interface</condition>
-		<condition type="config">chestWall</condition>
+		<condition type="config">chest_wall</condition>
 		<condition type="predefined">colossalchests:metalVariants</condition>
 		<input>
 			<grid>
@@ -473,7 +473,7 @@
 				</gridrow>
 				<gridrow>
 					<item type="oredict">cobblestone</item>
-					<item meta="6">colossalchests:chestWall</item>
+					<item meta="6">colossalchests:chest_wall</item>
 					<item type="oredict">cobblestone</item>
 				</gridrow>
 				<gridrow>

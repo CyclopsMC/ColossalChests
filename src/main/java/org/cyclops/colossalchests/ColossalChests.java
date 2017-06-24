@@ -136,12 +136,6 @@ public class ColossalChests extends ModBaseVersionable {
         super.onServerStopping(event);
     }
 
-    @Mod.EventHandler
-    @Override
-    public void onMissingMappings(FMLMissingMappingsEvent event) {
-        super.onMissingMappings(event);
-    }
-
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
         return new ItemCreativeTab(this, new IObjectReference<Item>() {

@@ -165,9 +165,9 @@ public class ItemUpgradeTool extends ConfigurableItem {
         returnedCores.setItemDamage(currentItemMeta);
         returnedInterfaces.setItemDamage(currentItemMeta);
         returnedWalls.setItemDamage(currentItemMeta);
-        InventoryHelpers.tryReAddToStack(player, null, returnedCores);
-        InventoryHelpers.tryReAddToStack(player, null, returnedInterfaces);
-        InventoryHelpers.tryReAddToStack(player, null, returnedWalls);
+        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedCores);
+        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedInterfaces);
+        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedWalls);
 
         return null;
     }
@@ -180,14 +180,14 @@ public class ItemUpgradeTool extends ConfigurableItem {
         int validItems = 0;
         while (it.hasNext()) {
             ItemStack stack = it.next();
-            if (stack != null) {
+            if (!stack.isEmpty()) {
                 if (ItemStack.areItemsEqual(stack, consumeStack)) {
                     int previousValidItems = validItems;
                     validItems += stack.getCount();
                     validItems = Math.min(consumeStack.getCount(), validItems);
                     if (!simulate) {
                         stack.shrink(validItems - previousValidItems);
-                        it.replace(stack.getCount() == 0 ? null : stack);
+                        it.replace(stack.getCount() == 0 ? ItemStack.EMPTY : stack);
                     }
                 }
             }

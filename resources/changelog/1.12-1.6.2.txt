@@ -1,0 +1,6 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.10.7 or higher.
+
+Fixes:
+* Fix items vanishing during failed up/downgrades, Closes #84
+* Fix obsidian chest recipes

@@ -84,6 +84,7 @@ public class ColossalChests extends ModBaseVersionable {
     @Override
     public void preInit(FMLPreInitializationEvent event) {
         super.preInit(event);
+        Advancements.load();
     }
     
     /**

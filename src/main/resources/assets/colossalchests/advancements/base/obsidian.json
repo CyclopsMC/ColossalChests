@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:chest_wall",
+      "data": 6
+    },
+    "title": {
+      "translate": "advancement.colossalchests.obsidian"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.obsidian.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "OBSIDIAN"
+      }
+    }
+  }
+}

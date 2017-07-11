@@ -102,22 +102,20 @@ public class ChestWall extends ConfigurableBlock implements CubeDetector.IDetect
     @Override
     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        if(!world.captureBlockSnapshots) {
-            ColossalChest.triggerDetector(world, pos, true);
-        }
+        ColossalChest.triggerDetector(world, pos, true, placer instanceof EntityPlayer ? (EntityPlayer) placer : null);
     }
 
     @Override
     public void onBlockAdded(World world, BlockPos blockPos, IBlockState blockState) {
         super.onBlockAdded(world, blockPos, blockState);
         if(!world.captureBlockSnapshots && blockState.getBlock() == this && !blockState.getValue(ACTIVE)) {
-            ColossalChest.triggerDetector(world, blockPos, true);
+            ColossalChest.triggerDetector(world, blockPos, true, null);
         }
     }
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if((Boolean)state.getValue(ACTIVE)) ColossalChest.triggerDetector(world, pos, false);
+        if((Boolean)state.getValue(ACTIVE)) ColossalChest.triggerDetector(world, pos, false, null);
         super.breakBlock(world, pos, state);
     }
 

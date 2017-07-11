@@ -12,6 +12,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
@@ -27,6 +28,8 @@ import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.lang3.tuple.Pair;
+import org.cyclops.colossalchests.Advancements;
 import org.cyclops.colossalchests.client.gui.container.GuiColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
@@ -121,8 +124,24 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
-    public static DetectionResult triggerDetector(World world, BlockPos blockPos, boolean valid) {
-        return TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
+    public static DetectionResult triggerDetector(World world, BlockPos blockPos, boolean valid, @Nullable EntityPlayer player) {
+        DetectionResult detectionResult = TileColossalChest.detector.detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
+        if (player instanceof EntityPlayerMP && detectionResult.getError() == null) {
+            IBlockState blockState = world.getBlockState(blockPos);
+            if (blockState.getValue(ACTIVE)) {
+                PropertyMaterial.Type material = blockState.getValue(MATERIAL);
+
+                TileColossalChest tile = TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class);
+                if (tile == null) {
+                    BlockPos corePos = getCoreLocation(world, blockPos);
+                    tile = TileHelpers.getSafeTile(world, corePos, TileColossalChest.class);
+                }
+
+                Advancements.CHEST_FORMED.trigger((EntityPlayerMP) player,
+                        Pair.of(material, tile.getSizeSingular()));
+            }
+        }
+        return detectionResult;
     }
 
     @Override
@@ -135,18 +154,18 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
                 tile.setSize(Vec3i.NULL_VECTOR);
             }
         }
-        triggerDetector(world, pos, true);
+        triggerDetector(world, pos, true, placer instanceof EntityPlayer ? (EntityPlayer) placer : null);
     }
 
     @Override
     public void onBlockAdded(World world, BlockPos blockPos, IBlockState blockState) {
         super.onBlockAdded(world, blockPos, blockState);
-        triggerDetector(world, blockPos, true);
+        triggerDetector(world, blockPos, true, null);
     }
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if((Boolean)state.getValue(ACTIVE)) triggerDetector(world, pos, false);
+        if((Boolean)state.getValue(ACTIVE)) triggerDetector(world, pos, false, null);
         super.breakBlock(world, pos, state);
     }
 

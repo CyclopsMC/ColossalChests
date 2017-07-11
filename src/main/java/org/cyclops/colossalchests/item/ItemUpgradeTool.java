@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -13,6 +14,8 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import org.apache.commons.lang3.tuple.Pair;
+import org.cyclops.colossalchests.Advancements;
 import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.Interface;
@@ -153,6 +156,7 @@ public class ItemUpgradeTool extends ConfigurableItem {
                 }
             }, false);
             tile.setSize(size); // To trigger the chest size to be updated
+            Advancements.CHEST_FORMED.trigger((EntityPlayerMP) player, Pair.of(newType, size.getX() + 1));
         }
 
         // Add the lower tier items to the players inventory again.

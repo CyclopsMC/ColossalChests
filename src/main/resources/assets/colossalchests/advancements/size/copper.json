@@ -1,0 +1,25 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:colossal_chest",
+      "data": 1
+    },
+    "title": {
+      "translate": "advancement.colossalchests.large.copper"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.large.copper.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests:base/copper",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "COPPER",
+        "minimumSize": 10
+      }
+    }
+  }
+}

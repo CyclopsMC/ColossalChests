@@ -1,0 +1,48 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:colossal_chest"
+    },
+    "title": {
+      "translate": "itemGroup.colossalchests"
+    },
+    "description": {
+      "translate": "general.colossalchests.description"
+    },
+    "background": "textures/gui/advancements/backgrounds/adventure.png",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "rewards": {
+    "recipes": [
+      "colossalchests:uncolossal_chest",
+      "colossalchests:colossal_chest",
+      "colossalchests:chest_wall",
+      "colossalchests:interface",
+      "colossalchests:colossal_chest_2",
+      "colossalchests:chest_wall_2",
+      "colossalchests:interface_2",
+      "colossalchests:colossal_chest_4",
+      "colossalchests:chest_wall_4",
+      "colossalchests:interface_4",
+      "colossalchests:colossal_chest_5",
+      "colossalchests:chest_wall_5",
+      "colossalchests:interface_5",
+      "colossalchests:colossal_chest_6",
+      "colossalchests:chest_wall_6",
+      "colossalchests:interface_6"
+    ]
+  },
+  "criteria": {
+    "criteria_0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:chest"
+          }
+        ]
+      }
+    }
+  }
+}

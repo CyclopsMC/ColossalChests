@@ -1,7 +1,40 @@
 # General
 itemGroup.colossalchests=Colossal Chests
+general.colossalchests.description=For when regular chests are too small.
 general.colossalchests.colossalchest.name=%s Colossal Chest (%s)
 general.colossalchests.uncolossalchest.name=Uncolossal Chest
+
+# Advancements
+advancement.colossalchests.wood=Wooden Colossal Chest
+advancement.colossalchests.wood.desc=Form a wooden Colossal Chest
+advancement.colossalchests.copper=Copper Colossal Chest
+advancement.colossalchests.copper.desc=Form a copper Colossal Chest
+advancement.colossalchests.iron=Iron Colossal Chest
+advancement.colossalchests.iron.desc=Form an iron Colossal Chest
+advancement.colossalchests.silver=Silver Colossal Chest
+advancement.colossalchests.silver.desc=Form a silver Colossal Chest
+advancement.colossalchests.gold=Gold Colossal Chest
+advancement.colossalchests.gold.desc=Form a golden Colossal Chest
+advancement.colossalchests.diamond=Diamond Colossal Chest
+advancement.colossalchests.diamond.desc=Form a diamond Colossal Chest
+advancement.colossalchests.obsidian=Obsidian Colossal Chest
+advancement.colossalchests.obsidian.desc=Form an obsidian Colossal Chest
+advancement.colossalchests.uncolossal=The most colossal of 'em all!
+advancement.colossalchests.uncolossal.desc=Obtain an Uncolossal Chest
+advancement.colossalchests.large.wood=Epic Wooden Colossal Chest
+advancement.colossalchests.large.wood.desc=Form a wooden Colossal Chest of at least 10x10x10
+advancement.colossalchests.large.copper=Epic Copper Colossal Chest
+advancement.colossalchests.large.copper.desc=Form a copper Colossal Chest of at least 10x10x10
+advancement.colossalchests.large.iron=Epic Iron Colossal Chest
+advancement.colossalchests.large.iron.desc=Form an iron Colossal Chest of at least 10x10x10
+advancement.colossalchests.large.silver=Epic Silver Colossal Chest
+advancement.colossalchests.large.silver.desc=Form a silver Colossal Chest of at least 10x10x10
+advancement.colossalchests.large.gold=Epic Gold Colossal Chest
+advancement.colossalchests.large.gold.desc=Form a golden Colossal Chest of at least 10x10x10
+advancement.colossalchests.large.diamond=Epic Diamond Colossal Chest
+advancement.colossalchests.large.diamond.desc=Form a diamond Colossal Chest of at least 10x10x10
+advancement.colossalchests.large.obsidian=Epic Obsidian Colossal Chest
+advancement.colossalchests.large.obsidian.desc=Form an obsidian Colossal Chest of at least 10x10x10
 
 # Blocks
 tile.blocks.colossalchests.colossal_chest.name=Colossal Chest Core

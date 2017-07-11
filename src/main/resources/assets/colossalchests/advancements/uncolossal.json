@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:uncolossal_chest"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.uncolossal"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.uncolossal.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "minecraft:placed_block",
+      "conditions": {
+        "block": "colossalchests:uncolossal_chest"
+      }
+    }
+  }
+}

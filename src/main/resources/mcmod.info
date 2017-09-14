@@ -12,6 +12,7 @@
   "credits": "kroeserr",
   "parent": "",
   "screenshots": [],
-  "dependencies": []
+  "dependencies": [],
+  "requiredMods": [ "forge", "cyclopscore" ]
 }
 ]

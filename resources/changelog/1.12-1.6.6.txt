@@ -1,0 +1,10 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.10.18 or higher.
+
+Changes:
+* Add required mods to mcmod.info
+
+Fixes:
+* Bump minimum CyclopsCore version, Closes #92
+  Fixes a crash due to the latest CyclopsCore update.
+

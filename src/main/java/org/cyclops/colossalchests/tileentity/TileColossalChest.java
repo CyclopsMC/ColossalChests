@@ -459,7 +459,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         int[] slots = facingSlots.get(side);
         if(slots == null) {
             ContiguousSet<Integer> integers = ContiguousSet.create(
-                    Range.closed(0, getSizeInventory()), DiscreteDomain.integers()
+                    Range.closedOpen(0, getSizeInventory()), DiscreteDomain.integers()
             );
             slots = ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()]));
             facingSlots.put(side, slots);

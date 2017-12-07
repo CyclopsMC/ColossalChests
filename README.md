@@ -1,12 +1,14 @@
 ## Colossal Chests
 
 [![Build Status](https://travis-ci.org/CyclopsMC/ColossalChests.svg?branch=master-1.11)](https://travis-ci.org/rubensworks/ColossalChests)
-[![Download](https://api.bintray.com/packages/cyclopsmc/dev/ColossalChests/images/download.svg) ](https://bintray.com/cyclopsmc/dev/ColossalChests/_latestVersion)
+[![Download](https://img.shields.io/maven-metadata/v/http/cyclopsmc.jfrog.io/cyclopsmc/libs-release/org/cyclops/colossalchests/ColossalChests/maven-metadata.xml.svg) ](https://cyclopsmc.jfrog.io/cyclopsmc/libs-release/org/cyclops/colossalchests/ColossalChests/)
 [![CurseForge](http://cf.way2muchnoise.eu/full_237875_downloads.svg)](https://minecraft.curseforge.com/projects/colossal-chests)
 
 For when regular chests are too small
 
 All stable releases (including deobfuscated builds) can be found on [CurseForge](http://minecraft.curseforge.com/mc-mods/colossal-chests/files).
+
+[Development builds](https://cyclopsmc.jfrog.io/cyclopsmc/libs-release/org/cyclops/colossalchests/ColossalChests/) are hosted by [JFrog Artifactory](https://www.jfrog.com/artifactory/).
 
 ### Contributing
 * Before submitting a pull request containing a new feature, please discuss this first with one of the lead developers.

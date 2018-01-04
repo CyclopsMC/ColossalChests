@@ -7,7 +7,7 @@ repositories {
     }
     maven {
         name "Cyclops Repo"
-        url "https://cyclopsmc.jfrog.io/cyclopsmc/libs-release/"
+        url "https://oss.jfrog.org/artifactory/simple/libs-release/"
     }
 }
 dependencies {

@@ -29,12 +29,30 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
-import org.cyclops.colossalchests.block.*;
+import org.cyclops.colossalchests.block.ChestWall;
+import org.cyclops.colossalchests.block.ColossalChest;
+import org.cyclops.colossalchests.block.ColossalChestConfig;
+import org.cyclops.colossalchests.block.Interface;
+import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
-import org.cyclops.cyclopscore.block.multi.*;
+import org.cyclops.cyclopscore.block.multi.AllowedBlock;
+import org.cyclops.cyclopscore.block.multi.CubeDetector;
+import org.cyclops.cyclopscore.block.multi.CubeSizeValidator;
+import org.cyclops.cyclopscore.block.multi.ExactBlockCountValidator;
+import org.cyclops.cyclopscore.block.multi.HollowCubeDetector;
+import org.cyclops.cyclopscore.block.multi.MaximumSizeValidator;
+import org.cyclops.cyclopscore.block.multi.MinimumSizeValidator;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
-import org.cyclops.cyclopscore.helper.*;
-import org.cyclops.cyclopscore.inventory.*;
+import org.cyclops.cyclopscore.helper.DirectionHelpers;
+import org.cyclops.cyclopscore.helper.L10NHelpers;
+import org.cyclops.cyclopscore.helper.LocationHelpers;
+import org.cyclops.cyclopscore.helper.MinecraftHelpers;
+import org.cyclops.cyclopscore.helper.WorldHelpers;
+import org.cyclops.cyclopscore.inventory.INBTInventory;
+import org.cyclops.cyclopscore.inventory.IndexedInventory;
+import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
+import org.cyclops.cyclopscore.inventory.LargeInventory;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
@@ -213,15 +231,21 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         return getSize().getX() + 1;
     }
 
-    protected IndexedInventory constructInventory() {
+    protected boolean isClientSide() {
+        return getWorld() != null && getWorld().isRemote;
+    }
+
+    protected LargeInventory constructInventory() {
         if (GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        return new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+        return isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
+                : new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 
-    protected IndexedInventory constructInventoryDebug() {
-        IndexedInventory inv = new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+    protected LargeInventory constructInventoryDebug() {
+        LargeInventory inv = isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
+                : new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
         for (int i = 0; i < inv.getSizeInventory(); i++) {
             inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(world.rand)));
         }

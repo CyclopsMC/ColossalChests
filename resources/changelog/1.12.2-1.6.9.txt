@@ -1,0 +1,9 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.11.0 or higher.
+
+Changes:
+* Update zh_CN.lang
+
+Fixes:
+* Fix occasional client crash when opening chest guis, Closes #101
+  This was because indexing would occur client=side as well, which is not required and not properly supported, and thus could result in crashes.

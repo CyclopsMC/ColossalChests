@@ -141,14 +141,18 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
 
     @Override
     public void openInventory(EntityPlayer entityPlayer) {
-        super.openInventory(entityPlayer);
-        triggerPlayerUsageChange(1);
+        if (!entityPlayer.isSpectator()) {
+            super.openInventory(entityPlayer);
+            triggerPlayerUsageChange(1);
+        }
     }
 
     @Override
     public void closeInventory(EntityPlayer entityPlayer) {
-        super.closeInventory(entityPlayer);
-        triggerPlayerUsageChange(-1);
+        if (!entityPlayer.isSpectator()) {
+            super.closeInventory(entityPlayer);
+            triggerPlayerUsageChange(-1);
+        }
     }
 
     private void triggerPlayerUsageChange(int change) {

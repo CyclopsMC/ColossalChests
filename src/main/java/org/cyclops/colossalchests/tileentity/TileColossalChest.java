@@ -239,12 +239,12 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
         if (GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        return isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
+        return !isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
                 : new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
     }
 
     protected LargeInventory constructInventoryDebug() {
-        LargeInventory inv = isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
+        LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
                 : new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
         for (int i = 0; i < inv.getSizeInventory(); i++) {
             inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(world.rand)));

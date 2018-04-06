@@ -1,0 +1,8 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 0.11.0 or higher.
+
+Fixes:
+* Don't animate chests when opening in spectator mode, #105
+* Fix crash with mods that use the indexed inventory, Closes #106
+  This fixes a crash with mods like Integrated Tunnels.
+

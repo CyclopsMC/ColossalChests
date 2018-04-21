@@ -125,7 +125,7 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
     }
 
     @Override
-    protected void onPreBlockDestroyed(World world, BlockPos blockPos) {
+    protected void onPreBlockDestroyed(World world, BlockPos blockPos, EntityPlayer player) {
         // Don't drop items in inventory.
     }
 

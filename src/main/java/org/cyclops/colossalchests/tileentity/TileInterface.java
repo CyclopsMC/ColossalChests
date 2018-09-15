@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.tileentity;
 
+import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,8 +19,10 @@ import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
 
 /**
  * A machine that can infuse things with blood.
@@ -298,6 +301,18 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         }
 
         @Override
+        public Iterator<ItemStack> getItems() {
+            ISlotlessItemHandler handler = getHandler();
+            return handler != null ? handler.getItems() : Iterators.forArray();
+        }
+
+        @Override
+        public Iterator<ItemStack> findItems(@Nonnull ItemStack stack, int matchFlags) {
+            ISlotlessItemHandler handler = getHandler();
+            return handler != null ? handler.findItems(stack, matchFlags) : Iterators.forArray();
+        }
+
+        @Override
         public ItemStack insertItem(ItemStack stack, boolean simulate) {
             ISlotlessItemHandler handler = getHandler();
             return handler != null ? handler.insertItem(stack, simulate) : stack;
@@ -313,6 +328,12 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
         public ItemStack extractItem(ItemStack matchStack, int matchFlags, boolean simulate) {
             ISlotlessItemHandler handler = getHandler();
             return handler != null ? handler.extractItem(matchStack, matchFlags, simulate) : ItemStack.EMPTY;
+        }
+
+        @Override
+        public int getLimit() {
+            ISlotlessItemHandler handler = getHandler();
+            return handler != null ? handler.getLimit() : 0;
         }
     }
 

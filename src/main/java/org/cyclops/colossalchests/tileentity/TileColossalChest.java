@@ -4,7 +4,7 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import gnu.trove.map.TIntObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.experimental.Delegate;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -141,7 +141,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                     }
 
                     @Override
-                    public Map<Item, TIntObjectMap<ItemStack>> getIndex() {
+                    public Map<Item, Int2ObjectMap<ItemStack>> getIndex() {
                         return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getIndex();
                     }
 
@@ -272,6 +272,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     public void readFromNBT(NBTTagCompound tag) {
         SimpleInventory oldInventory = this.inventory;
         SimpleInventory oldLastInventory = this.lastValidInventory;
+
         if (getWorld() != null && getWorld().isRemote) {
             // Don't read the inventory on the client.
             // The client will receive the data once the gui is opened.
@@ -424,7 +425,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
             return inventory = constructInventory();
         }
         if(lastValidInventory != null) {
-            return lastValidInventory;
+            return new IndexedInventory();
         }
         if(inventory == null && this.recreateNullInventory) {
             inventory = constructInventory();

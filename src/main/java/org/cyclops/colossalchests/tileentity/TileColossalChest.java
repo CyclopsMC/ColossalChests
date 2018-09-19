@@ -60,6 +60,7 @@ import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * A machine that can infuse things with blood.
@@ -236,7 +237,7 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     }
 
     protected LargeInventory constructInventory() {
-        if (GeneralConfig.creativeChests) {
+        if (!isClientSide() && GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
         return !isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
@@ -246,8 +247,9 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
     protected LargeInventory constructInventoryDebug() {
         LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64)
                 : new LargeInventory(calculateInventorySize(), ColossalChestConfig._instance.getNamedId(), 64);
+        Random random = new Random();
         for (int i = 0; i < inv.getSizeInventory(); i++) {
-            inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(world.rand)));
+            inv.setInventorySlotContents(i, new ItemStack(Item.REGISTRY.getRandomObject(random)));
         }
         return inv;
     }

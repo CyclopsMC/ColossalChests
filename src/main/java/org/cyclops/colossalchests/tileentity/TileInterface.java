@@ -1,6 +1,5 @@
 package org.cyclops.colossalchests.tileentity;
 
-import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,19 +9,13 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import org.cyclops.colossalchests.Capabilities;
-import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
-import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
+import net.minecraftforge.common.capabilities.Capability;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
-import java.util.Iterator;
 
 /**
  * A machine that can infuse things with blood.
@@ -39,22 +32,25 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
     private Vec3i corePosition = null;
     private WeakReference<TileColossalChest> coreReference = new WeakReference<TileColossalChest>(null);
 
-    public TileInterface() {
-        addCapabilityInternal(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, new InvWrapper(this));
-        if (Capabilities.INVENTORY_STATE != null) {
-            addInventoryStateCapability();
+    @Override
+    public boolean hasCapability(@Nonnull Capability<?> capability, EnumFacing facing) {
+        TileColossalChest core = getCore();
+        if (core != null && core.hasCapability(capability, facing)) {
+            return true;
         }
-        if (Capabilities.SLOTLESS_ITEMHANDLER != null) {
-            addSlotlessItemHandlerCapability();
-        }
+        return super.hasCapability(capability, facing);
     }
 
-    protected void addInventoryStateCapability() {
-        addCapabilityInternal(Capabilities.INVENTORY_STATE, new TileInterfaceInventoryState(this));
-    }
-
-    protected void addSlotlessItemHandlerCapability() {
-        addCapabilityInternal(Capabilities.SLOTLESS_ITEMHANDLER, new TileInterfaceSlotlessItemHandler(this));
+    @Override
+    public <T> T getCapability(@Nonnull Capability<T> capability, EnumFacing facing) {
+        TileColossalChest core = getCore();
+        if (core != null) {
+            T t = core.getCapability(capability, facing);
+            if (t != null) {
+                return t;
+            }
+        }
+        return super.getCapability(capability, facing);
     }
 
     public void setCorePosition(Vec3i corePosition) {
@@ -255,86 +251,6 @@ public class TileInterface extends CyclopsTileEntity implements ISidedInventory 
             return null;
         }
         return core.getDisplayName();
-    }
-
-
-    /**
-     * {@link IInventoryState} implementation for the {@link TileInterface} that proxies a {@link TileColossalChest}.
-     * @author rubensworks
-     */
-    public static class TileInterfaceInventoryState implements IInventoryState {
-
-        private final TileInterface tile;
-
-        public TileInterfaceInventoryState(TileInterface tile) {
-            this.tile = tile;
-        }
-
-        @Override
-        public int getHash() {
-            TileColossalChest core = tile.getCore();
-            if (core != null) {
-                return core.getInventoryHash();
-            }
-            return -1;
-        }
-    }
-
-    /**
-     * {@link IInventoryState} implementation for the {@link TileInterface} that proxies a {@link TileColossalChest}.
-     * @author rubensworks
-     */
-    public static class TileInterfaceSlotlessItemHandler implements ISlotlessItemHandler {
-
-        private final TileInterface tile;
-
-        public TileInterfaceSlotlessItemHandler(TileInterface tile) {
-            this.tile = tile;
-        }
-
-        protected @Nullable ISlotlessItemHandler getHandler() {
-            TileColossalChest core = tile.getCore();
-            if (core != null) {
-                return core.hasCapability(Capabilities.SLOTLESS_ITEMHANDLER, null) ? core.getCapability(Capabilities.SLOTLESS_ITEMHANDLER, null) : null;
-            }
-            return null;
-        }
-
-        @Override
-        public Iterator<ItemStack> getItems() {
-            ISlotlessItemHandler handler = getHandler();
-            return handler != null ? handler.getItems() : Iterators.forArray();
-        }
-
-        @Override
-        public Iterator<ItemStack> findItems(@Nonnull ItemStack stack, int matchFlags) {
-            ISlotlessItemHandler handler = getHandler();
-            return handler != null ? handler.findItems(stack, matchFlags) : Iterators.forArray();
-        }
-
-        @Override
-        public ItemStack insertItem(ItemStack stack, boolean simulate) {
-            ISlotlessItemHandler handler = getHandler();
-            return handler != null ? handler.insertItem(stack, simulate) : stack;
-        }
-
-        @Override
-        public ItemStack extractItem(int amount, boolean simulate) {
-            ISlotlessItemHandler handler = getHandler();
-            return handler != null ? handler.extractItem(amount, simulate) : ItemStack.EMPTY;
-        }
-
-        @Override
-        public ItemStack extractItem(ItemStack matchStack, int matchFlags, boolean simulate) {
-            ISlotlessItemHandler handler = getHandler();
-            return handler != null ? handler.extractItem(matchStack, matchFlags, simulate) : ItemStack.EMPTY;
-        }
-
-        @Override
-        public int getLimit() {
-            ISlotlessItemHandler handler = getHandler();
-            return handler != null ? handler.getLimit() : 0;
-        }
     }
 
 }

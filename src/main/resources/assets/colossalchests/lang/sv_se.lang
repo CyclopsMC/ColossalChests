@@ -1,0 +1,107 @@
+# General
+itemGroup.colossalchests=Colossal Chests
+general.colossalchests.description=När de vanliga kistorna är för småa.
+general.colossalchests.colossalchest.name=Kolossal %skista (%s)
+general.colossalchests.uncolossalchest.name=Okolossal kista
+
+# Advancements
+advancement.colossalchests.wood=Kolossal träkista
+advancement.colossalchests.wood.desc=Skapa en kolossal träkista
+advancement.colossalchests.copper=Kolossal kopparkista
+advancement.colossalchests.copper.desc=Skapa en kolossal kopparkista
+advancement.colossalchests.iron=Kolossal järnkista
+advancement.colossalchests.iron.desc=Skapa en kolossal järnkista
+advancement.colossalchests.silver=Kolossal silverkista
+advancement.colossalchests.silver.desc=Skapa en kolossal silverkista
+advancement.colossalchests.gold=Kolossal guldkista
+advancement.colossalchests.gold.desc=Skapa en kolossal guldkista
+advancement.colossalchests.diamond=Kolossal diamantkista
+advancement.colossalchests.diamond.desc=Skapa en kolossal diamantkista
+advancement.colossalchests.obsidian=Kolossal obsidiankista
+advancement.colossalchests.obsidian.desc=Skapa en kolossal obsidiankista
+advancement.colossalchests.uncolossal=Den mest kolossala av dem alla!
+advancement.colossalchests.uncolossal.desc=Skaffa en okolossal kista
+advancement.colossalchests.large.wood=Episk kolossal träkista
+advancement.colossalchests.large.wood.desc=Skapa en kolossal träkista på minst 10x10x10
+advancement.colossalchests.large.copper=Episk kolossal kopparkista
+advancement.colossalchests.large.copper.desc=Skapa en kolossal kopparkista på minst 10x10x10
+advancement.colossalchests.large.iron=Episk kolossal järnkista
+advancement.colossalchests.large.iron.desc=Skapa en kolossal järnkista på minst 10x10x10
+advancement.colossalchests.large.silver=Episk kolossal silverkista
+advancement.colossalchests.large.silver.desc=Skapa en kolossal silverkista på minst 10x10x10
+advancement.colossalchests.large.gold=Episk kolossal guldkista
+advancement.colossalchests.large.gold.desc=Skapa en kolossal guldkista på minst 10x10x10
+advancement.colossalchests.large.diamond=Episk kolossal diamantkista
+advancement.colossalchests.large.diamond.desc=Skapa en kolossal diamantkista på minst 10x10x10
+advancement.colossalchests.large.obsidian=Episk kolossal obsidiankista
+advancement.colossalchests.large.obsidian.desc=Skapa en kolossal obsidiankista på minst 10x10x10
+
+# Blocks
+tile.blocks.colossalchests.colossal_chest.name=Kärna för kolossal kista
+tile.blocks.colossalchests.colossal_chest.info=Precis en krävs för att bygga en kolossal kiststruktur
+tile.blocks.colossalchests.chest_wall.name=Vägg för kolossal kista
+tile.blocks.colossalchests.chest_wall.info=Används för att bygga en kolossal kiststruktur
+tile.blocks.colossalchests.interface.name=Gränssnitt för kolossal kista
+tile.blocks.colossalchests.interface.info=För att interagera med rör och trattar
+tile.blocks.colossalchests.uncolossal_chest.name=Okolossal kista
+tile.blocks.colossalchests.uncolossal_chest.info=Den mest kolossala av dem alla!
+
+# Items
+item.items.colossalchests.upgrade_tool.name=Kistuppgraderingsverktyg
+item.items.colossalchests.upgrade_tool.info=Uppgradera en kolossal kista till nästa nivå när du har alla nödvändiga föremål i din utrustning.
+item.items.colossalchests.upgrade_tool.reverse.name=Kistnedgraderingsverktyg
+item.items.colossalchests.upgrade_tool.reverse.info=Nedgradera en kolossal kista till föregående nivå när du har alla nödvändiga föremål i din utrustning. VARNING: Föremål kan hoppa ut om kistan blir för liten för innehållet.
+
+# Materials
+material.colossalchests.wood=trä
+material.colossalchests.copper=koppar
+material.colossalchests.iron=järn
+material.colossalchests.silver=silver
+material.colossalchests.gold=guld
+material.colossalchests.diamond=diamant
+material.colossalchests.obsidian=obsidian
+
+# Multiblock
+multiblock.colossalchests.error.prefix=ColossalChests
+multiblock.colossalchests.error.prefix.info=Flerblocksstrukturfel i kolossal kista
+multiblock.colossalchests.error.unexpected=Oväntat strukturfel i kolossal kista.
+multiblock.colossalchests.error.material=Hittade ett block av materialet %s på %s, men %s förväntades.
+multiblock.colossalchests.error.upgrade=Inte tillräckligt många föremål för att uppgradera denna kista. Du behöver %s kärna, %s gränssnitt och %s väggar av åtminstone materialet %s.
+multiblock.colossalchests.error.upgradeLimit=Du kan inte omvandla denna kista vidare.
+
+# Configuration
+config.colossalchests=Konfiguration av %s
+
+## Config categories
+config.colossalchests.block=Blockinställningar
+config.colossalchests.block.tooltip=Blockinställningar
+config.colossalchests.general=Allmänna inställningar
+config.colossalchests.general.tooltip=Allmänna inställningar
+config.colossalchests.machine=Maskininställningar
+config.colossalchests.machine.tooltip=Maskininställningar
+config.colossalchests.core=Kärninställningar
+config.colossalchests.core.tooltip=Kärninställningar
+config.colossalchests.modcompat=Modkompatibiltetsinställningar
+config.colossalchests.modcompat.tooltip=Modkompatibiltetsinställningar
+
+## General settings
+config.colossalchests.colossalChest.chestAnimation=Kistanimering
+config.colossalchests.general.ejectItemsOnDestroy=Mata ut föremål när ett strukturblock förstörs
+config.colossalchests.general.metalVariants=Metallvarianter
+config.colossalchests.general.alwaysShowInterfaceOverlay=Renderera gränssnittsöverlägg
+config.colossalchests.general.creativeChests=Fusk i kreativt läge
+
+## Machine settings
+config.colossalchests.colossalChest.maxSize=Maximal diameter för kolossal kista
+
+## Core settings
+config.colossalchests.general.analytics=Skicka anonym statistik
+config.colossalchests.general.crashOnInvalidRecipe=Krascha vid ogiltigt recept
+config.colossalchests.general.crashOnModCompatCrash=Krascha vid kompatibilitetsproblem
+config.colossalchests.general.debug=Utvecklarläge
+config.colossalchests.general.maxPacketBufferSize=Maximal storlek på paketbuffert
+config.colossalchests.general.version=Version
+config.colossalchests.general.versionChecker=Versionskontroll
+
+## Mod compatibility settings
+config.colossalchests.ironchest=Järnkistor

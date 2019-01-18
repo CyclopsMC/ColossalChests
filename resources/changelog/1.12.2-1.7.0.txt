@@ -1,0 +1,15 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.0.0 or higher.
+
+Additions:
+* Create sv_se.lang
+
+Changes:
+* optimizes images
+* Update to new slotless item handler interface
+
+Fixes:
+* Forward capabilities from interfaces to the core
+  Closes #118.
+* Fix incorrect exposure of inventory when it is incomplete, Closes #116
+* Fix crash when reloading world with creative chests

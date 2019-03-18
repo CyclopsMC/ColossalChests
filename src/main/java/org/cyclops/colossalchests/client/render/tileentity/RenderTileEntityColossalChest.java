@@ -138,9 +138,9 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
      * @param direction The direction to orient the OpenGL matrix to.
      */
     protected void setMatrixOrientation(EnumFacing direction) {
-        float translateX = -1F - direction.getFrontOffsetX();
-        float translateY = direction.getFrontOffsetY();
-        float translateZ = direction.getFrontOffsetZ();
+        float translateX = -1F - direction.getXOffset();
+        float translateY = direction.getYOffset();
+        float translateZ = direction.getZOffset();
         if (direction == EnumFacing.NORTH) {
             translateZ += 1F;
             translateX += 2F;

@@ -120,7 +120,7 @@ public class ColossalChest extends ConfigurableBlockContainerGui implements Cube
 
     @SideOnly(Side.CLIENT)
     @Override
-    public BlockRenderLayer getBlockLayer() {
+    public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 

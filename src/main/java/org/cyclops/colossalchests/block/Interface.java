@@ -81,7 +81,7 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
 
     @SideOnly(Side.CLIENT)
     @Override
-    public BlockRenderLayer getBlockLayer() {
+    public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 

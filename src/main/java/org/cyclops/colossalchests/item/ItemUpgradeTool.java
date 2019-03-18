@@ -56,8 +56,8 @@ public class ItemUpgradeTool extends ConfigurableItem {
     }
 
     @Override
-    public String getUnlocalizedName(ItemStack itemStack) {
-        return super.getUnlocalizedName(itemStack) + (itemStack.getMetadata() == 0 ? "" : ".reverse");
+    public String getTranslationKey(ItemStack itemStack) {
+        return super.getTranslationKey(itemStack) + (itemStack.getMetadata() == 0 ? "" : ".reverse");
     }
 
     @Override

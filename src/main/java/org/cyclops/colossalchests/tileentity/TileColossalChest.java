@@ -60,6 +60,7 @@ import org.cyclops.cyclopscore.tileentity.InventoryTileEntityBase;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.PrimitiveIterator;
 import java.util.Random;
 
 /**
@@ -147,23 +148,13 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
                     }
 
                     @Override
-                    public int getFirstEmptySlot() {
-                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getFirstEmptySlot();
+                    public PrimitiveIterator.OfInt getEmptySlots() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getEmptySlots();
                     }
 
                     @Override
-                    public int getLastEmptySlot() {
-                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getLastEmptySlot();
-                    }
-
-                    @Override
-                    public int getFirstNonEmptySlot() {
-                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getFirstNonEmptySlot();
-                    }
-
-                    @Override
-                    public int getLastNonEmptySlot() {
-                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getLastNonEmptySlot();
+                    public PrimitiveIterator.OfInt getNonEmptySlots() {
+                        return ((IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) getInventory()).getNonEmptySlots();
                     }
                 }));
     }

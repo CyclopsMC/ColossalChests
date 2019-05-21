@@ -1,0 +1,6 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.3.0 or higher.
+
+Fixes:
+* Fix Integrated Crafting not working with jobs with 64+ items
+  Closes CyclopsMC/IntegratedCrafting#27

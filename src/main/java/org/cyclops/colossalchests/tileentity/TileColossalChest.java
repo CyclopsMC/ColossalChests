@@ -15,12 +15,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.loot.ILootContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -68,7 +70,7 @@ import java.util.Random;
  * @author rubensworks
  *
  */
-public class TileColossalChest extends InventoryTileEntityBase implements CyclopsTileEntity.ITickingTile {
+public class TileColossalChest extends InventoryTileEntityBase implements CyclopsTileEntity.ITickingTile, ILootContainer {
 
     private static final int TICK_MODULUS = 200;
     /**
@@ -526,5 +528,11 @@ public class TileColossalChest extends InventoryTileEntityBase implements Cyclop
 
     public List<Vec3i> getInterfaceLocations() {
         return Collections.unmodifiableList(interfaceLocations);
+    }
+
+    // Hack for blocking spectator-mode access
+    @Override
+    public ResourceLocation getLootTable() {
+        return new ResourceLocation("dummy");
     }
 }

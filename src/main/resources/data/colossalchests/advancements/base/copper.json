@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:chest_wall_copper"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.copper"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.copper.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "COPPER"
+      }
+    }
+  }
+}

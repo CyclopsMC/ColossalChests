@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:colossal_chest_diamond"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.large.diamond"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.large.diamond.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests:base/diamond",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "DIAMOND",
+        "minimumSize": 10
+      }
+    }
+  }
+}

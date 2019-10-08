@@ -1,30 +1,34 @@
 package org.cyclops.colossalchests.tileentity;
 
-import com.google.common.collect.ContiguousSet;
-import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.Range;
 import lombok.experimental.Delegate;
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
-import org.apache.commons.lang3.ArrayUtils;
-import org.cyclops.colossalchests.ColossalChests;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.wrapper.InvWrapper;
+import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
+import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
 import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.L10NHelpers;
 import org.cyclops.cyclopscore.helper.WorldHelpers;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
-import org.cyclops.cyclopscore.tileentity.InventoryTileEntity;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -32,7 +36,7 @@ import java.util.List;
  * @author rubensworks
  *
  */
-public class TileUncolossalChest extends InventoryTileEntity implements CyclopsTileEntity.ITickingTile {
+public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTileEntity.ITickingTile, INamedContainerProvider {
 
     private static final int TICK_MODULUS = 200;
 
@@ -42,20 +46,51 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
     @NBTPersist
     private String customName = null;
 
-    /**
-     * The previous angle of the lid.
-     */
+    private final SimpleInventory inventory;
+
     public float prevLidAngle;
-    /**
-     * The current angle of the lid.
-     */
     public float lidAngle;
     private int playersUsing;
 
-    private Block block = UncolossalChest.getInstance();
-
     public TileUncolossalChest() {
-        super(5, "uncolossalChest", 64);
+        super(RegistryEntries.TILE_ENTITY_UNCOLOSSAL_CHEST);
+        this.inventory = new SimpleInventory(5, 64) {
+            @Override
+            public void openInventory(PlayerEntity entityPlayer) {
+                if (!entityPlayer.isSpectator()) {
+                    super.openInventory(entityPlayer);
+                    triggerPlayerUsageChange(1);
+                }
+            }
+
+            @Override
+            public void closeInventory(PlayerEntity entityPlayer) {
+                if (!entityPlayer.isSpectator()) {
+                    super.closeInventory(entityPlayer);
+                    triggerPlayerUsageChange(-1);
+                }
+            }
+        };
+        this.inventory.addDirtyMarkListener(this);
+        addCapabilityInternal(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, LazyOptional.of(() -> new InvWrapper(this.inventory)));
+    }
+
+    public SimpleInventory getInventory() {
+        return inventory;
+    }
+
+    @Override
+    public void read(CompoundNBT tag) {
+        super.read(tag);
+        inventory.read(tag.getCompound("inventory"));
+    }
+
+    @Override
+    public CompoundNBT write(CompoundNBT tag) {
+        CompoundNBT subTag = new CompoundNBT();
+        inventory.write(subTag);
+        tag.put("inventory", subTag);
+        return super.write(tag);
     }
 
     @Override
@@ -71,21 +106,21 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
             this.playersUsing = 0;
             float range = 5.0F;
             @SuppressWarnings("unchecked")
-            List<EntityPlayer> entities = this.world.getEntitiesWithinAABB(
-                    EntityPlayer.class,
+            List<PlayerEntity> entities = this.world.getEntitiesWithinAABB(
+                    PlayerEntity.class,
                     new AxisAlignedBB(
                             getPos().add(new Vec3i(-range, -range, -range)),
                             getPos().add(new Vec3i(1 + range, 1 + range, 1 + range))
                     )
             );
 
-            for(EntityPlayer player : entities) {
+            for(PlayerEntity player : entities) {
                 if (player.openContainer instanceof ContainerColossalChest) {
                     ++this.playersUsing;
                 }
             }
 
-            world.addBlockEvent(getPos(), block, 1, playersUsing);
+            world.addBlockEvent(getPos(), RegistryEntries.BLOCK_UNCOLOSSAL_CHEST, 1, playersUsing);
         }
 
         prevLidAngle = lidAngle;
@@ -139,38 +174,13 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
         return true;
     }
 
-    @Override
-    public void openInventory(EntityPlayer entityPlayer) {
-        if (!entityPlayer.isSpectator()) {
-            super.openInventory(entityPlayer);
-            triggerPlayerUsageChange(1);
-        }
-    }
-
-    @Override
-    public void closeInventory(EntityPlayer entityPlayer) {
-        if (!entityPlayer.isSpectator()) {
-            super.closeInventory(entityPlayer);
-            triggerPlayerUsageChange(-1);
-        }
-    }
-
     private void triggerPlayerUsageChange(int change) {
         if (world != null) {
             playersUsing += change;
-            world.addBlockEvent(getPos(), block, 1, playersUsing);
+            world.addBlockEvent(getPos(), RegistryEntries.BLOCK_UNCOLOSSAL_CHEST, 1, playersUsing);
         }
     }
 
-    @Override
-    public int[] getSlotsForFace(EnumFacing side) {
-        ContiguousSet<Integer> integers = ContiguousSet.create(
-                Range.closed(0, getSizeInventory()), DiscreteDomain.integers()
-        );
-        return ArrayUtils.toPrimitive(integers.toArray(new Integer[integers.size()]));
-    }
-
-    @Override
     public boolean hasCustomName() {
         return customName != null && customName.length() > 0;
     }
@@ -179,20 +189,25 @@ public class TileUncolossalChest extends InventoryTileEntity implements CyclopsT
         this.customName = name;
     }
 
-    @Override
     public String getName() {
-        return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.uncolossalchest.name");
+        return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.uncolossalchest");
     }
 
     @Override
     public ITextComponent getDisplayName() {
-        return new TextComponentString(getName());
+        return new StringTextComponent(getName());
     }
 
     @Override
-    public EnumFacing getRotation() {
-        IBlockState blockState = getWorld().getBlockState(getPos());
-        if(blockState.getBlock() != UncolossalChest.getInstance()) return EnumFacing.NORTH;
-        return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, EnumFacing.NORTH);
+    public Direction getRotation() {
+        BlockState blockState = getWorld().getBlockState(getPos());
+        if(blockState.getBlock() != RegistryEntries.BLOCK_UNCOLOSSAL_CHEST) return Direction.NORTH;
+        return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, Direction.NORTH);
+    }
+
+    @Nullable
+    @Override
+    public Container createMenu(int id, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+        return new ContainerUncolossalChest(id, playerInventory, this.getInventory());
     }
 }

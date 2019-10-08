@@ -1,9 +1,6 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "transform": "forge:default-block"
-  },
   "variants": {
-    "inventory": { "model": "colossalchests:chest_wall_gold" }
+    "enabled=false": { "model": "colossalchests:block/chest_wall_gold" },
+    "enabled=true": { "model": "colossalchests:block/chest_wall_off" }
   }
 }

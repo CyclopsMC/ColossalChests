@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:colossal_chest_iron"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.large.iron"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.large.iron.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests:base/iron",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "IRON",
+        "minimumSize": 10
+      }
+    }
+  }
+}

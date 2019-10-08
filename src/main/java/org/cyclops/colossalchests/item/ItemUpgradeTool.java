@@ -2,30 +2,35 @@ package org.cyclops.colossalchests.item;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.Advancements;
+import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
+import org.cyclops.colossalchests.block.IBlockChestMaterial;
 import org.cyclops.colossalchests.block.Interface;
-import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
-import org.cyclops.cyclopscore.block.multi.CubeDetector;
-import org.cyclops.cyclopscore.config.configurable.ConfigurableItem;
-import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
-import org.cyclops.cyclopscore.helper.*;
+import org.cyclops.cyclopscore.block.multi.DetectionResult;
+import org.cyclops.cyclopscore.datastructure.Wrapper;
+import org.cyclops.cyclopscore.helper.BlockHelpers;
+import org.cyclops.cyclopscore.helper.InventoryHelpers;
+import org.cyclops.cyclopscore.helper.L10NHelpers;
+import org.cyclops.cyclopscore.helper.MinecraftHelpers;
+import org.cyclops.cyclopscore.helper.TileHelpers;
+import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 /**
  * An item to upgrade chests to the next tier.
@@ -33,97 +38,84 @@ import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ItemUpgradeTool extends ConfigurableItem {
+public class ItemUpgradeTool extends Item {
 
-    private static ItemUpgradeTool _instance = null;
+    private final boolean upgrade;
 
-    /**
-     * Get the unique instance.
-     * @return The instance.
-     */
-    public static ItemUpgradeTool getInstance() {
-        return _instance;
-    }
-
-    /**
-     * Make a new item instance.
-     *
-     * @param eConfig Config for this blockState.
-     */
-    public ItemUpgradeTool(ExtendedConfig eConfig) {
-        super(eConfig);
-        setHasSubtypes(true);
+    public ItemUpgradeTool(Properties properties, boolean upgrade) {
+        super(properties);
+        this.upgrade = upgrade;
     }
 
     @Override
-    public String getTranslationKey(ItemStack itemStack) {
-        return super.getTranslationKey(itemStack) + (itemStack.getMetadata() == 0 ? "" : ".reverse");
-    }
-
-    @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, final World world, BlockPos pos,
-                                           EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
-        ItemStack itemStack = player.getHeldItem(hand);
-        IBlockState blockState = world.getBlockState(pos);
-        if (BlockHelpers.getSafeBlockStateProperty(blockState, ColossalChest.ACTIVE, false)) {
+    public ActionResultType onItemUseFirst(ItemStack itemStack, ItemUseContext context) {
+        BlockState blockState = context.getWorld().getBlockState(context.getPos());
+        if (blockState.getBlock() instanceof IBlockChestMaterial
+                && BlockHelpers.getSafeBlockStateProperty(blockState, ColossalChest.ENABLED, false)) {
             // Determine the chest core location
-            BlockPos tileLocation = ColossalChest.getCoreLocation(world, pos);
-            final TileColossalChest tile = TileHelpers.getSafeTile(world, tileLocation, TileColossalChest.class);
+            BlockPos tileLocation = ColossalChest.getCoreLocation(((IBlockChestMaterial) blockState.getBlock()).getMaterial(), context.getWorld(), context.getPos());
+            final TileColossalChest tile = TileHelpers.getSafeTile(context.getWorld(), tileLocation, TileColossalChest.class).orElse(null);
 
             // Determine the new material type
-            PropertyMaterial.Type newType = transformType(itemStack, tile.getMaterial());
+            ChestMaterial newType = transformType(itemStack, tile.getMaterial());
             if (newType == null) {
-                if(world.isRemote) {
-                    return EnumActionResult.PASS;
+                if(context.getWorld().isRemote()) {
+                    return ActionResultType.PASS;
                 }
-                ColossalChest.addPlayerChatError(player, new L10NHelpers.UnlocalizedString(
+                ColossalChest.addPlayerChatError(context.getPlayer(), new L10NHelpers.UnlocalizedString(
                         "multiblock.colossalchests.error.upgradeLimit"));
-                return EnumActionResult.FAIL;
+                return ActionResultType.FAIL;
             }
 
             // Loop over the up/downgrade tiers until one works.
             L10NHelpers.UnlocalizedString firstError = null;
             do {
-                L10NHelpers.UnlocalizedString error = attemptTransform(world, pos, player, tile, newType, tile.getMaterial());
+                L10NHelpers.UnlocalizedString error = attemptTransform(context.getWorld(), context.getPos(), context.getPlayer(), tile, newType, tile.getMaterial(), context.getHand());
                 if (error != null) {
                     if (firstError == null) {
                         firstError = error;
                     }
                 } else {
-                    return world.isRemote ? EnumActionResult.PASS : EnumActionResult.SUCCESS;
+                    return context.getWorld().isRemote() ? ActionResultType.PASS : ActionResultType.SUCCESS;
                 }
             } while((newType = transformType(itemStack, newType)) != null);
 
-            ColossalChest.addPlayerChatError(player, firstError);
-            return world.isRemote ? EnumActionResult.PASS : EnumActionResult.FAIL;
+            ColossalChest.addPlayerChatError(context.getPlayer(), firstError);
+            return context.getWorld().isRemote() ? ActionResultType.PASS : ActionResultType.FAIL;
         }
-        return world.isRemote ? EnumActionResult.PASS : EnumActionResult.SUCCESS;
+        return context.getWorld().isRemote() ? ActionResultType.PASS : ActionResultType.SUCCESS;
     }
 
-    protected L10NHelpers.UnlocalizedString attemptTransform(final World world, BlockPos pos, EntityPlayer player,
-                                                final TileColossalChest tile, final PropertyMaterial.Type newType,
-                                                final PropertyMaterial.Type currentType) {
-        int currentItemMeta = currentType.ordinal();
-        int requiredItemMeta = newType.ordinal();
+    protected L10NHelpers.UnlocalizedString attemptTransform(final World world, BlockPos pos, PlayerEntity player,
+                                                             final TileColossalChest tile, final ChestMaterial newType,
+                                                             final ChestMaterial currentType, Hand hand) {
         Vec3i size = tile.getSize();
 
         // Calculate required item blocks
-        final ItemStack requiredCores = new ItemStack(ColossalChest.getInstance(), 0, requiredItemMeta);
-        final ItemStack requiredInterfaces = new ItemStack(Interface.getInstance(), 0, requiredItemMeta);
-        final ItemStack requiredWalls = new ItemStack(ChestWall.getInstance(), 0, requiredItemMeta);
-        TileColossalChest.detector.detect(world, pos, null, new CubeDetector.IValidationAction() {
-            @Override
-            public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
-                if (blockState.getBlock() == ColossalChest.getInstance()) {
+        final ItemStack requiredCores = new ItemStack(newType.getBlockCore());
+        final ItemStack requiredInterfaces = new ItemStack(newType.getBlockInterface());
+        final ItemStack requiredWalls = new ItemStack(newType.getBlockWall());
+        ChestMaterial validMaterial = null;
+        for (ChestMaterial material : ChestMaterial.VALUES) {
+            DetectionResult result = material.getChestDetector().detect(world, pos, null, (location, blockState) -> {
+                if (blockState.getBlock() instanceof ColossalChest) {
                     requiredCores.grow(1);
-                } else if (blockState.getBlock() == Interface.getInstance()) {
+                } else if (blockState.getBlock() instanceof Interface) {
                     requiredInterfaces.grow(1);
-                } else if (blockState.getBlock() == ChestWall.getInstance()) {
+                } else if (blockState.getBlock() instanceof ChestWall) {
                     requiredWalls.grow(1);
                 }
                 return null;
+            }, false);
+            if (result.getError() == null) {
+                validMaterial = material;
+                break;
             }
-        }, false);
+        }
+
+        if (validMaterial == null) {
+            return new L10NHelpers.UnlocalizedString("multiblock.colossalchests.error.unexpected");
+        }
 
         // Check required items in inventory
         if (!(consumeItems(player, requiredCores, true)
@@ -131,7 +123,7 @@ public class ItemUpgradeTool extends ConfigurableItem {
                 && consumeItems(player, requiredWalls, true))) {
             return new L10NHelpers.UnlocalizedString(
                     "multiblock.colossalchests.error.upgrade", requiredCores.getCount(),
-                    requiredInterfaces.getCount(), requiredWalls.getCount(), newType.getLocalizedName());
+                    requiredInterfaces.getCount(), requiredWalls.getCount(), new L10NHelpers.UnlocalizedString(newType.getUnlocalizedName()));
         }
 
         // Actually consume the items
@@ -139,42 +131,53 @@ public class ItemUpgradeTool extends ConfigurableItem {
         consumeItems(player, requiredInterfaces.copy(), false);
         consumeItems(player, requiredWalls.copy(), false);
 
-        // Update the chest material
+        // Update the chest material and move the contents to the new tile
         if(!world.isRemote) {
             tile.setSize(Vec3i.NULL_VECTOR);
-            tile.setMaterial(newType);
-            TileColossalChest.detector.detect(world, pos, null, new CubeDetector.IValidationAction() {
-                @Override
-                public L10NHelpers.UnlocalizedString onValidate(BlockPos location, IBlockState blockState) {
-                    world.setBlockState(location, blockState.withProperty(ColossalChest.MATERIAL, newType),
-                            MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
-                    if (blockState.getBlock() == ColossalChest.getInstance()
-                            || blockState.getBlock() == Interface.getInstance()) {
-                        tile.addInterface(location);
-                    }
-                    return null;
+            SimpleInventory oldInventory = tile.getLastValidInventory();
+            Wrapper<BlockPos> coreLocation = new Wrapper<>(null);
+            validMaterial.getChestDetector().detect(world, pos, null, (location, blockState) -> {
+                BlockState blockStateNew = null;
+                if (blockState.getBlock() instanceof ColossalChest) {
+                    coreLocation.set(location);
+                    blockStateNew = newType.getBlockCore().getDefaultState();
+                } else if (blockState.getBlock() instanceof Interface) {
+                    blockStateNew = newType.getBlockInterface().getDefaultState();
+                } else if (blockState.getBlock() instanceof ChestWall) {
+                    blockStateNew = newType.getBlockWall().getDefaultState();
                 }
+
+                world.setBlockState(location, blockStateNew.with(ColossalChest.ENABLED, blockState.get(ColossalChest.ENABLED)),
+                        MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
+                if (blockState.getBlock() instanceof ColossalChest
+                        || blockState.getBlock() instanceof Interface) {
+                    tile.addInterface(location);
+                }
+                return null;
             }, false);
-            tile.setSize(size); // To trigger the chest size to be updated
-            Advancements.CHEST_FORMED.trigger((EntityPlayerMP) player, Pair.of(newType, size.getX() + 1));
+
+            // From this point on, use the new tile entity
+            TileColossalChest tileNew = TileHelpers.getSafeTile(world, coreLocation.get(), TileColossalChest.class)
+                    .orElseThrow(() -> new IllegalStateException("Could not find a colossal chest core location during upgrading."));
+            tileNew.setLastValidInventory(oldInventory);
+            tileNew.setMaterial(newType);
+            tileNew.setSize(size); // To trigger the chest size to be updated
+            Advancements.CHEST_FORMED.trigger((ServerPlayerEntity) player, Pair.of(newType, size.getX() + 1));
         }
 
         // Add the lower tier items to the players inventory again.
-        ItemStack returnedCores = requiredCores.copy();
-        ItemStack returnedInterfaces = requiredInterfaces.copy();
-        ItemStack returnedWalls = requiredWalls.copy();
-        returnedCores.setItemDamage(currentItemMeta);
-        returnedInterfaces.setItemDamage(currentItemMeta);
-        returnedWalls.setItemDamage(currentItemMeta);
-        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedCores);
-        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedInterfaces);
-        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedWalls);
+        ItemStack returnedCores = new ItemStack(currentType.getBlockCore(), requiredCores.getCount());
+        ItemStack returnedInterfaces = new ItemStack(currentType.getBlockInterface(), requiredInterfaces.getCount());
+        ItemStack returnedWalls = new ItemStack(currentType.getBlockWall(), requiredWalls.getCount());
+        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedCores, hand);
+        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedInterfaces, hand);
+        InventoryHelpers.tryReAddToStack(player, ItemStack.EMPTY, returnedWalls, hand);
 
         return null;
     }
 
-    protected boolean consumeItems(EntityPlayer player, ItemStack consumeStack, boolean simulate) {
-        if (player.capabilities.isCreativeMode) {
+    protected boolean consumeItems(PlayerEntity player, ItemStack consumeStack, boolean simulate) {
+        if (player.isCreative()) {
             return true;
         }
         PlayerInventoryIterator it = new PlayerInventoryIterator(player);
@@ -196,18 +199,11 @@ public class ItemUpgradeTool extends ConfigurableItem {
         return validItems == consumeStack.getCount();
     }
 
-    @Override
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> subItems) {
-        if (!ItemStackHelpers.isValidCreativeTab(this, tab)) return;
-        super.getSubItems(tab, subItems);
-        subItems.add(new ItemStack(this, 1, 1));
-    }
-
-    protected PropertyMaterial.Type transformType(ItemStack itemStack, PropertyMaterial.Type type) {
-        if (itemStack.getMetadata() == 0 && type.ordinal() < PropertyMaterial.Type.values().length - 1) {
-            return PropertyMaterial.Type.values()[type.ordinal() + 1];
-        } else if (itemStack.getMetadata() == 1 && type.ordinal() > 0) {
-            return PropertyMaterial.Type.values()[type.ordinal() - 1];
+    protected ChestMaterial transformType(ItemStack itemStack, ChestMaterial type) {
+        if (upgrade && type.ordinal() < ChestMaterial.VALUES.size() - 1) {
+            return ChestMaterial.VALUES.get(type.ordinal() + 1);
+        } else if (!upgrade && type.ordinal() > 0) {
+            return ChestMaterial.VALUES.get(type.ordinal() - 1);
         }
         return null;
     }

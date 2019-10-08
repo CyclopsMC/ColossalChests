@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "CWC",
+    " C "
+  ],
+  "key": {
+    "C": {
+      "tag": "forge:cobblestone"
+    },
+    "W": {
+      "item": "colossalchests:chest_wall_diamond"
+    }
+  },
+  "result": {
+    "item": "colossalchests:interface_diamond"
+  }
+}

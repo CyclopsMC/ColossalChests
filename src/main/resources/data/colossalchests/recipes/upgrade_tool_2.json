@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "colossalchests:upgrade_tool_reverse"
+    }
+  ],
+  "result": {
+    "item": "colossalchests:upgrade_tool"
+  }
+}

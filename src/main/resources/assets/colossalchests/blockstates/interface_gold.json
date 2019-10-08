@@ -1,9 +1,6 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "transform": "forge:default-block"
-  },
   "variants": {
-    "inventory": { "model": "colossalchests:interface_gold" }
+    "enabled=false": { "model": "colossalchests:block/interface_gold" },
+    "enabled=true": { "model": "colossalchests:block/interface_off" }
   }
 }

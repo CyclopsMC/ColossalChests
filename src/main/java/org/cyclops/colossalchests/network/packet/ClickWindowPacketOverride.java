@@ -1,18 +1,17 @@
 package org.cyclops.colossalchests.network.packet;
 
 import com.google.common.collect.Lists;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
+import it.unimi.dsi.fastutil.ints.Int2ShortMap;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ClickType;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.play.server.SPacketConfirmTransaction;
-import net.minecraft.util.IntHashMap;
+import net.minecraft.network.play.client.CClickWindowPacket;
+import net.minecraft.network.play.server.SConfirmTransactionPacket;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 
 /**
  * Packet for window clicks to the server as an alternative to
- * {@link net.minecraft.network.play.client.CPacketClickWindow}.
+ * {@link CClickWindowPacket}.
  * @author rubensworks
  *
  */
@@ -59,14 +58,14 @@ public class ClickWindowPacketOverride extends PacketCodec {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void actionClient(World world, EntityPlayer player) {
+	@OnlyIn(Dist.CLIENT)
+	public void actionClient(World world, PlayerEntity player) {
 
     }
 
-	// Adapted from NetHandlerPlayServer#processClickWindow
+	// Adapted from ServerPlayNetHandler#processClickWindow
 	@Override
-	public void actionServer(World world, EntityPlayerMP player) {
+	public void actionServer(World world, ServerPlayerEntity player) {
 		player.markPlayerActive();
         if (player.openContainer.windowId == windowId && player.openContainer.getCanCraft(player)) {
 			if (player.isSpectator()) {
@@ -81,23 +80,23 @@ public class ClickWindowPacketOverride extends PacketCodec {
 				ItemStack itemstack = player.openContainer.slotClick(slotId, usedButton, ClickType.valueOf(mode), player);
 
 				if (ItemStack.areItemStacksEqual(clickedItem, itemstack)) {
-					player.connection.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, true));
+					player.connection.sendPacket(new SConfirmTransactionPacket(windowId, actionNumber, true));
 					player.isChangingQuantityOnly = true;
 					player.openContainer.detectAndSendChanges();
 					player.updateHeldItem();
 					player.isChangingQuantityOnly = false;
 				} else {
-					IntHashMap field_147372_n = ReflectionHelper.getPrivateValue(NetHandlerPlayServer.class, player.connection, "field_147372_n", "pendingTransactions");
-					field_147372_n.addKey(player.openContainer.windowId, Short.valueOf(actionNumber));
-					player.connection.sendPacket(new SPacketConfirmTransaction(windowId, actionNumber, false));
+					Int2ShortMap pendingTransactions = player.connection.pendingTransactions;
+					pendingTransactions.put(player.openContainer.windowId, actionNumber);
+					player.connection.sendPacket(new SConfirmTransactionPacket(windowId, actionNumber, false));
 					player.openContainer.setCanCraft(player, false);
-					ArrayList arraylist1 = Lists.newArrayList();
+					NonNullList<ItemStack> nonnulllist1 = NonNullList.create();
 
 					for (int j = 0; j < player.openContainer.inventorySlots.size(); ++j) {
-						arraylist1.add(((Slot)player.openContainer.inventorySlots.get(j)).getStack());
+						nonnulllist1.add(player.openContainer.inventorySlots.get(j).getStack());
 					}
 
-					((ContainerColossalChest) player.openContainer).updateCraftingInventory(player, arraylist1);
+					((ContainerColossalChest) player.openContainer).updateCraftingInventory(player, nonnulllist1);
 				}
 			}
 		}

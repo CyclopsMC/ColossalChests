@@ -5,10 +5,12 @@ import com.google.common.collect.Maps;
 import invtweaks.api.container.ChestContainer;
 import invtweaks.api.container.ContainerSection;
 import invtweaks.api.container.ContainerSectionCallback;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ContainerHopper;
-import net.minecraft.inventory.Slot;
-import org.cyclops.colossalchests.tileentity.TileUncolossalChest;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.container.Slot;
+import org.cyclops.colossalchests.RegistryEntries;
+import org.cyclops.cyclopscore.inventory.container.InventoryContainer;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +19,22 @@ import java.util.Map;
  * @author rubensworks
  */
 @ChestContainer(rowSize = 5)
-public class ContainerUncolossalChest extends ContainerHopper {
-    public ContainerUncolossalChest(InventoryPlayer playerInventory, TileUncolossalChest tile) {
-        super(playerInventory, tile, playerInventory.player);
+public class ContainerUncolossalChest extends InventoryContainer {
+
+    public ContainerUncolossalChest(int id, PlayerInventory playerInventory) {
+        this(id, playerInventory, new Inventory(5));
+    }
+
+    public ContainerUncolossalChest(int id, PlayerInventory playerInventory, IInventory inventory) {
+        super(RegistryEntries.CONTAINER_UNCOLOSSAL_CHEST, id, playerInventory, inventory);
+
+        this.addInventory(inventory, 0, 44, 20, 1, getSizeInventory());
+        this.addPlayerInventory(playerInventory, 8, 51);
+    }
+
+    @Override
+    protected int getSizeInventory() {
+        return 5;
     }
 
     /**
@@ -40,4 +55,5 @@ public class ContainerUncolossalChest extends ContainerHopper {
         selection.put(ContainerSection.INVENTORY, playerInventory);
         return selection;
     }
+
 }

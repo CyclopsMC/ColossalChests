@@ -1,0 +1,51 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:colossal_chest_wood"
+    },
+    "title": {
+      "translate": "itemGroup.colossalchests"
+    },
+    "description": {
+      "translate": "general.colossalchests.description"
+    },
+    "background": "textures/gui/advancements/backgrounds/adventure.png",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "rewards": {
+    "recipes": [
+      "colossalchests:uncolossal_chest",
+      "colossalchests:colossal_chest_wood",
+      "colossalchests:chest_wall_wood",
+      "colossalchests:interface_wood",
+      "colossalchests:colossal_chest_iron",
+      "colossalchests:chest_wall_iron",
+      "colossalchests:interface_iron",
+      "colossalchests:colossal_chest_gold",
+      "colossalchests:chest_wall_gold",
+      "colossalchests:interface_gold",
+      "colossalchests:colossal_chest_diamond",
+      "colossalchests:chest_wall_diamond",
+      "colossalchests:interface_diamond",
+      "colossalchests:colossal_chest_obsidian",
+      "colossalchests:chest_wall_obsidian",
+      "colossalchests:interface_obsidian",
+      "colossalchests:upgrade_tool",
+      "colossalchests:upgrade_tool_2",
+      "colossalchests:upgrade_tool_reverse"
+    ]
+  },
+  "criteria": {
+    "criteria_0": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:chest"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,21 +1,22 @@
 package org.cyclops.colossalchests.network.packet;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.network.play.server.SWindowItemsPacket;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.cyclops.cyclopscore.helper.MinecraftHelpers;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.util.Constants;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
 /**
  * Packet for sending fragmented window items as an alternative to
- * {@link net.minecraft.network.play.server.SPacketWindowItems}.
+ * {@link SWindowItemsPacket}.
  * @author rubensworks
  *
  */
@@ -24,13 +25,13 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 	@CodecField
 	private int windowId;
 	@CodecField
-	private NBTTagCompound itemStacks;
+	private CompoundNBT itemStacks;
 
     public WindowItemsFragmentPacket() {
 
     }
 
-    public WindowItemsFragmentPacket(int windowId, NBTTagCompound itemStacks) {
+    public WindowItemsFragmentPacket(int windowId, CompoundNBT itemStacks) {
 		this.windowId = windowId;
 		this.itemStacks = itemStacks;
     }
@@ -41,28 +42,28 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void actionClient(World world, EntityPlayer player) {
+	@OnlyIn(Dist.CLIENT)
+	public void actionClient(World world, PlayerEntity player) {
 		// Modified code from NetHandlerPlayClient#handleWindowItems
 		if (windowId == 0) {
-			putStacksInSlotsWithOffset(player.inventoryContainer);
+			putStacksInSlotsWithOffset(player.container);
 		} else if (windowId == player.openContainer.windowId) {
 			putStacksInSlotsWithOffset(player.openContainer);
 		}
 	}
 
 	protected void putStacksInSlotsWithOffset(Container container) {
-		NBTTagList list = itemStacks.getTagList("stacks", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
-		for (int i = 0; i < list.tagCount(); i++) {
-			NBTTagCompound tag = list.getCompoundTagAt(i);
-			int slot = tag.getInteger("slot");
-			ItemStack stack = new ItemStack(tag.getCompoundTag("stack"));
+		ListNBT list = itemStacks.getList("stacks", Constants.NBT.TAG_COMPOUND);
+		for (int i = 0; i < list.size(); i++) {
+			CompoundNBT tag = list.getCompound(i);
+			int slot = tag.getInt("slot");
+			ItemStack stack = ItemStack.read(tag.getCompound("stack"));
 			container.putStackInSlot(slot, stack);
 		}
 	}
 
 	@Override
-	public void actionServer(World world, EntityPlayerMP player) {
+	public void actionServer(World world, ServerPlayerEntity player) {
 
 	}
 	

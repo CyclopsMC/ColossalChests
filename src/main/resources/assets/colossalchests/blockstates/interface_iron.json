@@ -1,9 +1,6 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "transform": "forge:default-block"
-  },
   "variants": {
-    "inventory": { "model": "colossalchests:interface_iron" }
+    "enabled=false": { "model": "colossalchests:block/interface_iron" },
+    "enabled=true": { "model": "colossalchests:block/interface_off" }
   }
 }

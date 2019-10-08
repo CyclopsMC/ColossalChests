@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:chest_wall_silver"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.silver"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.silver.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "SILVER"
+      }
+    }
+  }
+}

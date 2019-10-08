@@ -2,35 +2,32 @@ package org.cyclops.colossalchests.item;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
-import org.cyclops.colossalchests.block.PropertyMaterial;
-import org.cyclops.cyclopscore.item.ItemBlockMetadata;
+import org.cyclops.colossalchests.block.ChestMaterial;
 
 import java.util.List;
 
 /**
  * @author rubensworks
  */
-public class ItemBlockMaterial extends ItemBlockMetadata {
-    /**
-     * Make a new instance.
-     *
-     * @param block The blockState instance.
-     */
-    public ItemBlockMaterial(Block block) {
-        super(block);
+public class ItemBlockMaterial extends BlockItem {
+
+    private final ChestMaterial material;
+
+    public ItemBlockMaterial(Block block, Properties builder, ChestMaterial material) {
+        super(block, builder);
+        this.material = material;
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, World world, List<String> list, ITooltipFlag flag) {
-        int materialIndex = itemStack.getItemDamage();
-        if (materialIndex > PropertyMaterial.Type.values().length) {
-            materialIndex = (materialIndex - 1) / 2;
-        }
-        list.add(TextFormatting.BLUE + PropertyMaterial.Type.values()[materialIndex].getLocalizedName());
+    public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
+        list.add(new TranslationTextComponent(material.getUnlocalizedName()).applyTextStyle(TextFormatting.BLUE));
         super.addInformation(itemStack, world, list, flag);
 
     }

@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:chest_wall_iron"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.iron"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.iron.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "IRON"
+      }
+    }
+  }
+}

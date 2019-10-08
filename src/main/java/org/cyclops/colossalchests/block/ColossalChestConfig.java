@@ -1,105 +1,53 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelChest;
-import net.minecraft.client.renderer.block.model.ModelBakery;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.tileentity.model.ChestModel;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.config.ModConfig;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityColossalChest;
 import org.cyclops.colossalchests.item.ItemBlockMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.config.ConfigurableProperty;
-import org.cyclops.cyclopscore.config.ConfigurableTypeCategory;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
-import org.cyclops.cyclopscore.config.extendedconfig.BlockContainerConfig;
-
-import java.util.Locale;
 
 /**
  * Config for the {@link ColossalChest}.
  * @author rubensworks
  *
  */
-public class ColossalChestConfig extends BlockContainerConfig {
+public class ColossalChestConfig extends BlockConfig {
 
-    /**
-     * The unique instance.
-     */
-    public static ColossalChestConfig _instance;
-
-    /**
-     * The maximum size a colossal chest can have.
-     */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.MACHINE, comment = "The maximum size a colossal chest can have.", isCommandable = true)
+    @ConfigurableProperty(category = "machine", comment = "The maximum size a colossal chest can have.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
     public static int maxSize = 20;
 
-    /**
-     * If the chest should visually open when someone uses it.
-     */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.GENERAL, comment = "If the chest should visually open when someone uses it.", isCommandable = true)
+    @ConfigurableProperty(category = "general", comment = "If the chest should visually open when someone uses it.", isCommandable = true, configLocation = ModConfig.Type.CLIENT)
     public static boolean chestAnimation = true;
 
-    /**
-     * Make a new instance.
-     */
-    public ColossalChestConfig() {
+    public ColossalChestConfig(ChestMaterial material) {
         super(
                 ColossalChests._instance,
-        	true,
-            "colossal_chest",
-            null,
-            ColossalChest.class
+            "colossal_chest_" + material.getName(),
+                eConfig -> new ColossalChest(Block.Properties.create(Material.ROCK)
+                        .hardnessAndResistance(5.0F)
+                        .sound(SoundType.WOOD)
+                        .harvestLevel(0), // Wood tier
+                        material),
+                (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()
+                        .group(ColossalChests._instance.getDefaultItemGroup()), material)
         );
     }
 
     @Override
-    public Class<? extends ItemBlock> getItemBlockClass() {
-        return ItemBlockMaterial.class;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void onRegistered() {
         super.onRegistered();
-        ModelChest model = new ModelChest();
+        ChestModel model = new ChestModel();
         ColossalChests._instance.getProxy().registerRenderer(TileColossalChest.class, new RenderTileEntityColossalChest(model));
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static void onInit(Step step, BlockConfig blockConfig) {
-        for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
-            Item item = Item.getItemFromBlock(blockConfig.getBlockInstance());
-            String modId = blockConfig.getMod().getModId();
-            int meta = material.ordinal();
-            String itemName = blockConfig.getModelName(new ItemStack(item, 1, meta));
-            ModelBakery.registerItemVariants(item, new ModelResourceLocation(modId + ":" + itemName, "inventory"));
-            Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(item, meta,
-                    new ModelResourceLocation(modId + ":" + itemName, "inventory"));
-        }
-    }
-
-    public static String getModelNameSuffix(ItemStack itemStack) {
-        return "_" + PropertyMaterial.Type.values()[itemStack.getItemDamage()]
-                .toString().toLowerCase(Locale.ENGLISH);
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void onInit(Step step) {
-        super.onInit(step);
-        if(step == Step.INIT) {
-            onInit(step, this);
-        }
-    }
-
-    @Override
-    public String getModelName(ItemStack itemStack) {
-        return super.getModelName(itemStack) + getModelNameSuffix(itemStack);
     }
     
 }

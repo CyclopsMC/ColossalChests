@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:chest_wall_wood"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.wood"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.wood.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "WOOD"
+      }
+    }
+  }
+}

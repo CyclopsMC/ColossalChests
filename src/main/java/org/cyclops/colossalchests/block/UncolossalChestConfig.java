@@ -1,43 +1,40 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.client.model.ModelChest;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.tileentity.model.ChestModel;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityUncolossalChest;
 import org.cyclops.colossalchests.tileentity.TileUncolossalChest;
-import org.cyclops.cyclopscore.config.extendedconfig.BlockContainerConfig;
+import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
 
 /**
  * Config for the {@link ColossalChest}.
  * @author rubensworks
  *
  */
-public class UncolossalChestConfig extends BlockContainerConfig {
+public class UncolossalChestConfig extends BlockConfig {
 
-    /**
-     * The unique instance.
-     */
-    public static UncolossalChestConfig _instance;
-
-    /**
-     * Make a new instance.
-     */
     public UncolossalChestConfig() {
         super(
                 ColossalChests._instance,
-        	true,
             "uncolossal_chest",
-            null,
-            UncolossalChest.class
+                eConfig -> new UncolossalChest(Block.Properties.create(Material.ROCK)
+                        .hardnessAndResistance(5.0F)
+                        .sound(SoundType.WOOD)
+                        .harvestLevel(0)),
+                getDefaultItemConstructor(ColossalChests._instance)
         );
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void onRegistered() {
         super.onRegistered();
-        ModelChest model = new ModelChest();
+        ChestModel model = new ChestModel();
         ColossalChests._instance.getProxy().registerRenderer(TileUncolossalChest.class, new RenderTileEntityUncolossalChest(model));
     }
     

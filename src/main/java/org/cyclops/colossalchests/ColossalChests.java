@@ -1,63 +1,47 @@
 package org.cyclops.colossalchests;
 
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemGroup;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.Level;
+import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ChestWallConfig;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.InterfaceConfig;
 import org.cyclops.colossalchests.block.UncolossalChestConfig;
+import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
+import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
 import org.cyclops.colossalchests.modcompat.IronChestModCompat;
+import org.cyclops.colossalchests.proxy.ClientProxy;
+import org.cyclops.colossalchests.proxy.CommonProxy;
+import org.cyclops.colossalchests.tileentity.TileColossalChestConfig;
+import org.cyclops.colossalchests.tileentity.TileInterfaceConfig;
+import org.cyclops.colossalchests.tileentity.TileUncolossalChestConfig;
 import org.cyclops.cyclopscore.config.ConfigHandler;
-import org.cyclops.cyclopscore.init.IObjectReference;
-import org.cyclops.cyclopscore.init.ItemCreativeTab;
+import org.cyclops.cyclopscore.init.ItemGroupMod;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
-import org.cyclops.cyclopscore.init.RecipeHandler;
 import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
+import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The main mod class of this mod.
  * @author rubensworks
  *
  */
-@Mod(
-        modid = Reference.MOD_ID,
-        name = Reference.MOD_NAME,
-        useMetadata = true,
-        version = Reference.MOD_VERSION,
-        dependencies = Reference.MOD_DEPENDENCIES,
-        guiFactory = "org.cyclops.colossalchests.GuiConfigOverview$ExtendedConfigGuiFactory",
-        certificateFingerprint = Reference.MOD_FINGERPRINT
-)
-public class ColossalChests extends ModBaseVersionable {
-    
-    /**
-     * The proxy of this mod, depending on 'side' a different proxy will be inside this field.
-     * @see net.minecraftforge.fml.common.SidedProxy
-     */
-    @SidedProxy(clientSide = "org.cyclops.colossalchests.proxy.ClientProxy", serverSide = "org.cyclops.colossalchests.proxy.CommonProxy")
-    public static ICommonProxy proxy;
+@Mod(Reference.MOD_ID)
+public class ColossalChests extends ModBaseVersionable<ColossalChests> {
     
     /**
      * The unique instance of this mod.
      */
-    @Instance(value = Reference.MOD_ID)
     public static ColossalChests _instance;
 
     public ColossalChests() {
-        super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
+        super(Reference.MOD_ID, (instance) -> _instance = instance);
     }
 
     @Override
@@ -66,105 +50,49 @@ public class ColossalChests extends ModBaseVersionable {
     }
 
     @Override
-    protected RecipeHandler constructRecipeHandler() {
-        return new RecipeHandler(this, "recipes.xml") {
-            protected void loadPredefineds(Map<String, ItemStack> predefinedItems, Set<String> predefinedValues) {
-                super.loadPredefineds(predefinedItems, predefinedValues);
-                if(GeneralConfig.metalVariants) {
-                    predefinedValues.add(Reference.MOD_ID + ":metalVariants");
-                }
-            }
-        };
-    }
-
-    /**
-     * The pre-initialization, will register required configs.
-     * @param event The Forge event required for this.
-     */
-    @EventHandler
-    @Override
-    public void preInit(FMLPreInitializationEvent event) {
-        super.preInit(event);
+    protected void setup(FMLCommonSetupEvent event) {
+        super.setup(event);
         Advancements.load();
     }
-    
-    /**
-     * Register the config dependent things like world generation and proxy handlers.
-     * @param event The Forge event required for this.
-     */
-    @EventHandler
-    @Override
-    public void init(FMLInitializationEvent event) {
-        super.init(event);
-    }
-    
-    /**
-     * Register the event hooks.
-     * @param event The Forge event required for this.
-     */
-    @EventHandler
-    @Override
-    public void postInit(FMLPostInitializationEvent event) {
-        super.postInit(event);
-    }
-    
-    /**
-     * Register the things that are related to server starting, like commands.
-     * @param event The Forge event required for this.
-     */
-    @EventHandler
-    @Override
-    public void onServerStarting(FMLServerStartingEvent event) {
-        super.onServerStarting(event);
-    }
 
-    /**
-     * Register the things that are related to server starting.
-     * @param event The Forge event required for this.
-     */
-    @EventHandler
     @Override
-    public void onServerStarted(FMLServerStartedEvent event) {
-        super.onServerStarted(event);
-    }
-
-    /**
-     * Register the things that are related to server stopping, like persistent storage.
-     * @param event The Forge event required for this.
-     */
-    @EventHandler
-    @Override
-    public void onServerStopping(FMLServerStoppingEvent event) {
-        super.onServerStopping(event);
+    @OnlyIn(Dist.CLIENT)
+    protected IClientProxy constructClientProxy() {
+        return new ClientProxy();
     }
 
     @Override
-    public CreativeTabs constructDefaultCreativeTab() {
-        return new ItemCreativeTab(this, new IObjectReference<Item>() {
-            @Override
-            public Item getObject() {
-                return Item.getItemFromBlock(Blocks.CHEST);
-            }
-        });
+    protected ICommonProxy constructCommonProxy() {
+        return new CommonProxy();
     }
 
     @Override
-    public void onMainConfigsRegister(ConfigHandler configs) {
-        configs.add(new ChestWallConfig());
-        configs.add(new ColossalChestConfig());
-        configs.add(new InterfaceConfig());
-        configs.add(new UncolossalChestConfig());
-        configs.add(new ItemUpgradeToolConfig());
+    public ItemGroup constructDefaultItemGroup() {
+        return new ItemGroupMod(this, () -> RegistryEntries.ITEM_CHEST);
     }
 
     @Override
-    public void onGeneralConfigsRegister(ConfigHandler configHandler) {
-        configHandler.add(new GeneralConfig());
-    }
+    protected void onConfigsRegister(ConfigHandler configHandler) {
+        super.onConfigsRegister(configHandler);
 
-    @Override
-    public ICommonProxy getProxy() {
-        return proxy;
+        configHandler.addConfigurable(new GeneralConfig());
+
+        for (ChestMaterial material : ChestMaterial.VALUES) {
+            configHandler.addConfigurable(new ChestWallConfig(material));
+            configHandler.addConfigurable(new ColossalChestConfig(material));
+            configHandler.addConfigurable(new InterfaceConfig(material));
+        }
+
+        configHandler.addConfigurable(new UncolossalChestConfig());
+        configHandler.addConfigurable(new ItemUpgradeToolConfig(true));
+        configHandler.addConfigurable(new ItemUpgradeToolConfig(false));
+
+        configHandler.addConfigurable(new TileColossalChestConfig());
+        configHandler.addConfigurable(new TileInterfaceConfig());
+        configHandler.addConfigurable(new TileUncolossalChestConfig());
+
+        configHandler.addConfigurable(new ContainerColossalChestConfig());
+        configHandler.addConfigurable(new ContainerUncolossalChestConfig());
     }
 
     /**

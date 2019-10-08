@@ -1,9 +1,13 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.item.ItemBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.material.Material;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.item.ItemBlockMaterial;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
@@ -15,46 +19,18 @@ import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
  */
 public class ChestWallConfig extends BlockConfig {
 
-    /**
-     * The unique instance.
-     */
-    public static ChestWallConfig _instance;
-
-    /**
-     * Make a new instance.
-     */
-    public ChestWallConfig() {
+    public ChestWallConfig(ChestMaterial material) {
         super(
                 ColossalChests._instance,
-        	true,
-            "chest_wall",
-            null,
-            ChestWall.class
+            "chest_wall_" + material.getName(),
+                eConfig -> new ChestWall(Block.Properties.create(Material.ROCK)
+                        .hardnessAndResistance(5.0F)
+                        .sound(SoundType.WOOD)
+                        .harvestLevel(0), // Wood tier
+                        material),
+                (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()
+                        .group(ColossalChests._instance.getDefaultItemGroup()), material)
         );
-    }
-
-    @Override
-    public Class<? extends ItemBlock> getItemBlockClass() {
-        return ItemBlockMaterial.class;
-    }
-    
-    @Override
-    public boolean isMultipartEnabled() {
-        return true;
-    }
-
-    @Override
-    @SideOnly(Side.CLIENT)
-    public void onInit(Step step) {
-        super.onInit(step);
-        if(step == Step.INIT) {
-            ColossalChestConfig.onInit(step, this);
-        }
-    }
-
-    @Override
-    public String getModelName(ItemStack itemStack) {
-        return super.getModelName(itemStack) + ColossalChestConfig.getModelNameSuffix(itemStack);
     }
     
 }

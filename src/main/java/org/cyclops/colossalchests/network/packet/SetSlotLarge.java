@@ -1,21 +1,18 @@
 package org.cyclops.colossalchests.network.packet;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.play.server.SSetSlotPacket;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.cyclops.cyclopscore.helper.MinecraftHelpers;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
 /**
  * Packet for setting slots with id's larger than max short size (65535).
- * {@link net.minecraft.network.play.server.SPacketSetSlot}.
+ * {@link SSetSlotPacket}.
  * @author rubensworks
  *
  */
@@ -44,8 +41,8 @@ public class SetSlotLarge extends PacketCodec {
 	}
 
 	@Override
-	@SideOnly(Side.CLIENT)
-	public void actionClient(World world, EntityPlayer player) {
+	@OnlyIn(Dist.CLIENT)
+	public void actionClient(World world, PlayerEntity player) {
 		// Modified code from NetHandlerPlayClient#handleSetSlot
 		if (windowId == player.openContainer.windowId) {
 			player.openContainer.putStackInSlot(slot, itemStack);
@@ -53,7 +50,7 @@ public class SetSlotLarge extends PacketCodec {
 	}
 
 	@Override
-	public void actionServer(World world, EntityPlayerMP player) {
+	public void actionServer(World world, ServerPlayerEntity player) {
 
 	}
 	

@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "item": "colossalchests:chest_wall_gold"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.gold"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.gold.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "GOLD"
+      }
+    }
+  }
+}

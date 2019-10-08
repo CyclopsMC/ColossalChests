@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.item;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.Item;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.cyclopscore.config.extendedconfig.ItemConfig;
 
@@ -10,27 +10,15 @@ import org.cyclops.cyclopscore.config.extendedconfig.ItemConfig;
  */
 public class ItemUpgradeToolConfig extends ItemConfig {
 
-    /**
-     * The unique instance.
-     */
-    public static ItemUpgradeToolConfig _instance;
-
-    /**
-     * Make a new instance.
-     */
-    public ItemUpgradeToolConfig() {
+    public ItemUpgradeToolConfig(boolean upgrade) {
         super(
                 ColossalChests._instance,
-                true,
-                "upgrade_tool",
-                null,
-                ItemUpgradeTool.class
+                "upgrade_tool" + (upgrade ? "" : "_reverse"),
+                (eConfig) -> new ItemUpgradeTool(new Item.Properties()
+                        .maxStackSize(1)
+                        .group(ColossalChests._instance.getDefaultItemGroup()),
+                        upgrade)
         );
-    }
-
-    @Override
-    public String getModelName(ItemStack itemStack) {
-        return itemStack.getMetadata() == 0 ? super.getModelName(itemStack) : "downgrade_tool";
     }
 
 }

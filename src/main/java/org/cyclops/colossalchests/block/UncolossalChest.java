@@ -1,126 +1,140 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.HorizontalBlock;
+import net.minecraft.block.IWaterLoggable;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.IFluidState;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
+import net.minecraft.pathfinding.PathType;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.StateContainer;
+import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.cyclops.colossalchests.client.gui.container.GuiUncolossalChest;
-import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.tileentity.TileUncolossalChest;
-import org.cyclops.cyclopscore.block.property.BlockProperty;
-import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainerGui;
-import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
-import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
+import org.cyclops.cyclopscore.block.BlockTileGui;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 
-import java.util.Random;
+import javax.annotation.Nullable;
 
 /**
- * A machine that can infuse stuff with blood.
+ * A small chest.
  *
  * @author rubensworks
  */
-public class UncolossalChest extends ConfigurableBlockContainerGui {
+public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
 
-    @BlockProperty(ignore = true)
-    public static final PropertyDirection FACING = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
-    private static UncolossalChest _instance = null;
+    public static final DirectionProperty FACING = HorizontalBlock.HORIZONTAL_FACING;
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    private final AxisAlignedBB bb = new AxisAlignedBB(0.3125F, 0F, 0.3125F, 0.6875F, 0.375F, 0.6875F);
+    private final VoxelShape SHAPE = Block.makeCuboidShape(5.0D, 0.0D, 5.0D, 11.0D, 6, 11.0D);
 
-    /**L
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static UncolossalChest getInstance() {
-        return _instance;
+    public UncolossalChest(Block.Properties properties) {
+        super(properties, TileUncolossalChest::new);
+
+        this.setDefaultState(this.stateContainer.getBaseState()
+                .with(FACING, Direction.NORTH)
+                .with(WATERLOGGED, false));
     }
 
-    public UncolossalChest(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.ROCK, TileUncolossalChest.class);
-        this.setHardness(5.0F);
-        this.setSoundType(SoundType.WOOD);
-        this.setHarvestLevel("axe", 0); // Wood tier
-        this.setRotatable(true);
-    }
-
-    @SuppressWarnings("deprecation")
     @Override
-    public boolean getUseNeighborBrightness(IBlockState state) {
+    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+        builder.add(FACING).add(WATERLOGGED);
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public boolean hasCustomBreakingProgress(BlockState p_190946_1_) {
         return true;
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        return bb;
-    }
+    public BlockState updatePostPlacement(BlockState blockState, Direction facing, BlockState facingState, IWorld world, BlockPos currentPos, BlockPos facingPos) {
+        if (blockState.get(WATERLOGGED)) {
+            world.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+        }
 
-    @SuppressWarnings("deprecation")
-    @SideOnly(Side.CLIENT)
-    @Override
-    public boolean isOpaqueCube(IBlockState blockState) {
-        return false;
-    }
-
-    @SuppressWarnings("deprecation")
-    @SideOnly(Side.CLIENT)
-    @Override
-    public boolean isFullCube(IBlockState blockState) {
-        return false;
+        return super.updatePostPlacement(blockState, facing, facingState, world, currentPos, facingPos);
     }
 
     @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+    public VoxelShape getShape(BlockState blockState, IBlockReader world, BlockPos pos, ISelectionContext context) {
+        return SHAPE;
     }
 
-    @SideOnly(Side.CLIENT)
+    @Override
+    public BlockRenderType getRenderType(BlockState state) {
+        return BlockRenderType.ENTITYBLOCK_ANIMATED;
+    }
+
+    @OnlyIn(Dist.CLIENT)
     @Override
     public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
     @Override
-    public Item getItemDropped(IBlockState blockState, Random random, int zero) {
-        return Item.getItemFromBlock(this);
-    }
-
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
         if (stack.hasDisplayName()) {
-            TileUncolossalChest tile = TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class);
+            TileUncolossalChest tile = TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class).orElse(null);
             if (tile != null) {
-                tile.setCustomName(stack.getDisplayName());
+                tile.setCustomName(stack.getDisplayName().getString());
             }
         }
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerUncolossalChest.class;
+    public IFluidState getFluidState(BlockState blockState) {
+        return blockState.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(blockState);
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public Class<? extends GuiScreen> getGui() {
-        return GuiUncolossalChest.class;
+    public boolean hasComparatorInputOverride(BlockState blockState) {
+        return true;
+    }
+
+    @Override
+    public int getComparatorInputOverride(BlockState blockState, World world, BlockPos pos) {
+        return TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class)
+                .map(tile -> Container.calcRedstoneFromInventory(tile.getInventory()))
+                .orElse(0);
+    }
+
+    @Override
+    public BlockState rotate(BlockState blockState, Rotation rotation) {
+        return blockState.with(FACING, rotation.rotate(blockState.get(FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState blockState, Mirror mirror) {
+        return blockState.rotate(mirror.toRotation(blockState.get(FACING)));
+    }
+
+    @Override
+    public boolean allowsMovement(BlockState p_196266_1_, IBlockReader p_196266_2_, BlockPos p_196266_3_, PathType p_196266_4_) {
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public INamedContainerProvider getContainer(BlockState p_220052_1_, World p_220052_2_, BlockPos p_220052_3_) {
+        return super.getContainer(p_220052_1_, p_220052_2_, p_220052_3_);
     }
 
 }

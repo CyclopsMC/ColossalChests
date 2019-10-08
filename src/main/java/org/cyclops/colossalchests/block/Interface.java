@@ -1,146 +1,130 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.state.BlockStateContainer;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
+import net.minecraft.entity.EntitySpawnPlacementRegistry;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.NonNullList;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorld;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.IWorldWriter;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.ToolType;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.colossalchests.tileentity.TileInterface;
+import org.cyclops.cyclopscore.block.BlockTile;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
-import org.cyclops.cyclopscore.block.property.BlockProperty;
-import org.cyclops.cyclopscore.block.property.BlockPropertyManagerComponent;
-import org.cyclops.cyclopscore.config.configurable.ConfigurableBlockContainer;
-import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
-import org.cyclops.cyclopscore.config.extendedconfig.ExtendedConfig;
-import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Part of the Colossal Blood Chest multiblock structure.
  * @author rubensworks
  *
  */
-public class Interface extends ConfigurableBlockContainer implements CubeDetector.IDetectionListener {
+public class Interface extends BlockTile implements CubeDetector.IDetectionListener, IBlockChestMaterial {
 
-    @BlockProperty
-    public static final PropertyBool ACTIVE = ColossalChest.ACTIVE;
-    @BlockProperty
-    public static final PropertyMaterial MATERIAL = ColossalChest.MATERIAL;
+    public static final BooleanProperty ENABLED = ColossalChest.ENABLED;
 
-    private static Interface _instance = null;
+    private final ChestMaterial material;
 
-    /**
-     * Get the unique instance.
-     * @return The instance.
-     */
-    public static Interface getInstance() {
-        return _instance;
-    }
+    public Interface(Block.Properties properties, ChestMaterial material) {
+        super(properties, TileInterface::new);
+        this.material = material;
 
-    public Interface(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.ROCK, TileInterface.class);
-        this.setHardness(5.0F);
-        this.setSoundType(SoundType.WOOD);
-        this.setHarvestLevel("axe", 0); // Wood tier
-    }
+        material.setBlockInterface(this);
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean getUseNeighborBrightness(IBlockState state) {
-        return true;
+        this.setDefaultState(this.stateContainer.getBaseState()
+                .with(ENABLED, false));
     }
 
     @Override
-    public boolean isToolEffective(String type, IBlockState state) {
-        return ColossalChest.isToolEffectiveShared(type, state);
+    public String getTranslationKey() {
+        String baseKey = super.getTranslationKey();
+        return baseKey.substring(0, baseKey.lastIndexOf('_'));
     }
 
-    @SideOnly(Side.CLIENT)
+    @Override
+    public ChestMaterial getMaterial() {
+        return material;
+    }
+
+    @Override
+    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+        builder.add(ENABLED);
+    }
+
+    @Override
+    public boolean isToolEffective(BlockState state, ToolType tool) {
+        return ColossalChest.isToolEffectiveShared(this.material, state, tool);
+    }
+
+    @OnlyIn(Dist.CLIENT)
     @Override
     public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
-    @SuppressWarnings("deprecation")
-    @SideOnly(Side.CLIENT)
     @Override
-    public boolean isOpaqueCube(IBlockState blockState) {
-        return false;
-    }
-
-    @SuppressWarnings("deprecation")
-    @SideOnly(Side.CLIENT)
-    @Override
-    public boolean isFullCube(IBlockState blockState) {
+    public boolean canCreatureSpawn(BlockState state, IBlockReader world, BlockPos pos,
+                                    EntitySpawnPlacementRegistry.PlacementType type, @Nullable EntityType<?> entityType) {
         return false;
     }
 
     @Override
-    public boolean canCreatureSpawn(IBlockState blockState, IBlockAccess world, BlockPos pos, EntityLiving.SpawnPlacementType type) {
-        return false;
-    }
-
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack);
-        ColossalChest.triggerDetector(world, pos, true, placer instanceof EntityPlayer ? (EntityPlayer) placer : null);
+        ColossalChest.triggerDetector(this.material, world, pos, true, placer instanceof PlayerEntity ? (PlayerEntity) placer : null);
     }
 
     @Override
-    public void onBlockAdded(World world, BlockPos blockPos, IBlockState blockState) {
-        super.onBlockAdded(world, blockPos, blockState);
-        if(world.getBlockState(blockPos).getBlock() != blockState.getBlock()) {
-            ColossalChest.triggerDetector(world, blockPos, true, null);
+    public void onBlockAdded(BlockState blockStateNew, World world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
+        super.onBlockAdded(blockStateNew, world, blockPos, blockStateOld, isMoving);
+        if(!world.captureBlockSnapshots && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.get(ENABLED)) {
+            ColossalChest.triggerDetector(this.material, world, blockPos, true, null);
         }
     }
 
     @Override
-    public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        if((Boolean)state.getValue(ACTIVE)) ColossalChest.triggerDetector(world, pos, false, null);
-        super.breakBlock(world, pos, state);
+    public void onPlayerDestroy(IWorld world, BlockPos blockPos, BlockState blockState) {
+        if(blockState.get(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
+        super.onPlayerDestroy(world, blockPos, blockState);
     }
 
     @Override
-    protected void onPreBlockDestroyed(World world, BlockPos blockPos, EntityPlayer player) {
-        // Don't drop items in inventory.
+    public void onExplosionDestroy(World world, BlockPos blockPos, Explosion explosion) {
+        if(world.getBlockState(blockPos).get(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
+        super.onExplosionDestroy(world, blockPos, explosion);
     }
 
     @Override
-    public void onDetect(World world, BlockPos location, Vec3i size, boolean valid, BlockPos originCorner) {
+    public void onDetect(IWorldReader world, BlockPos location, Vec3i size, boolean valid, BlockPos originCorner) {
         Block block = world.getBlockState(location).getBlock();
         if(block == this) {
-            boolean change = !(Boolean) world.getBlockState(location).getValue(ACTIVE);
-            world.setBlockState(location, world.getBlockState(location).withProperty(ACTIVE, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
+            boolean change = !(Boolean) world.getBlockState(location).get(ENABLED);
+            ((IWorldWriter) world).setBlockState(location, world.getBlockState(location).with(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             if(change) {
-                BlockPos tileLocation = ColossalChest.getCoreLocation(world, location);
-                TileInterface tile = TileHelpers.getSafeTile(world, location, TileInterface.class);
+                BlockPos tileLocation = ColossalChest.getCoreLocation(material, world, location);
+                TileInterface tile = TileHelpers.getSafeTile(world, location, TileInterface.class).orElse(null);
                 if(tile != null && tileLocation != null) {
                     tile.setCorePosition(tileLocation);
-                    TileColossalChest core = TileHelpers.getSafeTile(world, tileLocation, TileColossalChest.class);
+                    TileColossalChest core = TileHelpers.getSafeTile(world, tileLocation, TileColossalChest.class).orElse(null);
                     if (core != null) {
                         core.addInterface(location);
                     }
@@ -150,76 +134,31 @@ public class Interface extends ConfigurableBlockContainer implements CubeDetecto
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos blockPos, IBlockState blockState, EntityPlayer player,
-                                    EnumHand hand, EnumFacing side,
-                                    float posX, float posY, float posZ) {
-        if(blockState.getValue(ACTIVE)) {
-            BlockPos tileLocation = ColossalChest.getCoreLocation(world, blockPos);
+    public boolean onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
+        if(blockState.get(ENABLED)) {
+            BlockPos tileLocation = ColossalChest.getCoreLocation(material, world, blockPos);
             if(tileLocation != null) {
                 world.getBlockState(tileLocation).getBlock().
-                        onBlockActivated(world, tileLocation, world.getBlockState(tileLocation),
-                                player, hand, side, posX, posY, posZ);
+                        onBlockActivated(blockState, world, tileLocation, player, hand, rayTraceResult);
                 return true;
             }
         } else {
-            ColossalChest.addPlayerChatError(world, blockPos, player, hand);
+            ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
         }
-        return super.onBlockActivated(world, blockPos, blockState, player, hand, side, posX, posY, posZ);
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public void getSubBlocks(CreativeTabs creativeTabs, NonNullList<ItemStack> list) {
-        if (!BlockHelpers.isValidCreativeTab(this, creativeTabs)) return;
-        for(PropertyMaterial.Type material : PropertyMaterial.Type.values()) {
-            list.add(new ItemStack(getInstance(), 1, material.ordinal()));
-        }
+        return super.onBlockActivated(blockState, world, blockPos, player, hand, rayTraceResult);
     }
 
     @Override
-    protected BlockStateContainer createBlockState() {
-        return (propertyManager = new BlockPropertyManagerComponent(this,
-                new BlockPropertyManagerComponent.PropertyComparator() {
-                    @Override
-                    public int compare(IProperty o1, IProperty o2) {
-                        return o2.getName().compareTo(o1.getName());
-                    }
-                },
-                new BlockPropertyManagerComponent.UnlistedPropertyComparator())).createDelegatedBlockState();
+    public boolean isValidPosition(BlockState blockState, IWorldReader world, BlockPos blockPos) {
+        return super.isValidPosition(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
     }
 
     @Override
-    public IBlockState getStateForPlacement(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
-        // Meta * 2 because we always want the inactive state
-        return super.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, meta * 2, placer, hand);
-    }
-
-    @Override
-    public int damageDropped(IBlockState state) {
-        return state.getValue(ColossalChest.MATERIAL).ordinal();
-    }
-
-    @Override
-    public boolean isKeepNBTOnDrop() {
-        return false;
-    }
-
-    @Override
-    public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
-        return super.canPlaceBlockAt(worldIn, pos) && ColossalChest.canPlace(worldIn, pos);
-    }
-
-    @Override
-    public boolean canSilkHarvest(World world, BlockPos pos, IBlockState state, EntityPlayer player) {
-        return false;
-    }
-
-    @Override
-    public float getExplosionResistance(World world, BlockPos pos, Entity exploder, Explosion explosion) {
-        if (world.getBlockState(pos).getValue(ColossalChest.MATERIAL).isExplosionResistant()) {
+    public float getExplosionResistance(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
+        if (this.material.isExplosionResistant()) {
             return 10000F;
         }
-        return super.getExplosionResistance(world, pos, exploder, explosion);
+        return 0;
     }
 
 }

@@ -1,21 +1,21 @@
 package org.cyclops.colossalchests.client.render.tileentity;
 
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelChest;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.tileentity.model.ChestModel;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
+import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
-import org.cyclops.colossalchests.block.PropertyMaterial;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.client.render.tileentity.RenderTileEntityModel;
 import org.cyclops.cyclopscore.init.ModBase;
@@ -29,35 +29,35 @@ import java.util.Map;
  * @author rubensworks
  *
  */
-public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileColossalChest, ModelChest> {
+public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileColossalChest, ChestModel> {
 
-    public static final Map<PropertyMaterial.Type, ResourceLocation> TEXTURES_CHEST = Maps.newHashMap();
-    public static final Map<PropertyMaterial.Type, ResourceLocation> TEXTURES_INTERFACE = Maps.newHashMap();
+    public static final Map<ChestMaterial, ResourceLocation> TEXTURES_CHEST = Maps.newHashMap();
+    public static final Map<ChestMaterial, ResourceLocation> TEXTURES_INTERFACE = Maps.newHashMap();
     static {
         Calendar calendar = Calendar.getInstance();
         boolean christmas = calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) >= 24 && calendar.get(Calendar.DATE) <= 26;
-        TEXTURES_CHEST.put(PropertyMaterial.Type.WOOD, new ResourceLocation("textures/entity/chest/" + (christmas ? "christmas" : "normal") + ".png"));
-        TEXTURES_CHEST.put(PropertyMaterial.Type.COPPER, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_copper.png"));
-        TEXTURES_CHEST.put(PropertyMaterial.Type.IRON, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_iron.png"));
-        TEXTURES_CHEST.put(PropertyMaterial.Type.SILVER, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_silver.png"));
-        TEXTURES_CHEST.put(PropertyMaterial.Type.GOLD, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_gold.png"));
-        TEXTURES_CHEST.put(PropertyMaterial.Type.DIAMOND, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_diamond.png"));
-        TEXTURES_CHEST.put(PropertyMaterial.Type.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_obsidian.png"));
+        TEXTURES_CHEST.put(ChestMaterial.WOOD, new ResourceLocation("textures/entity/chest/" + (christmas ? "christmas" : "normal") + ".png"));
+        TEXTURES_CHEST.put(ChestMaterial.COPPER, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_copper.png"));
+        TEXTURES_CHEST.put(ChestMaterial.IRON, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_iron.png"));
+        TEXTURES_CHEST.put(ChestMaterial.SILVER, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_silver.png"));
+        TEXTURES_CHEST.put(ChestMaterial.GOLD, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_gold.png"));
+        TEXTURES_CHEST.put(ChestMaterial.DIAMOND, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_diamond.png"));
+        TEXTURES_CHEST.put(ChestMaterial.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, ColossalChests._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_MODELS) + "chest_obsidian.png"));
 
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.WOOD, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_wood.png"));
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.COPPER, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_copper.png"));
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.IRON, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_iron.png"));
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.SILVER, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_silver.png"));
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.GOLD, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_gold.png"));
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.DIAMOND, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_diamond.png"));
-        TEXTURES_INTERFACE.put(PropertyMaterial.Type.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_obsidian.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.WOOD, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_wood.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.COPPER, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_copper.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.IRON, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_iron.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.SILVER, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_silver.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.GOLD, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_gold.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_diamond.png"));
+        TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, "textures/blocks/interface_obsidian.png"));
     }
 
 	/**
      * Make a new instance.
      * @param model The model to render.
      */
-    public RenderTileEntityColossalChest(ModelChest model) {
+    public RenderTileEntityColossalChest(ChestModel model) {
         super(model, null);
     }
 
@@ -65,20 +65,20 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
     protected void preRotate(TileColossalChest chestTile) {
         if(chestTile.isStructureComplete()) {
             Vec3d renderOffset = chestTile.getRenderOffset();
-            GlStateManager.translate(-renderOffset.x, renderOffset.y, renderOffset.z);
+            GlStateManager.translated(-renderOffset.x, renderOffset.y, renderOffset.z);
         }
-        GlStateManager.translate(0.5F, 0.5F - chestTile.getSizeSingular() * 0.0625F, 0.5F);
+        GlStateManager.translatef(0.5F, 0.5F - chestTile.getSizeSingular() * 0.0625F, 0.5F);
         float size = chestTile.getSizeSingular() * 1.125F;
-        GlStateManager.scale(size, size, size);
+        GlStateManager.scalef(size, size, size);
     }
 
     @Override
     protected void postRotate(TileColossalChest tile) {
-        GlStateManager.translate(-0.5F, 0, -0.5F);
+        GlStateManager.translatef(-0.5F, 0, -0.5F);
     }
 
     @Override
-    protected void renderModel(TileColossalChest chestTile, ModelChest model, float partialTick, int destroyStage) {
+    protected void renderModel(TileColossalChest chestTile, ChestModel model, float partialTick, int destroyStage) {
         if(chestTile.isStructureComplete()) {
             bindTexture(TEXTURES_CHEST.get(chestTile.getMaterial()));
             GlStateManager.pushMatrix();
@@ -86,45 +86,45 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
                 float lidangle = chestTile.prevLidAngle + (chestTile.lidAngle - chestTile.prevLidAngle) * partialTick;
                 lidangle = 1.0F - lidangle;
                 lidangle = 1.0F - lidangle * lidangle * lidangle;
-                model.chestLid.rotateAngleX = -(lidangle * (float) Math.PI / 2.0F);
+                model.getLid().rotateAngleX = -(lidangle * (float) Math.PI / 2.0F);
             }
-            GlStateManager.translate(0, -0.0625F * 8, 0);
+            GlStateManager.translatef(0, -0.0625F * 8, 0);
             model.renderAll();
             GlStateManager.popMatrix();
         }
     }
 
     @Override
-    public void render(TileColossalChest tile, double x, double y, double z, float partialTick, int destroyStage, float alpha) {
-        super.render(tile, x, y, z, partialTick, destroyStage, alpha);
-        if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getMinecraft().player.isSneaking())) {
+    public void render(TileColossalChest tile, double x, double y, double z, float partialTick, int destroyStage) {
+        super.render(tile, x, y, z, partialTick, destroyStage);
+        if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isSneaking())) {
             GlStateManager.enableRescaleNormal();
             GlStateManager.alphaFunc(516, 0.1F);
             GlStateManager.enableBlend();
-            GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+            GlStateManager.blendFuncSeparate(770, 771, 1, 0);
             GlStateManager.pushMatrix();
-            GlStateManager.pushAttrib();
+            GlStateManager.pushLightingAttributes();
             GlStateManager.disableLighting();
 
             GlStateManager.enableRescaleNormal();
-            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            GlStateManager.translate((float) x, (float) y, (float) z);
+            GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.translatef((float) x, (float) y, (float) z);
             bindTexture(TEXTURES_INTERFACE.get(tile.getMaterial()));
             for (Vec3i interfaceLocation : tile.getInterfaceLocations()) {
                 float translateX = interfaceLocation.getX() - tile.getPos().getX();
                 float translateY = interfaceLocation.getY() - tile.getPos().getY();
                 float translateZ = interfaceLocation.getZ() - tile.getPos().getZ();
-                GlStateManager.translate(translateX, translateY, translateZ);
+                GlStateManager.translatef(translateX, translateY, translateZ);
                 renderInterface(interfaceLocation.equals(tile.getPos()));
-                GlStateManager.translate(-translateX, -translateY, -translateZ);
+                GlStateManager.translatef(-translateX, -translateY, -translateZ);
             }
 
             GlStateManager.enableLighting();
-            GlStateManager.popAttrib();
+            GlStateManager.popAttributes();
             GlStateManager.popMatrix();
             GlStateManager.disableRescaleNormal();
             GlStateManager.disableBlend();
-            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
@@ -137,63 +137,63 @@ public class RenderTileEntityColossalChest extends RenderTileEntityModel<TileCol
      * Sets the OpenGL matrix orientation for the given direction.
      * @param direction The direction to orient the OpenGL matrix to.
      */
-    protected void setMatrixOrientation(EnumFacing direction) {
+    protected void setMatrixOrientation(Direction direction) {
         float translateX = -1F - direction.getXOffset();
         float translateY = direction.getYOffset();
         float translateZ = direction.getZOffset();
-        if (direction == EnumFacing.NORTH) {
+        if (direction == Direction.NORTH) {
             translateZ += 1F;
             translateX += 2F;
             translateY -= 1F;
-        } else if (direction == EnumFacing.EAST) {
+        } else if (direction == Direction.EAST) {
             translateX += 3F;
             translateY -= 1F;
             translateZ += 1F;
-        } else if (direction == EnumFacing.WEST) {
+        } else if (direction == Direction.WEST) {
             translateY -= 1F;
-        } else if (direction == EnumFacing.SOUTH) {
+        } else if (direction == Direction.SOUTH) {
             translateX += 1F;
             translateY -= 1F;
-        } else if (direction == EnumFacing.UP) {
+        } else if (direction == Direction.UP) {
             translateX += 1F;
             translateZ += 1F;
-        } else if (direction == EnumFacing.DOWN) {
+        } else if (direction == Direction.DOWN) {
             translateX += 1F;
         }
-        GlStateManager.translate(translateX * 16, translateY * 16, translateZ * 16);
+        GlStateManager.translatef(translateX * 16, translateY * 16, translateZ * 16);
 
         short rotationY = 0;
         short rotationX = 0;
-        if (direction == EnumFacing.SOUTH) {
+        if (direction == Direction.SOUTH) {
             rotationY = 0;
-        } else if (direction == EnumFacing.NORTH) {
+        } else if (direction == Direction.NORTH) {
             rotationY = 180;
-        } else if (direction == EnumFacing.EAST) {
+        } else if (direction == Direction.EAST) {
             rotationY = 90;
-        } else if (direction == EnumFacing.WEST) {
+        } else if (direction == Direction.WEST) {
             rotationY = -90;
-        } else if (direction == EnumFacing.UP) {
+        } else if (direction == Direction.UP) {
             rotationX = -90;
-        } else if (direction == EnumFacing.DOWN) {
+        } else if (direction == Direction.DOWN) {
             rotationX = 90;
         }
-        GlStateManager.rotate((float) rotationY, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotate((float) rotationX, 1.0F, 0.0F, 0.0F);
+        GlStateManager.rotatef((float) rotationY, 0.0F, 1.0F, 0.0F);
+        GlStateManager.rotatef((float) rotationX, 1.0F, 0.0F, 0.0F);
     }
 
     protected void renderInterface(boolean core) {
-        for (EnumFacing side : EnumFacing.VALUES) {
+        for (Direction side : Direction.values()) {
             GlStateManager.pushMatrix();
             float scale = 0.063F;
-            GlStateManager.scale(scale, scale, scale);
-            GlStateManager.scale(1, -1, 1);
+            GlStateManager.scalef(scale, scale, scale);
+            GlStateManager.scalef(1, -1, 1);
 
             setMatrixOrientation(side);
             BufferBuilder worldRenderer = Tessellator.getInstance().getBuffer();
             worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
             float indent = -0.2F;
-            if (side == EnumFacing.UP) indent = -15.8F;
-            if (side == EnumFacing.DOWN) indent *= 2;
+            if (side == Direction.UP) indent = -15.8F;
+            if (side == Direction.DOWN) indent *= 2;
             int alpha = core ? 255 : 150;
             float posMin = core ? 5F : 6F;
             float posMax = 16F - posMin;

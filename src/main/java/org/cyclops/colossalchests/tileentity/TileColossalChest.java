@@ -2,13 +2,11 @@ package org.cyclops.colossalchests.tileentity;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.experimental.Delegate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -31,13 +29,11 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
-import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
 import org.cyclops.cyclopscore.helper.DirectionHelpers;
 import org.cyclops.cyclopscore.helper.InventoryHelpers;
@@ -45,7 +41,6 @@ import org.cyclops.cyclopscore.helper.LocationHelpers;
 import org.cyclops.cyclopscore.helper.WorldHelpers;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.IndexedInventory;
-import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
@@ -54,8 +49,6 @@ import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.PrimitiveIterator;
 import java.util.Random;
 
 /**
@@ -73,7 +66,6 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     private SimpleInventory lastValidInventory = null;
     private SimpleInventory inventory = null;
     private LazyOptional<IItemHandler> capabilityItemHandler = LazyOptional.empty();
-    private LazyOptional<ISlotlessItemHandler> capabilityItemHandlerSlotless = LazyOptional.empty();
 
     @NBTPersist
     private Vec3i size = LocationHelpers.copyLocation(Vec3i.NULL_VECTOR);
@@ -382,18 +374,12 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
 
     public void setInventory(SimpleInventory inventory) {
         this.capabilityItemHandler.invalidate();
-        this.capabilityItemHandlerSlotless.invalidate();
         this.inventory = inventory;
         if (this.inventory.getSizeInventory() > 0) {
             IItemHandler itemHandler = new InvWrapper(this.inventory);
             this.capabilityItemHandler = LazyOptional.of(() -> itemHandler);
-            if (Capabilities.SLOTLESS_ITEMHANDLER != null) {
-                this.capabilityItemHandlerSlotless = LazyOptional.of(() ->
-                        new IndexedSlotlessItemHandlerWrapper(itemHandler, (IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) this.inventory));
-            }
         } else {
             this.capabilityItemHandler = LazyOptional.empty();
-            this.capabilityItemHandlerSlotless = LazyOptional.empty();
         }
     }
 
@@ -419,9 +405,6 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         ensureInventoryInitialized();
         if (this.capabilityItemHandler.isPresent() && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return this.capabilityItemHandler.cast();
-        }
-        if (this.capabilityItemHandlerSlotless.isPresent() && capability == Capabilities.SLOTLESS_ITEMHANDLER) {
-            return this.capabilityItemHandlerSlotless.cast();
         }
         return super.getCapability(capability, facing);
     }

@@ -14,6 +14,7 @@ import org.cyclops.colossalchests.block.UncolossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
+import org.cyclops.colossalchests.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.colossalchests.proxy.ClientProxy;
 import org.cyclops.colossalchests.proxy.CommonProxy;
@@ -47,6 +48,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
     @Override
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         modCompatLoader.addModCompat(new IronChestModCompat());
+        modCompatLoader.addModCompat(new CommonCapabilitiesModCompat());
     }
 
     @Override

@@ -28,4 +28,5 @@ public class Reference {
     
     // MOD ID's
     public static final String MOD_IRONCHEST = "ironchest";
+    public static final String MOD_COMMONCAPABILITIES = "commoncapabilities";
 }

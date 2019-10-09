@@ -94,18 +94,18 @@ public class ItemUpgradeTool extends Item {
         Vec3i size = tile.getSize();
 
         // Calculate required item blocks
-        final ItemStack requiredCores = new ItemStack(newType.getBlockCore());
-        final ItemStack requiredInterfaces = new ItemStack(newType.getBlockInterface());
-        final ItemStack requiredWalls = new ItemStack(newType.getBlockWall());
         ChestMaterial validMaterial = null;
+        Wrapper<Integer> requiredCoresCount = new Wrapper<>(0);
+        Wrapper<Integer> requiredInterfacesCount = new Wrapper<>(0);
+        Wrapper<Integer> requiredWallsCount = new Wrapper<>(0);
         for (ChestMaterial material : ChestMaterial.VALUES) {
             DetectionResult result = material.getChestDetector().detect(world, pos, null, (location, blockState) -> {
                 if (blockState.getBlock() instanceof ColossalChest) {
-                    requiredCores.grow(1);
+                    requiredCoresCount.set(requiredCoresCount.get() + 1);
                 } else if (blockState.getBlock() instanceof Interface) {
-                    requiredInterfaces.grow(1);
+                    requiredInterfacesCount.set(requiredCoresCount.get() + 1);
                 } else if (blockState.getBlock() instanceof ChestWall) {
-                    requiredWalls.grow(1);
+                    requiredWallsCount.set(requiredCoresCount.get() + 1);
                 }
                 return null;
             }, false);
@@ -114,6 +114,10 @@ public class ItemUpgradeTool extends Item {
                 break;
             }
         }
+
+        ItemStack requiredCores = new ItemStack(newType.getBlockCore(), requiredCoresCount.get());
+        ItemStack requiredInterfaces = new ItemStack(newType.getBlockInterface(), requiredInterfacesCount.get());
+        ItemStack requiredWalls = new ItemStack(newType.getBlockWall(), requiredWallsCount.get());
 
         if (validMaterial == null) {
             return new L10NHelpers.UnlocalizedString("multiblock.colossalchests.error.unexpected");

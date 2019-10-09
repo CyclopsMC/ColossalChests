@@ -16,6 +16,7 @@ import org.cyclops.cyclopscore.advancement.criterion.BaseCriterionTrigger;
 import org.cyclops.cyclopscore.advancement.criterion.ICriterionInstanceTestable;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +36,7 @@ public class ChestFormedTrigger extends BaseCriterionTrigger<Pair<ChestMaterial,
         if (element != null && !element.isJsonNull()) {
             String materialString = element.getAsString();
             try {
-                material = ChestMaterial.valueOf(materialString);
+                material = Objects.requireNonNull(ChestMaterial.valueOf(materialString), "Could not find a chest material by name " + materialString);
             } catch (IllegalArgumentException e) {
                 throw new JsonSyntaxException("Could not find a colossal chest material by name " + materialString
                         + ". Allowed values: "

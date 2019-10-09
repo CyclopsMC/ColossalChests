@@ -54,7 +54,7 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
     }
 
     public static ChestMaterial valueOf(String materialString) {
-        return KEYED_VALUES.get(materialString);
+        return KEYED_VALUES.get(materialString.toLowerCase());
     }
 
     public String getName() {

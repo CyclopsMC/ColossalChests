@@ -22,10 +22,10 @@ import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
  */
 public class ColossalChestConfig extends BlockConfig {
 
-    @ConfigurableProperty(category = "machine", comment = "The maximum size a colossal chest can have.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    @ConfigurableProperty(namedId="colossal_chest", category = "machine", comment = "The maximum size a colossal chest can have.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
     public static int maxSize = 20;
 
-    @ConfigurableProperty(category = "general", comment = "If the chest should visually open when someone uses it.", isCommandable = true, configLocation = ModConfig.Type.CLIENT)
+    @ConfigurableProperty(namedId="colossal_chest", category = "general", comment = "If the chest should visually open when someone uses it.", isCommandable = true, configLocation = ModConfig.Type.CLIENT)
     public static boolean chestAnimation = true;
 
     public ColossalChestConfig(ChestMaterial material) {

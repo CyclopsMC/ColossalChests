@@ -9,8 +9,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
@@ -135,6 +137,8 @@ public class ItemUpgradeTool extends Item {
         if(!world.isRemote) {
             tile.setSize(Vec3i.NULL_VECTOR);
             SimpleInventory oldInventory = tile.getLastValidInventory();
+            Direction oldRotation = tile.getRotation();
+            Vec3d oldRenderOffset = tile.getRenderOffset();
             Wrapper<BlockPos> coreLocation = new Wrapper<>(null);
             validMaterial.getChestDetector().detect(world, pos, null, (location, blockState) -> {
                 BlockState blockStateNew = null;
@@ -161,6 +165,8 @@ public class ItemUpgradeTool extends Item {
                     .orElseThrow(() -> new IllegalStateException("Could not find a colossal chest core location during upgrading."));
             tileNew.setLastValidInventory(oldInventory);
             tileNew.setMaterial(newType);
+            tileNew.setRotation(oldRotation);
+            tileNew.setRenderOffset(oldRenderOffset);
             tileNew.setSize(size); // To trigger the chest size to be updated
             Advancements.CHEST_FORMED.trigger((ServerPlayerEntity) player, Pair.of(newType, size.getX() + 1));
         }

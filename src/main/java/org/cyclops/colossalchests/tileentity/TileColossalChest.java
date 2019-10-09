@@ -452,7 +452,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         this.renderOffset = new Vec3d(getPos().getX() - center.x, getPos().getY() - center.y, getPos().getZ() - center.z);
     }
 
-    private void setRotation(Direction rotation) {
+    public void setRotation(Direction rotation) {
         this.rotation = rotation.ordinal();
     }
 
@@ -463,6 +463,10 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
 
     public Vec3d getRenderOffset() {
         return this.renderOffset;
+    }
+
+    public void setRenderOffset(Vec3d renderOffset) {
+        this.renderOffset = renderOffset;
     }
 
     /**

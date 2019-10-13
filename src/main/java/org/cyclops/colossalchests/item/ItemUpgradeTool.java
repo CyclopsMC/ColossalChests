@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.item;
 
+import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.block.BlockState;
@@ -23,6 +24,7 @@ import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.IBlockChestMaterial;
 import org.cyclops.colossalchests.block.Interface;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.colossalchests.tileentity.TileInterface;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.BlockHelpers;
@@ -33,6 +35,8 @@ import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
+
+import java.util.List;
 
 /**
  * An item to upgrade chests to the next tier.
@@ -143,7 +147,9 @@ public class ItemUpgradeTool extends Item {
             SimpleInventory oldInventory = tile.getLastValidInventory();
             Direction oldRotation = tile.getRotation();
             Vec3d oldRenderOffset = tile.getRenderOffset();
+            List<Vec3i> oldInterfaceLocations = tile.getInterfaceLocations();
             Wrapper<BlockPos> coreLocation = new Wrapper<>(null);
+            List<BlockPos> interfaceLocations = Lists.newArrayList();
             validMaterial.getChestDetector().detect(world, pos, null, (location, blockState) -> {
                 BlockState blockStateNew = null;
                 if (blockState.getBlock() instanceof ColossalChest) {
@@ -151,6 +157,7 @@ public class ItemUpgradeTool extends Item {
                     blockStateNew = newType.getBlockCore().getDefaultState();
                 } else if (blockState.getBlock() instanceof Interface) {
                     blockStateNew = newType.getBlockInterface().getDefaultState();
+                    interfaceLocations.add(location);
                 } else if (blockState.getBlock() instanceof ChestWall) {
                     blockStateNew = newType.getBlockWall().getDefaultState();
                 }
@@ -171,7 +178,18 @@ public class ItemUpgradeTool extends Item {
             tileNew.setMaterial(newType);
             tileNew.setRotation(oldRotation);
             tileNew.setRenderOffset(oldRenderOffset);
+            for (Vec3i oldInterfaceLocation : oldInterfaceLocations) {
+                tileNew.addInterface(oldInterfaceLocation);
+            }
             tileNew.setSize(size); // To trigger the chest size to be updated
+
+            // Set the core position into the newly transformed interfaces
+            for (BlockPos interfaceLocation : interfaceLocations) {
+                TileInterface tileInterface = TileHelpers.getSafeTile(world, interfaceLocation, TileInterface.class)
+                        .orElseThrow(() -> new IllegalStateException("Could not find a colossal chest interface location during upgrading."));
+                tileInterface.setCorePosition(coreLocation.get());
+            }
+
             Advancements.CHEST_FORMED.trigger((ServerPlayerEntity) player, Pair.of(newType, size.getX() + 1));
         }
 

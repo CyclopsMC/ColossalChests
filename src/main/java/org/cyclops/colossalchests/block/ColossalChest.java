@@ -96,7 +96,9 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     public static boolean canPlace(IWorldReader world, BlockPos pos) {
         for(Direction side : Direction.values()) {
             BlockState blockState = world.getBlockState(pos.offset(side));
-            if(blockState.getProperties().contains(ENABLED) && blockState.get(ENABLED)) {
+            Block block = blockState.getBlock();
+            if((block instanceof ColossalChest || block instanceof ChestWall || block instanceof Interface)
+                    && blockState.getProperties().contains(ENABLED) && blockState.get(ENABLED)) {
                 return false;
             }
         }

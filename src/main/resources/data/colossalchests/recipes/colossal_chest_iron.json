@@ -2,13 +2,13 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "item": "colossalchests:chest_wall_obsidian"
+      "item": "colossalchests:chest_wall_iron"
     },
     {
       "tag": "forge:ingots/iron"
     }
   ],
   "result": {
-    "item": "colossalchests:colossal_chest_obsidian"
+    "item": "colossalchests:colossal_chest_iron"
   }
 }

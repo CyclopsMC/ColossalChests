@@ -212,23 +212,23 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.sendMessage(new StringTextComponent(L10NHelpers.localize(
-                        "multiblock.colossalchests.error.unexpected")));
+                player.sendMessage(new TranslationTextComponent("multiblock.colossalchests.error.unexpected"));
             }
         }
     }
 
     public static void addPlayerChatError(PlayerEntity player, L10NHelpers.UnlocalizedString unlocalizedError) {
         ITextComponent chat = new StringTextComponent("");
-        ITextComponent prefix = new StringTextComponent(
-                String.format("[%s]: ", L10NHelpers.localize("multiblock.colossalchests.error.prefix"))
-        ).setStyle(new Style().
+        ITextComponent prefix = new StringTextComponent("[")
+                .appendSibling(new TranslationTextComponent("multiblock.colossalchests.error.prefix"))
+                .appendSibling(new StringTextComponent("]: "))
+                .setStyle(new Style().
                         setColor(TextFormatting.GRAY).
                         setHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
                                 new TranslationTextComponent("multiblock.colossalchests.error.prefix.info")
                         ))
-        );
+                );
         ITextComponent error = new StringTextComponent(unlocalizedError.localize());
         chat.appendSibling(prefix);
         chat.appendSibling(error);

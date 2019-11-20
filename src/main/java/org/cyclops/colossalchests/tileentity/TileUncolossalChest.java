@@ -14,6 +14,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
@@ -43,8 +45,7 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     @Delegate
     private final ITickingTile tickingTileComponent = new TickingTileComponent(this);
 
-    @NBTPersist
-    private String customName = null;
+    private ITextComponent customName = null;
 
     private final SimpleInventory inventory;
 
@@ -83,6 +84,9 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     public void read(CompoundNBT tag) {
         super.read(tag);
         inventory.read(tag.getCompound("inventory"));
+        if (tag.contains("CustomName", Constants.NBT.TAG_STRING)) {
+            this.customName = ITextComponent.Serializer.fromJson(tag.getString("CustomName"));
+        }
     }
 
     @Override
@@ -90,6 +94,9 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
         CompoundNBT subTag = new CompoundNBT();
         inventory.write(subTag);
         tag.put("inventory", subTag);
+        if (this.customName != null) {
+            tag.putString("CustomName", ITextComponent.Serializer.toJson(this.customName));
+        }
         return super.write(tag);
     }
 
@@ -182,20 +189,16 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     }
 
     public boolean hasCustomName() {
-        return customName != null && customName.length() > 0;
+        return customName != null;
     }
 
-    public void setCustomName(String name) {
+    public void setCustomName(ITextComponent name) {
         this.customName = name;
-    }
-
-    public String getName() {
-        return hasCustomName() ? customName : L10NHelpers.localize("general.colossalchests.uncolossalchest");
     }
 
     @Override
     public ITextComponent getDisplayName() {
-        return new StringTextComponent(getName());
+        return hasCustomName() ? customName : new TranslationTextComponent("general.colossalchests.uncolossalchest");
     }
 
     @Override

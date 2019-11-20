@@ -94,7 +94,7 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
         if (stack.hasDisplayName()) {
             TileUncolossalChest tile = TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class).orElse(null);
             if (tile != null) {
-                tile.setCustomName(stack.getDisplayName().getString());
+                tile.setCustomName(stack.getDisplayName());
             }
         }
     }

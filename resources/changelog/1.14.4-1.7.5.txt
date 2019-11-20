@@ -1,0 +1,7 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.6.0 or higher.
+
+Fixes:
+* Fix chest textures missing when Iron Chest mod is installed, Closes #123
+* Fix server crash when right clicking blocks, Closes #124, #122
+* Fix blocks not dropping their in their item form

@@ -1,0 +1,8 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.6.1 or higher.
+
+Fixes:
+* Deprecate server-unsafe UnlocalizedString in favor of ITextComponent
+  Fixes server crashes when interacting with chests.
+  A follow-up fix for 874a81fd79a59413286f353f78529c323f8bad50
+  Closes #127

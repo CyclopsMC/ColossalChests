@@ -15,6 +15,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.Advancements;
@@ -68,15 +70,15 @@ public class ItemUpgradeTool extends Item {
                 if(context.getWorld().isRemote()) {
                     return ActionResultType.PASS;
                 }
-                ColossalChest.addPlayerChatError(context.getPlayer(), new L10NHelpers.UnlocalizedString(
+                ColossalChest.addPlayerChatError(context.getPlayer(), new TranslationTextComponent(
                         "multiblock.colossalchests.error.upgradeLimit"));
                 return ActionResultType.FAIL;
             }
 
             // Loop over the up/downgrade tiers until one works.
-            L10NHelpers.UnlocalizedString firstError = null;
+            ITextComponent firstError = null;
             do {
-                L10NHelpers.UnlocalizedString error = attemptTransform(context.getWorld(), context.getPos(), context.getPlayer(), tile, newType, tile.getMaterial(), context.getHand());
+                ITextComponent error = attemptTransform(context.getWorld(), context.getPos(), context.getPlayer(), tile, newType, tile.getMaterial(), context.getHand());
                 if (error != null) {
                     if (firstError == null) {
                         firstError = error;
@@ -92,7 +94,7 @@ public class ItemUpgradeTool extends Item {
         return context.getWorld().isRemote() ? ActionResultType.PASS : ActionResultType.SUCCESS;
     }
 
-    protected L10NHelpers.UnlocalizedString attemptTransform(final World world, BlockPos pos, PlayerEntity player,
+    protected ITextComponent attemptTransform(final World world, BlockPos pos, PlayerEntity player,
                                                              final TileColossalChest tile, final ChestMaterial newType,
                                                              final ChestMaterial currentType, Hand hand) {
         Vec3i size = tile.getSize();
@@ -124,16 +126,16 @@ public class ItemUpgradeTool extends Item {
         ItemStack requiredWalls = new ItemStack(newType.getBlockWall(), requiredWallsCount.get());
 
         if (validMaterial == null) {
-            return new L10NHelpers.UnlocalizedString("multiblock.colossalchests.error.unexpected");
+            return new TranslationTextComponent("multiblock.colossalchests.error.unexpected");
         }
 
         // Check required items in inventory
         if (!(consumeItems(player, requiredCores, true)
                 && consumeItems(player, requiredInterfaces, true)
                 && consumeItems(player, requiredWalls, true))) {
-            return new L10NHelpers.UnlocalizedString(
+            return new TranslationTextComponent(
                     "multiblock.colossalchests.error.upgrade", requiredCores.getCount(),
-                    requiredInterfaces.getCount(), requiredWalls.getCount(), new L10NHelpers.UnlocalizedString(newType.getUnlocalizedName()));
+                    requiredInterfaces.getCount(), requiredWalls.getCount(), new TranslationTextComponent(newType.getUnlocalizedName()));
         }
 
         // Actually consume the items

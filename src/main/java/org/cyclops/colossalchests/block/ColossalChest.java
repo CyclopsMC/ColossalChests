@@ -42,7 +42,6 @@ import org.cyclops.cyclopscore.block.BlockTileGui;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
-import org.cyclops.cyclopscore.helper.L10NHelpers;
 import org.cyclops.cyclopscore.helper.LocationHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
@@ -217,7 +216,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
         }
     }
 
-    public static void addPlayerChatError(PlayerEntity player, L10NHelpers.UnlocalizedString unlocalizedError) {
+    public static void addPlayerChatError(PlayerEntity player, ITextComponent error) {
         ITextComponent chat = new StringTextComponent("");
         ITextComponent prefix = new StringTextComponent("[")
                 .appendSibling(new TranslationTextComponent("multiblock.colossalchests.error.prefix"))
@@ -229,7 +228,6 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
                                 new TranslationTextComponent("multiblock.colossalchests.error.prefix.info")
                         ))
                 );
-        ITextComponent error = new StringTextComponent(unlocalizedError.localize());
         chat.appendSibling(prefix);
         chat.appendSibling(error);
         player.sendMessage(chat);
@@ -282,7 +280,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
         }
 
         @Override
-        public L10NHelpers.UnlocalizedString onValidate(BlockPos blockPos, BlockState blockState) {
+        public ITextComponent onValidate(BlockPos blockPos, BlockState blockState) {
             ChestMaterial material = null;
             if (blockState.getBlock() instanceof IBlockChestMaterial) {
                 material = ((IBlockChestMaterial) blockState.getBlock()).getMaterial();
@@ -291,10 +289,10 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
                 requiredMaterial.set(material);
                 return null;
             }
-            return requiredMaterial.get() == material ? null : new L10NHelpers.UnlocalizedString(
-                    "multiblock.colossalchests.error.material", new L10NHelpers.UnlocalizedString(material.getUnlocalizedName()),
+            return requiredMaterial.get() == material ? null : new TranslationTextComponent(
+                    "multiblock.colossalchests.error.material", new TranslationTextComponent(material.getUnlocalizedName()),
                     LocationHelpers.toCompactString(blockPos),
-                    new L10NHelpers.UnlocalizedString(requiredMaterial.get().getUnlocalizedName()));
+                    new TranslationTextComponent(requiredMaterial.get().getUnlocalizedName()));
         }
     }
 }

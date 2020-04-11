@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.fluid.IFluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
@@ -29,6 +30,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.ILightReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.IWorldWriter;
@@ -122,6 +124,11 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     public boolean canCreatureSpawn(BlockState state, IBlockReader world, BlockPos pos,
                                     EntitySpawnPlacementRegistry.PlacementType type, @Nullable EntityType<?> entityType) {
         return false;
+    }
+
+    @Override
+    public boolean shouldDisplayFluidOverlay(BlockState blockState, ILightReader world, BlockPos pos, IFluidState fluidState) {
+        return true;
     }
 
     public static DetectionResult triggerDetector(ChestMaterial material, IWorld world, BlockPos blockPos, boolean valid, @Nullable PlayerEntity player) {

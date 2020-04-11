@@ -38,7 +38,7 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     }
 
     protected void scrollRelative(int direction) {
-        int multiplier = Minecraft.getInstance().player.isSneaking() ? 9 : 1;
+        int multiplier = Minecraft.getInstance().player.isCrouching() ? 9 : 1;
         this.getScrollbar().scrollRelative(direction * multiplier);
     }
 

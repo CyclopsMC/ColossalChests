@@ -7,14 +7,18 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.IChestLid;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -38,7 +42,7 @@ import java.util.List;
  * @author rubensworks
  *
  */
-public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTileEntity.ITickingTile, INamedContainerProvider {
+public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTileEntity.ITickingTile, INamedContainerProvider, IChestLid {
 
     private static final int TICK_MODULUS = 200;
 
@@ -203,6 +207,11 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
 
     @Override
     public Direction getRotation() {
+        // World is null in itemstack renderer
+        if (getWorld() == null) {
+            return Direction.SOUTH;
+        }
+
         BlockState blockState = getWorld().getBlockState(getPos());
         if(blockState.getBlock() != RegistryEntries.BLOCK_UNCOLOSSAL_CHEST) return Direction.NORTH;
         return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, Direction.NORTH);
@@ -212,5 +221,11 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     @Override
     public Container createMenu(int id, PlayerInventory playerInventory, PlayerEntity playerEntity) {
         return new ContainerUncolossalChest(id, playerInventory, this.getInventory());
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public float getLidAngle(float partialTicks) {
+        return MathHelper.lerp(partialTicks, this.prevLidAngle, this.lidAngle);
     }
 }

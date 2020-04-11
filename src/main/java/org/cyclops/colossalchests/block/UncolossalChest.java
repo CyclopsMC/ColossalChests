@@ -10,13 +10,13 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.IFluidState;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.pathfinding.PathType;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
@@ -72,6 +72,14 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
         return super.updatePostPlacement(blockState, facing, facingState, world, currentPos, facingPos);
     }
 
+    @Nullable
+    @Override
+    public BlockState getStateForPlacement(BlockItemUseContext blockItemUseContext) {
+        Direction facing = blockItemUseContext.getPlacementHorizontalFacing().getOpposite();
+        return super.getStateForPlacement(blockItemUseContext)
+                .with(FACING, facing);
+    }
+
     @Override
     public VoxelShape getShape(BlockState blockState, IBlockReader world, BlockPos pos, ISelectionContext context) {
         return SHAPE;
@@ -80,12 +88,6 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
     @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
     @Override

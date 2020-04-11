@@ -26,7 +26,8 @@ public class ChestWallConfig extends BlockConfig {
                 eConfig -> new ChestWall(Block.Properties.create(Material.ROCK)
                         .hardnessAndResistance(5.0F)
                         .sound(SoundType.WOOD)
-                        .harvestLevel(0), // Wood tier
+                        .harvestLevel(0) // Wood tier
+                        .notSolid(),
                         material),
                 (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()
                         .group(ColossalChests._instance.getDefaultItemGroup()), material)

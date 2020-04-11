@@ -116,16 +116,16 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         Slot slot = getSlot(slotIndex);
         // Yes I know this is ugly.
         // If you are reading this and know a better way, please tell me.
-        slot.xPos = Integer.MIN_VALUE;
-        slot.yPos = Integer.MIN_VALUE;
+        setSlotPosX(slot, Integer.MIN_VALUE);
+        setSlotPosY(slot, Integer.MIN_VALUE);
     }
 
     protected void enableSlot(int slotIndex, int row, int column) {
         Slot slot = getSlot(slotIndex);
         // Yes I know this is ugly.
         // If you are reading this and know a better way, please tell me.
-        slot.xPos = CHEST_INVENTORY_OFFSET_X + column * 18;
-        slot.yPos = CHEST_INVENTORY_OFFSET_Y + row * 18;
+        setSlotPosX(slot, CHEST_INVENTORY_OFFSET_X + column * 18);
+        setSlotPosY(slot, CHEST_INVENTORY_OFFSET_Y + row * 18);
     }
 
     @Override

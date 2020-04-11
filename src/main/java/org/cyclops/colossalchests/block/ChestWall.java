@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
@@ -10,7 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
-import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
@@ -21,8 +22,6 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.IWorldWriter;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
@@ -72,10 +71,14 @@ public class ChestWall extends Block implements CubeDetector.IDetectionListener,
         return ColossalChest.isToolEffectiveShared(this.material, state, tool);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT_MIPPED;
+    public BlockRenderType getRenderType(BlockState blockState) {
+        return blockState.get(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderType(blockState);
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState blockState, IBlockReader blockReader, BlockPos blockPos) {
+        return blockState.get(ENABLED);
     }
 
     @Override
@@ -123,16 +126,16 @@ public class ChestWall extends Block implements CubeDetector.IDetectionListener,
     }
 
     @Override
-    public boolean onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
+    public ActionResultType onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
         if(blockState.get(ENABLED)) {
             BlockPos tileLocation = ColossalChest.getCoreLocation(material, world, blockPos);
             if(tileLocation != null) {
-                world.getBlockState(tileLocation).getBlock().
+                return world.getBlockState(tileLocation).getBlock().
                         onBlockActivated(blockState, world, tileLocation, player, hand, rayTraceResult);
-                return true;
             }
         } else {
             ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
+            return ActionResultType.FAIL;
         }
         return super.onBlockActivated(blockState, world, blockPos, player, hand, rayTraceResult);
     }

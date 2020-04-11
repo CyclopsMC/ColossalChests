@@ -1,8 +1,11 @@
 package org.cyclops.colossalchests.tileentity;
 
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.ChestMaterial;
+import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityColossalChest;
 import org.cyclops.cyclopscore.config.extendedconfig.TileEntityConfig;
 
 import java.util.stream.Collectors;
@@ -23,6 +26,13 @@ public class TileColossalChestConfig extends TileEntityConfig<TileColossalChest>
                                 .map(ChestMaterial::getBlockCore)
                                 .collect(Collectors.toSet()), null)
         );
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void onRegistered() {
+        super.onRegistered();
+        ColossalChests._instance.getProxy().registerRenderer(getInstance(), RenderTileEntityColossalChest::new);
     }
 
 }

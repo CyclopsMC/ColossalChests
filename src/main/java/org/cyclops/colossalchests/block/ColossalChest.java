@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
@@ -13,7 +14,7 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -32,8 +33,6 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.IWorldWriter;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ToolType;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.Advancements;
@@ -109,10 +108,14 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
         return isToolEffectiveShared(this.material, state, tool);
     }
 
-    @OnlyIn(Dist.CLIENT)
     @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT_MIPPED;
+    public BlockRenderType getRenderType(BlockState blockState) {
+        return blockState.get(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderType(blockState);
+    }
+
+    @Override
+    public boolean propagatesSkylightDown(BlockState blockState, IBlockReader blockReader, BlockPos blockPos) {
+        return blockState.get(ENABLED);
     }
 
     @Override
@@ -239,10 +242,10 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public boolean onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
+    public ActionResultType onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
         if(!(blockState.get(ENABLED))) {
             ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
-            return false;
+            return ActionResultType.FAIL;
         }
         return super.onBlockActivated(blockState, world, blockPos, player, hand, rayTraceResult);
     }

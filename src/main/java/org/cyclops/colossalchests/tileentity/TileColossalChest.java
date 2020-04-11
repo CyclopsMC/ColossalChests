@@ -10,11 +10,13 @@ import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.IChestLid;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.text.ITextComponent;
@@ -56,7 +58,7 @@ import java.util.Random;
  * @author rubensworks
  *
  */
-public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileEntity.ITickingTile, INamedContainerProvider {
+public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileEntity.ITickingTile, INamedContainerProvider, IChestLid {
 
     private static final int TICK_MODULUS = 200;
 
@@ -502,5 +504,11 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     @Override
     public Container createMenu(int id, PlayerInventory playerInventory, PlayerEntity playerEntity) {
         return new ContainerColossalChest(id, playerInventory, this.getInventory());
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public float getLidAngle(float partialTicks) {
+        return ColossalChestConfig.chestAnimation ? MathHelper.lerp(partialTicks, this.prevLidAngle, this.lidAngle) : 0F;
     }
 }

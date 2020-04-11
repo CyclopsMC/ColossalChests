@@ -1,48 +1,54 @@
 package org.cyclops.colossalchests.client.render.tileentity;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.renderer.tileentity.model.ChestModel;
-import org.cyclops.colossalchests.block.ChestMaterial;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Direction;
 import org.cyclops.colossalchests.tileentity.TileUncolossalChest;
-import org.cyclops.cyclopscore.client.render.tileentity.RenderTileEntityModel;
+
+import java.util.function.Supplier;
 
 /**
  * Renderer for the {@link org.cyclops.colossalchests.block.ColossalChest}.
  * @author rubensworks
  *
  */
-public class RenderTileEntityUncolossalChest extends RenderTileEntityModel<TileUncolossalChest, ChestModel> {
+public class RenderTileEntityUncolossalChest extends RenderTileEntityChestBase<TileUncolossalChest> {
 
-	/**
-     * Make a new instance.
-     * @param model The model to render.
-     */
-    public RenderTileEntityUncolossalChest(ChestModel model) {
-        super(model, null);
+    public RenderTileEntityUncolossalChest(TileEntityRendererDispatcher tileEntityRendererDispatcher) {
+        super(tileEntityRendererDispatcher);
     }
 
     @Override
-    protected void preRotate(TileUncolossalChest chestTile) {
-        GlStateManager.translatef(0.5F, 0.83F, 0.5F);
+    protected Direction getDirection(TileUncolossalChest tile) {
+        return tile.getRotation();
+    }
+
+    @Override
+    public void render(TileUncolossalChest tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int combinedLightIn, int combinedOverlayIn) {
+        matrixStack.push();
+        matrixStack.translate(0.325F, 0F, 0.325F);
         float size = 0.3F * 1.125F;
-        GlStateManager.scalef(size, size, size);
+        matrixStack.scale(size, size, size);
+        super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn);
+        matrixStack.pop();
     }
 
-    @Override
-    protected void postRotate(TileUncolossalChest tile) {
-        GlStateManager.translatef(-0.5F, 0, -0.5F);
+    public static class ItemStackRender extends ItemStackTileEntityRenderer {
+
+        private final Supplier<TileUncolossalChest> tile;
+
+        public ItemStackRender(Supplier<TileUncolossalChest> tile) {
+            this.tile = tile;
+        }
+
+        @Override
+        public void render(ItemStack itemStackIn, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+            TileEntityRendererDispatcher.instance.renderItem(this.tile.get(), matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
+        }
+
     }
 
-    @Override
-    protected void renderModel(TileUncolossalChest chestTile, ChestModel model, float partialTick, int destroyStage) {
-        bindTexture(RenderTileEntityColossalChest.TEXTURES_CHEST.get(ChestMaterial.WOOD));
-        GlStateManager.pushMatrix();
-        float lidangle = chestTile.prevLidAngle + (chestTile.lidAngle - chestTile.prevLidAngle) * partialTick;
-        lidangle = 1.0F - lidangle;
-        lidangle = 1.0F - lidangle * lidangle * lidangle;
-        model.getLid().rotateAngleX = -(lidangle * (float) Math.PI / 2.0F);
-        GlStateManager.translatef(0, -0.0625F * 8, 0);
-        model.renderAll();
-        GlStateManager.popMatrix();
-    }
 }

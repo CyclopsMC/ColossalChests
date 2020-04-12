@@ -6,6 +6,8 @@ import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Direction;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.tileentity.TileUncolossalChest;
 
 import java.util.function.Supplier;
@@ -15,6 +17,7 @@ import java.util.function.Supplier;
  * @author rubensworks
  *
  */
+@OnlyIn(Dist.CLIENT)
 public class RenderTileEntityUncolossalChest extends RenderTileEntityChestBase<TileUncolossalChest> {
 
     public RenderTileEntityUncolossalChest(TileEntityRendererDispatcher tileEntityRendererDispatcher) {
@@ -34,21 +37,6 @@ public class RenderTileEntityUncolossalChest extends RenderTileEntityChestBase<T
         matrixStack.scale(size, size, size);
         super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn);
         matrixStack.pop();
-    }
-
-    public static class ItemStackRender extends ItemStackTileEntityRenderer {
-
-        private final Supplier<TileUncolossalChest> tile;
-
-        public ItemStackRender(Supplier<TileUncolossalChest> tile) {
-            this.tile = tile;
-        }
-
-        @Override
-        public void render(ItemStack itemStackIn, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-            TileEntityRendererDispatcher.instance.renderItem(this.tile.get(), matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
-        }
-
     }
 
 }

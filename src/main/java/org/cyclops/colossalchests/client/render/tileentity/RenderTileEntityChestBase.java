@@ -15,6 +15,8 @@ import net.minecraft.state.properties.ChestType;
 import net.minecraft.tileentity.IChestLid;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Calendar;
 
@@ -22,6 +24,7 @@ import java.util.Calendar;
  * A modified copy of {@link ChestTileEntityRenderer}.
  * @author rubensworks
  */
+@OnlyIn(Dist.CLIENT)
 public abstract class RenderTileEntityChestBase<T extends TileEntity & IChestLid> extends TileEntityRenderer<T> {
 
     private final ModelRenderer field_228862_a_;

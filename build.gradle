@@ -309,6 +309,7 @@ uploadArchives {
         }
     }
 }
+uploadArchives.dependsOn build
 
 idea {
     module {

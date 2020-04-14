@@ -14,7 +14,7 @@ For when regular chests are too small.
 [[dependencies.colossalchests]]
     modId="cyclopscore"
     mandatory=true
-    versionRange="[1.6.1,)"
+    versionRange="[1.6.2,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.colossalchests]]

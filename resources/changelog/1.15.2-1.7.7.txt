@@ -1,0 +1,5 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.6.2 or higher.
+
+Fixes:
+* Fix uncolossal chest item rendering failing and sometimes causing a crash, such as with JEI. Closes #131

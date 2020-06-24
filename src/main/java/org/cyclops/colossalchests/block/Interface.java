@@ -3,6 +3,7 @@ package org.cyclops.colossalchests.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntitySpawnPlacementRegistry;
 import net.minecraft.entity.EntityType;
@@ -118,9 +119,11 @@ public class Interface extends BlockTile implements CubeDetector.IDetectionListe
     }
 
     @Override
-    public void onExplosionDestroy(World world, BlockPos blockPos, Explosion explosion) {
-        if(world.getBlockState(blockPos).get(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
-        super.onExplosionDestroy(world, blockPos, explosion);
+    public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {
+        if(world.getBlockState(pos).get(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
+        // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
+        world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
+        getBlock().onExplosionDestroy(world, pos, explosion);
     }
 
     @Override

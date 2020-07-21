@@ -44,9 +44,11 @@ import org.cyclops.cyclopscore.block.BlockTileGui;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
+import org.cyclops.cyclopscore.helper.InventoryHelpers;
 import org.cyclops.cyclopscore.helper.LocationHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import javax.annotation.Nullable;
 
@@ -283,6 +285,19 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     @Override
     public boolean isValidPosition(BlockState blockState, IWorldReader world, BlockPos blockPos) {
         return super.isValidPosition(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
+    }
+
+    @Override
+    public void onReplaced(BlockState oldState, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
+        if (oldState.getBlock() != newState.getBlock()) {
+            TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class)
+                    .ifPresent(tile -> {
+                        // Last inventory overrides inventory when the chest is in a disabled state.
+                        SimpleInventory lastInventory = tile.getLastValidInventory();
+                        InventoryHelpers.dropItems(world, lastInventory != null ? lastInventory : tile.getInventory(), blockPos);
+                    });
+            super.onReplaced(oldState, world, blockPos, newState, isMoving);
+        }
     }
 
     private static class MaterialValidationAction implements CubeDetector.IValidationAction {

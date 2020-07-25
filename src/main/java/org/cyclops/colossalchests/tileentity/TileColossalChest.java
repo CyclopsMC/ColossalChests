@@ -474,7 +474,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     }
 
     public static Vec3i getMaxSize() {
-        int size = ColossalChestConfig.maxSize;
+        int size = ColossalChestConfig.maxSize - 1;
         return new Vec3i(size, size, size);
     }
 

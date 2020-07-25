@@ -1,0 +1,6 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.8.0 or higher.
+
+Fixes:
+* Fix max size config check being one off, Closes #138
+* Fix metalVariants config being ignored, Closes #138

@@ -15,5 +15,10 @@
   },
   "result": {
     "item": "colossalchests:interface_iron"
-  }
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
 }

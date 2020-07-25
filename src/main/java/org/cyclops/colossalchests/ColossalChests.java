@@ -18,6 +18,7 @@ import org.cyclops.colossalchests.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.colossalchests.proxy.ClientProxy;
 import org.cyclops.colossalchests.proxy.CommonProxy;
+import org.cyclops.colossalchests.recipe.condition.RecipeConditionMetalVariantsSettingConfig;
 import org.cyclops.colossalchests.tileentity.TileColossalChestConfig;
 import org.cyclops.colossalchests.tileentity.TileInterfaceConfig;
 import org.cyclops.colossalchests.tileentity.TileUncolossalChestConfig;
@@ -95,6 +96,8 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
 
         configHandler.addConfigurable(new ContainerColossalChestConfig());
         configHandler.addConfigurable(new ContainerUncolossalChestConfig());
+
+        configHandler.addConfigurable(new RecipeConditionMetalVariantsSettingConfig());
     }
 
     /**

@@ -15,5 +15,10 @@
   },
   "result": {
     "item": "colossalchests:interface_gold"
-  }
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
 }

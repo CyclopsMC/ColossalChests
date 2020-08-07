@@ -289,7 +289,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
 
     @Override
     public void onReplaced(BlockState oldState, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
-        if (oldState.getBlock() != newState.getBlock()) {
+        if (oldState.getBlock().getClass() != newState.getBlock().getClass()) {
             TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class)
                     .ifPresent(tile -> {
                         // Last inventory overrides inventory when the chest is in a disabled state.

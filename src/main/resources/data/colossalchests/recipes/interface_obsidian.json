@@ -15,5 +15,10 @@
   },
   "result": {
     "item": "colossalchests:interface_obsidian"
-  }
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
 }

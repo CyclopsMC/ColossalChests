@@ -15,5 +15,10 @@
   },
   "result": {
     "item": "colossalchests:chest_wall_obsidian"
-  }
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
 }

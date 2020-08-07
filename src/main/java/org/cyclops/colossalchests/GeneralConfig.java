@@ -29,7 +29,7 @@ public class GeneralConfig extends DummyConfig {
     @ConfigurableProperty(category = "general", comment = "If items should be ejected from the chests if one of the structure blocks are removed.", configLocation = ModConfig.Type.SERVER)
     public static boolean ejectItemsOnDestroy = false;
 
-    @ConfigurableProperty(category = "general", comment = "If the higher tier metal variants can be crafted.", configLocation = ModConfig.Type.SERVER)
+    @ConfigurableProperty(category = "general", comment = "If the higher tier metal variants (including diamond and obsidian) can be crafted.", configLocation = ModConfig.Type.SERVER)
     public static boolean metalVariants = true;
 
     @ConfigurableProperty(category = "core", comment = "Maximum buffer byte size for adaptive inventory slots fragmentation.")

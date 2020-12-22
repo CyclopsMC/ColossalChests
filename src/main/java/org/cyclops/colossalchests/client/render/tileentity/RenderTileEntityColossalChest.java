@@ -6,16 +6,16 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Atlases;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Matrix4f;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Vector3f;
-import net.minecraft.client.renderer.model.Material;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.TextureStitchEvent;
@@ -79,7 +79,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     protected void handleRotation(TileColossalChest tile, MatrixStack matrixStack) {
         // Move origin to center of chest
         if(tile.isStructureComplete()) {
-            Vec3d renderOffset = tile.getRenderOffset();
+            Vector3d renderOffset = tile.getRenderOffset();
             matrixStack.translate(-renderOffset.x, -renderOffset.y, -renderOffset.z);
         }
 
@@ -104,9 +104,9 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
             // Render interface overlays
             if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
                 matrixStack.push();
-                Material materialInterface = getMaterialInterface(tile);
+                RenderMaterial materialInterface = getMaterialInterface(tile);
                 IVertexBuilder buffer = materialInterface.getBuffer(renderTypeBuffer, RenderType::getText);
-                for (Vec3i interfaceLocation : tile.getInterfaceLocations()) {
+                for (Vector3i interfaceLocation : tile.getInterfaceLocations()) {
                     float translateX = interfaceLocation.getX() - tile.getPos().getX();
                     float translateY = interfaceLocation.getY() - tile.getPos().getY();
                     float translateZ = interfaceLocation.getZ() - tile.getPos().getZ();
@@ -131,12 +131,12 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     }
 
     @Override
-    protected Material getMaterial(TileColossalChest tile) {
-        return new Material(Atlases.CHEST_ATLAS, TEXTURES_CHEST.get(tile.getMaterial()));
+    protected RenderMaterial getMaterial(TileColossalChest tile) {
+        return new RenderMaterial(Atlases.CHEST_ATLAS, TEXTURES_CHEST.get(tile.getMaterial()));
     }
 
-    protected Material getMaterialInterface(TileColossalChest tile) {
-        return new Material(Atlases.CHEST_ATLAS, TEXTURES_INTERFACE.get(tile.getMaterial()));
+    protected RenderMaterial getMaterialInterface(TileColossalChest tile) {
+        return new RenderMaterial(Atlases.CHEST_ATLAS, TEXTURES_INTERFACE.get(tile.getMaterial()));
     }
 
     protected void setMatrixOrientation(MatrixStack matrixStack, Direction direction) {

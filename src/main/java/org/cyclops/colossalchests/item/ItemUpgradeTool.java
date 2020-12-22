@@ -13,8 +13,8 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
@@ -31,10 +31,8 @@ import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.InventoryHelpers;
-import org.cyclops.cyclopscore.helper.L10NHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.helper.TileHelpers;
-import org.cyclops.cyclopscore.inventory.INBTInventory;
 import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
@@ -97,7 +95,7 @@ public class ItemUpgradeTool extends Item {
     protected ITextComponent attemptTransform(final World world, BlockPos pos, PlayerEntity player,
                                                              final TileColossalChest tile, final ChestMaterial newType,
                                                              final ChestMaterial currentType, Hand hand) {
-        Vec3i size = tile.getSize();
+        Vector3i size = tile.getSize();
 
         // Calculate required item blocks
         ChestMaterial validMaterial = null;
@@ -145,11 +143,11 @@ public class ItemUpgradeTool extends Item {
 
         // Update the chest material and move the contents to the new tile
         if(!world.isRemote) {
-            tile.setSize(Vec3i.NULL_VECTOR);
+            tile.setSize(Vector3i.NULL_VECTOR);
             SimpleInventory oldInventory = tile.getLastValidInventory();
             Direction oldRotation = tile.getRotation();
-            Vec3d oldRenderOffset = tile.getRenderOffset();
-            List<Vec3i> oldInterfaceLocations = Lists.newArrayList(tile.getInterfaceLocations());
+            Vector3d oldRenderOffset = tile.getRenderOffset();
+            List<Vector3i> oldInterfaceLocations = Lists.newArrayList(tile.getInterfaceLocations());
             Wrapper<BlockPos> coreLocation = new Wrapper<>(null);
             List<BlockPos> interfaceLocations = Lists.newArrayList();
             validMaterial.getChestDetector().detect(world, pos, null, (location, blockState) -> {
@@ -180,7 +178,7 @@ public class ItemUpgradeTool extends Item {
             tileNew.setMaterial(newType);
             tileNew.setRotation(oldRotation);
             tileNew.setRenderOffset(oldRenderOffset);
-            for (Vec3i oldInterfaceLocation : oldInterfaceLocations) {
+            for (Vector3i oldInterfaceLocation : oldInterfaceLocations) {
                 tileNew.addInterface(oldInterfaceLocation);
             }
             tileNew.setSize(size); // To trigger the chest size to be updated
@@ -192,7 +190,7 @@ public class ItemUpgradeTool extends Item {
                 tileInterface.setCorePosition(coreLocation.get());
             }
 
-            Advancements.CHEST_FORMED.trigger((ServerPlayerEntity) player, Pair.of(newType, size.getX() + 1));
+            Advancements.CHEST_FORMED.test((ServerPlayerEntity) player, newType, size.getX() + 1);
         }
 
         // Add the lower tier items to the players inventory again.

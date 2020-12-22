@@ -27,7 +27,7 @@ public class ItemBlockMaterial extends BlockItem {
 
     @Override
     public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
-        list.add(new TranslationTextComponent(material.getUnlocalizedName()).applyTextStyle(TextFormatting.BLUE));
+        list.add(new TranslationTextComponent(material.getUnlocalizedName()).mergeStyle(TextFormatting.BLUE));
         super.addInformation(itemStack, world, list, flag);
 
     }

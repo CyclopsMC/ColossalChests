@@ -1,31 +1,32 @@
 modLoader="javafml"
-loaderVersion="[31.1,)"
+loaderVersion="[34,)"
 issueTrackerURL="https://github.com/CyclopsMC/ColossalChests/issues"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/colossalchests"
+license="MIT"
+logoFile="logo.png"
+authors="rubensworks (aka kroeser)"
 [[mods]]
 modId="colossalchests"
 version="${file.jarVersion}"
 displayName="ColossalChests"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/colossalchests"
-logoFile="logo.png"
-authors="rubensworks (aka kroeser)"
 description='''
 For when regular chests are too small.
 '''
 [[dependencies.colossalchests]]
     modId="cyclopscore"
     mandatory=true
-    versionRange="[1.8.0,)"
+    versionRange="[1.9.0,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.colossalchests]]
     modId="forge"
     mandatory=true
-    versionRange="[31.1,)"
+    versionRange="[34,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.colossalchests]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.15.2]"
+    versionRange="[1.16.2,]"
     ordering="NONE"
     side="BOTH"

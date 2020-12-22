@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.client.gui.container;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -8,6 +9,7 @@ import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
@@ -33,8 +35,8 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     @Override
     public void init() {
         super.init();
-        addButton(new ButtonArrow(this.guiLeft + 173, this.guiTop + 7, L10NHelpers.localize("gui.cyclopscore.up"), (button) -> scrollRelative(1), ButtonArrow.Direction.NORTH));
-        addButton(new ButtonArrow(this.guiLeft + 173, this.guiTop + 129, L10NHelpers.localize("gui.cyclopscore.down"), (button) -> scrollRelative(-1), ButtonArrow.Direction.SOUTH));
+        addButton(new ButtonArrow(this.guiLeft + 173, this.guiTop + 7, new TranslationTextComponent("gui.cyclopscore.up"), (button) -> scrollRelative(1), ButtonArrow.Direction.NORTH));
+        addButton(new ButtonArrow(this.guiLeft + 173, this.guiTop + 129, new TranslationTextComponent("gui.cyclopscore.down"), (button) -> scrollRelative(-1), ButtonArrow.Direction.SOUTH));
     }
 
     protected void scrollRelative(int direction) {
@@ -67,14 +69,14 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
         return TEXTUREHEIGHT;
     }
 
-    protected void drawForgegroundString() {
-        font.drawString(getTitle().getFormattedText(), 8 + offsetX, 6 + offsetY, 4210752);
+    protected void drawForgegroundString(MatrixStack matrixStack) {
+        font.drawString(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        drawForgegroundString();
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int mouseX, int mouseY) {
+        drawForgegroundString(matrixStack);
+        //super.drawGuiContainerForegroundLayer(matrixStack, mouseX, mouseY);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.client.gui.container;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -15,9 +16,9 @@ public class ContainerScreenUncolossalChest extends ContainerScreenExtended<Cont
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(int p_146979_1_, int p_146979_2_) {
-        super.drawGuiContainerForegroundLayer(p_146979_1_, p_146979_2_);
-        font.drawString(getTitle().getFormattedText(), 8 + offsetX, 6 + offsetY, 4210752);
+    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int p_146979_1_, int p_146979_2_) {
+        //super.drawGuiContainerForegroundLayer(matrixStack, p_146979_1_, p_146979_2_);
+        font.drawString(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
     }
 
     @Override

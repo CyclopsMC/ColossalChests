@@ -13,9 +13,8 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -28,10 +27,8 @@ import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
 import org.cyclops.cyclopscore.helper.BlockHelpers;
-import org.cyclops.cyclopscore.helper.L10NHelpers;
 import org.cyclops.cyclopscore.helper.WorldHelpers;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
-import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 
 import javax.annotation.Nullable;
@@ -89,7 +86,7 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
         super.read(tag);
         inventory.read(tag.getCompound("inventory"));
         if (tag.contains("CustomName", Constants.NBT.TAG_STRING)) {
-            this.customName = ITextComponent.Serializer.fromJson(tag.getString("CustomName"));
+            this.customName = ITextComponent.Serializer.getComponentFromJson(tag.getString("CustomName"));
         }
     }
 
@@ -120,8 +117,8 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
             List<PlayerEntity> entities = this.world.getEntitiesWithinAABB(
                     PlayerEntity.class,
                     new AxisAlignedBB(
-                            getPos().add(new Vec3i(-range, -range, -range)),
-                            getPos().add(new Vec3i(1 + range, 1 + range, 1 + range))
+                            getPos().add(new Vector3i(-range, -range, -range)),
+                            getPos().add(new Vector3i(1 + range, 1 + range, 1 + range))
                     )
             );
 

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.experimental.Delegate;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import org.cyclops.colossalchests.RegistryEntries;
@@ -27,7 +27,7 @@ public class TileInterface extends CyclopsTileEntity {
 
     @NBTPersist
     @Getter
-    private Vec3i corePosition = null;
+    private Vector3i corePosition = null;
     private WeakReference<TileColossalChest> coreReference = new WeakReference<TileColossalChest>(null);
 
     public TileInterface() {
@@ -46,7 +46,7 @@ public class TileInterface extends CyclopsTileEntity {
         return super.getCapability(capability, facing);
     }
 
-    public void setCorePosition(Vec3i corePosition) {
+    public void setCorePosition(Vector3i corePosition) {
         this.corePosition = corePosition;
         coreReference = new WeakReference<TileColossalChest>(null);
     }

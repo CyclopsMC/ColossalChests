@@ -10,7 +10,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.IFluidState;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.state.BooleanProperty;
@@ -19,10 +19,13 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.text.Color;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.Style;
@@ -30,8 +33,8 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.Explosion;
+import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.IBlockReader;
-import net.minecraft.world.ILightReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.IWorldWriter;
@@ -130,7 +133,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public boolean shouldDisplayFluidOverlay(BlockState blockState, ILightReader world, BlockPos pos, IFluidState fluidState) {
+    public boolean shouldDisplayFluidOverlay(BlockState blockState, IBlockDisplayReader world, BlockPos pos, FluidState fluidState) {
         return true;
     }
 
@@ -145,8 +148,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
                     tile = TileHelpers.getSafeTile(world, corePos, TileColossalChest.class).orElse(null);
                 }
 
-                Advancements.CHEST_FORMED.trigger((ServerPlayerEntity) player,
-                        Pair.of(material, tile.getSizeSingular()));
+                Advancements.CHEST_FORMED.test((ServerPlayerEntity) player, material, tile.getSizeSingular());
             }
         }
         return detectionResult;
@@ -159,7 +161,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
             TileColossalChest tile = TileHelpers.getSafeTile(world, pos, TileColossalChest.class).orElse(null);
             if (tile != null) {
                 tile.setCustomName(stack.getDisplayName());
-                tile.setSize(Vec3i.NULL_VECTOR);
+                tile.setSize(Vector3i.NULL_VECTOR);
             }
         }
         triggerDetector(this.material, world, pos, true, placer instanceof PlayerEntity ? (PlayerEntity) placer : null);
@@ -174,15 +176,15 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public void onDetect(IWorldReader world, BlockPos location, Vec3i size, boolean valid, BlockPos originCorner) {
+    public void onDetect(IWorldReader world, BlockPos location, Vector3i size, boolean valid, BlockPos originCorner) {
         Block block = world.getBlockState(location).getBlock();
         if(block == this) {
             ((IWorldWriter) world).setBlockState(location, world.getBlockState(location).with(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class).orElse(null);
             if(tile != null) {
                 tile.setMaterial(this.material);
-                tile.setSize(valid ? size : Vec3i.NULL_VECTOR);
-                tile.setCenter(new Vec3d(
+                tile.setSize(valid ? size : Vector3i.NULL_VECTOR);
+                tile.setCenter(new Vector3d(
                         originCorner.getX() + ((double) size.getX()) / 2,
                         originCorner.getY() + ((double) size.getY()) / 2,
                         originCorner.getZ() + ((double) size.getZ()) / 2
@@ -224,26 +226,26 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.sendMessage(new TranslationTextComponent("multiblock.colossalchests.error.unexpected"));
+                player.sendMessage(new TranslationTextComponent("multiblock.colossalchests.error.unexpected"), Util.DUMMY_UUID);
             }
         }
     }
 
     public static void addPlayerChatError(PlayerEntity player, ITextComponent error) {
-        ITextComponent chat = new StringTextComponent("");
+        IFormattableTextComponent chat = new StringTextComponent("");
         ITextComponent prefix = new StringTextComponent("[")
-                .appendSibling(new TranslationTextComponent("multiblock.colossalchests.error.prefix"))
-                .appendSibling(new StringTextComponent("]: "))
-                .setStyle(new Style().
-                        setColor(TextFormatting.GRAY).
+                .append(new TranslationTextComponent("multiblock.colossalchests.error.prefix"))
+                .append(new StringTextComponent("]: "))
+                .setStyle(Style.EMPTY.
+                        setColor(Color.fromTextFormatting(TextFormatting.GRAY)).
                         setHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
                                 new TranslationTextComponent("multiblock.colossalchests.error.prefix.info")
                         ))
                 );
-        chat.appendSibling(prefix);
-        chat.appendSibling(error);
-        player.sendMessage(chat);
+        chat.append(prefix);
+        chat.append(error);
+        player.sendMessage(chat, Util.DUMMY_UUID);
     }
 
     @Override
@@ -275,7 +277,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public float getExplosionResistance(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
+    public float getExplosionResistance(BlockState state, IBlockReader world, BlockPos pos, Explosion explosion) {
         if (this.material.isExplosionResistant()) {
             return 10000F;
         }

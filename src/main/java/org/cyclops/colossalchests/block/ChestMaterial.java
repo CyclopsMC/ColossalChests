@@ -3,7 +3,7 @@ package org.cyclops.colossalchests.block;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
@@ -131,11 +131,11 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
                     },
                     Lists.newArrayList(getBlockCore(), getBlockWall(), getBlockInterface())
             )
-                    .addSizeValidator(new MinimumSizeValidator(new Vec3i(1, 1, 1)))
+                    .addSizeValidator(new MinimumSizeValidator(new Vector3i(1, 1, 1)))
                     .addSizeValidator(new CubeSizeValidator())
                     .addSizeValidator(new MaximumSizeValidator(TileColossalChest.getMaxSize()) {
                         @Override
-                        public Vec3i getMaximumSize() {
+                        public Vector3i getMaximumSize() {
                             return TileColossalChest.getMaxSize();
                         }
                     });

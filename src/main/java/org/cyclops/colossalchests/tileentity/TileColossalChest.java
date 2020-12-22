@@ -17,8 +17,8 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IWorldReader;
@@ -70,16 +70,16 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     private LazyOptional<IItemHandler> capabilityItemHandler = LazyOptional.empty();
 
     @NBTPersist
-    private Vec3i size = LocationHelpers.copyLocation(Vec3i.NULL_VECTOR);
+    private Vector3i size = LocationHelpers.copyLocation(Vector3i.NULL_VECTOR);
     @NBTPersist
-    private Vec3d renderOffset = new Vec3d(0, 0, 0);
+    private Vector3d renderOffset = new Vector3d(0, 0, 0);
     private ITextComponent customName = null;
     @NBTPersist
     private int materialId = 0;
     @NBTPersist
     private int rotation = 0;
     @NBTPersist(useDefaultValue = false)
-    private List<Vec3i> interfaceLocations = Lists.newArrayList();
+    private List<Vector3i> interfaceLocations = Lists.newArrayList();
 
     /**
      * The previous angle of the lid.
@@ -101,7 +101,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     /**
      * @return the size
      */
-    public Vec3i getSize() {
+    public Vector3i getSize() {
         return size;
     }
 
@@ -110,7 +110,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
      * This will also handle the change in inventory size.
      * @param size the size to set
      */
-    public void setSize(Vec3i size) {
+    public void setSize(Vector3i size) {
         this.size = size;
         facingSlots.clear();
         if(isStructureComplete()) {
@@ -250,7 +250,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         }
 
         if (tag.contains("CustomName", Constants.NBT.TAG_STRING)) {
-            this.customName = ITextComponent.Serializer.fromJson(tag.getString("CustomName"));
+            this.customName = ITextComponent.Serializer.getComponentFromJson(tag.getString("CustomName"));
         }
     }
 
@@ -302,8 +302,8 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             List<PlayerEntity> entities = this.world.getEntitiesWithinAABB(
                     PlayerEntity.class,
                     new AxisAlignedBB(
-                            getPos().add(new Vec3i(-range, -range, -range)),
-                            getPos().add(new Vec3i(1 + range, 1 + range, 1 + range))
+                            getPos().add(new Vector3i(-range, -range, -range)),
+                            getPos().add(new Vector3i(1 + range, 1 + range, 1 + range))
                     )
             );
 
@@ -420,10 +420,10 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     @OnlyIn(Dist.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
         int size = getSizeSingular();
-        return new AxisAlignedBB(getPos().subtract(new Vec3i(size, size, size)), getPos().add(size, size * 2, size));
+        return new AxisAlignedBB(getPos().subtract(new Vector3i(size, size, size)), getPos().add(size, size * 2, size));
     }
 
-    public void setCenter(Vec3d center) {
+    public void setCenter(Vector3d center) {
         Direction rotation;
         double dx = Math.abs(center.x - getPos().getX());
         double dz = Math.abs(center.z - getPos().getZ());
@@ -434,7 +434,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.z - getPos().getZ()));
         }
         this.setRotation(rotation);
-        this.renderOffset = new Vec3d(getPos().getX() - center.x, getPos().getY() - center.y, getPos().getZ() - center.z);
+        this.renderOffset = new Vector3d(getPos().getX() - center.x, getPos().getY() - center.y, getPos().getZ() - center.z);
     }
 
     public void setRotation(Direction rotation) {
@@ -446,11 +446,11 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         return Direction.byIndex(this.rotation);
     }
 
-    public Vec3d getRenderOffset() {
+    public Vector3d getRenderOffset() {
         return this.renderOffset;
     }
 
-    public void setRenderOffset(Vec3d renderOffset) {
+    public void setRenderOffset(Vector3d renderOffset) {
         this.renderOffset = renderOffset;
     }
 
@@ -462,7 +462,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
      * @param valid If the structure is being validated(/created), otherwise invalidated.
      * @param originCorner The origin corner
      */
-    public static void detectStructure(IWorldReader world, BlockPos location, Vec3i size, boolean valid, BlockPos originCorner) {
+    public static void detectStructure(IWorldReader world, BlockPos location, Vector3i size, boolean valid, BlockPos originCorner) {
 
     }
 
@@ -470,12 +470,12 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
      * @return If the structure is valid.
      */
     public boolean isStructureComplete() {
-        return !getSize().equals(Vec3i.NULL_VECTOR);
+        return !getSize().equals(Vector3i.NULL_VECTOR);
     }
 
-    public static Vec3i getMaxSize() {
+    public static Vector3i getMaxSize() {
         int size = ColossalChestConfig.maxSize - 1;
-        return new Vec3i(size, size, size);
+        return new Vector3i(size, size, size);
     }
 
     public boolean hasCustomName() {
@@ -486,11 +486,11 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         this.customName = name;
     }
 
-    public void addInterface(Vec3i blockPos) {
+    public void addInterface(Vector3i blockPos) {
         interfaceLocations.add(blockPos);
     }
 
-    public List<Vec3i> getInterfaceLocations() {
+    public List<Vector3i> getInterfaceLocations() {
         return Collections.unmodifiableList(interfaceLocations);
     }
 

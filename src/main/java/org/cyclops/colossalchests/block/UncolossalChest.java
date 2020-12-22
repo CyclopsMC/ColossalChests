@@ -7,7 +7,7 @@ import net.minecraft.block.HorizontalBlock;
 import net.minecraft.block.IWaterLoggable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.fluid.IFluidState;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.BlockItemUseContext;
@@ -102,7 +102,7 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
     }
 
     @Override
-    public IFluidState getFluidState(BlockState blockState) {
+    public FluidState getFluidState(BlockState blockState) {
         return blockState.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(blockState);
     }
 

@@ -58,6 +58,7 @@ import java.util.Random;
  * @author rubensworks
  *
  */
+@OnlyIn(value = Dist.CLIENT, _interface = IChestLid.class)
 public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileEntity.ITickingTile, INamedContainerProvider, IChestLid {
 
     private static final int TICK_MODULUS = 200;

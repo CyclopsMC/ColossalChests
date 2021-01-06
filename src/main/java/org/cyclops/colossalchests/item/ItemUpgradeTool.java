@@ -107,9 +107,9 @@ public class ItemUpgradeTool extends Item {
                 if (blockState.getBlock() instanceof ColossalChest) {
                     requiredCoresCount.set(requiredCoresCount.get() + 1);
                 } else if (blockState.getBlock() instanceof Interface) {
-                    requiredInterfacesCount.set(requiredCoresCount.get() + 1);
+                    requiredInterfacesCount.set(requiredInterfacesCount.get() + 1);
                 } else if (blockState.getBlock() instanceof ChestWall) {
-                    requiredWallsCount.set(requiredCoresCount.get() + 1);
+                    requiredWallsCount.set(requiredWallsCount.get() + 1);
                 }
                 return null;
             }, false);

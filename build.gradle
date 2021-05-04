@@ -77,7 +77,11 @@ repositories {
 	mavenLocal()
     maven {
         name "Cyclops Repo"
-        url "https://oss.jfrog.org/artifactory/simple/libs-release/"
+        url "https://maven.pkg.github.com/CyclopsMC/packages"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("MAVEN_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("MAVEN_KEY")
+        }
     }
 }
 
@@ -86,16 +90,16 @@ dependencies {
 
     // Add something like 'cyclopscore_version_local=0.1.0-DEV' to your gradle.properties if you want to use a custom local CyclopsCore version.
     if(project.hasProperty("cyclopscore_version_local")) {
-        compile "org.cyclops.cyclopscore:CyclopsCore:${config.minecraft_version}-${project.cyclopscore_version_local}:deobf"
+        compile "org.cyclops.cyclopscore:cyclopscore:${config.minecraft_version}-${project.cyclopscore_version_local}:deobf"
     } else {
-        compile "org.cyclops.cyclopscore:CyclopsCore:${config.minecraft_version}-${config.cyclopscore_version}:deobf"
+        compile "org.cyclops.cyclopscore:cyclopscore:${config.minecraft_version}-${config.cyclopscore_version}:deobf"
     }
 
     if(project.hasProperty("commoncapabilities_version_local")) {
-        compile "org.cyclops.commoncapabilities:CommonCapabilities:${project.commoncapabilities_version_local}:deobf"
+        compile "org.cyclops.commoncapabilities:commoncapabilities:${project.commoncapabilities_version_local}:deobf"
     } else {
-        compileOnly fg.deobf("org.cyclops.commoncapabilities:CommonCapabilities:${config.commoncapabilities_version}") { // https://dl.bintray.com/cyclopsmc/dev/org/cyclops/commoncapabilities/CommonCapabilities/
-            exclude group: 'org.cyclops.cyclopscore', module: 'CyclopsCore'
+        compileOnly fg.deobf("org.cyclops.commoncapabilities:commoncapabilities:${config.commoncapabilities_version}") { // https://dl.bintray.com/cyclopsmc/dev/org/cyclops/commoncapabilities/CommonCapabilities/
+            exclude group: 'org.cyclops.cyclopscore', module: 'cyclopscore'
         }
     }
 
@@ -281,7 +285,7 @@ uploadArchives {
         pom {
             groupId = project.group
             version = project.version
-            artifactId = project.archivesBaseName
+            artifactId = project.archivesBaseName.toLowerCase()
         }
         pom.project {
             name project.archivesBaseName

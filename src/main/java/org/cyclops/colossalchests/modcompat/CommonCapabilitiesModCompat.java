@@ -9,9 +9,11 @@ import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.modcompat.ICompatInitializer;
 import org.cyclops.cyclopscore.modcompat.IModCompat;
 import org.cyclops.cyclopscore.modcompat.capabilities.CapabilityConstructorRegistry;
@@ -46,7 +48,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 	public ICompatInitializer createInitializer() {
 		return () -> {
 			CapabilityConstructorRegistry registry = ColossalChests._instance.getCapabilityConstructorRegistry();
-			// Worker
+			// Slotless item handler
 			registry.registerTile(TileColossalChest.class,
 					new SimpleCapabilityConstructor<ISlotlessItemHandler, TileColossalChest>() {
 						@Override
@@ -66,6 +68,21 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 										(IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) host.getInventory());
 							}));
 							return new DefaultCapabilityProvider<>(this::getCapability, optionalSlotlessItemHandler.get());
+						}
+					});
+			// Inventory state
+			registry.registerTile(TileColossalChest.class,
+					new SimpleCapabilityConstructor<IInventoryState, TileColossalChest>() {
+						@Override
+						public Capability<IInventoryState> getCapability() {
+							return Capabilities.INVENTORY_STATE;
+						}
+
+						@Nullable
+						@Override
+						public ICapabilityProvider createProvider(TileColossalChest host) {
+							return new DefaultCapabilityProvider<>(this::getCapability,
+									LazyOptional.of(() -> () -> ((SimpleInventory) host.getInventory()).getState()));
 						}
 					});
 		};

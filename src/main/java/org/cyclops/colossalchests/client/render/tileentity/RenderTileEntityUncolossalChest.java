@@ -31,12 +31,12 @@ public class RenderTileEntityUncolossalChest extends RenderTileEntityChestBase<T
 
     @Override
     public void render(TileUncolossalChest tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int combinedLightIn, int combinedOverlayIn) {
-        matrixStack.push();
+        matrixStack.pushPose();
         matrixStack.translate(0.325F, 0F, 0.325F);
         float size = 0.3F * 1.125F;
         matrixStack.scale(size, size, size);
         super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn);
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
 }

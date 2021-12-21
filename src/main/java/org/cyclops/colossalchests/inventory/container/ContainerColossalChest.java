@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import invtweaks.api.container.ChestContainer;
 import invtweaks.api.container.ContainerSection;
 import invtweaks.api.container.ContainerSectionCallback;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.IInventory;
@@ -145,22 +146,22 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     }
 
     @Override
-    public void addListener(IContainerListener listener) {
-        if (this.listeners.contains(listener)) {
+    public void addSlotListener(IContainerListener listener) {
+        if (this.containerListeners.contains(listener)) {
             throw new IllegalArgumentException("Listener already listening");
         } else {
-            this.listeners.add(listener);
+            this.containerListeners.add(listener);
             if(listener instanceof ServerPlayerEntity) {
-                updateCraftingInventory((ServerPlayerEntity) listener, getInventory());
+                updateCraftingInventory((ServerPlayerEntity) listener, getItems());
             } else {
-                listener.sendAllContents(this, this.getInventory());
+                listener.refreshContainer(this, this.getItems());
             }
-            this.detectAndSendChanges();
+            this.broadcastChanges();
         }
     }
 
     @Override
-    public void detectAndSendChanges() {
+    public void broadcastChanges() {
         int newState = ((SimpleInventory) inventory).getState();
         if (lastInventoryState != newState) {
             lastInventoryState = newState;
@@ -168,23 +169,28 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
     }
 
+    @Override
+    public boolean stillValid(PlayerEntity p_75145_1_) {
+        return false; // TODO: rm
+    }
+
     // Custom implementation of Container#detectAndSendChanges
     protected void detectAndSendChangesOverride() {
         for (int i = 0; i < this.getSizeInventory(); ++i) {
-            ItemStack itemstack = this.inventorySlots.get(i).getStack();
+            ItemStack itemstack = this.slots.get(i).getItem();
             ItemStack itemstack1 = this.inventoryItemStacks.get(i);
 
-            if (!ItemStack.areItemStacksEqual(itemstack1, itemstack)) {
+            if (!ItemStack.matches(itemstack1, itemstack)) {
                 itemstack1 = itemstack.isEmpty() ? ItemStack.EMPTY : itemstack.copy();
                 this.inventoryItemStacks.set(i, itemstack1);
 
                 if (!firstDetectionCheck) {
-                    for (int j = 0; j < this.listeners.size(); ++j) {
-                        IContainerListener listener = this.listeners.get(j);
+                    for (int j = 0; j < this.containerListeners.size(); ++j) {
+                        IContainerListener listener = this.containerListeners.get(j);
                         if (listener instanceof ServerPlayerEntity) {
                             sendSlotContentsToPlayer((ServerPlayerEntity) listener, this, i, itemstack1);
                         } else {
-                            listener.sendSlotContents(this, i, itemstack1);
+                            listener.slotChanged(this, i, itemstack1);
                         }
                     }
                 }
@@ -196,9 +202,9 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     // Adapted from EntityPlayerMP#sendSlotContents
     protected void sendSlotContentsToPlayer(ServerPlayerEntity player, Container containerToSend, int slotInd, ItemStack stack) {
         if (!(containerToSend.getSlot(slotInd) instanceof CraftingResultSlot)) {
-            if (!player.isChangingQuantityOnly) {
+            if (!player.ignoreSlotUpdateHack) {
                 ColossalChests._instance.getPacketHandler().sendToPlayer(
-                        new SetSlotLarge(containerToSend.windowId, slotInd, stack), player);
+                        new SetSlotLarge(containerToSend.containerId, slotInd, stack), player);
             }
         }
     }
@@ -210,16 +216,16 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         if (tag instanceof CompoundNBT) {
             CompoundNBT compound = (CompoundNBT) tag;
             int size = 0;
-            for (String key : compound.keySet()) {
+            for (String key : compound.getAllKeys()) {
                 size += getTagSize(compound.get(key));
             }
             return size;
         }
         if (tag instanceof ByteArrayNBT) {
-            return ((ByteArrayNBT) tag).getByteArray().length;
+            return ((ByteArrayNBT) tag).getAsByteArray().length;
         }
         if (tag instanceof IntArrayNBT) {
-            return ((IntArrayNBT) tag).getIntArray().length * 32;
+            return ((IntArrayNBT) tag).getAsIntArray().length * 32;
         }
         if (tag instanceof ListNBT) {
             ListNBT list = (ListNBT) tag;
@@ -231,7 +237,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
         if (tag instanceof StringNBT) {
             try {
-                return ((StringNBT) tag).getString().getBytes("UTF-8").length;
+                return ((StringNBT) tag).getAsString().getBytes("UTF-8").length;
             } catch (UnsupportedEncodingException e) {}
         }
         return tag.toString().length();
@@ -260,7 +266,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                     bufferSize += tagSize;
                 } else {
                     // Flush
-                    ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, sendBuffer), player);
+                    ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, sendBuffer), player);
                     sendBuffer = new CompoundNBT();
                     sendList = new ListNBT();
                     sendList.add(tag);
@@ -272,9 +278,9 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
         if (sendList.size() > 0) {
             // Flush
-            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(windowId, sendBuffer), player);
+            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, sendBuffer), player);
         }
-        playerNetServerHandler.sendPacket(new SSetSlotPacket(-1, -1, player.inventory.getItemStack()));
+        playerNetServerHandler.send(new SSetSlotPacket(-1, -1, player.inventory.getCarried()));
     }
 
     /**
@@ -290,7 +296,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                 chest.add(this.getSlot(i));
             }
 
-            for (int i = getSizeInventory(); i < getSizeInventory() + player.inventory.mainInventory.size(); i++) {
+            for (int i = getSizeInventory(); i < getSizeInventory() + player.inventory.items.size(); i++) {
                 playerInventory.add(this.getSlot(i));
             }
             selection.put(ContainerSection.CHEST, chest);
@@ -298,8 +304,8 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             return selection;
         } catch (RuntimeException e) {
             System.out.println("Size inv " + getSizeInventory());
-            System.out.println("Player size inv " + player.inventory.mainInventory.size());
-            System.out.println("Available slots " + inventorySlots.size());
+            System.out.println("Player size inv " + player.inventory.items.size());
+            System.out.println("Available slots " + slots.size());
             throw e;
         }
     }

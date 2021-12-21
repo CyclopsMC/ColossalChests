@@ -16,9 +16,14 @@ public class ContainerScreenUncolossalChest extends ContainerScreenExtended<Cont
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int p_146979_1_, int p_146979_2_) {
+    protected void renderLabels(MatrixStack matrixStack, int p_146979_1_, int p_146979_2_) {
         //super.drawGuiContainerForegroundLayer(matrixStack, p_146979_1_, p_146979_2_);
-        font.drawString(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
+        font.draw(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
+    }
+
+    @Override
+    protected void renderBg(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
+        // TODO: rm
     }
 
     @Override

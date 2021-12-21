@@ -53,6 +53,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity.ITickingTile;
+import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity.TickingTileComponent;
+
 /**
  * A machine that can infuse things with blood.
  * @author rubensworks
@@ -71,7 +74,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     private LazyOptional<IItemHandler> capabilityItemHandler = LazyOptional.empty();
 
     @NBTPersist
-    private Vector3i size = LocationHelpers.copyLocation(Vector3i.NULL_VECTOR);
+    private Vector3i size = LocationHelpers.copyLocation(Vector3i.ZERO);
     @NBTPersist
     private Vector3d renderOffset = new Vector3d(0, 0, 0);
     private ITextComponent customName = null;
@@ -123,16 +126,16 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             // items will be ejected into the world for slot index larger than the new size.
             if(this.lastValidInventory != null) {
                 int slot = 0;
-                while(slot < Math.min(this.lastValidInventory.getSizeInventory(), this.inventory.getSizeInventory())) {
-                    ItemStack contents = this.lastValidInventory.getStackInSlot(slot);
+                while(slot < Math.min(this.lastValidInventory.getContainerSize(), this.inventory.getContainerSize())) {
+                    ItemStack contents = this.lastValidInventory.getItem(slot);
                     if (!contents.isEmpty()) {
-                        this.inventory.setInventorySlotContents(slot, contents);
-                        this.lastValidInventory.setInventorySlotContents(slot, ItemStack.EMPTY);
+                        this.inventory.setItem(slot, contents);
+                        this.lastValidInventory.setItem(slot, ItemStack.EMPTY);
                     }
                     slot++;
                 }
-                if(slot < this.lastValidInventory.getSizeInventory()) {
-                    InventoryHelpers.dropItems(getWorld(), this.lastValidInventory, getPos());
+                if(slot < this.lastValidInventory.getContainerSize()) {
+                    InventoryHelpers.dropItems(getLevel(), this.lastValidInventory, getBlockPos());
                 }
                 this.lastValidInventory = null;
             }
@@ -140,7 +143,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             interfaceLocations.clear();
             if(this.inventory != null) {
                 if(GeneralConfig.ejectItemsOnDestroy) {
-                    InventoryHelpers.dropItems(getWorld(), this.inventory, getPos());
+                    InventoryHelpers.dropItems(getLevel(), this.inventory, getBlockPos());
                     this.lastValidInventory = null;
                 } else {
                     this.lastValidInventory = this.inventory;
@@ -172,7 +175,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     }
 
     protected boolean isClientSide() {
-        return getWorld() != null && getWorld().isRemote;
+        return getLevel() != null && getLevel().isClientSide;
     }
 
     protected LargeInventory constructInventory() {
@@ -181,17 +184,17 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         }
         return !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64) {
             @Override
-            public void openInventory(PlayerEntity entityPlayer) {
+            public void startOpen(PlayerEntity entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
-                    super.openInventory(entityPlayer);
+                    super.startOpen(entityPlayer);
                     triggerPlayerUsageChange(1);
                 }
             }
 
             @Override
-            public void closeInventory(PlayerEntity entityPlayer) {
+            public void stopOpen(PlayerEntity entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
-                    super.closeInventory(entityPlayer);
+                    super.stopOpen(entityPlayer);
                     triggerPlayerUsageChange(-1);
                 }
             }
@@ -202,8 +205,8 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64)
                 : new LargeInventory(calculateInventorySize(), 64);
         Random random = new Random();
-        for (int i = 0; i < inv.getSizeInventory(); i++) {
-            inv.setInventorySlotContents(i, new ItemStack(Iterables.get(ForgeRegistries.ITEMS.getValues(),
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            inv.setItem(i, new ItemStack(Iterables.get(ForgeRegistries.ITEMS.getValues(),
                     random.nextInt(ForgeRegistries.ITEMS.getValues().size()))));
         }
         return inv;
@@ -230,7 +233,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
         SimpleInventory oldInventory = this.inventory;
         SimpleInventory oldLastInventory = this.lastValidInventory;
 
-        if (getWorld() != null && getWorld().isRemote) {
+        if (getLevel() != null && getLevel().isClientSide) {
             // Don't read the inventory on the client.
             // The client will receive the data once the gui is opened.
             this.inventory = null;
@@ -238,25 +241,25 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             this.recreateNullInventory = false;
         }
         super.read(tag);
-        if (getWorld() != null && getWorld().isRemote) {
+        if (getLevel() != null && getLevel().isClientSide) {
             this.inventory = oldInventory;
             this.lastValidInventory = oldLastInventory;
             this.recreateNullInventory = true;
         } else {
             getInventory().read(tag.getCompound("inventory"));
             if (tag.contains("lastValidInventory", Constants.NBT.TAG_COMPOUND)) {
-                this.lastValidInventory = new LargeInventory(tag.getInt("lastValidInventorySize"), this.inventory.getInventoryStackLimit());
+                this.lastValidInventory = new LargeInventory(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
                 this.lastValidInventory.read(tag.getCompound("lastValidInventory"));
             }
         }
 
         if (tag.contains("CustomName", Constants.NBT.TAG_STRING)) {
-            this.customName = ITextComponent.Serializer.getComponentFromJson(tag.getString("CustomName"));
+            this.customName = ITextComponent.Serializer.fromJson(tag.getString("CustomName"));
         }
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT tag) {
+    public CompoundNBT save(CompoundNBT tag) {
         if (this.customName != null) {
             tag.putString("CustomName", ITextComponent.Serializer.toJson(this.customName));
         }
@@ -269,14 +272,14 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             CompoundNBT subTag = new CompoundNBT();
             this.lastValidInventory.write(subTag);
             tag.put("lastValidInventory", subTag);
-            tag.putInt("lastValidInventorySize", this.lastValidInventory.getSizeInventory());
+            tag.putInt("lastValidInventorySize", this.lastValidInventory.getContainerSize());
         }
-        return super.write(tag);
+        return super.save(tag);
     }
 
     @Override
     public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(getPos(), 1, getUpdateTag());
+        return new SUpdateTileEntityPacket(getBlockPos(), 1, getUpdateTag());
     }
 
     protected int calculateInventorySize() {
@@ -293,41 +296,41 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
 
         // Resynchronize clients with the server state, the last condition makes sure
         // not all chests are synced at the same time.
-        if(world != null
-                && !this.world.isRemote
+        if(level != null
+                && !this.level.isClientSide
                 && this.playersUsing != 0
-                && WorldHelpers.efficientTick(world, TICK_MODULUS, getPos().hashCode())) {
+                && WorldHelpers.efficientTick(level, TICK_MODULUS, getBlockPos().hashCode())) {
             this.playersUsing = 0;
             float range = 5.0F;
             @SuppressWarnings("unchecked")
-            List<PlayerEntity> entities = this.world.getEntitiesWithinAABB(
+            List<PlayerEntity> entities = this.level.getEntitiesOfClass(
                     PlayerEntity.class,
                     new AxisAlignedBB(
-                            getPos().add(new Vector3i(-range, -range, -range)),
-                            getPos().add(new Vector3i(1 + range, 1 + range, 1 + range))
+                            getBlockPos().offset(new Vector3i(-range, -range, -range)),
+                            getBlockPos().offset(new Vector3i(1 + range, 1 + range, 1 + range))
                     )
             );
 
             for(PlayerEntity player : entities) {
-                if (player.openContainer instanceof ContainerColossalChest) {
+                if (player.containerMenu instanceof ContainerColossalChest) {
                     ++this.playersUsing;
                 }
             }
 
-            world.addBlockEvent(getPos(), getBlockState().getBlock(), 1, playersUsing);
+            level.blockEvent(getBlockPos(), getBlockState().getBlock(), 1, playersUsing);
         }
 
         prevLidAngle = lidAngle;
         float increaseAngle = 0.15F / Math.min(5, getSizeSingular());
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            world.playSound(
-                    (double) getPos().getX() + 0.5D,
-                    (double) getPos().getY() + 0.5D,
-                    (double) getPos().getZ() + 0.5D,
-                    SoundEvents.BLOCK_CHEST_OPEN,
+            level.playLocalSound(
+                    (double) getBlockPos().getX() + 0.5D,
+                    (double) getBlockPos().getY() + 0.5D,
+                    (double) getBlockPos().getZ() + 0.5D,
+                    SoundEvents.CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
-                    world.rand.nextFloat() * 0.1F + 0.45F + increaseAngle,
+                    level.random.nextFloat() * 0.1F + 0.45F + increaseAngle,
                     true
             );
         }
@@ -343,14 +346,14 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                world.playSound(
-                        (double) getPos().getX() + 0.5D,
-                        (double) getPos().getY() + 0.5D,
-                        (double) getPos().getZ() + 0.5D,
-                        SoundEvents.BLOCK_CHEST_CLOSE,
+                level.playLocalSound(
+                        (double) getBlockPos().getX() + 0.5D,
+                        (double) getBlockPos().getY() + 0.5D,
+                        (double) getBlockPos().getZ() + 0.5D,
+                        SoundEvents.CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         (float) (0.5F + (0.5F * Math.log(getSizeSingular()))),
-                        world.rand.nextFloat() * 0.05F + 0.45F + increaseAngle,
+                        level.random.nextFloat() * 0.05F + 0.45F + increaseAngle,
                         true
                 );
             }
@@ -361,7 +364,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     }
 
     @Override
-    public boolean receiveClientEvent(int i, int j) {
+    public boolean triggerEvent(int i, int j) {
         if (i == 1) {
             playersUsing = j;
         }
@@ -369,16 +372,16 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     }
 
     private void triggerPlayerUsageChange(int change) {
-        if (world != null) {
+        if (level != null) {
             playersUsing += change;
-            world.addBlockEvent(getPos(), getBlockState().getBlock(), 1, playersUsing);
+            level.blockEvent(getBlockPos(), getBlockState().getBlock(), 1, playersUsing);
         }
     }
 
     public void setInventory(SimpleInventory inventory) {
         this.capabilityItemHandler.invalidate();
         this.inventory = inventory;
-        if (this.inventory.getSizeInventory() > 0) {
+        if (this.inventory.getContainerSize() > 0) {
             IItemHandler itemHandler = new InvWrapper(this.inventory);
             this.capabilityItemHandler = LazyOptional.of(() -> itemHandler);
         } else {
@@ -387,7 +390,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     }
 
     protected void ensureInventoryInitialized() {
-        if (getWorld() != null && getWorld().isRemote && (inventory == null || inventory.getSizeInventory() != calculateInventorySize())) {
+        if (getLevel() != null && getLevel().isClientSide && (inventory == null || inventory.getContainerSize() != calculateInventorySize())) {
             setInventory(constructInventory());
         }
     }
@@ -421,21 +424,21 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
     @OnlyIn(Dist.CLIENT)
     public AxisAlignedBB getRenderBoundingBox() {
         int size = getSizeSingular();
-        return new AxisAlignedBB(getPos().subtract(new Vector3i(size, size, size)), getPos().add(size, size * 2, size));
+        return new AxisAlignedBB(getBlockPos().subtract(new Vector3i(size, size, size)), getBlockPos().offset(size, size * 2, size));
     }
 
     public void setCenter(Vector3d center) {
         Direction rotation;
-        double dx = Math.abs(center.x - getPos().getX());
-        double dz = Math.abs(center.z - getPos().getZ());
-        boolean equal = (center.x - getPos().getX()) == (center.z - getPos().getZ());
+        double dx = Math.abs(center.x - getBlockPos().getX());
+        double dz = Math.abs(center.z - getBlockPos().getZ());
+        boolean equal = (center.x - getBlockPos().getX()) == (center.z - getBlockPos().getZ());
         if(dx > dz || (!equal && getSizeSingular() == 2)) {
-            rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.x - getPos().getX()));
+            rotation = DirectionHelpers.getEnumFacingFromXSign((int) Math.round(center.x - getBlockPos().getX()));
         } else {
-            rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.z - getPos().getZ()));
+            rotation = DirectionHelpers.getEnumFacingFromZSing((int) Math.round(center.z - getBlockPos().getZ()));
         }
         this.setRotation(rotation);
-        this.renderOffset = new Vector3d(getPos().getX() - center.x, getPos().getY() - center.y, getPos().getZ() - center.z);
+        this.renderOffset = new Vector3d(getBlockPos().getX() - center.x, getBlockPos().getY() - center.y, getBlockPos().getZ() - center.z);
     }
 
     public void setRotation(Direction rotation) {
@@ -444,7 +447,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
 
     @Override
     public Direction getRotation() {
-        return Direction.byIndex(this.rotation);
+        return Direction.from3DDataValue(this.rotation);
     }
 
     public Vector3d getRenderOffset() {
@@ -471,7 +474,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
      * @return If the structure is valid.
      */
     public boolean isStructureComplete() {
-        return !getSize().equals(Vector3i.NULL_VECTOR);
+        return !getSize().equals(Vector3i.ZERO);
     }
 
     public static Vector3i getMaxSize() {
@@ -509,7 +512,7 @@ public class TileColossalChest extends CyclopsTileEntity implements CyclopsTileE
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public float getLidAngle(float partialTicks) {
+    public float getOpenNess(float partialTicks) {
         return ColossalChestConfig.chestAnimation ? MathHelper.lerp(partialTicks, this.prevLidAngle, this.lidAngle) : 0F;
     }
 }

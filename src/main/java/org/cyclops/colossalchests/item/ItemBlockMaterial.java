@@ -13,6 +13,8 @@ import org.cyclops.colossalchests.block.ChestMaterial;
 
 import java.util.List;
 
+import net.minecraft.item.Item.Properties;
+
 /**
  * @author rubensworks
  */
@@ -26,9 +28,9 @@ public class ItemBlockMaterial extends BlockItem {
     }
 
     @Override
-    public void addInformation(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
-        list.add(new TranslationTextComponent(material.getUnlocalizedName()).mergeStyle(TextFormatting.BLUE));
-        super.addInformation(itemStack, world, list, flag);
+    public void appendHoverText(ItemStack itemStack, World world, List<ITextComponent> list, ITooltipFlag flag) {
+        list.add(new TranslationTextComponent(material.getUnlocalizedName()).withStyle(TextFormatting.BLUE));
+        super.appendHoverText(itemStack, world, list, flag);
 
     }
 }

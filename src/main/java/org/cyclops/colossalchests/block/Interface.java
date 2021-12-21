@@ -52,13 +52,13 @@ public class Interface extends BlockTile implements CubeDetector.IDetectionListe
 
         material.setBlockInterface(this);
 
-        this.setDefaultState(this.stateContainer.getBaseState()
-                .with(ENABLED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(ENABLED, false));
     }
 
     @Override
-    public String getTranslationKey() {
-        String baseKey = super.getTranslationKey();
+    public String getDescriptionId() {
+        String baseKey = super.getDescriptionId();
         return baseKey.substring(0, baseKey.lastIndexOf('_'));
     }
 
@@ -68,7 +68,7 @@ public class Interface extends BlockTile implements CubeDetector.IDetectionListe
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(ENABLED);
     }
 
@@ -78,13 +78,13 @@ public class Interface extends BlockTile implements CubeDetector.IDetectionListe
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState blockState) {
-        return blockState.get(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderType(blockState);
+    public BlockRenderType getRenderShape(BlockState blockState) {
+        return blockState.getValue(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
     }
 
     @Override
     public boolean propagatesSkylightDown(BlockState blockState, IBlockReader blockReader, BlockPos blockPos) {
-        return blockState.get(ENABLED);
+        return blockState.getValue(ENABLED);
     }
 
     @Override
@@ -99,39 +99,39 @@ public class Interface extends BlockTile implements CubeDetector.IDetectionListe
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
         ColossalChest.triggerDetector(this.material, world, pos, true, placer instanceof PlayerEntity ? (PlayerEntity) placer : null);
     }
 
     @Override
-    public void onBlockAdded(BlockState blockStateNew, World world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
-        super.onBlockAdded(blockStateNew, world, blockPos, blockStateOld, isMoving);
-        if(!world.captureBlockSnapshots && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.get(ENABLED)) {
+    public void onPlace(BlockState blockStateNew, World world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
+        super.onPlace(blockStateNew, world, blockPos, blockStateOld, isMoving);
+        if(!world.captureBlockSnapshots && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.getValue(ENABLED)) {
             ColossalChest.triggerDetector(this.material, world, blockPos, true, null);
         }
     }
 
     @Override
-    public void onPlayerDestroy(IWorld world, BlockPos blockPos, BlockState blockState) {
-        if(blockState.get(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
-        super.onPlayerDestroy(world, blockPos, blockState);
+    public void destroy(IWorld world, BlockPos blockPos, BlockState blockState) {
+        if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
+        super.destroy(world, blockPos, blockState);
     }
 
     @Override
     public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {
-        if(world.getBlockState(pos).get(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
+        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
-        getBlock().onExplosionDestroy(world, pos, explosion);
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        getBlock().wasExploded(world, pos, explosion);
     }
 
     @Override
     public void onDetect(IWorldReader world, BlockPos location, Vector3i size, boolean valid, BlockPos originCorner) {
         Block block = world.getBlockState(location).getBlock();
         if(block == this) {
-            boolean change = !(Boolean) world.getBlockState(location).get(ENABLED);
-            ((IWorldWriter) world).setBlockState(location, world.getBlockState(location).with(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
+            boolean change = !(Boolean) world.getBlockState(location).getValue(ENABLED);
+            ((IWorldWriter) world).setBlock(location, world.getBlockState(location).setValue(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             if(change) {
                 BlockPos tileLocation = ColossalChest.getCoreLocation(material, world, location);
                 TileInterface tile = TileHelpers.getSafeTile(world, location, TileInterface.class).orElse(null);
@@ -147,23 +147,23 @@ public class Interface extends BlockTile implements CubeDetector.IDetectionListe
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
-        if(blockState.get(ENABLED)) {
+    public ActionResultType use(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
+        if(blockState.getValue(ENABLED)) {
             BlockPos tileLocation = ColossalChest.getCoreLocation(material, world, blockPos);
             if(tileLocation != null) {
                 return world.getBlockState(tileLocation).getBlock().
-                        onBlockActivated(blockState, world, tileLocation, player, hand, rayTraceResult);
+                        use(blockState, world, tileLocation, player, hand, rayTraceResult);
             }
         } else {
             ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
             return ActionResultType.FAIL;
         }
-        return super.onBlockActivated(blockState, world, blockPos, player, hand, rayTraceResult);
+        return super.use(blockState, world, blockPos, player, hand, rayTraceResult);
     }
 
     @Override
-    public boolean isValidPosition(BlockState blockState, IWorldReader world, BlockPos blockPos) {
-        return super.isValidPosition(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
+    public boolean canSurvive(BlockState blockState, IWorldReader world, BlockPos blockPos) {
+        return super.canSurvive(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
     }
 
     @Override

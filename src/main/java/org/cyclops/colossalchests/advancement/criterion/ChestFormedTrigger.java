@@ -37,7 +37,7 @@ public class ChestFormedTrigger extends AbstractCriterionTrigger<ChestFormedTrig
     }
 
     @Override
-    public Instance deserializeTrigger(JsonObject json, EntityPredicate.AndPredicate entityPredicate, ConditionArrayParser conditionsParser) {
+    public Instance createInstance(JsonObject json, EntityPredicate.AndPredicate entityPredicate, ConditionArrayParser conditionsParser) {
         ChestMaterial material = null;
         JsonElement element = json.get("material");
         if (element != null && !element.isJsonNull()) {
@@ -54,13 +54,13 @@ public class ChestFormedTrigger extends AbstractCriterionTrigger<ChestFormedTrig
         Integer minimumSize = null;
         JsonElement elementSize = json.get("minimumSize");
         if (elementSize != null && !elementSize.isJsonNull()) {
-            minimumSize = JSONUtils.getInt(elementSize, "minimumSize");
+            minimumSize = JSONUtils.convertToInt(elementSize, "minimumSize");
         }
         return new Instance(getId(), entityPredicate, material, minimumSize);
     }
 
     public void test(ServerPlayerEntity player, ChestMaterial material, int size) {
-        this.triggerListeners(player, (instance) -> {
+        this.trigger(player, (instance) -> {
             return instance.test(player, Pair.of(material, size));
         });
     }

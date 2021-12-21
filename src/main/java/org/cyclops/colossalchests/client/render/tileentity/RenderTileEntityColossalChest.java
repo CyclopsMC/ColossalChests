@@ -61,7 +61,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     }
     @SubscribeEvent
     public static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if (event.getMap().getTextureLocation().equals(Atlases.CHEST_ATLAS)) {
+        if (event.getMap().location().equals(Atlases.CHEST_SHEET)) {
             for (ResourceLocation value : TEXTURES_CHEST.values()) {
                 event.addSprite(value);
             }
@@ -97,31 +97,31 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     @Override
     public void render(TileColossalChest tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int combinedLightIn, int combinedOverlayIn) {
         if (tile.isStructureComplete()) {
-            matrixStack.push();
+            matrixStack.pushPose();
 
             super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn);
 
             // Render interface overlays
             if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
-                matrixStack.push();
+                matrixStack.pushPose();
                 RenderMaterial materialInterface = getMaterialInterface(tile);
-                IVertexBuilder buffer = materialInterface.getBuffer(renderTypeBuffer, RenderType::getText);
+                IVertexBuilder buffer = materialInterface.buffer(renderTypeBuffer, RenderType::text);
                 for (Vector3i interfaceLocation : tile.getInterfaceLocations()) {
-                    float translateX = interfaceLocation.getX() - tile.getPos().getX();
-                    float translateY = interfaceLocation.getY() - tile.getPos().getY();
-                    float translateZ = interfaceLocation.getZ() - tile.getPos().getZ();
+                    float translateX = interfaceLocation.getX() - tile.getBlockPos().getX();
+                    float translateY = interfaceLocation.getY() - tile.getBlockPos().getY();
+                    float translateZ = interfaceLocation.getZ() - tile.getBlockPos().getZ();
                     matrixStack.translate(translateX, translateY, translateZ);
-                    renderInterface(matrixStack, buffer, materialInterface.getSprite(), interfaceLocation.equals(tile.getPos()), combinedLightIn);
+                    renderInterface(matrixStack, buffer, materialInterface.sprite(), interfaceLocation.equals(tile.getBlockPos()), combinedLightIn);
                     matrixStack.translate(-translateX, -translateY, -translateZ);
                 }
-                matrixStack.pop();
+                matrixStack.popPose();
             }
-            matrixStack.pop();
+            matrixStack.popPose();
         }
     }
 
     @Override
-    public boolean isGlobalRenderer(TileColossalChest tile) {
+    public boolean shouldRenderOffScreen(TileColossalChest tile) {
         return true;
     }
 
@@ -132,17 +132,17 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
 
     @Override
     protected RenderMaterial getMaterial(TileColossalChest tile) {
-        return new RenderMaterial(Atlases.CHEST_ATLAS, TEXTURES_CHEST.get(tile.getMaterial()));
+        return new RenderMaterial(Atlases.CHEST_SHEET, TEXTURES_CHEST.get(tile.getMaterial()));
     }
 
     protected RenderMaterial getMaterialInterface(TileColossalChest tile) {
-        return new RenderMaterial(Atlases.CHEST_ATLAS, TEXTURES_INTERFACE.get(tile.getMaterial()));
+        return new RenderMaterial(Atlases.CHEST_SHEET, TEXTURES_INTERFACE.get(tile.getMaterial()));
     }
 
     protected void setMatrixOrientation(MatrixStack matrixStack, Direction direction) {
-        float translateX = -1F - direction.getXOffset();
-        float translateY = direction.getYOffset();
-        float translateZ = direction.getZOffset();
+        float translateX = -1F - direction.getStepX();
+        float translateY = direction.getStepY();
+        float translateZ = direction.getStepZ();
         if (direction == Direction.NORTH) {
             translateZ += 1F;
             translateX += 2F;
@@ -179,13 +179,13 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
         } else if (direction == Direction.DOWN) {
             rotationX = 90;
         }
-        matrixStack.rotate(Vector3f.YP.rotationDegrees(rotationY));
-        matrixStack.rotate(Vector3f.XP.rotationDegrees(rotationX));
+        matrixStack.mulPose(Vector3f.YP.rotationDegrees(rotationY));
+        matrixStack.mulPose(Vector3f.XP.rotationDegrees(rotationX));
     }
 
     protected void renderInterface(MatrixStack matrixStack, IVertexBuilder buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {
         for (Direction side : Direction.values()) {
-            matrixStack.push();
+            matrixStack.pushPose();
             float scale = 0.063F;
             matrixStack.scale(scale, scale, scale);
             matrixStack.scale(1, -1, 1);
@@ -199,17 +199,17 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
             float posMax = 16F - posMin;
 
             float uvScale = posMin / 16F;
-            float uMin = (sprite.getMaxU() - sprite.getMinU()) * uvScale + sprite.getMinU();
-            float uMax = (sprite.getMaxU() - sprite.getMinU()) * (1 - uvScale) + sprite.getMinU();
-            float vMin = (sprite.getMaxV() - sprite.getMinV()) * uvScale + sprite.getMinV();
-            float vMax = (sprite.getMaxV() - sprite.getMinV()) * (1 - uvScale) + sprite.getMinV();
+            float uMin = (sprite.getU1() - sprite.getU0()) * uvScale + sprite.getU0();
+            float uMax = (sprite.getU1() - sprite.getU0()) * (1 - uvScale) + sprite.getU0();
+            float vMin = (sprite.getV1() - sprite.getV0()) * uvScale + sprite.getV0();
+            float vMax = (sprite.getV1() - sprite.getV0()) * (1 - uvScale) + sprite.getV0();
 
-            Matrix4f matrix = matrixStack.getLast().getMatrix();
-            buffer.pos(matrix, posMax, posMax, indent).color(255, 255, 255, alpha).tex(uMin, vMax).lightmap(combinedLightIn).endVertex();
-            buffer.pos(matrix, posMax, posMin, indent).color(255, 255, 255, alpha).tex(uMin, vMin).lightmap(combinedLightIn).endVertex();
-            buffer.pos(matrix, posMin, posMin, indent).color(255, 255, 255, alpha).tex(uMax, vMin).lightmap(combinedLightIn).endVertex();
-            buffer.pos(matrix, posMin, posMax, indent).color(255, 255, 255, alpha).tex(uMax, vMax).lightmap(combinedLightIn).endVertex();
-            matrixStack.pop();
+            Matrix4f matrix = matrixStack.last().pose();
+            buffer.vertex(matrix, posMax, posMax, indent).color(255, 255, 255, alpha).uv(uMin, vMax).uv2(combinedLightIn).endVertex();
+            buffer.vertex(matrix, posMax, posMin, indent).color(255, 255, 255, alpha).uv(uMin, vMin).uv2(combinedLightIn).endVertex();
+            buffer.vertex(matrix, posMin, posMin, indent).color(255, 255, 255, alpha).uv(uMax, vMin).uv2(combinedLightIn).endVertex();
+            buffer.vertex(matrix, posMin, posMax, indent).color(255, 255, 255, alpha).uv(uMax, vMax).uv2(combinedLightIn).endVertex();
+            matrixStack.popPose();
         }
     }
 }

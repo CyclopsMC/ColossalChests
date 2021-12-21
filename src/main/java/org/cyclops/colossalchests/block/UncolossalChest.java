@@ -41,21 +41,21 @@ import javax.annotation.Nullable;
  */
 public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
 
-    public static final DirectionProperty FACING = HorizontalBlock.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = HorizontalBlock.FACING;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-    private final VoxelShape SHAPE = Block.makeCuboidShape(5.0D, 0.0D, 5.0D, 11.0D, 6, 11.0D);
+    private final VoxelShape SHAPE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 6, 11.0D);
 
     public UncolossalChest(Block.Properties properties) {
         super(properties, TileUncolossalChest::new);
 
-        this.setDefaultState(this.stateContainer.getBaseState()
-                .with(FACING, Direction.NORTH)
-                .with(WATERLOGGED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(WATERLOGGED, false));
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(FACING).add(WATERLOGGED);
     }
 
@@ -64,20 +64,20 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
         return true;
     }
 
-    public BlockState updatePostPlacement(BlockState blockState, Direction facing, BlockState facingState, IWorld world, BlockPos currentPos, BlockPos facingPos) {
-        if (blockState.get(WATERLOGGED)) {
-            world.getPendingFluidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+    public BlockState updateShape(BlockState blockState, Direction facing, BlockState facingState, IWorld world, BlockPos currentPos, BlockPos facingPos) {
+        if (blockState.getValue(WATERLOGGED)) {
+            world.getLiquidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
         }
 
-        return super.updatePostPlacement(blockState, facing, facingState, world, currentPos, facingPos);
+        return super.updateShape(blockState, facing, facingState, world, currentPos, facingPos);
     }
 
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext blockItemUseContext) {
-        Direction facing = blockItemUseContext.getPlacementHorizontalFacing().getOpposite();
+        Direction facing = blockItemUseContext.getHorizontalDirection().getOpposite();
         return super.getStateForPlacement(blockItemUseContext)
-                .with(FACING, facing);
+                .setValue(FACING, facing);
     }
 
     @Override
@@ -86,57 +86,57 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
+    public BlockRenderType getRenderShape(BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
-        if (stack.hasDisplayName()) {
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
+        if (stack.hasCustomHoverName()) {
             TileUncolossalChest tile = TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class).orElse(null);
             if (tile != null) {
-                tile.setCustomName(stack.getDisplayName());
+                tile.setCustomName(stack.getHoverName());
             }
         }
     }
 
     @Override
     public FluidState getFluidState(BlockState blockState) {
-        return blockState.get(WATERLOGGED) ? Fluids.WATER.getStillFluidState(false) : super.getFluidState(blockState);
+        return blockState.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(blockState);
     }
 
     @Override
-    public boolean hasComparatorInputOverride(BlockState blockState) {
+    public boolean hasAnalogOutputSignal(BlockState blockState) {
         return true;
     }
 
     @Override
-    public int getComparatorInputOverride(BlockState blockState, World world, BlockPos pos) {
+    public int getAnalogOutputSignal(BlockState blockState, World world, BlockPos pos) {
         return TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class)
-                .map(tile -> Container.calcRedstoneFromInventory(tile.getInventory()))
+                .map(tile -> Container.getRedstoneSignalFromContainer(tile.getInventory()))
                 .orElse(0);
     }
 
     @Override
     public BlockState rotate(BlockState blockState, Rotation rotation) {
-        return blockState.with(FACING, rotation.rotate(blockState.get(FACING)));
+        return blockState.setValue(FACING, rotation.rotate(blockState.getValue(FACING)));
     }
 
     @Override
     public BlockState mirror(BlockState blockState, Mirror mirror) {
-        return blockState.rotate(mirror.toRotation(blockState.get(FACING)));
+        return blockState.rotate(mirror.getRotation(blockState.getValue(FACING)));
     }
 
     @Override
-    public boolean allowsMovement(BlockState p_196266_1_, IBlockReader p_196266_2_, BlockPos p_196266_3_, PathType p_196266_4_) {
+    public boolean isPathfindable(BlockState p_196266_1_, IBlockReader p_196266_2_, BlockPos p_196266_3_, PathType p_196266_4_) {
         return false;
     }
 
     @Nullable
     @Override
-    public INamedContainerProvider getContainer(BlockState p_220052_1_, World p_220052_2_, BlockPos p_220052_3_) {
-        return super.getContainer(p_220052_1_, p_220052_2_, p_220052_3_);
+    public INamedContainerProvider getMenuProvider(BlockState p_220052_1_, World p_220052_2_, BlockPos p_220052_3_) {
+        return super.getMenuProvider(p_220052_1_, p_220052_2_, p_220052_3_);
     }
 
 }

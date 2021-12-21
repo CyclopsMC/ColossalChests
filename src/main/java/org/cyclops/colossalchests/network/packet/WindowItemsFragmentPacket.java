@@ -46,9 +46,9 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 	public void actionClient(World world, PlayerEntity player) {
 		// Modified code from NetHandlerPlayClient#handleWindowItems
 		if (windowId == 0) {
-			putStacksInSlotsWithOffset(player.container);
-		} else if (windowId == player.openContainer.windowId) {
-			putStacksInSlotsWithOffset(player.openContainer);
+			putStacksInSlotsWithOffset(player.inventoryMenu);
+		} else if (windowId == player.containerMenu.containerId) {
+			putStacksInSlotsWithOffset(player.containerMenu);
 		}
 	}
 
@@ -57,8 +57,8 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 		for (int i = 0; i < list.size(); i++) {
 			CompoundNBT tag = list.getCompound(i);
 			int slot = tag.getInt("slot");
-			ItemStack stack = ItemStack.read(tag.getCompound("stack"));
-			container.putStackInSlot(slot, stack);
+			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
+			container.setItem(slot, stack);
 		}
 	}
 

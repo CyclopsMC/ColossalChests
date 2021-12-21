@@ -44,8 +44,8 @@ public class SetSlotLarge extends PacketCodec {
 	@OnlyIn(Dist.CLIENT)
 	public void actionClient(World world, PlayerEntity player) {
 		// Modified code from NetHandlerPlayClient#handleSetSlot
-		if (windowId == player.openContainer.windowId) {
-			player.openContainer.putStackInSlot(slot, itemStack);
+		if (windowId == player.containerMenu.containerId) {
+			player.containerMenu.setItem(slot, itemStack);
 		}
 	}
 

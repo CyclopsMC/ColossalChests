@@ -55,6 +55,8 @@ import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.AbstractBlock.Properties;
+
 /**
  * A machine that can infuse stuff with blood.
  *
@@ -72,13 +74,13 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
 
         material.setBlockCore(this);
 
-        this.setDefaultState(this.stateContainer.getBaseState()
-                .with(ENABLED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(ENABLED, false));
     }
 
     @Override
-    public String getTranslationKey() {
-        String baseKey = super.getTranslationKey();
+    public String getDescriptionId() {
+        String baseKey = super.getDescriptionId();
         return baseKey.substring(0, baseKey.lastIndexOf('_'));
     }
 
@@ -88,7 +90,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(ENABLED);
     }
 
@@ -101,10 +103,10 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
 
     public static boolean canPlace(IWorldReader world, BlockPos pos) {
         for(Direction side : Direction.values()) {
-            BlockState blockState = world.getBlockState(pos.offset(side));
+            BlockState blockState = world.getBlockState(pos.relative(side));
             Block block = blockState.getBlock();
             if((block instanceof ColossalChest || block instanceof ChestWall || block instanceof Interface)
-                    && blockState.getProperties().contains(ENABLED) && blockState.get(ENABLED)) {
+                    && blockState.getProperties().contains(ENABLED) && blockState.getValue(ENABLED)) {
                 return false;
             }
         }
@@ -117,13 +119,13 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public BlockRenderType getRenderType(BlockState blockState) {
-        return blockState.get(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderType(blockState);
+    public BlockRenderType getRenderShape(BlockState blockState) {
+        return blockState.getValue(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
     }
 
     @Override
     public boolean propagatesSkylightDown(BlockState blockState, IBlockReader blockReader, BlockPos blockPos) {
-        return blockState.get(ENABLED);
+        return blockState.getValue(ENABLED);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
         DetectionResult detectionResult = material.getChestDetector().detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
         if (player instanceof ServerPlayerEntity && detectionResult.getError() == null) {
             BlockState blockState = world.getBlockState(blockPos);
-            if (blockState.get(ENABLED)) {
+            if (blockState.getValue(ENABLED)) {
                 TileColossalChest tile = TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class).orElse(null);
                 if (tile == null) {
                     BlockPos corePos = getCoreLocation(material, world, blockPos);
@@ -155,22 +157,22 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-        super.onBlockPlacedBy(world, pos, state, placer, stack);
-        if (stack.hasDisplayName()) {
+    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(world, pos, state, placer, stack);
+        if (stack.hasCustomHoverName()) {
             TileColossalChest tile = TileHelpers.getSafeTile(world, pos, TileColossalChest.class).orElse(null);
             if (tile != null) {
-                tile.setCustomName(stack.getDisplayName());
-                tile.setSize(Vector3i.NULL_VECTOR);
+                tile.setCustomName(stack.getHoverName());
+                tile.setSize(Vector3i.ZERO);
             }
         }
         triggerDetector(this.material, world, pos, true, placer instanceof PlayerEntity ? (PlayerEntity) placer : null);
     }
 
     @Override
-    public void onBlockAdded(BlockState blockStateNew, World world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
-        super.onBlockAdded(blockStateNew, world, blockPos, blockStateOld, isMoving);
-        if(!world.captureBlockSnapshots && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.get(ENABLED)) {
+    public void onPlace(BlockState blockStateNew, World world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
+        super.onPlace(blockStateNew, world, blockPos, blockStateOld, isMoving);
+        if(!world.captureBlockSnapshots && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.getValue(ENABLED)) {
             triggerDetector(this.material, world, blockPos, true, null);
         }
     }
@@ -179,11 +181,11 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     public void onDetect(IWorldReader world, BlockPos location, Vector3i size, boolean valid, BlockPos originCorner) {
         Block block = world.getBlockState(location).getBlock();
         if(block == this) {
-            ((IWorldWriter) world).setBlockState(location, world.getBlockState(location).with(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
+            ((IWorldWriter) world).setBlock(location, world.getBlockState(location).setValue(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
             TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class).orElse(null);
             if(tile != null) {
                 tile.setMaterial(this.material);
-                tile.setSize(valid ? size : Vector3i.NULL_VECTOR);
+                tile.setSize(valid ? size : Vector3i.ZERO);
                 tile.setCenter(new Vector3d(
                         originCorner.getX() + ((double) size.getX()) / 2,
                         originCorner.getY() + ((double) size.getY()) / 2,
@@ -221,12 +223,12 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
      * @param hand The used hand.
      */
     public static void addPlayerChatError(ChestMaterial material, World world, BlockPos blockPos, PlayerEntity player, Hand hand) {
-        if(!world.isRemote && player.getHeldItem(hand).isEmpty()) {
+        if(!world.isClientSide && player.getItemInHand(hand).isEmpty()) {
             DetectionResult result = material.getChestDetector().detect(world, blockPos, null,  new MaterialValidationAction(), false);
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.sendMessage(new TranslationTextComponent("multiblock.colossalchests.error.unexpected"), Util.DUMMY_UUID);
+                player.sendMessage(new TranslationTextComponent("multiblock.colossalchests.error.unexpected"), Util.NIL_UUID);
             }
         }
     }
@@ -237,43 +239,43 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
                 .append(new TranslationTextComponent("multiblock.colossalchests.error.prefix"))
                 .append(new StringTextComponent("]: "))
                 .setStyle(Style.EMPTY.
-                        setColor(Color.fromTextFormatting(TextFormatting.GRAY)).
-                        setHoverEvent(new HoverEvent(
+                        withColor(Color.fromLegacyFormat(TextFormatting.GRAY)).
+                        withHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
                                 new TranslationTextComponent("multiblock.colossalchests.error.prefix.info")
                         ))
                 );
         chat.append(prefix);
         chat.append(error);
-        player.sendMessage(chat, Util.DUMMY_UUID);
+        player.sendMessage(chat, Util.NIL_UUID);
     }
 
     @Override
     public void writeExtraGuiData(PacketBuffer packetBuffer, World world, PlayerEntity player, BlockPos blockPos, Hand hand, BlockRayTraceResult rayTraceResult) {
-        TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class).ifPresent(tile -> packetBuffer.writeInt(tile.getInventory().getSizeInventory()));
+        TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class).ifPresent(tile -> packetBuffer.writeInt(tile.getInventory().getContainerSize()));
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
-        if(!(blockState.get(ENABLED))) {
+    public ActionResultType use(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
+        if(!(blockState.getValue(ENABLED))) {
             ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
             return ActionResultType.FAIL;
         }
-        return super.onBlockActivated(blockState, world, blockPos, player, hand, rayTraceResult);
+        return super.use(blockState, world, blockPos, player, hand, rayTraceResult);
     }
 
     @Override
-    public void onPlayerDestroy(IWorld world, BlockPos blockPos, BlockState blockState) {
-        if(blockState.get(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
-        super.onPlayerDestroy(world, blockPos, blockState);
+    public void destroy(IWorld world, BlockPos blockPos, BlockState blockState) {
+        if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
+        super.destroy(world, blockPos, blockState);
     }
 
     @Override
     public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {
-        if(world.getBlockState(pos).get(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
+        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
-        world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3);
-        getBlock().onExplosionDestroy(world, pos, explosion);
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        getBlock().wasExploded(world, pos, explosion);
     }
 
     @Override
@@ -285,12 +287,12 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public boolean isValidPosition(BlockState blockState, IWorldReader world, BlockPos blockPos) {
-        return super.isValidPosition(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
+    public boolean canSurvive(BlockState blockState, IWorldReader world, BlockPos blockPos) {
+        return super.canSurvive(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
     }
 
     @Override
-    public void onReplaced(BlockState oldState, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState oldState, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
         if (oldState.getBlock().getClass() != newState.getBlock().getClass()) {
             TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class)
                     .ifPresent(tile -> {
@@ -298,7 +300,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
                         SimpleInventory lastInventory = tile.getLastValidInventory();
                         InventoryHelpers.dropItems(world, lastInventory != null ? lastInventory : tile.getInventory(), blockPos);
                     });
-            super.onReplaced(oldState, world, blockPos, newState, isMoving);
+            super.onRemove(oldState, world, blockPos, newState, isMoving);
         }
     }
 

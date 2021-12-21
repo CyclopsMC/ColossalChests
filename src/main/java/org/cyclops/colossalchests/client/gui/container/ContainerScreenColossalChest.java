@@ -33,10 +33,15 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     }
 
     @Override
+    protected void renderBg(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
+        // TODO: rm
+    }
+
+    @Override
     public void init() {
         super.init();
-        addButton(new ButtonArrow(this.guiLeft + 173, this.guiTop + 7, new TranslationTextComponent("gui.cyclopscore.up"), (button) -> scrollRelative(1), ButtonArrow.Direction.NORTH));
-        addButton(new ButtonArrow(this.guiLeft + 173, this.guiTop + 129, new TranslationTextComponent("gui.cyclopscore.down"), (button) -> scrollRelative(-1), ButtonArrow.Direction.SOUTH));
+        addButton(new ButtonArrow(this.leftPos + 173, this.topPos + 7, new TranslationTextComponent("gui.cyclopscore.up"), (button) -> scrollRelative(1), ButtonArrow.Direction.NORTH));
+        addButton(new ButtonArrow(this.leftPos + 173, this.topPos + 129, new TranslationTextComponent("gui.cyclopscore.down"), (button) -> scrollRelative(-1), ButtonArrow.Direction.SOUTH));
     }
 
     protected void scrollRelative(int direction) {
@@ -70,28 +75,28 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     }
 
     protected void drawForgegroundString(MatrixStack matrixStack) {
-        font.drawString(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
+        font.draw(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
     }
 
     @Override
-    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int mouseX, int mouseY) {
+    protected void renderLabels(MatrixStack matrixStack, int mouseX, int mouseY) {
         drawForgegroundString(matrixStack);
         //super.drawGuiContainerForegroundLayer(matrixStack, mouseX, mouseY);
     }
 
     @Override
-    protected void handleMouseClick(Slot slotIn, int slotId, int clickedButton, ClickType clickType) {
+    protected void slotClicked(Slot slotIn, int slotId, int clickedButton, ClickType clickType) {
         if (slotIn != null) {
-            slotId = slotIn.slotNumber;
+            slotId = slotIn.index;
         }
         // Send our own packet, to avoid C0EPacketClickWindow to be sent to the server what would trigger an overflowable S30PacketWindowItems
-        windowClick(this.container.windowId, slotId, clickedButton, clickType, this.getMinecraft().player);
+        windowClick(this.container.containerId, slotId, clickedButton, clickType, this.getMinecraft().player);
     }
 
     // Adapted from PlayerController#windowClick
     protected ItemStack windowClick(int windowId, int slotId, int mouseButtonClicked, ClickType p_78753_4_, PlayerEntity playerIn) {
-        short short1 = playerIn.openContainer.getNextTransactionID(playerIn.inventory);
-        ItemStack itemstack = playerIn.openContainer.slotClick(slotId, mouseButtonClicked, p_78753_4_, playerIn);
+        short short1 = playerIn.containerMenu.backup(playerIn.inventory);
+        ItemStack itemstack = playerIn.containerMenu.clicked(slotId, mouseButtonClicked, p_78753_4_, playerIn);
         // Original: this.netClientHandler.addToSendQueue(new C0EPacketClickWindow(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));
         ColossalChests._instance.getPacketHandler().sendToServer(
                 new ClickWindowPacketOverride(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack, short1));

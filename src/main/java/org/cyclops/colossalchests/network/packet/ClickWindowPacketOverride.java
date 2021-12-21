@@ -66,37 +66,37 @@ public class ClickWindowPacketOverride extends PacketCodec {
 	// Adapted from ServerPlayNetHandler#processClickWindow
 	@Override
 	public void actionServer(World world, ServerPlayerEntity player) {
-		player.markPlayerActive();
-        if (player.openContainer.windowId == windowId && player.openContainer.getCanCraft(player)) {
+		player.resetLastActionTime();
+        if (player.containerMenu.containerId == windowId && player.containerMenu.isSynched(player)) {
 			if (player.isSpectator()) {
 				ArrayList arraylist = Lists.newArrayList();
 
-				for (int i = 0; i < player.openContainer.inventorySlots.size(); ++i) {
-					arraylist.add((player.openContainer.inventorySlots.get(i)).getStack());
+				for (int i = 0; i < player.containerMenu.slots.size(); ++i) {
+					arraylist.add((player.containerMenu.slots.get(i)).getItem());
 				}
 
-				((ContainerColossalChest) player.openContainer).updateCraftingInventory(player, arraylist);
+				((ContainerColossalChest) player.containerMenu).updateCraftingInventory(player, arraylist);
 			} else {
-				ItemStack itemstack = player.openContainer.slotClick(slotId, usedButton, ClickType.valueOf(mode), player);
+				ItemStack itemstack = player.containerMenu.clicked(slotId, usedButton, ClickType.valueOf(mode), player);
 
-				if (ItemStack.areItemStacksEqual(clickedItem, itemstack)) {
-					player.connection.sendPacket(new SConfirmTransactionPacket(windowId, actionNumber, true));
-					player.isChangingQuantityOnly = true;
-					player.openContainer.detectAndSendChanges();
-					player.updateHeldItem();
-					player.isChangingQuantityOnly = false;
+				if (ItemStack.matches(clickedItem, itemstack)) {
+					player.connection.send(new SConfirmTransactionPacket(windowId, actionNumber, true));
+					player.ignoreSlotUpdateHack = true;
+					player.containerMenu.broadcastChanges();
+					player.broadcastCarriedItem();
+					player.ignoreSlotUpdateHack = false;
 				} else {
-					Int2ShortMap pendingTransactions = player.connection.pendingTransactions;
-					pendingTransactions.put(player.openContainer.windowId, actionNumber);
-					player.connection.sendPacket(new SConfirmTransactionPacket(windowId, actionNumber, false));
-					player.openContainer.setCanCraft(player, false);
+					Int2ShortMap pendingTransactions = player.connection.expectedAcks;
+					pendingTransactions.put(player.containerMenu.containerId, actionNumber);
+					player.connection.send(new SConfirmTransactionPacket(windowId, actionNumber, false));
+					player.containerMenu.setSynched(player, false);
 					NonNullList<ItemStack> nonnulllist1 = NonNullList.create();
 
-					for (int j = 0; j < player.openContainer.inventorySlots.size(); ++j) {
-						nonnulllist1.add(player.openContainer.inventorySlots.get(j).getStack());
+					for (int j = 0; j < player.containerMenu.slots.size(); ++j) {
+						nonnulllist1.add(player.containerMenu.slots.get(j).getItem());
 					}
 
-					((ContainerColossalChest) player.openContainer).updateCraftingInventory(player, nonnulllist1);
+					((ContainerColossalChest) player.containerMenu).updateCraftingInventory(player, nonnulllist1);
 				}
 			}
 		}

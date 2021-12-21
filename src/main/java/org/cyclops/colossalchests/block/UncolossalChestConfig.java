@@ -18,8 +18,8 @@ public class UncolossalChestConfig extends BlockConfig {
         super(
                 ColossalChests._instance,
             "uncolossal_chest",
-                eConfig -> new UncolossalChest(Block.Properties.create(Material.ROCK)
-                        .hardnessAndResistance(5.0F)
+                eConfig -> new UncolossalChest(Block.Properties.of(Material.STONE)
+                        .strength(5.0F)
                         .sound(SoundType.WOOD)
                         .harvestLevel(0)),
                 getDefaultItemConstructor(ColossalChests._instance, (itemProperties) -> itemProperties.setISTER(() -> ItemStackTileEntityUncolossalChestRender::new))

@@ -34,6 +34,9 @@ import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity.ITickingTile;
+import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity.TickingTileComponent;
+
 /**
  * A machine that can infuse things with blood.
  * @author rubensworks
@@ -59,17 +62,17 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
         super(RegistryEntries.TILE_ENTITY_UNCOLOSSAL_CHEST);
         this.inventory = new SimpleInventory(5, 64) {
             @Override
-            public void openInventory(PlayerEntity entityPlayer) {
+            public void startOpen(PlayerEntity entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
-                    super.openInventory(entityPlayer);
+                    super.startOpen(entityPlayer);
                     triggerPlayerUsageChange(1);
                 }
             }
 
             @Override
-            public void closeInventory(PlayerEntity entityPlayer) {
+            public void stopOpen(PlayerEntity entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
-                    super.closeInventory(entityPlayer);
+                    super.stopOpen(entityPlayer);
                     triggerPlayerUsageChange(-1);
                 }
             }
@@ -87,19 +90,19 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
         super.read(tag);
         inventory.read(tag.getCompound("inventory"));
         if (tag.contains("CustomName", Constants.NBT.TAG_STRING)) {
-            this.customName = ITextComponent.Serializer.getComponentFromJson(tag.getString("CustomName"));
+            this.customName = ITextComponent.Serializer.fromJson(tag.getString("CustomName"));
         }
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT tag) {
+    public CompoundNBT save(CompoundNBT tag) {
         CompoundNBT subTag = new CompoundNBT();
         inventory.write(subTag);
         tag.put("inventory", subTag);
         if (this.customName != null) {
             tag.putString("CustomName", ITextComponent.Serializer.toJson(this.customName));
         }
-        return super.write(tag);
+        return super.save(tag);
     }
 
     @Override
@@ -108,41 +111,41 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
 
         // Resynchronize clients with the server state, the last condition makes sure
         // not all chests are synced at the same time.
-        if(world != null
-                && !this.world.isRemote
+        if(level != null
+                && !this.level.isClientSide
                 && this.playersUsing != 0
-                && WorldHelpers.efficientTick(world, TICK_MODULUS, getPos().hashCode())) {
+                && WorldHelpers.efficientTick(level, TICK_MODULUS, getBlockPos().hashCode())) {
             this.playersUsing = 0;
             float range = 5.0F;
             @SuppressWarnings("unchecked")
-            List<PlayerEntity> entities = this.world.getEntitiesWithinAABB(
+            List<PlayerEntity> entities = this.level.getEntitiesOfClass(
                     PlayerEntity.class,
                     new AxisAlignedBB(
-                            getPos().add(new Vector3i(-range, -range, -range)),
-                            getPos().add(new Vector3i(1 + range, 1 + range, 1 + range))
+                            getBlockPos().offset(new Vector3i(-range, -range, -range)),
+                            getBlockPos().offset(new Vector3i(1 + range, 1 + range, 1 + range))
                     )
             );
 
             for(PlayerEntity player : entities) {
-                if (player.openContainer instanceof ContainerColossalChest) {
+                if (player.containerMenu instanceof ContainerColossalChest) {
                     ++this.playersUsing;
                 }
             }
 
-            world.addBlockEvent(getPos(), RegistryEntries.BLOCK_UNCOLOSSAL_CHEST, 1, playersUsing);
+            level.blockEvent(getBlockPos(), RegistryEntries.BLOCK_UNCOLOSSAL_CHEST, 1, playersUsing);
         }
 
         prevLidAngle = lidAngle;
         float increaseAngle = 0.25F;
         if (playersUsing > 0 && lidAngle == 0.0F) {
-            world.playSound(
-                    (double) getPos().getX() + 0.5D,
-                    (double) getPos().getY() + 0.5D,
-                    (double) getPos().getZ() + 0.5D,
-                    SoundEvents.BLOCK_CHEST_OPEN,
+            level.playLocalSound(
+                    (double) getBlockPos().getX() + 0.5D,
+                    (double) getBlockPos().getY() + 0.5D,
+                    (double) getBlockPos().getZ() + 0.5D,
+                    SoundEvents.CHEST_OPEN,
                     SoundCategory.BLOCKS,
                     0.5F,
-                    world.rand.nextFloat() * 0.2F + 1.15F,
+                    level.random.nextFloat() * 0.2F + 1.15F,
                     false
             );
         }
@@ -158,14 +161,14 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
             }
             float closedAngle = 0.5F;
             if (lidAngle < closedAngle && preIncreaseAngle >= closedAngle) {
-                world.playSound(
-                        (double) getPos().getX() + 0.5D,
-                        (double) getPos().getY() + 0.5D,
-                        (double) getPos().getZ() + 0.5D,
-                        SoundEvents.BLOCK_CHEST_CLOSE,
+                level.playLocalSound(
+                        (double) getBlockPos().getX() + 0.5D,
+                        (double) getBlockPos().getY() + 0.5D,
+                        (double) getBlockPos().getZ() + 0.5D,
+                        SoundEvents.CHEST_CLOSE,
                         SoundCategory.BLOCKS,
                         0.5F,
-                        world.rand.nextFloat() * 0.2F + 1.15F,
+                        level.random.nextFloat() * 0.2F + 1.15F,
                         false
                 );
             }
@@ -176,7 +179,7 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     }
 
     @Override
-    public boolean receiveClientEvent(int i, int j) {
+    public boolean triggerEvent(int i, int j) {
         if (i == 1) {
             playersUsing = j;
         }
@@ -184,9 +187,9 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     }
 
     private void triggerPlayerUsageChange(int change) {
-        if (world != null) {
+        if (level != null) {
             playersUsing += change;
-            world.addBlockEvent(getPos(), RegistryEntries.BLOCK_UNCOLOSSAL_CHEST, 1, playersUsing);
+            level.blockEvent(getBlockPos(), RegistryEntries.BLOCK_UNCOLOSSAL_CHEST, 1, playersUsing);
         }
     }
 
@@ -206,11 +209,11 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
     @Override
     public Direction getRotation() {
         // World is null in itemstack renderer
-        if (getWorld() == null) {
+        if (getLevel() == null) {
             return Direction.SOUTH;
         }
 
-        BlockState blockState = getWorld().getBlockState(getPos());
+        BlockState blockState = getLevel().getBlockState(getBlockPos());
         if(blockState.getBlock() != RegistryEntries.BLOCK_UNCOLOSSAL_CHEST) return Direction.NORTH;
         return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, Direction.NORTH);
     }
@@ -223,7 +226,7 @@ public class TileUncolossalChest extends CyclopsTileEntity implements CyclopsTil
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public float getLidAngle(float partialTicks) {
+    public float getOpenNess(float partialTicks) {
         return MathHelper.lerp(partialTicks, this.prevLidAngle, this.lidAngle);
     }
 }

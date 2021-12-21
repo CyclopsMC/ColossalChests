@@ -15,6 +15,9 @@ import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity;
 import javax.annotation.Nonnull;
 import java.lang.ref.WeakReference;
 
+import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity.ITickingTile;
+import org.cyclops.cyclopscore.tileentity.CyclopsTileEntity.TickingTileComponent;
+
 /**
  * A machine that can infuse things with blood.
  * @author rubensworks
@@ -57,7 +60,7 @@ public class TileInterface extends CyclopsTileEntity {
         }
         if (coreReference.get() == null) {
             coreReference = new WeakReference<TileColossalChest>(
-                    TileHelpers.getSafeTile(getWorld(), new BlockPos(corePosition), TileColossalChest.class).orElse(null));
+                    TileHelpers.getSafeTile(getLevel(), new BlockPos(corePosition), TileColossalChest.class).orElse(null));
         }
         return coreReference.get();
     }

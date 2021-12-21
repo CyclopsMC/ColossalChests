@@ -19,14 +19,14 @@ public class InterfaceConfig extends BlockConfig {
         super(
                 ColossalChests._instance,
             "interface_" + material.getName(),
-                eConfig -> new Interface(Block.Properties.create(Material.ROCK)
-                        .hardnessAndResistance(5.0F)
+                eConfig -> new Interface(Block.Properties.of(Material.STONE)
+                        .strength(5.0F)
                         .sound(SoundType.WOOD)
                         .harvestLevel(0) // Wood tier
-                        .notSolid(),
+                        .noOcclusion(),
                         material),
                 (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()
-                        .group(ColossalChests._instance.getDefaultItemGroup()), material)
+                        .tab(ColossalChests._instance.getDefaultItemGroup()), material)
         );
     }
     

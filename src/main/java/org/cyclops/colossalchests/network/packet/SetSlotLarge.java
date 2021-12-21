@@ -56,5 +56,5 @@ public class SetSlotLarge extends PacketCodec {
 	public void actionServer(Level world, ServerPlayer player) {
 
 	}
-	
+
 }

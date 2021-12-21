@@ -28,5 +28,5 @@ public class InterfaceConfig extends BlockConfig {
                         .tab(ColossalChests._instance.getDefaultItemGroup()), material)
         );
     }
-    
+
 }

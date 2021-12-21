@@ -36,5 +36,5 @@ public class ColossalChestConfig extends BlockConfig {
                         .tab(ColossalChests._instance.getDefaultItemGroup()), material)
         );
     }
-    
+
 }

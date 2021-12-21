@@ -97,7 +97,7 @@ public class ClickWindowPacketOverride extends PacketCodec {
 				}
 			}
 		}
-		
+
 		// TODO: rm
         /*if (player.containerMenu.containerId == windowId && player.containerMenu.stillValid(player)) {
 			if (player.isSpectator()) {
@@ -134,5 +134,5 @@ public class ClickWindowPacketOverride extends PacketCodec {
 			}
 		}*/
 	}
-	
+
 }

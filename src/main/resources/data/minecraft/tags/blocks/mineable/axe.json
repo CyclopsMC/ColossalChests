@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "colossalchests:chest_wall_wood",
+    "colossalchests:colossal_chest_wood",
+    "colossalchests:interface_wood"
+  ]
+}

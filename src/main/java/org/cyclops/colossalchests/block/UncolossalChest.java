@@ -1,36 +1,40 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.HorizontalBlock;
-import net.minecraft.block.IWaterLoggable;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.pathfinding.PathType;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.cyclops.colossalchests.tileentity.TileUncolossalChest;
-import org.cyclops.cyclopscore.block.BlockTileGui;
-import org.cyclops.cyclopscore.helper.TileHelpers;
+import org.cyclops.colossalchests.RegistryEntries;
+import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChest;
+import org.cyclops.cyclopscore.block.BlockWithEntityGui;
+import org.cyclops.cyclopscore.helper.BlockEntityHelpers;
 
 import javax.annotation.Nullable;
 
@@ -39,15 +43,15 @@ import javax.annotation.Nullable;
  *
  * @author rubensworks
  */
-public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
+public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterloggedBlock {
 
-    public static final DirectionProperty FACING = HorizontalBlock.FACING;
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
     private final VoxelShape SHAPE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 6, 11.0D);
 
     public UncolossalChest(Block.Properties properties) {
-        super(properties, TileUncolossalChest::new);
+        super(properties, BlockEntityUncolossalChest::new);
 
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
@@ -55,7 +59,13 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    @Nullable
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
+        return level.isClientSide ? null : createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST, new BlockEntityUncolossalChest.Ticker());
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING).add(WATERLOGGED);
     }
 
@@ -64,9 +74,9 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
         return true;
     }
 
-    public BlockState updateShape(BlockState blockState, Direction facing, BlockState facingState, IWorld world, BlockPos currentPos, BlockPos facingPos) {
+    public BlockState updateShape(BlockState blockState, Direction facing, BlockState facingState, LevelAccessor world, BlockPos currentPos, BlockPos facingPos) {
         if (blockState.getValue(WATERLOGGED)) {
-            world.getLiquidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
+            world.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
         }
 
         return super.updateShape(blockState, facing, facingState, world, currentPos, facingPos);
@@ -74,27 +84,27 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext blockItemUseContext) {
+    public BlockState getStateForPlacement(BlockPlaceContext blockItemUseContext) {
         Direction facing = blockItemUseContext.getHorizontalDirection().getOpposite();
         return super.getStateForPlacement(blockItemUseContext)
                 .setValue(FACING, facing);
     }
 
     @Override
-    public VoxelShape getShape(BlockState blockState, IBlockReader world, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getShape(BlockState blockState, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
     @Override
-    public BlockRenderType getRenderShape(BlockState state) {
-        return BlockRenderType.ENTITYBLOCK_ANIMATED;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(world, pos, state, placer, stack);
         if (stack.hasCustomHoverName()) {
-            TileUncolossalChest tile = TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class).orElse(null);
+            BlockEntityUncolossalChest tile = BlockEntityHelpers.get(world, pos, BlockEntityUncolossalChest.class).orElse(null);
             if (tile != null) {
                 tile.setCustomName(stack.getHoverName());
             }
@@ -112,9 +122,9 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, World world, BlockPos pos) {
-        return TileHelpers.getSafeTile(world, pos, TileUncolossalChest.class)
-                .map(tile -> Container.getRedstoneSignalFromContainer(tile.getInventory()))
+    public int getAnalogOutputSignal(BlockState blockState, Level world, BlockPos pos) {
+        return BlockEntityHelpers.get(world, pos, BlockEntityUncolossalChest.class)
+                .map(tile -> AbstractContainerMenu.getRedstoneSignalFromContainer(tile.getInventory()))
                 .orElse(0);
     }
 
@@ -129,13 +139,13 @@ public class UncolossalChest extends BlockTileGui implements IWaterLoggable {
     }
 
     @Override
-    public boolean isPathfindable(BlockState p_196266_1_, IBlockReader p_196266_2_, BlockPos p_196266_3_, PathType p_196266_4_) {
+    public boolean isPathfindable(BlockState p_196266_1_, BlockGetter p_196266_2_, BlockPos p_196266_3_, PathComputationType p_196266_4_) {
         return false;
     }
 
     @Nullable
     @Override
-    public INamedContainerProvider getMenuProvider(BlockState p_220052_1_, World p_220052_2_, BlockPos p_220052_3_) {
+    public MenuProvider getMenuProvider(BlockState p_220052_1_, Level p_220052_2_, BlockPos p_220052_3_) {
         return super.getMenuProvider(p_220052_1_, p_220052_2_, p_220052_3_);
     }
 

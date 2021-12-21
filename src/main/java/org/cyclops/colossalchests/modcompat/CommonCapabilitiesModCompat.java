@@ -8,7 +8,7 @@ import net.minecraftforge.items.IItemHandler;
 import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.Reference;
-import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
@@ -49,8 +49,8 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 		return () -> {
 			CapabilityConstructorRegistry registry = ColossalChests._instance.getCapabilityConstructorRegistry();
 			// Slotless item handler
-			registry.registerTile(TileColossalChest.class,
-					new SimpleCapabilityConstructor<ISlotlessItemHandler, TileColossalChest>() {
+			registry.registerTile(BlockEntityColossalChest.class,
+					new SimpleCapabilityConstructor<ISlotlessItemHandler, BlockEntityColossalChest>() {
 						@Override
 						public Capability<ISlotlessItemHandler> getCapability() {
 							return Capabilities.SLOTLESS_ITEMHANDLER;
@@ -58,7 +58,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 
 						@Nullable
 						@Override
-						public ICapabilityProvider createProvider(TileColossalChest host) {
+						public ICapabilityProvider createProvider(BlockEntityColossalChest host) {
 							// Wrapper hack because Java otherwise complains that the optionalSlotlessItemHandler may not be initialized yet, and it won't compile.
 							Wrapper<LazyOptional<ISlotlessItemHandler>> optionalSlotlessItemHandler = new Wrapper<>();
 							optionalSlotlessItemHandler.set(LazyOptional.of(() -> {
@@ -71,8 +71,8 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 						}
 					});
 			// Inventory state
-			registry.registerTile(TileColossalChest.class,
-					new SimpleCapabilityConstructor<IInventoryState, TileColossalChest>() {
+			registry.registerTile(BlockEntityColossalChest.class,
+					new SimpleCapabilityConstructor<IInventoryState, BlockEntityColossalChest>() {
 						@Override
 						public Capability<IInventoryState> getCapability() {
 							return Capabilities.INVENTORY_STATE;
@@ -80,7 +80,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 
 						@Nullable
 						@Override
-						public ICapabilityProvider createProvider(TileColossalChest host) {
+						public ICapabilityProvider createProvider(BlockEntityColossalChest host) {
 							return new DefaultCapabilityProvider<>(this::getCapability,
 									LazyOptional.of(() -> () -> ((SimpleInventory) host.getInventory()).getState()));
 						}

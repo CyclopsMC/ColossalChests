@@ -3,13 +3,13 @@ package org.cyclops.colossalchests.advancement.criterion;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.advancements.criterion.AbstractCriterionTrigger;
-import net.minecraft.advancements.criterion.CriterionInstance;
-import net.minecraft.advancements.criterion.EntityPredicate;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.loot.ConditionArrayParser;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.Reference;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * Triggers when a colossal chest is formed.
  * @author rubensworks
  */
-public class ChestFormedTrigger extends AbstractCriterionTrigger<ChestFormedTrigger.Instance> {
+public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigger.Instance> {
     private final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "chest_formed");
 
     public ChestFormedTrigger() {
@@ -37,7 +37,7 @@ public class ChestFormedTrigger extends AbstractCriterionTrigger<ChestFormedTrig
     }
 
     @Override
-    public Instance createInstance(JsonObject json, EntityPredicate.AndPredicate entityPredicate, ConditionArrayParser conditionsParser) {
+    public Instance createInstance(JsonObject json, EntityPredicate.Composite entityPredicate, DeserializationContext conditionsParser) {
         ChestMaterial material = null;
         JsonElement element = json.get("material");
         if (element != null && !element.isJsonNull()) {
@@ -54,28 +54,28 @@ public class ChestFormedTrigger extends AbstractCriterionTrigger<ChestFormedTrig
         Integer minimumSize = null;
         JsonElement elementSize = json.get("minimumSize");
         if (elementSize != null && !elementSize.isJsonNull()) {
-            minimumSize = JSONUtils.convertToInt(elementSize, "minimumSize");
+            minimumSize = GsonHelper.convertToInt(elementSize, "minimumSize");
         }
         return new Instance(getId(), entityPredicate, material, minimumSize);
     }
 
-    public void test(ServerPlayerEntity player, ChestMaterial material, int size) {
+    public void test(ServerPlayer player, ChestMaterial material, int size) {
         this.trigger(player, (instance) -> {
             return instance.test(player, Pair.of(material, size));
         });
     }
 
-    public static class Instance extends CriterionInstance implements ICriterionInstanceTestable<Pair<ChestMaterial, Integer>> {
+    public static class Instance extends AbstractCriterionTriggerInstance implements ICriterionInstanceTestable<Pair<ChestMaterial, Integer>> {
         private final ChestMaterial material;
         private final Integer minimumSize;
 
-        public Instance(ResourceLocation criterionIn, EntityPredicate.AndPredicate player, @Nullable ChestMaterial material, @Nullable Integer minimumSize) {
+        public Instance(ResourceLocation criterionIn, EntityPredicate.Composite player, @Nullable ChestMaterial material, @Nullable Integer minimumSize) {
             super(criterionIn, player);
             this.material = material;
             this.minimumSize = minimumSize;
         }
 
-        public boolean test(ServerPlayerEntity player, Pair<ChestMaterial, Integer> data) {
+        public boolean test(ServerPlayer player, Pair<ChestMaterial, Integer> data) {
             return (this.material == null || this.material == data.getLeft())
                     && (this.minimumSize == null || this.minimumSize <= data.getRight());
         }

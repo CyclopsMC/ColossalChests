@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.item;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.cyclopscore.config.extendedconfig.ItemConfig;
 

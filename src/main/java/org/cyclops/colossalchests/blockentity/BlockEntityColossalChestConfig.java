@@ -1,27 +1,27 @@
-package org.cyclops.colossalchests.tileentity;
+package org.cyclops.colossalchests.blockentity;
 
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityColossalChest;
-import org.cyclops.cyclopscore.config.extendedconfig.TileEntityConfig;
+import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChest;
+import org.cyclops.cyclopscore.config.extendedconfig.BlockEntityConfig;
 
 import java.util.stream.Collectors;
 
 /**
- * Config for the {@link TileColossalChest}.
+ * Config for the {@link BlockEntityColossalChest}.
  * @author rubensworks
  *
  */
-public class TileColossalChestConfig extends TileEntityConfig<TileColossalChest> {
+public class BlockEntityColossalChestConfig extends BlockEntityConfig<BlockEntityColossalChest> {
 
-    public TileColossalChestConfig() {
+    public BlockEntityColossalChestConfig() {
         super(
                 ColossalChests._instance,
                 "colossal_chest",
-                (eConfig) -> new TileEntityType<>(TileColossalChest::new,
+                (eConfig) -> new BlockEntityType<>(BlockEntityColossalChest::new,
                         ChestMaterial.VALUES.stream()
                                 .map(ChestMaterial::getBlockCore)
                                 .collect(Collectors.toSet()), null)

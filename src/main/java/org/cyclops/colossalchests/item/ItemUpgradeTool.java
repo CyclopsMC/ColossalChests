@@ -1,51 +1,44 @@
 package org.cyclops.colossalchests.item;
 
 import com.google.common.collect.Lists;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.Advancements;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
 import org.cyclops.colossalchests.block.IBlockChestMaterial;
 import org.cyclops.colossalchests.block.Interface;
-import org.cyclops.colossalchests.tileentity.TileColossalChest;
-import org.cyclops.colossalchests.tileentity.TileInterface;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
+import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
+import org.cyclops.cyclopscore.helper.BlockEntityHelpers;
 import org.cyclops.cyclopscore.helper.BlockHelpers;
 import org.cyclops.cyclopscore.helper.InventoryHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
-import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import java.util.List;
 
-import net.minecraft.item.Item.Properties;
-
 /**
  * An item to upgrade chests to the next tier.
  * @author rubensworks
  */
-@EqualsAndHashCode(callSuper = false)
-@Data
 public class ItemUpgradeTool extends Item {
 
     private final boolean upgrade;
@@ -55,49 +48,53 @@ public class ItemUpgradeTool extends Item {
         this.upgrade = upgrade;
     }
 
+    public boolean isUpgrade() {
+        return upgrade;
+    }
+
     @Override
-    public ActionResultType onItemUseFirst(ItemStack itemStack, ItemUseContext context) {
+    public InteractionResult onItemUseFirst(ItemStack itemStack, UseOnContext context) {
         BlockState blockState = context.getLevel().getBlockState(context.getClickedPos());
         if (blockState.getBlock() instanceof IBlockChestMaterial
                 && BlockHelpers.getSafeBlockStateProperty(blockState, ColossalChest.ENABLED, false)) {
             // Determine the chest core location
             BlockPos tileLocation = ColossalChest.getCoreLocation(((IBlockChestMaterial) blockState.getBlock()).getMaterial(), context.getLevel(), context.getClickedPos());
-            final TileColossalChest tile = TileHelpers.getSafeTile(context.getLevel(), tileLocation, TileColossalChest.class).orElse(null);
+            final BlockEntityColossalChest tile = BlockEntityHelpers.get(context.getLevel(), tileLocation, BlockEntityColossalChest.class).orElse(null);
 
             // Determine the new material type
             ChestMaterial newType = transformType(itemStack, tile.getMaterial());
             if (newType == null) {
                 if(context.getLevel().isClientSide()) {
-                    return ActionResultType.PASS;
+                    return InteractionResult.PASS;
                 }
-                ColossalChest.addPlayerChatError(context.getPlayer(), new TranslationTextComponent(
+                ColossalChest.addPlayerChatError(context.getPlayer(), new TranslatableComponent(
                         "multiblock.colossalchests.error.upgradeLimit"));
-                return ActionResultType.FAIL;
+                return InteractionResult.FAIL;
             }
 
             // Loop over the up/downgrade tiers until one works.
-            ITextComponent firstError = null;
+            Component firstError = null;
             do {
-                ITextComponent error = attemptTransform(context.getLevel(), context.getClickedPos(), context.getPlayer(), tile, newType, tile.getMaterial(), context.getHand());
+                Component error = attemptTransform(context.getLevel(), context.getClickedPos(), context.getPlayer(), tile, newType, tile.getMaterial(), context.getHand());
                 if (error != null) {
                     if (firstError == null) {
                         firstError = error;
                     }
                 } else {
-                    return context.getLevel().isClientSide() ? ActionResultType.PASS : ActionResultType.SUCCESS;
+                    return context.getLevel().isClientSide() ? InteractionResult.PASS : InteractionResult.SUCCESS;
                 }
             } while((newType = transformType(itemStack, newType)) != null);
 
             ColossalChest.addPlayerChatError(context.getPlayer(), firstError);
-            return context.getLevel().isClientSide() ? ActionResultType.PASS : ActionResultType.FAIL;
+            return context.getLevel().isClientSide() ? InteractionResult.PASS : InteractionResult.FAIL;
         }
-        return context.getLevel().isClientSide() ? ActionResultType.PASS : ActionResultType.SUCCESS;
+        return context.getLevel().isClientSide() ? InteractionResult.PASS : InteractionResult.SUCCESS;
     }
 
-    protected ITextComponent attemptTransform(final World world, BlockPos pos, PlayerEntity player,
-                                                             final TileColossalChest tile, final ChestMaterial newType,
-                                                             final ChestMaterial currentType, Hand hand) {
-        Vector3i size = tile.getSize();
+    protected Component attemptTransform(final Level world, BlockPos pos, Player player,
+                                         final BlockEntityColossalChest tile, final ChestMaterial newType,
+                                         final ChestMaterial currentType, InteractionHand hand) {
+        Vec3i size = tile.getSize();
 
         // Calculate required item blocks
         ChestMaterial validMaterial = null;
@@ -126,16 +123,16 @@ public class ItemUpgradeTool extends Item {
         ItemStack requiredWalls = new ItemStack(newType.getBlockWall(), requiredWallsCount.get());
 
         if (validMaterial == null) {
-            return new TranslationTextComponent("multiblock.colossalchests.error.unexpected");
+            return new TranslatableComponent("multiblock.colossalchests.error.unexpected");
         }
 
         // Check required items in inventory
         if (!(consumeItems(player, requiredCores, true)
                 && consumeItems(player, requiredInterfaces, true)
                 && consumeItems(player, requiredWalls, true))) {
-            return new TranslationTextComponent(
+            return new TranslatableComponent(
                     "multiblock.colossalchests.error.upgrade", requiredCores.getCount(),
-                    requiredInterfaces.getCount(), requiredWalls.getCount(), new TranslationTextComponent(newType.getUnlocalizedName()));
+                    requiredInterfaces.getCount(), requiredWalls.getCount(), new TranslatableComponent(newType.getUnlocalizedName()));
         }
 
         // Actually consume the items
@@ -145,11 +142,11 @@ public class ItemUpgradeTool extends Item {
 
         // Update the chest material and move the contents to the new tile
         if(!world.isClientSide) {
-            tile.setSize(Vector3i.ZERO);
+            tile.setSize(Vec3i.ZERO);
             SimpleInventory oldInventory = tile.getLastValidInventory();
             Direction oldRotation = tile.getRotation();
-            Vector3d oldRenderOffset = tile.getRenderOffset();
-            List<Vector3i> oldInterfaceLocations = Lists.newArrayList(tile.getInterfaceLocations());
+            Vec3 oldRenderOffset = tile.getRenderOffset();
+            List<Vec3i> oldInterfaceLocations = Lists.newArrayList(tile.getInterfaceLocations());
             Wrapper<BlockPos> coreLocation = new Wrapper<>(null);
             List<BlockPos> interfaceLocations = Lists.newArrayList();
             validMaterial.getChestDetector().detect(world, pos, null, (location, blockState) -> {
@@ -174,25 +171,25 @@ public class ItemUpgradeTool extends Item {
             }, false);
 
             // From this point on, use the new tile entity
-            TileColossalChest tileNew = TileHelpers.getSafeTile(world, coreLocation.get(), TileColossalChest.class)
+            BlockEntityColossalChest tileNew = BlockEntityHelpers.get(world, coreLocation.get(), BlockEntityColossalChest.class)
                     .orElseThrow(() -> new IllegalStateException("Could not find a colossal chest core location during upgrading."));
             tileNew.setLastValidInventory(oldInventory);
             tileNew.setMaterial(newType);
             tileNew.setRotation(oldRotation);
             tileNew.setRenderOffset(oldRenderOffset);
-            for (Vector3i oldInterfaceLocation : oldInterfaceLocations) {
+            for (Vec3i oldInterfaceLocation : oldInterfaceLocations) {
                 tileNew.addInterface(oldInterfaceLocation);
             }
             tileNew.setSize(size); // To trigger the chest size to be updated
 
             // Set the core position into the newly transformed interfaces
             for (BlockPos interfaceLocation : interfaceLocations) {
-                TileInterface tileInterface = TileHelpers.getSafeTile(world, interfaceLocation, TileInterface.class)
+                BlockEntityInterface tileInterface = BlockEntityHelpers.get(world, interfaceLocation, BlockEntityInterface.class)
                         .orElseThrow(() -> new IllegalStateException("Could not find a colossal chest interface location during upgrading."));
                 tileInterface.setCorePosition(coreLocation.get());
             }
 
-            Advancements.CHEST_FORMED.test((ServerPlayerEntity) player, newType, size.getX() + 1);
+            Advancements.CHEST_FORMED.test((ServerPlayer) player, newType, size.getX() + 1);
         }
 
         // Add the lower tier items to the players inventory again.
@@ -206,7 +203,7 @@ public class ItemUpgradeTool extends Item {
         return null;
     }
 
-    protected boolean consumeItems(PlayerEntity player, ItemStack consumeStack, boolean simulate) {
+    protected boolean consumeItems(Player player, ItemStack consumeStack, boolean simulate) {
         if (player.isCreative()) {
             return true;
         }

@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests;
 
-import net.minecraft.item.ItemGroup;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.common.Mod;
@@ -11,6 +11,9 @@ import org.cyclops.colossalchests.block.ChestWallConfig;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.block.InterfaceConfig;
 import org.cyclops.colossalchests.block.UncolossalChestConfig;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfig;
+import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfig;
+import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
@@ -19,9 +22,6 @@ import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.colossalchests.proxy.ClientProxy;
 import org.cyclops.colossalchests.proxy.CommonProxy;
 import org.cyclops.colossalchests.recipe.condition.RecipeConditionMetalVariantsSettingConfig;
-import org.cyclops.colossalchests.tileentity.TileColossalChestConfig;
-import org.cyclops.colossalchests.tileentity.TileInterfaceConfig;
-import org.cyclops.colossalchests.tileentity.TileUncolossalChestConfig;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.ItemGroupMod;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
@@ -70,7 +70,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
     }
 
     @Override
-    public ItemGroup constructDefaultItemGroup() {
+    public CreativeModeTab constructDefaultCreativeModeTab() {
         return new ItemGroupMod(this, () -> RegistryEntries.ITEM_CHEST);
     }
 
@@ -90,9 +90,9 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         configHandler.addConfigurable(new ItemUpgradeToolConfig(true));
         configHandler.addConfigurable(new ItemUpgradeToolConfig(false));
 
-        configHandler.addConfigurable(new TileColossalChestConfig());
-        configHandler.addConfigurable(new TileInterfaceConfig());
-        configHandler.addConfigurable(new TileUncolossalChestConfig());
+        configHandler.addConfigurable(new BlockEntityColossalChestConfig());
+        configHandler.addConfigurable(new BlockEntityInterfaceConfig());
+        configHandler.addConfigurable(new BlockEntityUncolossalChestConfig());
 
         configHandler.addConfigurable(new ContainerColossalChestConfig());
         configHandler.addConfigurable(new ContainerUncolossalChestConfig());

@@ -1,11 +1,11 @@
 package org.cyclops.colossalchests.modcompat;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityColossalChest;
+import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChest;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.modcompat.ICompatInitializer;
 import org.cyclops.cyclopscore.modcompat.IModCompat;

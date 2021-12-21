@@ -1,21 +1,21 @@
-package org.cyclops.colossalchests.client.render.tileentity;
+package org.cyclops.colossalchests.client.render.blockentity;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Atlases;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.TextureStitchEvent;
@@ -24,7 +24,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 
 import java.util.Calendar;
 import java.util.Map;
@@ -36,7 +36,7 @@ import java.util.Map;
  */
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 @OnlyIn(Dist.CLIENT)
-public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<TileColossalChest> {
+public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<BlockEntityColossalChest> {
 
     public static final Map<ChestMaterial, ResourceLocation> TEXTURES_CHEST = Maps.newHashMap();
     public static final Map<ChestMaterial, ResourceLocation> TEXTURES_INTERFACE = Maps.newHashMap();
@@ -61,7 +61,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     }
     @SubscribeEvent
     public static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if (event.getMap().location().equals(Atlases.CHEST_SHEET)) {
+        if (event.getAtlas().location().equals(Sheets.CHEST_SHEET)) {
             for (ResourceLocation value : TEXTURES_CHEST.values()) {
                 event.addSprite(value);
             }
@@ -71,15 +71,15 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
         }
     }
 
-    public RenderTileEntityColossalChest(TileEntityRendererDispatcher tileEntityRendererDispatcher) {
-        super(tileEntityRendererDispatcher);
+    public RenderTileEntityColossalChest(BlockEntityRendererProvider.Context context) {
+        super(context);
     }
 
     @Override
-    protected void handleRotation(TileColossalChest tile, MatrixStack matrixStack) {
+    protected void handleRotation(BlockEntityColossalChest tile, PoseStack matrixStack) {
         // Move origin to center of chest
         if(tile.isStructureComplete()) {
-            Vector3d renderOffset = tile.getRenderOffset();
+            Vec3 renderOffset = tile.getRenderOffset();
             matrixStack.translate(-renderOffset.x, -renderOffset.y, -renderOffset.z);
         }
 
@@ -95,7 +95,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     }
 
     @Override
-    public void render(TileColossalChest tile, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int combinedLightIn, int combinedOverlayIn) {
+    public void render(BlockEntityColossalChest tile, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLightIn, int combinedOverlayIn) {
         if (tile.isStructureComplete()) {
             matrixStack.pushPose();
 
@@ -104,9 +104,9 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
             // Render interface overlays
             if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
                 matrixStack.pushPose();
-                RenderMaterial materialInterface = getMaterialInterface(tile);
-                IVertexBuilder buffer = materialInterface.buffer(renderTypeBuffer, RenderType::text);
-                for (Vector3i interfaceLocation : tile.getInterfaceLocations()) {
+                Material materialInterface = getMaterialInterface(tile);
+                VertexConsumer buffer = materialInterface.buffer(renderTypeBuffer, RenderType::text);
+                for (Vec3i interfaceLocation : tile.getInterfaceLocations()) {
                     float translateX = interfaceLocation.getX() - tile.getBlockPos().getX();
                     float translateY = interfaceLocation.getY() - tile.getBlockPos().getY();
                     float translateZ = interfaceLocation.getZ() - tile.getBlockPos().getZ();
@@ -121,25 +121,25 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
     }
 
     @Override
-    public boolean shouldRenderOffScreen(TileColossalChest tile) {
+    public boolean shouldRenderOffScreen(BlockEntityColossalChest tile) {
         return true;
     }
 
     @Override
-    protected Direction getDirection(TileColossalChest tile) {
+    protected Direction getDirection(BlockEntityColossalChest tile) {
         return tile.getRotation().getOpposite();
     }
 
     @Override
-    protected RenderMaterial getMaterial(TileColossalChest tile) {
-        return new RenderMaterial(Atlases.CHEST_SHEET, TEXTURES_CHEST.get(tile.getMaterial()));
+    protected Material getMaterial(BlockEntityColossalChest tile) {
+        return new Material(Sheets.CHEST_SHEET, TEXTURES_CHEST.get(tile.getMaterial()));
     }
 
-    protected RenderMaterial getMaterialInterface(TileColossalChest tile) {
-        return new RenderMaterial(Atlases.CHEST_SHEET, TEXTURES_INTERFACE.get(tile.getMaterial()));
+    protected Material getMaterialInterface(BlockEntityColossalChest tile) {
+        return new Material(Sheets.CHEST_SHEET, TEXTURES_INTERFACE.get(tile.getMaterial()));
     }
 
-    protected void setMatrixOrientation(MatrixStack matrixStack, Direction direction) {
+    protected void setMatrixOrientation(PoseStack matrixStack, Direction direction) {
         float translateX = -1F - direction.getStepX();
         float translateY = direction.getStepY();
         float translateZ = direction.getStepZ();
@@ -183,7 +183,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Til
         matrixStack.mulPose(Vector3f.XP.rotationDegrees(rotationX));
     }
 
-    protected void renderInterface(MatrixStack matrixStack, IVertexBuilder buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {
+    protected void renderInterface(PoseStack matrixStack, VertexConsumer buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {
         for (Direction side : Direction.values()) {
             matrixStack.pushPose();
             float scale = 0.063F;

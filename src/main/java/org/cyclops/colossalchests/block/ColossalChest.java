@@ -1,81 +1,86 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntitySpawnPlacementRegistry;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.text.Color;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.util.text.event.HoverEvent;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockDisplayReader;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.IWorldWriter;
-import net.minecraft.world.World;
-import net.minecraftforge.common.ToolType;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.LevelWriter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.Advancements;
-import org.cyclops.colossalchests.tileentity.TileColossalChest;
-import org.cyclops.cyclopscore.block.BlockTileGui;
+import org.cyclops.colossalchests.RegistryEntries;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
+import org.cyclops.cyclopscore.block.BlockWithEntityGui;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
+import org.cyclops.cyclopscore.helper.BlockEntityHelpers;
 import org.cyclops.cyclopscore.helper.InventoryHelpers;
 import org.cyclops.cyclopscore.helper.LocationHelpers;
 import org.cyclops.cyclopscore.helper.MinecraftHelpers;
-import org.cyclops.cyclopscore.helper.TileHelpers;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import javax.annotation.Nullable;
-
-import net.minecraft.block.AbstractBlock.Properties;
 
 /**
  * A machine that can infuse stuff with blood.
  *
  * @author rubensworks
  */
-public class ColossalChest extends BlockTileGui implements CubeDetector.IDetectionListener, IBlockChestMaterial {
+public class ColossalChest extends BlockWithEntityGui implements CubeDetector.IDetectionListener, IBlockChestMaterial {
 
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     private final ChestMaterial material;
 
     public ColossalChest(Properties properties, ChestMaterial material) {
-        super(properties, TileColossalChest::new);
+        super(properties, BlockEntityColossalChest::new);
         this.material = material;
 
         material.setBlockCore(this);
 
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ENABLED, false));
+    }
+
+    @Override
+    @Nullable
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
+        return level.isClientSide ? null : createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST, new BlockEntityColossalChest.Ticker());
     }
 
     @Override
@@ -90,18 +95,11 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(ENABLED);
     }
 
-    public static boolean isToolEffectiveShared(ChestMaterial material, BlockState state, ToolType tool) {
-        if(material == ChestMaterial.WOOD) {
-            return tool == ToolType.AXE;
-        }
-        return tool == ToolType.PICKAXE;
-    }
-
-    public static boolean canPlace(IWorldReader world, BlockPos pos) {
+    public static boolean canPlace(LevelReader world, BlockPos pos) {
         for(Direction side : Direction.values()) {
             BlockState blockState = world.getBlockState(pos.relative(side));
             Block block = blockState.getBlock();
@@ -114,63 +112,57 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public boolean isToolEffective(BlockState state, ToolType tool) {
-        return isToolEffectiveShared(this.material, state, tool);
+    public RenderShape getRenderShape(BlockState blockState) {
+        return blockState.getValue(ENABLED) ? RenderShape.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
     }
 
     @Override
-    public BlockRenderType getRenderShape(BlockState blockState) {
-        return blockState.getValue(ENABLED) ? BlockRenderType.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
-    }
-
-    @Override
-    public boolean propagatesSkylightDown(BlockState blockState, IBlockReader blockReader, BlockPos blockPos) {
+    public boolean propagatesSkylightDown(BlockState blockState, BlockGetter blockReader, BlockPos blockPos) {
         return blockState.getValue(ENABLED);
     }
 
     @Override
-    public boolean canCreatureSpawn(BlockState state, IBlockReader world, BlockPos pos,
-                                    EntitySpawnPlacementRegistry.PlacementType type, @Nullable EntityType<?> entityType) {
+    public boolean isValidSpawn(BlockState state, BlockGetter world, BlockPos pos, SpawnPlacements.Type type, EntityType<?> entityType) {
         return false;
     }
 
     @Override
-    public boolean shouldDisplayFluidOverlay(BlockState blockState, IBlockDisplayReader world, BlockPos pos, FluidState fluidState) {
+    public boolean shouldDisplayFluidOverlay(BlockState blockState, BlockAndTintGetter world, BlockPos pos, FluidState fluidState) {
         return true;
     }
 
-    public static DetectionResult triggerDetector(ChestMaterial material, IWorld world, BlockPos blockPos, boolean valid, @Nullable PlayerEntity player) {
+    public static DetectionResult triggerDetector(ChestMaterial material, LevelAccessor world, BlockPos blockPos, boolean valid, @Nullable Player player) {
         DetectionResult detectionResult = material.getChestDetector().detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
-        if (player instanceof ServerPlayerEntity && detectionResult.getError() == null) {
+        if (player instanceof ServerPlayer && detectionResult.getError() == null) {
             BlockState blockState = world.getBlockState(blockPos);
             if (blockState.getValue(ENABLED)) {
-                TileColossalChest tile = TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class).orElse(null);
+                BlockEntityColossalChest tile = BlockEntityHelpers.get(world, blockPos, BlockEntityColossalChest.class).orElse(null);
                 if (tile == null) {
                     BlockPos corePos = getCoreLocation(material, world, blockPos);
-                    tile = TileHelpers.getSafeTile(world, corePos, TileColossalChest.class).orElse(null);
+                    tile = BlockEntityHelpers.get(world, corePos, BlockEntityColossalChest.class).orElse(null);
                 }
 
-                Advancements.CHEST_FORMED.test((ServerPlayerEntity) player, material, tile.getSizeSingular());
+                Advancements.CHEST_FORMED.test((ServerPlayer) player, material, tile.getSizeSingular());
             }
         }
         return detectionResult;
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(world, pos, state, placer, stack);
         if (stack.hasCustomHoverName()) {
-            TileColossalChest tile = TileHelpers.getSafeTile(world, pos, TileColossalChest.class).orElse(null);
+            BlockEntityColossalChest tile = BlockEntityHelpers.get(world, pos, BlockEntityColossalChest.class).orElse(null);
             if (tile != null) {
                 tile.setCustomName(stack.getHoverName());
-                tile.setSize(Vector3i.ZERO);
+                tile.setSize(Vec3i.ZERO);
             }
         }
-        triggerDetector(this.material, world, pos, true, placer instanceof PlayerEntity ? (PlayerEntity) placer : null);
+        triggerDetector(this.material, world, pos, true, placer instanceof Player ? (Player) placer : null);
     }
 
     @Override
-    public void onPlace(BlockState blockStateNew, World world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
+    public void onPlace(BlockState blockStateNew, Level world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
         super.onPlace(blockStateNew, world, blockPos, blockStateOld, isMoving);
         if(!world.captureBlockSnapshots && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.getValue(ENABLED)) {
             triggerDetector(this.material, world, blockPos, true, null);
@@ -178,15 +170,15 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public void onDetect(IWorldReader world, BlockPos location, Vector3i size, boolean valid, BlockPos originCorner) {
+    public void onDetect(LevelReader world, BlockPos location, Vec3i size, boolean valid, BlockPos originCorner) {
         Block block = world.getBlockState(location).getBlock();
         if(block == this) {
-            ((IWorldWriter) world).setBlock(location, world.getBlockState(location).setValue(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
-            TileColossalChest tile = TileHelpers.getSafeTile(world, location, TileColossalChest.class).orElse(null);
+            ((LevelWriter) world).setBlock(location, world.getBlockState(location).setValue(ENABLED, valid), MinecraftHelpers.BLOCK_NOTIFY_CLIENT);
+            BlockEntityColossalChest tile = BlockEntityHelpers.get(world, location, BlockEntityColossalChest.class).orElse(null);
             if(tile != null) {
                 tile.setMaterial(this.material);
-                tile.setSize(valid ? size : Vector3i.ZERO);
-                tile.setCenter(new Vector3d(
+                tile.setSize(valid ? size : Vec3i.ZERO);
+                tile.setCenter(new Vec3(
                         originCorner.getX() + ((double) size.getX()) / 2,
                         originCorner.getY() + ((double) size.getY()) / 2,
                         originCorner.getZ() + ((double) size.getZ()) / 2
@@ -203,7 +195,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
      * @param blockPos The start position to search from.
      * @return The found location.
      */
-    public static @Nullable BlockPos getCoreLocation(ChestMaterial material, IWorldReader world, BlockPos blockPos) {
+    public static @Nullable BlockPos getCoreLocation(ChestMaterial material, LevelReader world, BlockPos blockPos) {
         final Wrapper<BlockPos> tileLocationWrapper = new Wrapper<BlockPos>();
         material.getChestDetector().detect(world, blockPos, null, (location, blockState) -> {
             if (blockState.getBlock() instanceof ColossalChest) {
@@ -222,27 +214,27 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
      * @param player The player.
      * @param hand The used hand.
      */
-    public static void addPlayerChatError(ChestMaterial material, World world, BlockPos blockPos, PlayerEntity player, Hand hand) {
+    public static void addPlayerChatError(ChestMaterial material, Level world, BlockPos blockPos, Player player, InteractionHand hand) {
         if(!world.isClientSide && player.getItemInHand(hand).isEmpty()) {
             DetectionResult result = material.getChestDetector().detect(world, blockPos, null,  new MaterialValidationAction(), false);
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.sendMessage(new TranslationTextComponent("multiblock.colossalchests.error.unexpected"), Util.NIL_UUID);
+                player.sendMessage(new TranslatableComponent("multiblock.colossalchests.error.unexpected"), Util.NIL_UUID);
             }
         }
     }
 
-    public static void addPlayerChatError(PlayerEntity player, ITextComponent error) {
-        IFormattableTextComponent chat = new StringTextComponent("");
-        ITextComponent prefix = new StringTextComponent("[")
-                .append(new TranslationTextComponent("multiblock.colossalchests.error.prefix"))
-                .append(new StringTextComponent("]: "))
+    public static void addPlayerChatError(Player player, Component error) {
+        MutableComponent chat = new TextComponent("");
+        Component prefix = new TextComponent("[")
+                .append(new TranslatableComponent("multiblock.colossalchests.error.prefix"))
+                .append(new TextComponent("]: "))
                 .setStyle(Style.EMPTY.
-                        withColor(Color.fromLegacyFormat(TextFormatting.GRAY)).
+                        withColor(TextColor.fromLegacyFormat(ChatFormatting.GRAY)).
                         withHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
-                                new TranslationTextComponent("multiblock.colossalchests.error.prefix.info")
+                                new TranslatableComponent("multiblock.colossalchests.error.prefix.info")
                         ))
                 );
         chat.append(prefix);
@@ -251,35 +243,35 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public void writeExtraGuiData(PacketBuffer packetBuffer, World world, PlayerEntity player, BlockPos blockPos, Hand hand, BlockRayTraceResult rayTraceResult) {
-        TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class).ifPresent(tile -> packetBuffer.writeInt(tile.getInventory().getContainerSize()));
+    public void writeExtraGuiData(FriendlyByteBuf packetBuffer, Level world, Player player, BlockPos blockPos, InteractionHand hand, BlockHitResult rayTraceResult) {
+        BlockEntityHelpers.get(world, blockPos, BlockEntityColossalChest.class).ifPresent(tile -> packetBuffer.writeInt(tile.getInventory().getContainerSize()));
     }
 
     @Override
-    public ActionResultType use(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult) {
+    public InteractionResult use(BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult rayTraceResult) {
         if(!(blockState.getValue(ENABLED))) {
             ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
-            return ActionResultType.FAIL;
+            return InteractionResult.FAIL;
         }
         return super.use(blockState, world, blockPos, player, hand, rayTraceResult);
     }
 
     @Override
-    public void destroy(IWorld world, BlockPos blockPos, BlockState blockState) {
+    public void destroy(LevelAccessor world, BlockPos blockPos, BlockState blockState) {
         if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
         super.destroy(world, blockPos, blockState);
     }
 
     @Override
-    public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {
+    public void onBlockExploded(BlockState state, Level world, BlockPos pos, Explosion explosion) {
         if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
-        getBlock().wasExploded(world, pos, explosion);
+        wasExploded(world, pos, explosion);
     }
 
     @Override
-    public float getExplosionResistance(BlockState state, IBlockReader world, BlockPos pos, Explosion explosion) {
+    public float getExplosionResistance(BlockState state, BlockGetter world, BlockPos pos, Explosion explosion) {
         if (this.material.isExplosionResistant()) {
             return 10000F;
         }
@@ -287,14 +279,14 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
     }
 
     @Override
-    public boolean canSurvive(BlockState blockState, IWorldReader world, BlockPos blockPos) {
+    public boolean canSurvive(BlockState blockState, LevelReader world, BlockPos blockPos) {
         return super.canSurvive(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
     }
 
     @Override
-    public void onRemove(BlockState oldState, World world, BlockPos blockPos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState oldState, Level world, BlockPos blockPos, BlockState newState, boolean isMoving) {
         if (oldState.getBlock().getClass() != newState.getBlock().getClass()) {
-            TileHelpers.getSafeTile(world, blockPos, TileColossalChest.class)
+            BlockEntityHelpers.get(world, blockPos, BlockEntityColossalChest.class)
                     .ifPresent(tile -> {
                         // Last inventory overrides inventory when the chest is in a disabled state.
                         SimpleInventory lastInventory = tile.getLastValidInventory();
@@ -312,7 +304,7 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
         }
 
         @Override
-        public ITextComponent onValidate(BlockPos blockPos, BlockState blockState) {
+        public Component onValidate(BlockPos blockPos, BlockState blockState) {
             ChestMaterial material = null;
             if (blockState.getBlock() instanceof IBlockChestMaterial) {
                 material = ((IBlockChestMaterial) blockState.getBlock()).getMaterial();
@@ -321,10 +313,10 @@ public class ColossalChest extends BlockTileGui implements CubeDetector.IDetecti
                 requiredMaterial.set(material);
                 return null;
             }
-            return requiredMaterial.get() == material ? null : new TranslationTextComponent(
-                    "multiblock.colossalchests.error.material", new TranslationTextComponent(material.getUnlocalizedName()),
+            return requiredMaterial.get() == material ? null : new TranslatableComponent(
+                    "multiblock.colossalchests.error.material", new TranslatableComponent(material.getUnlocalizedName()),
                     LocationHelpers.toCompactString(blockPos),
-                    new TranslationTextComponent(requiredMaterial.get().getUnlocalizedName()));
+                    new TranslatableComponent(requiredMaterial.get().getUnlocalizedName()));
         }
     }
 }

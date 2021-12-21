@@ -2,12 +2,12 @@ package org.cyclops.colossalchests.block;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.core.Vec3i;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
-import org.cyclops.colossalchests.tileentity.TileColossalChest;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.cyclopscore.block.multi.AllowedBlock;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.CubeSizeValidator;
@@ -43,7 +43,7 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
     private Interface blockInterface;
     private ChestWall blockWall;
     private CubeDetector chestDetector = null;
-    private ContainerType<ContainerColossalChest> container;
+    private MenuType<ContainerColossalChest> container;
 
     public ChestMaterial(String name, double inventoryMultiplier) {
         this.name = name;
@@ -110,14 +110,14 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
         this.blockWall = blockWall;
     }
 
-    public void setContainer(ContainerType<ContainerColossalChest> container) {
+    public void setContainer(MenuType<ContainerColossalChest> container) {
         if (this.container != null) {
             throw new IllegalStateException("Tried registering multiple containers for " + this.getName());
         }
         this.container = container;
     }
 
-    public ContainerType<ContainerColossalChest> getContainer() {
+    public MenuType<ContainerColossalChest> getContainer() {
         return container;
     }
 
@@ -131,12 +131,12 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
                     },
                     Lists.newArrayList(getBlockCore(), getBlockWall(), getBlockInterface())
             )
-                    .addSizeValidator(new MinimumSizeValidator(new Vector3i(1, 1, 1)))
+                    .addSizeValidator(new MinimumSizeValidator(new Vec3i(1, 1, 1)))
                     .addSizeValidator(new CubeSizeValidator())
-                    .addSizeValidator(new MaximumSizeValidator(TileColossalChest.getMaxSize()) {
+                    .addSizeValidator(new MaximumSizeValidator(BlockEntityColossalChest.getMaxSize()) {
                         @Override
-                        public Vector3i getMaximumSize() {
-                            return TileColossalChest.getMaxSize();
+                        public Vec3i getMaximumSize() {
+                            return BlockEntityColossalChest.getMaxSize();
                         }
                     });
         }

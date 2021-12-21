@@ -1,22 +1,22 @@
 package org.cyclops.colossalchests.network.packet;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.play.server.SWindowItemsPacket;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
 /**
  * Packet for sending fragmented window items as an alternative to
- * {@link SWindowItemsPacket}.
+ * {@link ClientboundContainerSetContentPacket}.
  * @author rubensworks
  *
  */
@@ -25,14 +25,17 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 	@CodecField
 	private int windowId;
 	@CodecField
-	private CompoundNBT itemStacks;
+	private int stateId;
+	@CodecField
+	private CompoundTag itemStacks;
 
     public WindowItemsFragmentPacket() {
 
     }
 
-    public WindowItemsFragmentPacket(int windowId, CompoundNBT itemStacks) {
+    public WindowItemsFragmentPacket(int windowId, int stateId, CompoundTag itemStacks) {
 		this.windowId = windowId;
+		this.stateId = stateId;
 		this.itemStacks = itemStacks;
     }
 
@@ -43,7 +46,7 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
-	public void actionClient(World world, PlayerEntity player) {
+	public void actionClient(Level world, Player player) {
 		// Modified code from NetHandlerPlayClient#handleWindowItems
 		if (windowId == 0) {
 			putStacksInSlotsWithOffset(player.inventoryMenu);
@@ -52,18 +55,18 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 		}
 	}
 
-	protected void putStacksInSlotsWithOffset(Container container) {
-		ListNBT list = itemStacks.getList("stacks", Constants.NBT.TAG_COMPOUND);
+	protected void putStacksInSlotsWithOffset(AbstractContainerMenu container) {
+		ListTag list = itemStacks.getList("stacks", Tag.TAG_COMPOUND);
 		for (int i = 0; i < list.size(); i++) {
-			CompoundNBT tag = list.getCompound(i);
+			CompoundTag tag = list.getCompound(i);
 			int slot = tag.getInt("slot");
 			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
-			container.setItem(slot, stack);
+			container.setItem(slot, this.stateId, stack);
 		}
 	}
 
 	@Override
-	public void actionServer(World world, ServerPlayerEntity player) {
+	public void actionServer(Level world, ServerPlayer player) {
 
 	}
 	

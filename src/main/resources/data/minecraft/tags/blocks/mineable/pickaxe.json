@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "colossalchests:chest_wall_copper",
+    "colossalchests:colossal_chest_copper",
+    "colossalchests:interface_copper",
+    "colossalchests:chest_wall_diamond",
+    "colossalchests:colossal_chest_diamond",
+    "colossalchests:interface_diamond",
+    "colossalchests:chest_wall_gold",
+    "colossalchests:colossal_chest_gold",
+    "colossalchests:interface_gold",
+    "colossalchests:chest_wall_iron",
+    "colossalchests:colossal_chest_iron",
+    "colossalchests:interface_iron",
+    "colossalchests:chest_wall_obsidian",
+    "colossalchests:colossal_chest_obsidian",
+    "colossalchests:interface_obsidian",
+    "colossalchests:chest_wall_silver",
+    "colossalchests:colossal_chest_silver",
+    "colossalchests:interface_silver"
+  ]
+}

@@ -1,7 +1,7 @@
 package org.cyclops.colossalchests.recipe.condition;
 
 import com.google.gson.JsonObject;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
 import org.cyclops.colossalchests.GeneralConfig;

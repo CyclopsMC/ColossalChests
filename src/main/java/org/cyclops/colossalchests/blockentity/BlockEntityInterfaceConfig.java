@@ -1,26 +1,24 @@
-package org.cyclops.colossalchests.tileentity;
+package org.cyclops.colossalchests.blockentity;
 
-import com.google.common.collect.Sets;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.cyclopscore.RegistryEntries;
-import org.cyclops.cyclopscore.config.extendedconfig.TileEntityConfig;
+import org.cyclops.cyclopscore.config.extendedconfig.BlockEntityConfig;
 
 import java.util.stream.Collectors;
 
 /**
- * Config for the {@link TileInterface}.
+ * Config for the {@link BlockEntityInterface}.
  * @author rubensworks
  *
  */
-public class TileInterfaceConfig extends TileEntityConfig<TileInterface> {
+public class BlockEntityInterfaceConfig extends BlockEntityConfig<BlockEntityInterface> {
 
-    public TileInterfaceConfig() {
+    public BlockEntityInterfaceConfig() {
         super(
                 ColossalChests._instance,
                 "interface",
-                (eConfig) -> new TileEntityType<>(TileInterface::new,
+                (eConfig) -> new BlockEntityType<>(BlockEntityInterface::new,
                         ChestMaterial.VALUES.stream()
                                 .map(ChestMaterial::getBlockInterface)
                                 .collect(Collectors.toSet()), null)

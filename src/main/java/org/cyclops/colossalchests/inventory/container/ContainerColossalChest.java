@@ -5,27 +5,27 @@ import com.google.common.collect.Maps;
 import invtweaks.api.container.ChestContainer;
 import invtweaks.api.container.ContainerSection;
 import invtweaks.api.container.ContainerSectionCallback;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.CraftingResultSlot;
-import net.minecraft.inventory.container.IContainerListener;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.ByteArrayNBT;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.EndNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.nbt.IntArrayNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.NumberNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.ServerPlayNetHandler;
-import net.minecraft.network.play.server.SSetSlotPacket;
-import net.minecraft.util.NonNullList;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ResultSlot;
+import net.minecraft.world.inventory.ContainerListener;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.ByteArrayTag;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.EndTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.IntArrayTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NumericTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.core.NonNullList;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
@@ -69,11 +69,11 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     private int lastInventoryState = -2;
     private boolean firstDetectionCheck = true;
 
-    public ContainerColossalChest(int id, PlayerInventory playerInventory, PacketBuffer data) {
+    public ContainerColossalChest(int id, Inventory playerInventory, FriendlyByteBuf data) {
         this(id, playerInventory, new LargeInventory(data.readInt(), 64));
     }
 
-    public ContainerColossalChest(int id, PlayerInventory playerInventory, IInventory inventory) {
+    public ContainerColossalChest(int id, Inventory playerInventory, Container inventory) {
         super(RegistryEntries.CONTAINER_COLOSSAL_CHEST, id, playerInventory, inventory, Collections.<Slot>emptyList(), (item, pattern) -> true);
 
         this.chestSlots = Lists.newArrayListWithCapacity(getSizeInventory());
@@ -99,7 +99,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
     }
 
-    protected Slot makeSlot(IInventory inventory, int index, int row, int column) {
+    protected Slot makeSlot(Container inventory, int index, int row, int column) {
         return new SlotExtended(inventory, index, row, column);
     }
 
@@ -146,15 +146,16 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     }
 
     @Override
-    public void addSlotListener(IContainerListener listener) {
+    public void addSlotListener(ContainerListener listener) {
         if (this.containerListeners.contains(listener)) {
             throw new IllegalArgumentException("Listener already listening");
         } else {
             this.containerListeners.add(listener);
-            if(listener instanceof ServerPlayerEntity) {
-                updateCraftingInventory((ServerPlayerEntity) listener, getItems());
+            if(listener instanceof ServerPlayer) {
+                updateCraftingInventory((ServerPlayer) listener, getItems());
             } else {
-                listener.refreshContainer(this, this.getItems());
+                // TODO: rm?
+                //listener.refreshContainer(this, this.getItems());
             }
             this.broadcastChanges();
         }
@@ -169,11 +170,6 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
     }
 
-    @Override
-    public boolean stillValid(PlayerEntity p_75145_1_) {
-        return false; // TODO: rm
-    }
-
     // Custom implementation of Container#detectAndSendChanges
     protected void detectAndSendChangesOverride() {
         for (int i = 0; i < this.getSizeInventory(); ++i) {
@@ -186,9 +182,9 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
                 if (!firstDetectionCheck) {
                     for (int j = 0; j < this.containerListeners.size(); ++j) {
-                        IContainerListener listener = this.containerListeners.get(j);
-                        if (listener instanceof ServerPlayerEntity) {
-                            sendSlotContentsToPlayer((ServerPlayerEntity) listener, this, i, itemstack1);
+                        ContainerListener listener = this.containerListeners.get(j);
+                        if (listener instanceof ServerPlayer) {
+                            sendSlotContentsToPlayer((ServerPlayer) listener, this, i, itemstack1);
                         } else {
                             listener.slotChanged(this, i, itemstack1);
                         }
@@ -200,64 +196,62 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     }
 
     // Adapted from EntityPlayerMP#sendSlotContents
-    protected void sendSlotContentsToPlayer(ServerPlayerEntity player, Container containerToSend, int slotInd, ItemStack stack) {
-        if (!(containerToSend.getSlot(slotInd) instanceof CraftingResultSlot)) {
-            if (!player.ignoreSlotUpdateHack) {
-                ColossalChests._instance.getPacketHandler().sendToPlayer(
-                        new SetSlotLarge(containerToSend.containerId, slotInd, stack), player);
-            }
+    protected void sendSlotContentsToPlayer(ServerPlayer player, AbstractContainerMenu containerToSend, int slotInd, ItemStack stack) {
+        if (!(containerToSend.getSlot(slotInd) instanceof ResultSlot)) {
+            ColossalChests._instance.getPacketHandler().sendToPlayer(
+                    new SetSlotLarge(containerToSend.containerId, getStateId(), slotInd, stack), player);
         }
     }
 
-    protected int getTagSize(INBT tag) {
-        if (tag instanceof NumberNBT || tag instanceof EndNBT) {
+    protected int getTagSize(Tag tag) {
+        if (tag instanceof NumericTag || tag instanceof EndTag) {
             return 1;
         }
-        if (tag instanceof CompoundNBT) {
-            CompoundNBT compound = (CompoundNBT) tag;
+        if (tag instanceof CompoundTag) {
+            CompoundTag compound = (CompoundTag) tag;
             int size = 0;
             for (String key : compound.getAllKeys()) {
                 size += getTagSize(compound.get(key));
             }
             return size;
         }
-        if (tag instanceof ByteArrayNBT) {
-            return ((ByteArrayNBT) tag).getAsByteArray().length;
+        if (tag instanceof ByteArrayTag) {
+            return ((ByteArrayTag) tag).getAsByteArray().length;
         }
-        if (tag instanceof IntArrayNBT) {
-            return ((IntArrayNBT) tag).getAsIntArray().length * 32;
+        if (tag instanceof IntArrayTag) {
+            return ((IntArrayTag) tag).getAsIntArray().length * 32;
         }
-        if (tag instanceof ListNBT) {
-            ListNBT list = (ListNBT) tag;
+        if (tag instanceof ListTag) {
+            ListTag list = (ListTag) tag;
             int size = 0;
             for (int i = 0; i < list.size(); i++) {
                 size += getTagSize(list.get(i));
             }
             return size;
         }
-        if (tag instanceof StringNBT) {
+        if (tag instanceof StringTag) {
             try {
-                return ((StringNBT) tag).getAsString().getBytes("UTF-8").length;
+                return ((StringTag) tag).getAsString().getBytes("UTF-8").length;
             } catch (UnsupportedEncodingException e) {}
         }
         return tag.toString().length();
     }
 
-    // Modified from EntityPlayerMP#updateCraftingInventory
-    public void updateCraftingInventory(ServerPlayerEntity player, List<ItemStack> allItems) {
+    // Modified from ServerPlayer#updateCraftingInventory
+    public void updateCraftingInventory(ServerPlayer player, List<ItemStack> allItems) {
         int maxBufferSize = GeneralConfig.maxPacketBufferSize;
         // Custom packet sending to be able to handle large inventories
-        ServerPlayNetHandler playerNetServerHandler = player.connection;
+        ServerGamePacketListenerImpl playerNetServerHandler = player.connection;
         // Modification of logic in EntityPlayerMP#updateCraftingInventory
-        CompoundNBT sendBuffer = new CompoundNBT();
-        ListNBT sendList = new ListNBT();
+        CompoundTag sendBuffer = new CompoundTag();
+        ListTag sendList = new ListTag();
         sendBuffer.put("stacks", sendList);
         int i = 0;
         int bufferSize = 0;
         int sent = 0;
         for (ItemStack itemStack : allItems) {
             if (itemStack != null) {
-                CompoundNBT tag = new CompoundNBT();
+                CompoundTag tag = new CompoundTag();
                 tag.putInt("slot", i);
                 tag.put("stack", itemStack.serializeNBT());
                 int tagSize = getTagSize(tag);
@@ -266,9 +260,9 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                     bufferSize += tagSize;
                 } else {
                     // Flush
-                    ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, sendBuffer), player);
-                    sendBuffer = new CompoundNBT();
-                    sendList = new ListNBT();
+                    ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, getStateId(), sendBuffer), player);
+                    sendBuffer = new CompoundTag();
+                    sendList = new ListTag();
                     sendList.add(tag);
                     sendBuffer.put("stacks", sendList);
                     bufferSize = tagSize;
@@ -278,9 +272,9 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
         if (sendList.size() > 0) {
             // Flush
-            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, sendBuffer), player);
+            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, getStateId(), sendBuffer), player);
         }
-        playerNetServerHandler.send(new SSetSlotPacket(-1, -1, player.inventory.getCarried()));
+        playerNetServerHandler.send(new ClientboundContainerSetSlotPacket(-1, getStateId(), -1, getCarried()));
     }
 
     /**
@@ -296,7 +290,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                 chest.add(this.getSlot(i));
             }
 
-            for (int i = getSizeInventory(); i < getSizeInventory() + player.inventory.items.size(); i++) {
+            for (int i = getSizeInventory(); i < getSizeInventory() + player.getInventory().items.size(); i++) {
                 playerInventory.add(this.getSlot(i));
             }
             selection.put(ContainerSection.CHEST, chest);
@@ -304,7 +298,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             return selection;
         } catch (RuntimeException e) {
             System.out.println("Size inv " + getSizeInventory());
-            System.out.println("Player size inv " + player.inventory.items.size());
+            System.out.println("Player size inv " + player.getInventory().items.size());
             System.out.println("Available slots " + slots.size());
             throw e;
         }

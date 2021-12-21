@@ -1,26 +1,26 @@
-package org.cyclops.colossalchests.tileentity;
+package org.cyclops.colossalchests.blockentity;
 
 import com.google.common.collect.Sets;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.RegistryEntries;
-import org.cyclops.colossalchests.client.render.tileentity.RenderTileEntityUncolossalChest;
-import org.cyclops.cyclopscore.config.extendedconfig.TileEntityConfig;
+import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityUncolossalChest;
+import org.cyclops.cyclopscore.config.extendedconfig.BlockEntityConfig;
 
 /**
- * Config for the {@link TileUncolossalChest}.
+ * Config for the {@link BlockEntityUncolossalChest}.
  * @author rubensworks
  *
  */
-public class TileUncolossalChestConfig extends TileEntityConfig<TileUncolossalChest> {
+public class BlockEntityUncolossalChestConfig extends BlockEntityConfig<BlockEntityUncolossalChest> {
 
-    public TileUncolossalChestConfig() {
+    public BlockEntityUncolossalChestConfig() {
         super(
                 ColossalChests._instance,
                 "uncolossal_chest",
-                (eConfig) -> new TileEntityType<>(TileUncolossalChest::new,
+                (eConfig) -> new BlockEntityType<>(BlockEntityUncolossalChest::new,
                         Sets.newHashSet(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST), null)
         );
     }

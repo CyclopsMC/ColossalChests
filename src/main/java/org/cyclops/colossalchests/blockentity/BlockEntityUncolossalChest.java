@@ -90,14 +90,14 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         CompoundTag subTag = new CompoundTag();
         inventory.write(subTag);
         tag.put("inventory", subTag);
         if (this.customName != null) {
             tag.putString("CustomName", Component.Serializer.toJson(this.customName));
         }
-        return super.save(tag);
     }
 
     @Override

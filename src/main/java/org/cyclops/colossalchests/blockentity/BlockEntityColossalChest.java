@@ -255,7 +255,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         if (this.customName != null) {
             tag.putString("CustomName", Component.Serializer.toJson(this.customName));
         }
@@ -270,7 +271,6 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
             tag.put("lastValidInventory", subTag);
             tag.putInt("lastValidInventorySize", this.lastValidInventory.getContainerSize());
         }
-        return super.save(tag);
     }
 
     @Override

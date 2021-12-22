@@ -131,7 +131,6 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         facingSlots.clear();
         if(isStructureComplete()) {
             setInventory(constructInventory());
-            this.inventory.addDirtyMarkListener(this);
 
             // Move all items from the last valid inventory into the new one
             // If the new inventory would be smaller than the old one, the remaining
@@ -165,6 +164,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         }
 
         // Send an immediate update
+        onDirty();
         BlockHelpers.markForUpdate(getLevel(), getBlockPos());
     }
 
@@ -196,7 +196,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         if (!isClientSide() && GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        return !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64) {
+        LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64) {
             @Override
             public void startOpen(Player entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
@@ -213,6 +213,9 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
                 }
             }
         } : new LargeInventory(calculateInventorySize(), 64);
+        inv.addDirtyMarkListener(this);
+
+        return inv;
     }
 
     protected LargeInventory constructInventoryDebug() {

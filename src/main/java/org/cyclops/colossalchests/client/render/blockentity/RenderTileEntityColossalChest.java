@@ -102,7 +102,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
             super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn);
 
             // Render interface overlays
-            if(tile.isStructureComplete() && tile.lidAngle == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
+            if(tile.isStructureComplete() && tile.getOpenNess(0) == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
                 matrixStack.pushPose();
                 Material materialInterface = getMaterialInterface(tile);
                 VertexConsumer buffer = materialInterface.buffer(renderTypeBuffer, RenderType::text);

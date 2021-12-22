@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -55,6 +56,7 @@ import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 /**
  * A machine that can infuse stuff with blood.
@@ -80,7 +82,14 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST, new BlockEntityColossalChest.Ticker());
+        return level.isClientSide ? createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST, BlockEntityColossalChest::lidAnimateTick) : null;
+    }
+
+    @Override
+    public void tick(BlockState blockState, ServerLevel level, BlockPos pos, Random random) {
+        if (level.getBlockEntity(pos) instanceof BlockEntityColossalChest uncolossalChest) {
+            uncolossalChest.recheckOpen();
+        }
     }
 
     @Override

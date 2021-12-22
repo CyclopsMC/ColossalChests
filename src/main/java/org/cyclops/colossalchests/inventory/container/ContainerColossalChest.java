@@ -28,8 +28,8 @@ import net.minecraft.core.NonNullList;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
-import org.cyclops.colossalchests.network.packet.SetSlotLarge;
-import org.cyclops.colossalchests.network.packet.WindowItemsFragmentPacket;
+import org.cyclops.colossalchests.network.packet.ClientboundContainerSetSlotPacketLarge;
+import org.cyclops.colossalchests.network.packet.ClientboundContainerSetContentPacketWindow;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainer;
@@ -198,7 +198,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     protected void sendSlotContentsToPlayer(ServerPlayer player, AbstractContainerMenu containerToSend, int slotInd, ItemStack stack) {
         if (!(containerToSend.getSlot(slotInd) instanceof ResultSlot)) {
             ColossalChests._instance.getPacketHandler().sendToPlayer(
-                    new SetSlotLarge(containerToSend.containerId, getStateId(), slotInd, stack), player);
+                    new ClientboundContainerSetSlotPacketLarge(containerToSend.containerId, getStateId(), slotInd, stack), player);
         }
     }
 
@@ -259,7 +259,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                     bufferSize += tagSize;
                 } else {
                     // Flush
-                    ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, getStateId(), sendBuffer), player);
+                    ColossalChests._instance.getPacketHandler().sendToPlayer(new ClientboundContainerSetContentPacketWindow(containerId, getStateId(), sendBuffer), player);
                     sendBuffer = new CompoundTag();
                     sendList = new ListTag();
                     sendList.add(tag);
@@ -271,7 +271,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
         if (sendList.size() > 0) {
             // Flush
-            ColossalChests._instance.getPacketHandler().sendToPlayer(new WindowItemsFragmentPacket(containerId, getStateId(), sendBuffer), player);
+            ColossalChests._instance.getPacketHandler().sendToPlayer(new ClientboundContainerSetContentPacketWindow(containerId, getStateId(), sendBuffer), player);
         }
         playerNetServerHandler.send(new ClientboundContainerSetSlotPacket(-1, getStateId(), -1, getCarried()));
     }

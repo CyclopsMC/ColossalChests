@@ -16,7 +16,7 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  * @author rubensworks
  *
  */
-public class SetSlotLarge extends PacketCodec {
+public class ClientboundContainerSetSlotPacketLarge extends PacketCodec {
 
 	@CodecField
 	private int windowId;
@@ -27,11 +27,11 @@ public class SetSlotLarge extends PacketCodec {
 	@CodecField
 	private ItemStack itemStack;
 
-    public SetSlotLarge() {
+    public ClientboundContainerSetSlotPacketLarge() {
 
     }
 
-    public SetSlotLarge(int windowId, int stateId, int slot, ItemStack itemStack) {
+    public ClientboundContainerSetSlotPacketLarge(int windowId, int stateId, int slot, ItemStack itemStack) {
 		this.windowId = windowId;
 		this.stateId = stateId;
 		this.slot = slot;

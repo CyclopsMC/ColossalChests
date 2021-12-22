@@ -20,7 +20,7 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  * @author rubensworks
  *
  */
-public class WindowItemsFragmentPacket extends PacketCodec {
+public class ClientboundContainerSetContentPacketWindow extends PacketCodec {
 
 	@CodecField
 	private int windowId;
@@ -29,11 +29,11 @@ public class WindowItemsFragmentPacket extends PacketCodec {
 	@CodecField
 	private CompoundTag itemStacks;
 
-    public WindowItemsFragmentPacket() {
+    public ClientboundContainerSetContentPacketWindow() {
 
     }
 
-    public WindowItemsFragmentPacket(int windowId, int stateId, CompoundTag itemStacks) {
+    public ClientboundContainerSetContentPacketWindow(int windowId, int stateId, CompoundTag itemStacks) {
 		this.windowId = windowId;
 		this.stateId = stateId;
 		this.itemStacks = itemStacks;

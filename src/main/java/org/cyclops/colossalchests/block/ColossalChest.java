@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnPlacements;
@@ -77,6 +78,12 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
 
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ENABLED, false));
+    }
+
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public MenuProvider getMenuProvider(BlockState p_49234_, Level p_49235_, BlockPos p_49236_) {
+        return super.getMenuProvider(p_49234_, p_49235_, p_49236_);
     }
 
     @Override

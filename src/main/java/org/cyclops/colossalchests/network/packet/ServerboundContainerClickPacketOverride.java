@@ -1,7 +1,11 @@
 package org.cyclops.colossalchests.network.packet;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -15,6 +19,7 @@ import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
 import java.util.ArrayList;
+import java.util.function.IntFunction;
 
 /**
  * Packet for window clicks to the server as an alternative to
@@ -22,10 +27,12 @@ import java.util.ArrayList;
  * @author rubensworks
  *
  */
-public class ClickWindowPacketOverride extends PacketCodec {
+public class ServerboundContainerClickPacketOverride extends PacketCodec {
 
 	@CodecField
 	private int windowId;
+	@CodecField
+	private int stateId;
 	@CodecField
 	private int slotId;
 	@CodecField
@@ -34,18 +41,34 @@ public class ClickWindowPacketOverride extends PacketCodec {
 	private ItemStack clickedItem;
 	@CodecField
 	private String mode;
+	private Int2ObjectMap<ItemStack> changedSlots;
 
-    public ClickWindowPacketOverride() {
+    public ServerboundContainerClickPacketOverride() {
 
     }
 
-    public ClickWindowPacketOverride(int windowId, int slotId, int usedButton, ClickType mode, ItemStack clickedItem) {
+    public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ClickType mode, ItemStack clickedItem, Int2ObjectMap<ItemStack> changedSlots) {
         this.windowId = windowId;
+		this.stateId = stateId;
 		this.slotId = slotId;
 		this.usedButton = usedButton;
 		this.clickedItem = clickedItem != null ? clickedItem.copy() : null;
 		this.mode = mode.name();
+		this.changedSlots = changedSlots;
     }
+
+	@Override
+	public void encode(FriendlyByteBuf output) {
+		super.encode(output);
+		output.writeMap(this.changedSlots, FriendlyByteBuf::writeInt, FriendlyByteBuf::writeItem);
+	}
+
+	@Override
+	public void decode(FriendlyByteBuf input) {
+		super.decode(input);
+		IntFunction<Int2ObjectOpenHashMap<ItemStack>> intfunction = FriendlyByteBuf.limitValue(Int2ObjectOpenHashMap::new, 128);
+		this.changedSlots = Int2ObjectMaps.unmodifiable(input.readMap(intfunction, FriendlyByteBuf::readInt, FriendlyByteBuf::readItem));
+	}
 
 	@Override
 	public boolean isAsync() {
@@ -72,18 +95,18 @@ public class ClickWindowPacketOverride extends PacketCodec {
 
 				((ContainerColossalChest) player.containerMenu).updateCraftingInventory(player, arraylist);
 			} else {
-				boolean flag = ItemStack.matches(clickedItem, player.containerMenu.getCarried());
+				boolean flag = this.stateId != player.containerMenu.getStateId();
 				player.containerMenu.suppressRemoteUpdates();
 				player.containerMenu.clicked(slotId, usedButton, ClickType.valueOf(mode), player);
 
-				/*for(Int2ObjectMap.Entry<ItemStack> entry : Int2ObjectMaps.fastIterable(p_9856_.getChangedSlots())) {
+				for(Int2ObjectMap.Entry<ItemStack> entry : Int2ObjectMaps.fastIterable(changedSlots)) {
 					player.containerMenu.setRemoteSlotNoCopy(entry.getIntKey(), entry.getValue());
-				}*/
+				}
 
 				player.containerMenu.setRemoteCarried(clickedItem);
 				player.containerMenu.resumeRemoteUpdates();
-				if (!flag) {
-					//player.containerMenu.broadcastFullState();
+				if (flag) {
+					// Original: player.containerMenu.broadcastFullState();
 
 					NonNullList<ItemStack> nonnulllist1 = NonNullList.create();
 
@@ -97,42 +120,6 @@ public class ClickWindowPacketOverride extends PacketCodec {
 				}
 			}
 		}
-
-		// TODO: rm
-        /*if (player.containerMenu.containerId == windowId && player.containerMenu.stillValid(player)) {
-			if (player.isSpectator()) {
-				ArrayList arraylist = Lists.newArrayList();
-
-				for (int i = 0; i < player.containerMenu.slots.size(); ++i) {
-					arraylist.add((player.containerMenu.slots.get(i)).getItem());
-				}
-
-				((ContainerColossalChest) player.containerMenu).updateCraftingInventory(player, arraylist);
-			} else {
-				player.containerMenu.clicked(slotId, usedButton, ClickType.valueOf(mode), player);
-				ItemStack itemstack = player.containerMenu.getCarried();
-
-				if (ItemStack.matches(clickedItem, itemstack)) {
-					player.connection.send(new ClientboundContainerAckPacket(windowId, actionNumber, true));
-					player.ignoreSlotUpdateHack = true;
-					player.containerMenu.broadcastChanges();
-					player.broadcastCarriedItem();
-					player.ignoreSlotUpdateHack = false;
-				} else {
-					Int2ShortMap pendingTransactions = player.connection.expectedAcks;
-					pendingTransactions.put(player.containerMenu.containerId, actionNumber);
-					player.connection.send(new ClientboundContainerAckPacket(windowId, actionNumber, false));
-					player.containerMenu.setSynched(player, false);
-					NonNullList<ItemStack> nonnulllist1 = NonNullList.create();
-
-					for (int j = 0; j < player.containerMenu.slots.size(); ++j) {
-						nonnulllist1.add(player.containerMenu.slots.get(j).getItem());
-					}
-
-					((ContainerColossalChest) player.containerMenu).updateCraftingInventory(player, nonnulllist1);
-				}
-			}
-		}*/
 	}
 
 }

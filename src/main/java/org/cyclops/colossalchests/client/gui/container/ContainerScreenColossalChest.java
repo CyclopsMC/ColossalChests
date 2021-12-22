@@ -1,21 +1,29 @@
 package org.cyclops.colossalchests.client.gui.container;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
-import org.cyclops.colossalchests.network.packet.ClickWindowPacketOverride;
+import org.cyclops.colossalchests.network.packet.ServerboundContainerClickPacketOverride;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonArrow;
 import org.cyclops.cyclopscore.client.gui.container.ContainerScreenScrolling;
+
+import java.util.List;
 
 /**
  * GUI for the {@link org.cyclops.colossalchests.block.ColossalChest}.
@@ -88,11 +96,28 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     }
 
     // Adapted from MultiPlayerGameMode#handleInventoryMouseClick
-    protected ItemStack handleInventoryMouseClick(int windowId, int slotId, int mouseButtonClicked, ClickType p_78753_4_, Player playerIn) {
-        //short short1 = playerIn.containerMenu.backup(playerIn.getInventory());
-        ItemStack itemstack = playerIn.containerMenu.getCarried().copy();
-        // Original: this.connection.send(new ServerboundContainerClickPacket(p_171800_, abstractcontainermenu.getStateId(), p_171801_, p_171802_, p_171803_, abstractcontainermenu.getCarried().copy(), int2objectmap));
-        ColossalChests._instance.getPacketHandler().sendToServer(new ClickWindowPacketOverride(windowId, slotId, mouseButtonClicked, p_78753_4_, itemstack));
-        return itemstack;
+    protected void handleInventoryMouseClick(int windowId, int slotId, int mouseButtonClicked, ClickType clickType, Player playerIn) {
+        AbstractContainerMenu abstractcontainermenu = playerIn.containerMenu;
+        NonNullList<Slot> nonnulllist = abstractcontainermenu.slots;
+        int i = nonnulllist.size();
+        List<ItemStack> list = Lists.newArrayListWithCapacity(i);
+
+        for(Slot slot : nonnulllist) {
+            list.add(slot.getItem().copy());
+        }
+
+        abstractcontainermenu.clicked(slotId, mouseButtonClicked, clickType, playerIn);
+        Int2ObjectMap<ItemStack> changedSlots = new Int2ObjectOpenHashMap<>();
+
+        for(int j = 0; j < i; ++j) {
+            ItemStack itemstack = list.get(j);
+            ItemStack itemstack1 = nonnulllist.get(j).getItem();
+            if (!ItemStack.matches(itemstack, itemstack1)) {
+                changedSlots.put(j, itemstack1.copy());
+            }
+        }
+
+        // Original: this.connection.send(new ServerboundContainerClickPacket(p_171800_, abstractcontainermenu.getStateId(), p_171801_, p_171802_, p_171803_, abstractcontainermenu.getCarried().copy(), changedSloits));
+        ColossalChests._instance.getPacketHandler().sendToServer(new ServerboundContainerClickPacketOverride(windowId, abstractcontainermenu.getStateId(), slotId, mouseButtonClicked, clickType, abstractcontainermenu.getCarried().copy(), changedSlots));
     }
 }

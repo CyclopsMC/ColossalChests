@@ -2,6 +2,7 @@ package org.cyclops.colossalchests.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -37,6 +38,7 @@ import org.cyclops.cyclopscore.block.BlockWithEntityGui;
 import org.cyclops.cyclopscore.helper.BlockEntityHelpers;
 
 import javax.annotation.Nullable;
+import java.util.Random;
 
 /**
  * A small chest.
@@ -61,7 +63,7 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST, new BlockEntityUncolossalChest.Ticker());
+        return level.isClientSide ? createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST, BlockEntityUncolossalChest::lidAnimateTick) : null;
     }
 
     @Override
@@ -108,6 +110,13 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
             if (tile != null) {
                 tile.setCustomName(stack.getHoverName());
             }
+        }
+    }
+
+    @Override
+    public void tick(BlockState blockState, ServerLevel level, BlockPos pos, Random random) {
+        if (level.getBlockEntity(pos) instanceof BlockEntityUncolossalChest uncolossalChest) {
+            uncolossalChest.recheckOpen();
         }
     }
 

@@ -27,6 +27,7 @@ public class UncolossalChestConfig extends BlockConfig {
             "uncolossal_chest",
                 eConfig -> new UncolossalChest(Block.Properties.of(Material.STONE)
                         .strength(5.0F)
+                        .requiresCorrectToolForDrops()
                         .sound(SoundType.WOOD)),
                 (eConfig, block) -> {
                     Item.Properties itemProperties = new Item.Properties().tab(ColossalChests._instance.getDefaultItemGroup());

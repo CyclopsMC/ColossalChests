@@ -22,6 +22,7 @@ public class ChestWallConfig extends BlockConfig {
                 eConfig -> new ChestWall(Block.Properties.of(Material.STONE)
                         .strength(5.0F)
                         .sound(SoundType.WOOD)
+                        .requiresCorrectToolForDrops()
                         .noOcclusion(),
                         material),
                 (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()

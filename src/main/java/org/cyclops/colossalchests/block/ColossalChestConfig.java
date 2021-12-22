@@ -30,6 +30,7 @@ public class ColossalChestConfig extends BlockConfig {
                 eConfig -> new ColossalChest(Block.Properties.of(Material.STONE)
                         .strength(5.0F)
                         .sound(SoundType.WOOD)
+                        .requiresCorrectToolForDrops()
                         .noOcclusion(),
                         material),
                 (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()

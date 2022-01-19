@@ -9,7 +9,7 @@ authors="rubensworks (aka kroeser)"
 modId="colossalchests"
 version="${file.jarVersion}"
 displayName="ColossalChests"
-updateJSONURL="https://raw.githubusercontent.com/CyclopsMC/Versions/master/forge_update/colossalchests.json"
+updateJSONURL="https://raw.githubusercontent.com/CyclopsMC/Versions/master/forge_update/colossal-chests.json"
 description='''
 For when regular chests are too small.
 '''

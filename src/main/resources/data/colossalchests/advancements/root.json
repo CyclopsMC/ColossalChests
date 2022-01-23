@@ -45,7 +45,9 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:chest"
+            "items": [
+              "minecraft:chest"
+            ]
           }
         ]
       }

@@ -3,6 +3,7 @@ package org.cyclops.colossalchests.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -117,6 +118,18 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     public void tick(BlockState blockState, ServerLevel level, BlockPos pos, Random random) {
         if (level.getBlockEntity(pos) instanceof BlockEntityUncolossalChest uncolossalChest) {
             uncolossalChest.recheckOpen();
+        }
+    }
+
+    @Override
+    public void onRemove(BlockState blockState, Level level, BlockPos blockPos, BlockState blockStateNew, boolean p_60519_) {
+        if (!blockState.is(blockStateNew.getBlock())) {
+            BlockEntityHelpers.get(level, blockPos, BlockEntityUncolossalChest.class)
+                    .ifPresent(blockEntity -> {
+                        Containers.dropContents(level, blockPos, blockEntity.getInventory());
+                        level.updateNeighbourForOutputSignal(blockPos, this);
+                    });
+            super.onRemove(blockState, level, blockPos, blockStateNew, p_60519_);
         }
     }
 

@@ -1,0 +1,5 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.12.1 or higher.
+
+Fixes:
+* Fix missing drops when breaking Uncolossal Chest, Closes #153

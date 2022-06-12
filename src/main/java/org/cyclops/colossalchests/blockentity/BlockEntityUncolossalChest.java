@@ -5,7 +5,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -171,7 +170,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
 
     @Override
     public Component getDisplayName() {
-        return hasCustomName() ? customName : new TranslatableComponent("general.colossalchests.uncolossalchest");
+        return hasCustomName() ? customName : Component.translatable("general.colossalchests.uncolossalchest");
     }
 
     @Override

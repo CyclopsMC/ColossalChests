@@ -2,7 +2,6 @@ package org.cyclops.colossalchests.item;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -26,7 +25,7 @@ public class ItemBlockMaterial extends BlockItem {
 
     @Override
     public void appendHoverText(ItemStack itemStack, Level world, List<Component> list, TooltipFlag flag) {
-        list.add(new TranslatableComponent(material.getUnlocalizedName()).withStyle(ChatFormatting.BLUE));
+        list.add(Component.translatable(material.getUnlocalizedName()).withStyle(ChatFormatting.BLUE));
         super.appendHoverText(itemStack, world, list, flag);
 
     }

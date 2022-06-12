@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -67,7 +66,7 @@ public class ItemUpgradeTool extends Item {
                 if(context.getLevel().isClientSide()) {
                     return InteractionResult.PASS;
                 }
-                ColossalChest.addPlayerChatError(context.getPlayer(), new TranslatableComponent(
+                ColossalChest.addPlayerChatError(context.getPlayer(), Component.translatable(
                         "multiblock.colossalchests.error.upgradeLimit"));
                 return InteractionResult.FAIL;
             }
@@ -123,16 +122,16 @@ public class ItemUpgradeTool extends Item {
         ItemStack requiredWalls = new ItemStack(newType.getBlockWall(), requiredWallsCount.get());
 
         if (validMaterial == null) {
-            return new TranslatableComponent("multiblock.colossalchests.error.unexpected");
+            return Component.translatable("multiblock.colossalchests.error.unexpected");
         }
 
         // Check required items in inventory
         if (!(consumeItems(player, requiredCores, true)
                 && consumeItems(player, requiredInterfaces, true)
                 && consumeItems(player, requiredWalls, true))) {
-            return new TranslatableComponent(
+            return Component.translatable(
                     "multiblock.colossalchests.error.upgrade", requiredCores.getCount(),
-                    requiredInterfaces.getCount(), requiredWalls.getCount(), new TranslatableComponent(newType.getUnlocalizedName()));
+                    requiredInterfaces.getCount(), requiredWalls.getCount(), Component.translatable(newType.getUnlocalizedName()));
         }
 
         // Actually consume the items

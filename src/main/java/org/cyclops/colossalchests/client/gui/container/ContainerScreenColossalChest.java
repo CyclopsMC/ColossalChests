@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -41,8 +40,8 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     @Override
     public void init() {
         super.init();
-        addRenderableWidget(new ButtonArrow(this.leftPos + 173, this.topPos + 7, new TranslatableComponent("gui.cyclopscore.up"), (button) -> scrollRelative(1), ButtonArrow.Direction.NORTH));
-        addRenderableWidget(new ButtonArrow(this.leftPos + 173, this.topPos + 129, new TranslatableComponent("gui.cyclopscore.down"), (button) -> scrollRelative(-1), ButtonArrow.Direction.SOUTH));
+        addRenderableWidget(new ButtonArrow(this.leftPos + 173, this.topPos + 7, Component.translatable("gui.cyclopscore.up"), (button) -> scrollRelative(1), ButtonArrow.Direction.NORTH));
+        addRenderableWidget(new ButtonArrow(this.leftPos + 173, this.topPos + 129, Component.translatable("gui.cyclopscore.down"), (button) -> scrollRelative(-1), ButtonArrow.Direction.SOUTH));
     }
 
     protected void scrollRelative(int direction) {

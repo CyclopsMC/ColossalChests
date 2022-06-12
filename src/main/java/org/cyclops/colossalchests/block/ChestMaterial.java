@@ -2,12 +2,11 @@ package org.cyclops.colossalchests.block;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.core.Vec3i;
-import net.minecraftforge.registries.ForgeRegistryEntry;
+import net.minecraft.world.inventory.MenuType;
 import org.cyclops.colossalchests.Reference;
-import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
+import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.block.multi.AllowedBlock;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.CubeSizeValidator;
@@ -22,7 +21,7 @@ import java.util.Map;
 /**
  * @author rubensworks
  */
-public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
+public class ChestMaterial {
 
     public static final List<ChestMaterial> VALUES = Lists.newArrayList();
     public static final Map<String, ChestMaterial> KEYED_VALUES = Maps.newHashMap();

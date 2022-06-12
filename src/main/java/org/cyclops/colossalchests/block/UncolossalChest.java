@@ -3,6 +3,7 @@ package org.cyclops.colossalchests.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,7 +40,6 @@ import org.cyclops.cyclopscore.block.BlockWithEntityGui;
 import org.cyclops.cyclopscore.helper.BlockEntityHelpers;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 /**
  * A small chest.
@@ -115,7 +115,7 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     }
 
     @Override
-    public void tick(BlockState blockState, ServerLevel level, BlockPos pos, Random random) {
+    public void tick(BlockState blockState, ServerLevel level, BlockPos pos, RandomSource random) {
         if (level.getBlockEntity(pos) instanceof BlockEntityUncolossalChest uncolossalChest) {
             uncolossalChest.recheckOpen();
         }

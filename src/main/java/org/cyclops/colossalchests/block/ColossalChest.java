@@ -1,7 +1,6 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -11,10 +10,9 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -57,7 +55,6 @@ import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import javax.annotation.Nullable;
-import java.util.Random;
 
 /**
  * A machine that can infuse stuff with blood.
@@ -93,7 +90,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     }
 
     @Override
-    public void tick(BlockState blockState, ServerLevel level, BlockPos pos, Random random) {
+    public void tick(BlockState blockState, ServerLevel level, BlockPos pos, RandomSource random) {
         if (level.getBlockEntity(pos) instanceof BlockEntityColossalChest uncolossalChest) {
             uncolossalChest.recheckOpen();
         }
@@ -236,26 +233,26 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.sendMessage(new TranslatableComponent("multiblock.colossalchests.error.unexpected"), Util.NIL_UUID);
+                player.sendSystemMessage(Component.translatable("multiblock.colossalchests.error.unexpected"));
             }
         }
     }
 
     public static void addPlayerChatError(Player player, Component error) {
-        MutableComponent chat = new TextComponent("");
-        Component prefix = new TextComponent("[")
-                .append(new TranslatableComponent("multiblock.colossalchests.error.prefix"))
-                .append(new TextComponent("]: "))
+        MutableComponent chat = Component.literal("");
+        Component prefix = Component.literal("[")
+                .append(Component.translatable("multiblock.colossalchests.error.prefix"))
+                .append(Component.literal("]: "))
                 .setStyle(Style.EMPTY.
                         withColor(TextColor.fromLegacyFormat(ChatFormatting.GRAY)).
                         withHoverEvent(new HoverEvent(
                                 HoverEvent.Action.SHOW_TEXT,
-                                new TranslatableComponent("multiblock.colossalchests.error.prefix.info")
+                                Component.translatable("multiblock.colossalchests.error.prefix.info")
                         ))
                 );
         chat.append(prefix);
         chat.append(error);
-        player.sendMessage(chat, Util.NIL_UUID);
+        player.sendSystemMessage(chat);
     }
 
     @Override
@@ -329,10 +326,10 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
                 requiredMaterial.set(material);
                 return null;
             }
-            return requiredMaterial.get() == material ? null : new TranslatableComponent(
-                    "multiblock.colossalchests.error.material", new TranslatableComponent(material.getUnlocalizedName()),
+            return requiredMaterial.get() == material ? null : Component.translatable(
+                    "multiblock.colossalchests.error.material", Component.translatable(material.getUnlocalizedName()),
                     LocationHelpers.toCompactString(blockPos),
-                    new TranslatableComponent(requiredMaterial.get().getUnlocalizedName()));
+                    Component.translatable(requiredMaterial.get().getUnlocalizedName()));
         }
     }
 }

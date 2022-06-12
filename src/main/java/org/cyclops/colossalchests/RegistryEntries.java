@@ -17,22 +17,22 @@ import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
  */
 public class RegistryEntries {
 
-    @ObjectHolder("minecraft:chest")
+    @ObjectHolder(registryName = "item", value = "minecraft:chest")
     public static final Item ITEM_CHEST = null;
 
-    @ObjectHolder("colossalchests:uncolossal_chest")
+    @ObjectHolder(registryName = "block", value = "colossalchests:uncolossal_chest")
     public static final Block BLOCK_UNCOLOSSAL_CHEST = null;
 
-    @ObjectHolder("colossalchests:colossal_chest")
+    @ObjectHolder(registryName = "block_entity_type", value = "colossalchests:colossal_chest")
     public static final BlockEntityType<BlockEntityColossalChest> BLOCK_ENTITY_COLOSSAL_CHEST = null;
-    @ObjectHolder("colossalchests:interface")
+    @ObjectHolder(registryName = "block_entity_type", value = "colossalchests:interface")
     public static final BlockEntityType<BlockEntityInterface> BLOCK_ENTITY_INTERFACE = null;
-    @ObjectHolder("colossalchests:uncolossal_chest")
+    @ObjectHolder(registryName = "block_entity_type", value = "colossalchests:uncolossal_chest")
     public static final BlockEntityType<BlockEntityUncolossalChest> BLOCK_ENTITY_UNCOLOSSAL_CHEST = null;
 
-    @ObjectHolder("colossalchests:colossal_chest")
+    @ObjectHolder(registryName = "menu", value = "colossalchests:colossal_chest")
     public static final MenuType<ContainerColossalChest> CONTAINER_COLOSSAL_CHEST = null;
-    @ObjectHolder("colossalchests:uncolossal_chest")
+    @ObjectHolder(registryName = "menu", value = "colossalchests:uncolossal_chest")
     public static final MenuType<ContainerUncolossalChest> CONTAINER_UNCOLOSSAL_CHEST = null;
 
 }

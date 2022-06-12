@@ -8,7 +8,6 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -429,8 +428,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
 
     @Override
     public Component getDisplayName() {
-        return hasCustomName() ? customName : new TranslatableComponent("general.colossalchests.colossalchest",
-                new TranslatableComponent(getMaterial().getUnlocalizedName()), getSizeSingular());
+        return hasCustomName() ? customName : Component.translatable("general.colossalchests.colossalchest",
+                Component.translatable(getMaterial().getUnlocalizedName()), getSizeSingular());
     }
 
     @Nullable

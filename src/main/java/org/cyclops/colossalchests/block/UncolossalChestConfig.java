@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.IItemRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.client.render.blockentity.ItemStackTileEntityUncolossalChestRender;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfig;
@@ -34,8 +34,8 @@ public class UncolossalChestConfig extends BlockConfig {
                     return new BlockItem(block, itemProperties) {
                         @Override
                         @OnlyIn(Dist.CLIENT)
-                        public void initializeClient(Consumer<IItemRenderProperties> consumer) {
-                            consumer.accept(new ItemStackTileEntityUncolossalChestRender.ItemRenderProperties());
+                        public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+                            consumer.accept(new ItemStackTileEntityUncolossalChestRender.ClientItemExtensions());
                         }
                     };
                 }

@@ -1,0 +1,28 @@
+{
+    "sources": [
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:models/chest_copper"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:models/chest_diamond"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:models/chest_gold"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:models/chest_iron"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:models/chest_obsidian"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:models/chest_silver"
+        }
+    ]
+}

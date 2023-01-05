@@ -33,8 +33,7 @@ public class ColossalChestConfig extends BlockConfig {
                         .requiresCorrectToolForDrops()
                         .noOcclusion(),
                         material),
-                (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()
-                        .tab(ColossalChests._instance.getDefaultItemGroup()), material)
+                (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties(), material)
         );
     }
 

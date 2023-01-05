@@ -3,8 +3,7 @@ package org.cyclops.colossalchests.client.render.blockentity;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -15,16 +14,15 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
+import org.joml.Matrix4f;
 
 import java.util.Calendar;
 import java.util.Map;
@@ -34,7 +32,6 @@ import java.util.Map;
  * @author rubensworks
  *
  */
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 @OnlyIn(Dist.CLIENT)
 public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<BlockEntityColossalChest> {
 
@@ -58,17 +55,6 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         TEXTURES_INTERFACE.put(ChestMaterial.GOLD, new ResourceLocation(Reference.MOD_ID, "blocks/interface_gold"));
         TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, new ResourceLocation(Reference.MOD_ID, "blocks/interface_diamond"));
         TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, "blocks/interface_obsidian"));
-    }
-    @SubscribeEvent
-    public static void onTextureStitch(TextureStitchEvent.Pre event) {
-        if (event.getAtlas().location().equals(Sheets.CHEST_SHEET)) {
-            for (ResourceLocation value : TEXTURES_CHEST.values()) {
-                event.addSprite(value);
-            }
-            for (ResourceLocation value : TEXTURES_INTERFACE.values()) {
-                event.addSprite(value);
-            }
-        }
     }
 
     public RenderTileEntityColossalChest(BlockEntityRendererProvider.Context context) {
@@ -136,7 +122,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     protected Material getMaterialInterface(BlockEntityColossalChest tile) {
-        return new Material(Sheets.CHEST_SHEET, TEXTURES_INTERFACE.get(tile.getMaterial()));
+        return new Material(InventoryMenu.BLOCK_ATLAS, TEXTURES_INTERFACE.get(tile.getMaterial()));
     }
 
     protected void setMatrixOrientation(PoseStack matrixStack, Direction direction) {
@@ -179,8 +165,8 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         } else if (direction == Direction.DOWN) {
             rotationX = 90;
         }
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(rotationY));
-        matrixStack.mulPose(Vector3f.XP.rotationDegrees(rotationX));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(rotationY));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(rotationX));
     }
 
     protected void renderInterface(PoseStack matrixStack, VertexConsumer buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {

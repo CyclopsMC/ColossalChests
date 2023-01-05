@@ -30,7 +30,7 @@ public class UncolossalChestConfig extends BlockConfig {
                         .requiresCorrectToolForDrops()
                         .sound(SoundType.WOOD)),
                 (eConfig, block) -> {
-                    Item.Properties itemProperties = new Item.Properties().tab(ColossalChests._instance.getDefaultItemGroup());
+                    Item.Properties itemProperties = new Item.Properties();
                     return new BlockItem(block, itemProperties) {
                         @Override
                         @OnlyIn(Dist.CLIENT)

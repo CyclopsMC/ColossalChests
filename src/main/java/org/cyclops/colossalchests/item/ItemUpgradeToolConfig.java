@@ -15,8 +15,7 @@ public class ItemUpgradeToolConfig extends ItemConfig {
                 ColossalChests._instance,
                 "upgrade_tool" + (upgrade ? "" : "_reverse"),
                 (eConfig) -> new ItemUpgradeTool(new Item.Properties()
-                        .stacksTo(1)
-                        .tab(ColossalChests._instance.getDefaultItemGroup()),
+                        .stacksTo(1),
                         upgrade)
         );
     }

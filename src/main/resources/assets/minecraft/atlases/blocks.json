@@ -1,0 +1,104 @@
+{
+    "sources": [
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_copper"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_diamond"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_gold"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_iron"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_obsidian"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_silver"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/chest_wall_wood"
+        },
+
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_copper"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_diamond"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_gold"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_iron"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_obsidian"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_silver"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/colossal_chest_wood"
+        },
+
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/empty"
+        },
+
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_copper"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_diamond"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_gold"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_iron"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_obsidian"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_silver"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:blocks/interface_wood"
+        },
+
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:items/upgrade_tool"
+        },
+        {
+            "type": "minecraft:single",
+            "resource": "colossalchests:items/upgrade_tool_reverse"
+        }
+    ]
+}

@@ -1,9 +1,9 @@
 package org.cyclops.colossalchests.modcompat;
 
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.cyclops.colossalchests.Capabilities;
 import org.cyclops.colossalchests.ColossalChests;
@@ -62,7 +62,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 							// Wrapper hack because Java otherwise complains that the optionalSlotlessItemHandler may not be initialized yet, and it won't compile.
 							Wrapper<LazyOptional<ISlotlessItemHandler>> optionalSlotlessItemHandler = new Wrapper<>();
 							optionalSlotlessItemHandler.set(LazyOptional.of(() -> {
-								LazyOptional<IItemHandler> optionalItemHandler = host.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
+								LazyOptional<IItemHandler> optionalItemHandler = host.getCapability(ForgeCapabilities.ITEM_HANDLER);
 								optionalItemHandler.addListener((o) -> optionalSlotlessItemHandler.get().invalidate());
 								return new IndexedSlotlessItemHandlerWrapper(optionalItemHandler.orElse(null),
 										(IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) host.getInventory());

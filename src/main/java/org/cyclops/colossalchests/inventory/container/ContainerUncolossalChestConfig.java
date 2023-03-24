@@ -3,6 +3,7 @@ package org.cyclops.colossalchests.inventory.container;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,7 +21,7 @@ public class ContainerUncolossalChestConfig extends GuiConfig<ContainerUncolossa
     public ContainerUncolossalChestConfig() {
         super(ColossalChests._instance,
                 "uncolossal_chest",
-                eConfig -> new MenuType<>(ContainerUncolossalChest::new));
+                eConfig -> new MenuType<>(ContainerUncolossalChest::new, FeatureFlags.VANILLA_SET));
     }
 
     @OnlyIn(Dist.CLIENT)

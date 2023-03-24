@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
@@ -86,7 +86,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
             }
         };
         this.inventory.addDirtyMarkListener(this);
-        addCapabilityInternal(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, LazyOptional.of(() -> new InvWrapper(this.inventory)));
+        addCapabilityInternal(ForgeCapabilities.ITEM_HANDLER, LazyOptional.of(() -> new InvWrapper(this.inventory)));
     }
 
     public SimpleInventory getInventory() {

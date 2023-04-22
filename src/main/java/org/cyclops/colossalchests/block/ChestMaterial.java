@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.core.Vec3i;
 import net.minecraftforge.registries.ForgeRegistryEntry;
+import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
@@ -18,6 +19,7 @@ import org.cyclops.cyclopscore.block.multi.MinimumSizeValidator;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author rubensworks
@@ -27,16 +29,16 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
     public static final List<ChestMaterial> VALUES = Lists.newArrayList();
     public static final Map<String, ChestMaterial> KEYED_VALUES = Maps.newHashMap();
 
-    public static final ChestMaterial WOOD = new ChestMaterial("wood", 1);
-    public static final ChestMaterial COPPER = new ChestMaterial("copper", 1.666);
-    public static final ChestMaterial IRON = new ChestMaterial("iron", 2);
-    public static final ChestMaterial SILVER = new ChestMaterial("silver", 2.666);
-    public static final ChestMaterial GOLD = new ChestMaterial("gold", 3);
-    public static final ChestMaterial DIAMOND = new ChestMaterial("diamond", 4);
-    public static final ChestMaterial OBSIDIAN = new ChestMaterial("obsidian", 4);
+    public static final ChestMaterial WOOD = new ChestMaterial("wood", () -> GeneralConfig.chestInventoryMaterialFactorWood);
+    public static final ChestMaterial COPPER = new ChestMaterial("copper", () -> GeneralConfig.chestInventoryMaterialFactorCopper);
+    public static final ChestMaterial IRON = new ChestMaterial("iron", () -> GeneralConfig.chestInventoryMaterialFactorIron);
+    public static final ChestMaterial SILVER = new ChestMaterial("silver", () -> GeneralConfig.chestInventoryMaterialFactorSilver);
+    public static final ChestMaterial GOLD = new ChestMaterial("gold", () -> GeneralConfig.chestInventoryMaterialFactorGold);
+    public static final ChestMaterial DIAMOND = new ChestMaterial("diamond", () -> GeneralConfig.chestInventoryMaterialFactorDiamond);
+    public static final ChestMaterial OBSIDIAN = new ChestMaterial("obsidian", () -> GeneralConfig.chestInventoryMaterialFactorObsidian);
 
     private final String name;
-    private final double inventoryMultiplier;
+    private final Supplier<Double> inventoryMultiplier;
     private final int index;
 
     private ColossalChest blockCore;
@@ -45,7 +47,7 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
     private CubeDetector chestDetector = null;
     private MenuType<ContainerColossalChest> container;
 
-    public ChestMaterial(String name, double inventoryMultiplier) {
+    public ChestMaterial(String name, Supplier<Double> inventoryMultiplier) {
         this.name = name;
         this.inventoryMultiplier = inventoryMultiplier;
         this.index = ChestMaterial.VALUES.size();
@@ -62,7 +64,7 @@ public class ChestMaterial extends ForgeRegistryEntry<ChestMaterial> {
     }
 
     public double getInventoryMultiplier() {
-        return this.inventoryMultiplier;
+        return this.inventoryMultiplier.get();
     }
 
     public String getUnlocalizedName() {

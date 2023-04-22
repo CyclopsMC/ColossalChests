@@ -41,6 +41,21 @@ public class GeneralConfig extends DummyConfig {
     @ConfigurableProperty(category = "general", comment = "Always create full creative-mode chests when formed. Should not be used in survival worlds!", isCommandable = true, configLocation = ModConfig.Type.SERVER)
     public static boolean creativeChests = false;
 
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorWood = 1;
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorCopper = 1.666;
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorIron = 2;
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorSilver = 2.666;
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorGold = 3;
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorDiamond = 4;
+    @ConfigurableProperty(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfig.Type.SERVER)
+    public static double chestInventoryMaterialFactorObsidian = 4;
+
     public GeneralConfig() {
         super(ColossalChests._instance, "general");
     }

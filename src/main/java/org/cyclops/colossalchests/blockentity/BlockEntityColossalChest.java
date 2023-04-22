@@ -67,11 +67,11 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         protected void onOpen(Level level, BlockPos pos, BlockState blockState) {
-            BlockEntityColossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_OPEN);
+            BlockEntityColossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_OPEN, getSizeSingular());
         }
 
         protected void onClose(Level level, BlockPos pos, BlockState blockState) {
-            BlockEntityColossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_CLOSE);
+            BlockEntityColossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_CLOSE, getSizeSingular());
         }
 
         protected void openerCountChanged(Level level, BlockPos pos, BlockState blockState, int p_155364_, int p_155365_) {
@@ -438,8 +438,11 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         return new ContainerColossalChest(id, playerInventory, this.getInventory());
     }
 
-    static void playSound(Level level, BlockPos pos, BlockState blockState, SoundEvent soundEvent) {
-        level.playSound((Player)null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, soundEvent, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
+    static void playSound(Level level, BlockPos pos, BlockState blockState, SoundEvent soundEvent, int size) {
+        float increaseAngle = 0.15F / Math.min(5, size);
+        level.playSound((Player)null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, soundEvent, SoundSource.BLOCKS,
+                (float) (0.5F + (0.5F * Math.log(size))),
+                level.random.nextFloat() * 0.1F + 0.45F + increaseAngle);
     }
 
     @Override

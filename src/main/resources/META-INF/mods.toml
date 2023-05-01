@@ -22,7 +22,7 @@ For when regular chests are too small.
 [[dependencies.colossalchests]]
     modId="forge"
     mandatory=true
-    versionRange="[45.0.20,)"
+    versionRange="[45.0.50,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.colossalchests]]

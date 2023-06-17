@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.client.gui.container;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
@@ -16,9 +16,9 @@ public class ContainerScreenUncolossalChest extends ContainerScreenExtended<Cont
     }
 
     @Override
-    protected void renderLabels(PoseStack matrixStack, int p_146979_1_, int p_146979_2_) {
+    protected void renderLabels(GuiGraphics guiGraphics, int p_146979_1_, int p_146979_2_) {
         //super.drawGuiContainerForegroundLayer(matrixStack, p_146979_1_, p_146979_2_);
-        font.draw(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
+        guiGraphics.drawString(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752, false);
     }
 
     @Override

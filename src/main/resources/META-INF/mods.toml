@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[45,)"
+loaderVersion="[47,)"
 issueTrackerURL="https://github.com/CyclopsMC/ColossalChests/issues"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/colossalchests"
 license="MIT"
@@ -16,18 +16,18 @@ For when regular chests are too small.
 [[dependencies.colossalchests]]
     modId="cyclopscore"
     mandatory=true
-    versionRange="[1.18.2,)"
+    versionRange="[1.18.4,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.colossalchests]]
     modId="forge"
     mandatory=true
-    versionRange="[45.0.50,)"
+    versionRange="[47.0.1,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.colossalchests]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.4,]"
+    versionRange="[1.20.1,]"
     ordering="NONE"
     side="BOTH"

@@ -4,7 +4,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
@@ -25,7 +24,7 @@ public class UncolossalChestConfig extends BlockConfig {
         super(
                 ColossalChests._instance,
             "uncolossal_chest",
-                eConfig -> new UncolossalChest(Block.Properties.of(Material.STONE)
+                eConfig -> new UncolossalChest(Block.Properties.of()
                         .strength(5.0F)
                         .requiresCorrectToolForDrops()
                         .sound(SoundType.WOOD)),

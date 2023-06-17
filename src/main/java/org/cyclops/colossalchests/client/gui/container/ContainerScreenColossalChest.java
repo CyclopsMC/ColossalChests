@@ -1,10 +1,10 @@
 package org.cyclops.colossalchests.client.gui.container;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -74,13 +74,13 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
         return TEXTUREHEIGHT;
     }
 
-    protected void drawForgegroundString(PoseStack matrixStack) {
-        font.draw(matrixStack, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752);
+    protected void drawForgegroundString(GuiGraphics guiGraphics) {
+        guiGraphics.drawString(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752, false);
     }
 
     @Override
-    protected void renderLabels(PoseStack matrixStack, int mouseX, int mouseY) {
-        drawForgegroundString(matrixStack);
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        drawForgegroundString(guiGraphics);
         //super.drawGuiContainerForegroundLayer(matrixStack, mouseX, mouseY);
     }
 

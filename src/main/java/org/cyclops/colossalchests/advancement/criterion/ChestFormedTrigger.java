@@ -3,13 +3,13 @@ package org.cyclops.colossalchests.advancement.criterion;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
 import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.DeserializationContext;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.GsonHelper;
 import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.Reference;
@@ -37,7 +37,7 @@ public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigge
     }
 
     @Override
-    public Instance createInstance(JsonObject json, EntityPredicate.Composite entityPredicate, DeserializationContext conditionsParser) {
+    public Instance createInstance(JsonObject json, ContextAwarePredicate entityPredicate, DeserializationContext conditionsParser) {
         ChestMaterial material = null;
         JsonElement element = json.get("material");
         if (element != null && !element.isJsonNull()) {
@@ -69,7 +69,7 @@ public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigge
         private final ChestMaterial material;
         private final Integer minimumSize;
 
-        public Instance(ResourceLocation criterionIn, EntityPredicate.Composite player, @Nullable ChestMaterial material, @Nullable Integer minimumSize) {
+        public Instance(ResourceLocation criterionIn, ContextAwarePredicate player, @Nullable ChestMaterial material, @Nullable Integer minimumSize) {
             super(criterionIn, player);
             this.material = material;
             this.minimumSize = minimumSize;

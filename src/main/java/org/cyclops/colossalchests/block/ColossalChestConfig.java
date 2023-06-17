@@ -3,7 +3,6 @@ package org.cyclops.colossalchests.block;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.fml.config.ModConfig;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.item.ItemBlockMaterial;
@@ -27,7 +26,7 @@ public class ColossalChestConfig extends BlockConfig {
         super(
                 ColossalChests._instance,
             "colossal_chest_" + material.getName(),
-                eConfig -> new ColossalChest(Block.Properties.of(Material.STONE)
+                eConfig -> new ColossalChest(Block.Properties.of()
                         .strength(5.0F)
                         .sound(SoundType.WOOD)
                         .requiresCorrectToolForDrops()

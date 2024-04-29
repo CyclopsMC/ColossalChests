@@ -16,7 +16,7 @@
     "criteria_0": {
       "trigger": "colossalchests:chest_formed",
       "conditions": {
-        "material": "WOOD",
+        "material": { "name": "WOOD" },
         "minimumSize": 10
       }
     }

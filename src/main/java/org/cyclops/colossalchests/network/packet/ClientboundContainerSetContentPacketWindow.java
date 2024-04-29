@@ -4,13 +4,15 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.cyclops.colossalchests.Reference;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
@@ -22,6 +24,8 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  */
 public class ClientboundContainerSetContentPacketWindow extends PacketCodec {
 
+	public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "clientbound_container_set_content_packet_window");
+
 	@CodecField
 	private int windowId;
 	@CodecField
@@ -30,10 +34,11 @@ public class ClientboundContainerSetContentPacketWindow extends PacketCodec {
 	private CompoundTag itemStacks;
 
     public ClientboundContainerSetContentPacketWindow() {
-
+		super(ID);
     }
 
     public ClientboundContainerSetContentPacketWindow(int windowId, int stateId, CompoundTag itemStacks) {
+		super(ID);
 		this.windowId = windowId;
 		this.stateId = stateId;
 		this.itemStacks = itemStacks;

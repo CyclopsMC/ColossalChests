@@ -15,7 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.cyclops.colossalchests.Advancements;
+import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ChestWall;
 import org.cyclops.colossalchests.block.ColossalChest;
@@ -188,7 +188,7 @@ public class ItemUpgradeTool extends Item {
                 tileInterface.setCorePosition(coreLocation.get());
             }
 
-            Advancements.CHEST_FORMED.test((ServerPlayer) player, newType, size.getX() + 1);
+            RegistryEntries.TRIGGER_CHEST_FORMED.get().test((ServerPlayer) player, newType, size.getX() + 1);
         }
 
         // Add the lower tier items to the players inventory again.

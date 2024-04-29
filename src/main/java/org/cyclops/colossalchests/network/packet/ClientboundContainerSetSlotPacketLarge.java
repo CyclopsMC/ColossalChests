@@ -1,12 +1,14 @@
 package org.cyclops.colossalchests.network.packet;
 
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.cyclops.colossalchests.Reference;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
@@ -18,6 +20,8 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  */
 public class ClientboundContainerSetSlotPacketLarge extends PacketCodec {
 
+	public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "clientbound_container_set_slot_packet_large");
+
 	@CodecField
 	private int windowId;
 	@CodecField
@@ -28,10 +32,11 @@ public class ClientboundContainerSetSlotPacketLarge extends PacketCodec {
 	private ItemStack itemStack;
 
     public ClientboundContainerSetSlotPacketLarge() {
-
+		super(ID);
     }
 
     public ClientboundContainerSetSlotPacketLarge(int windowId, int stateId, int slot, ItemStack itemStack) {
+		super(ID);
 		this.windowId = windowId;
 		this.stateId = stateId;
 		this.slot = slot;

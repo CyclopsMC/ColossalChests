@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.InteractionHand;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LevelWriter;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
@@ -41,10 +43,12 @@ public class Interface extends BlockWithEntity implements CubeDetector.IDetectio
     public static final BooleanProperty ENABLED = ColossalChest.ENABLED;
 
     private final ChestMaterial material;
+    public final MapCodec<Interface> codec;
 
     public Interface(Block.Properties properties, ChestMaterial material) {
         super(properties, BlockEntityInterface::new);
         this.material = material;
+        this.codec = simpleCodec((props) -> new Interface(props, material));
 
         material.setBlockInterface(this);
 
@@ -66,6 +70,11 @@ public class Interface extends BlockWithEntity implements CubeDetector.IDetectio
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(ENABLED);
+    }
+
+    @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return codec;
     }
 
     @Override

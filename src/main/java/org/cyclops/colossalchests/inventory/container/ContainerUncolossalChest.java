@@ -26,7 +26,7 @@ public class ContainerUncolossalChest extends InventoryContainer {
     }
 
     public ContainerUncolossalChest(int id, Inventory playerInventory, Container inventory) {
-        super(RegistryEntries.CONTAINER_UNCOLOSSAL_CHEST, id, playerInventory, inventory);
+        super(RegistryEntries.CONTAINER_UNCOLOSSAL_CHEST.get(), id, playerInventory, inventory);
 
         this.addInventory(inventory, 0, 44, 20, 1, getSizeInventory());
         this.addPlayerInventory(playerInventory, 8, 51);

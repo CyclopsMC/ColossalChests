@@ -1,6 +1,9 @@
 package org.cyclops.colossalchests.blockentity;
 
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockEntityConfig;
@@ -22,6 +25,21 @@ public class BlockEntityInterfaceConfig extends BlockEntityConfig<BlockEntityInt
                         ChestMaterial.VALUES.stream()
                                 .map(ChestMaterial::getBlockInterface)
                                 .collect(Collectors.toSet()), null)
+        );
+        ColossalChests._instance.getModEventBus().addListener(this::registerCapabilities);
+    }
+
+    public void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                getInstance(),
+                (blockEntity, context) -> {
+                    BlockEntityColossalChest core = blockEntity.getCore();
+                    if (core != null) {
+                        return new InvWrapper(core.getInventory());
+                    }
+                    return null;
+                }
         );
     }
 

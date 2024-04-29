@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -32,8 +34,8 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChest;
 import org.cyclops.cyclopscore.block.BlockWithEntityGui;
@@ -50,6 +52,7 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+    public static final MapCodec<UncolossalChest> CODEC = simpleCodec(UncolossalChest::new);
 
     private final VoxelShape SHAPE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 6, 11.0D);
 
@@ -62,9 +65,14 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     }
 
     @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
+    @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST, BlockEntityUncolossalChest::lidAnimateTick) : null;
+        return level.isClientSide ? createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.get(), BlockEntityUncolossalChest::lidAnimateTick) : null;
     }
 
     @Override

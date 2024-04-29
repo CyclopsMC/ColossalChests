@@ -2,11 +2,12 @@ package org.cyclops.colossalchests;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
+import org.cyclops.colossalchests.advancement.criterion.ChestFormedTriggerConfig;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ChestWallConfig;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
@@ -15,6 +16,7 @@ import org.cyclops.colossalchests.block.UncolossalChestConfig;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfig;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfig;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfig;
+import org.cyclops.colossalchests.condition.ConditionMetalVariantsSettingConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
@@ -22,7 +24,6 @@ import org.cyclops.colossalchests.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.colossalchests.proxy.ClientProxy;
 import org.cyclops.colossalchests.proxy.CommonProxy;
-import org.cyclops.colossalchests.recipe.condition.RecipeConditionMetalVariantsSettingConfig;
 import org.cyclops.cyclopscore.config.ConfigHandler;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
 import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
@@ -42,20 +43,14 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
      */
     public static ColossalChests _instance;
 
-    public ColossalChests() {
-        super(Reference.MOD_ID, (instance) -> _instance = instance);
+    public ColossalChests(IEventBus modEventBus) {
+        super(Reference.MOD_ID, (instance) -> _instance = instance, modEventBus);
     }
 
     @Override
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         modCompatLoader.addModCompat(new IronChestModCompat());
         modCompatLoader.addModCompat(new CommonCapabilitiesModCompat());
-    }
-
-    @Override
-    protected void setup(FMLCommonSetupEvent event) {
-        super.setup(event);
-        Advancements.load();
     }
 
     @Override
@@ -98,7 +93,9 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         configHandler.addConfigurable(new ContainerColossalChestConfig());
         configHandler.addConfigurable(new ContainerUncolossalChestConfig());
 
-        configHandler.addConfigurable(new RecipeConditionMetalVariantsSettingConfig());
+        configHandler.addConfigurable(new ConditionMetalVariantsSettingConfig());
+
+        configHandler.addConfigurable(new ChestFormedTriggerConfig());
     }
 
     /**

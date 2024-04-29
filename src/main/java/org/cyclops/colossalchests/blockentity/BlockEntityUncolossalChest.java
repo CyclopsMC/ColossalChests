@@ -19,9 +19,6 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
@@ -67,7 +64,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
     private final SimpleInventory inventory;
 
     public BlockEntityUncolossalChest(BlockPos blockPos, BlockState blockState) {
-        super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST, blockPos, blockState);
+        super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.get(), blockPos, blockState);
         this.inventory = new SimpleInventory(5, 64) {
             @Override
             public void startOpen(Player entityPlayer) {
@@ -86,7 +83,6 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
             }
         };
         this.inventory.addDirtyMarkListener(this);
-        addCapabilityInternal(ForgeCapabilities.ITEM_HANDLER, LazyOptional.of(() -> new InvWrapper(this.inventory)));
     }
 
     public SimpleInventory getInventory() {
@@ -181,7 +177,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
         }
 
         BlockState blockState = getLevel().getBlockState(getBlockPos());
-        if(blockState.getBlock() != RegistryEntries.BLOCK_UNCOLOSSAL_CHEST) return Direction.NORTH;
+        if(blockState.getBlock() != RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.get()) return Direction.NORTH;
         return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, Direction.NORTH);
     }
 

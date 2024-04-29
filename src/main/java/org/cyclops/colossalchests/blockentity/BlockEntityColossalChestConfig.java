@@ -1,8 +1,11 @@
 package org.cyclops.colossalchests.blockentity;
 
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChest;
@@ -26,6 +29,7 @@ public class BlockEntityColossalChestConfig extends BlockEntityConfig<BlockEntit
                                 .map(ChestMaterial::getBlockCore)
                                 .collect(Collectors.toSet()), null)
         );
+        ColossalChests._instance.getModEventBus().addListener(this::registerCapabilities);
     }
 
     @Override
@@ -33,6 +37,14 @@ public class BlockEntityColossalChestConfig extends BlockEntityConfig<BlockEntit
     public void onRegistered() {
         super.onRegistered();
         ColossalChests._instance.getProxy().registerRenderer(getInstance(), RenderTileEntityColossalChest::new);
+    }
+
+    public void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                getInstance(),
+                (blockEntity, context) -> new InvWrapper(blockEntity.getInventory())
+        );
     }
 
 }

@@ -15,9 +15,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
@@ -59,6 +60,15 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
 
     public RenderTileEntityColossalChest(BlockEntityRendererProvider.Context context) {
         super(context);
+    }
+
+    @Override
+    public AABB getRenderBoundingBox(BlockEntityColossalChest blockEntity) {
+        int size = blockEntity.getSizeSingular();
+        return new AABB(
+                Vec3.atLowerCornerOf(blockEntity.getBlockPos().subtract(new Vec3i(size, size, size))),
+                Vec3.atLowerCornerOf(blockEntity.getBlockPos().offset(size, size * 2, size))
+        );
     }
 
     @Override

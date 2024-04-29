@@ -3,7 +3,7 @@ package org.cyclops.colossalchests.block;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.item.ItemBlockMaterial;
 import org.cyclops.cyclopscore.config.ConfigurableProperty;

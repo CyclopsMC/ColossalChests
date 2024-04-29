@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -25,16 +26,9 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.ChestMaterial;
@@ -91,7 +85,6 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
 
     private SimpleInventory lastValidInventory = null;
     private SimpleInventory inventory = null;
-    private LazyOptional<IItemHandler> capabilityItemHandler = LazyOptional.empty();
 
     @NBTPersist
     private Vec3i size = LocationHelpers.copyLocation(Vec3i.ZERO);
@@ -110,7 +103,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     private EnumFacingMap<int[]> facingSlots = EnumFacingMap.newMap();
 
     public BlockEntityColossalChest(BlockPos blockPos, BlockState blockState) {
-        super(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST, blockPos, blockState);
+        super(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST.get(), blockPos, blockState);
     }
 
     /**
@@ -222,8 +215,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
                 : new LargeInventory(calculateInventorySize(), 64);
         Random random = new Random();
         for (int i = 0; i < inv.getContainerSize(); i++) {
-            inv.setItem(i, new ItemStack(Iterables.get(ForgeRegistries.ITEMS.getValues(),
-                    random.nextInt(ForgeRegistries.ITEMS.getValues().size()))));
+            inv.setItem(i, new ItemStack(Iterables.get(BuiltInRegistries.ITEM,
+                    random.nextInt(BuiltInRegistries.ITEM.size()))));
         }
         return inv;
     }
@@ -307,14 +300,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     public void setInventory(SimpleInventory inventory) {
-        this.capabilityItemHandler.invalidate();
+        invalidateCapabilities();
         this.inventory = inventory;
-        if (this.inventory.getContainerSize() > 0) {
-            IItemHandler itemHandler = new InvWrapper(this.inventory);
-            this.capabilityItemHandler = LazyOptional.of(() -> itemHandler);
-        } else {
-            this.capabilityItemHandler = LazyOptional.empty();
-        }
     }
 
     protected void ensureInventoryInitialized() {
@@ -335,24 +322,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, Direction facing) {
-        ensureInventoryInitialized();
-        if (this.capabilityItemHandler.isPresent() && capability == ForgeCapabilities.ITEM_HANDLER) {
-            return this.capabilityItemHandler.cast();
-        }
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
     public boolean canInteractWith(Player entityPlayer) {
         return getSizeSingular() > 1 && super.canInteractWith(entityPlayer);
-    }
-
-    @Override
-    @OnlyIn(Dist.CLIENT)
-    public AABB getRenderBoundingBox() {
-        int size = getSizeSingular();
-        return new AABB(getBlockPos().subtract(new Vec3i(size, size, size)), getBlockPos().offset(size, size * 2, size));
     }
 
     public void setCenter(Vec3 center) {

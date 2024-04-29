@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,6 +29,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LevelWriter;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
@@ -41,7 +43,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.cyclops.colossalchests.Advancements;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.cyclopscore.block.BlockWithEntityGui;
@@ -66,10 +67,12 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     private final ChestMaterial material;
+    public final MapCodec<ColossalChest> codec;
 
     public ColossalChest(Properties properties, ChestMaterial material) {
         super(properties, BlockEntityColossalChest::new);
         this.material = material;
+        this.codec = simpleCodec((props) -> new ColossalChest(props, material));
 
         material.setBlockCore(this);
 
@@ -86,7 +89,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST, BlockEntityColossalChest::lidAnimateTick) : null;
+        return level.isClientSide ? createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST.get(), BlockEntityColossalChest::lidAnimateTick) : null;
     }
 
     @Override
@@ -125,6 +128,11 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     }
 
     @Override
+    protected MapCodec<? extends BaseEntityBlock> codec() {
+        return codec;
+    }
+
+    @Override
     public RenderShape getRenderShape(BlockState blockState) {
         return blockState.getValue(ENABLED) ? RenderShape.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
     }
@@ -155,7 +163,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
                     tile = BlockEntityHelpers.get(world, corePos, BlockEntityColossalChest.class).orElse(null);
                 }
 
-                Advancements.CHEST_FORMED.test((ServerPlayer) player, material, tile.getSizeSingular());
+                RegistryEntries.TRIGGER_CHEST_FORMED.get().test((ServerPlayer) player, material, tile.getSizeSingular());
             }
         }
         return detectionResult;

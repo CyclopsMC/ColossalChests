@@ -7,13 +7,15 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
@@ -28,6 +30,8 @@ import java.util.function.IntFunction;
  *
  */
 public class ServerboundContainerClickPacketOverride extends PacketCodec {
+
+	public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "serverbound_container_click_packet_override");
 
 	@CodecField
 	private int windowId;
@@ -44,10 +48,11 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec {
 	private Int2ObjectMap<ItemStack> changedSlots;
 
     public ServerboundContainerClickPacketOverride() {
-
+		super(ID);
     }
 
     public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ClickType mode, ItemStack clickedItem, Int2ObjectMap<ItemStack> changedSlots) {
+		super(ID);
         this.windowId = windowId;
 		this.stateId = stateId;
 		this.slotId = slotId;

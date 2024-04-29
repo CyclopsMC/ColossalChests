@@ -2,34 +2,36 @@ package org.cyclops.colossalchests.inventory.container;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonParseException;
 import invtweaks.api.container.ChestContainer;
 import invtweaks.api.container.ContainerSection;
 import invtweaks.api.container.ContainerSectionCallback;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ResultSlot;
-import net.minecraft.world.inventory.ContainerListener;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.ByteArrayTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerListener;
+import net.minecraft.world.inventory.ResultSlot;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
-import org.cyclops.colossalchests.network.packet.ClientboundContainerSetSlotPacketLarge;
 import org.cyclops.colossalchests.network.packet.ClientboundContainerSetContentPacketWindow;
+import org.cyclops.colossalchests.network.packet.ClientboundContainerSetSlotPacketLarge;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainer;
@@ -73,7 +75,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
     }
 
     public ContainerColossalChest(int id, Inventory playerInventory, Container inventory) {
-        super(RegistryEntries.CONTAINER_COLOSSAL_CHEST, id, playerInventory, inventory, Collections.<Slot>emptyList(), (item, pattern) -> true);
+        super(RegistryEntries.CONTAINER_COLOSSAL_CHEST.get(), id, playerInventory, inventory, Collections.<Slot>emptyList(), (item, pattern) -> true);
 
         this.chestSlots = Lists.newArrayListWithCapacity(getSizeInventory());
         this.inventoryItemStacks = NonNullList.withSize(getSizeInventory(), ItemStack.EMPTY);
@@ -252,7 +254,8 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
             if (itemStack != null) {
                 CompoundTag tag = new CompoundTag();
                 tag.putInt("slot", i);
-                tag.put("stack", itemStack.serializeNBT());
+                tag.put("stack", ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
+                        .getOrThrow(false, JsonParseException::new));
                 int tagSize = getTagSize(tag);
                 if (bufferSize + tagSize + 100 < maxBufferSize) {
                     sendList.add(tag);

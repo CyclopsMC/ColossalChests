@@ -2,8 +2,11 @@ package org.cyclops.colossalchests.blockentity;
 
 import com.google.common.collect.Sets;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.ColossalChests;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityUncolossalChest;
@@ -21,8 +24,9 @@ public class BlockEntityUncolossalChestConfig extends BlockEntityConfig<BlockEnt
                 ColossalChests._instance,
                 "uncolossal_chest",
                 (eConfig) -> new BlockEntityType<>(BlockEntityUncolossalChest::new,
-                        Sets.newHashSet(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST), null)
+                        Sets.newHashSet(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.get()), null)
         );
+        ColossalChests._instance.getModEventBus().addListener(this::registerCapabilities);
     }
 
     @Override
@@ -32,4 +36,11 @@ public class BlockEntityUncolossalChestConfig extends BlockEntityConfig<BlockEnt
         ColossalChests._instance.getProxy().registerRenderer(getInstance(), RenderTileEntityUncolossalChest::new);
     }
 
+    public void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+                Capabilities.ItemHandler.BLOCK,
+                getInstance(),
+                (blockEntity, context) -> new InvWrapper(blockEntity.getInventory())
+        );
+    }
 }

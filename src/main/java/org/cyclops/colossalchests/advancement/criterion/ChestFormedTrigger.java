@@ -1,83 +1,51 @@
 package org.cyclops.colossalchests.advancement.criterion;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.DeserializationContext;
+import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.GsonHelper;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.util.ExtraCodecs;
 import org.apache.commons.lang3.tuple.Pair;
-import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.cyclopscore.advancement.criterion.ICriterionInstanceTestable;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * Triggers when a colossal chest is formed.
  * @author rubensworks
  */
 public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigger.Instance> {
-    private final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "chest_formed");
 
-    public ChestFormedTrigger() {
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    @Override
-    public ResourceLocation getId() {
-        return ID;
-    }
-
-    @Override
-    public Instance createInstance(JsonObject json, ContextAwarePredicate entityPredicate, DeserializationContext conditionsParser) {
-        ChestMaterial material = null;
-        JsonElement element = json.get("material");
-        if (element != null && !element.isJsonNull()) {
-            String materialString = element.getAsString();
-            try {
-                material = Objects.requireNonNull(ChestMaterial.valueOf(materialString), "Could not find a chest material by name " + materialString);
-            } catch (IllegalArgumentException e) {
-                throw new JsonSyntaxException("Could not find a colossal chest material by name " + materialString
-                        + ". Allowed values: "
-                        + ChestMaterial.VALUES.stream().map(ChestMaterial::getName).collect(Collectors.toList()));
-            }
-        }
-
-        Integer minimumSize = null;
-        JsonElement elementSize = json.get("minimumSize");
-        if (elementSize != null && !elementSize.isJsonNull()) {
-            minimumSize = GsonHelper.convertToInt(elementSize, "minimumSize");
-        }
-        return new Instance(getId(), entityPredicate, material, minimumSize);
-    }
+    public static final Codec<ChestFormedTrigger.Instance> CODEC = RecordCodecBuilder.create(
+            p_311401_ -> p_311401_.group(
+                            ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ChestFormedTrigger.Instance::player),
+                            ExtraCodecs.strictOptionalField(ChestMaterial.CODEC, "material").forGetter(ChestFormedTrigger.Instance::material),
+                            ExtraCodecs.strictOptionalField(Codec.INT, "minimumSize").forGetter(ChestFormedTrigger.Instance::minimumSize)
+                    )
+                    .apply(p_311401_, ChestFormedTrigger.Instance::new)
+    );
 
     public void test(ServerPlayer player, ChestMaterial material, int size) {
-        this.trigger(player, (instance) -> {
-            return instance.test(player, Pair.of(material, size));
-        });
+        this.trigger(player, (instance) -> instance.test(player, Pair.of(material, size)));
     }
 
-    public static class Instance extends AbstractCriterionTriggerInstance implements ICriterionInstanceTestable<Pair<ChestMaterial, Integer>> {
-        private final ChestMaterial material;
-        private final Integer minimumSize;
+    @Override
+    public Codec<Instance> codec() {
+        return CODEC;
+    }
 
-        public Instance(ResourceLocation criterionIn, ContextAwarePredicate player, @Nullable ChestMaterial material, @Nullable Integer minimumSize) {
-            super(criterionIn, player);
-            this.material = material;
-            this.minimumSize = minimumSize;
-        }
-
+    public static record Instance(
+            Optional<ContextAwarePredicate> player,
+            Optional<ChestMaterial> material,
+            Optional<Integer> minimumSize
+    ) implements SimpleCriterionTrigger.SimpleInstance, ICriterionInstanceTestable<Pair<ChestMaterial, Integer>> {
+        @Override
         public boolean test(ServerPlayer player, Pair<ChestMaterial, Integer> data) {
-            return (this.material == null || this.material == data.getLeft())
-                    && (this.minimumSize == null || this.minimumSize <= data.getRight());
+            return this.material.map(mat -> mat == data.getLeft()).orElse(true)
+                    && this.minimumSize.map(size -> size <= data.getRight()).orElse(true);
         }
     }
 

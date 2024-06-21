@@ -16,7 +16,7 @@
     "criteria_0": {
       "trigger": "colossalchests:chest_formed",
       "conditions": {
-        "material": { "name": "IRON" },
+        "material": "IRON",
         "minimumSize": 10
       }
     }

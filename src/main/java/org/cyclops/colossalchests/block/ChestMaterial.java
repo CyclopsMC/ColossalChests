@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.inventory.MenuType;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
@@ -29,11 +29,9 @@ import java.util.stream.Collectors;
  */
 public class ChestMaterial {
 
-    public static final Codec<ChestMaterial> CODEC = RecordCodecBuilder.create(
-            builder -> builder.group(
-                            Codec.STRING.fieldOf("name").forGetter(ChestMaterial::getName)
-                    )
-                    .apply(builder, ChestMaterial::valueOfSafe)
+    public static final Codec<ChestMaterial> CODEC = ExtraCodecs.stringResolverCodec(
+                    ChestMaterial::getName,
+                    ChestMaterial::valueOfSafe
     );
 
     public static final List<ChestMaterial> VALUES = Lists.newArrayList();

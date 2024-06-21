@@ -15,7 +15,7 @@
     "criteria_0": {
       "trigger": "colossalchests:chest_formed",
       "conditions": {
-        "material": { "name": "SILVER" }
+        "material": "SILVER"
       }
     }
   }

@@ -15,7 +15,12 @@
     "criteria_0": {
       "trigger": "minecraft:placed_block",
       "conditions": {
-        "block": "colossalchests:uncolossal_chest"
+        "location": [
+          {
+            "condition": "minecraft:block_state_property",
+            "block": "colossalchests:uncolossal_chest"
+          }
+        ]
       }
     }
   }

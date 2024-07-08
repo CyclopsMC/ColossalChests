@@ -5,11 +5,11 @@
       "item": "colossalchests:chest_wall_obsidian"
     },
     {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     }
   ],
   "result": {
-    "item": "colossalchests:colossal_chest_obsidian"
+    "id": "colossalchests:colossal_chest_obsidian"
   },
   "conditions": [
     {

@@ -5,10 +5,10 @@
       "item": "colossalchests:chest_wall_wood"
     },
     {
-      "tag": "forge:ingots/iron"
+      "tag": "minecraft:planks"
     }
   ],
   "result": {
-    "item": "colossalchests:colossal_chest_wood"
+    "id": "colossalchests:uncolossal_chest"
   }
 }

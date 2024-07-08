@@ -2,24 +2,24 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "item": "colossalchests:chest_wall_copper"
+      "item": "colossalchests:chest_wall_silver"
     },
     {
-      "tag": "forge:ingots/iron"
+      "tag": "c:ingots/iron"
     }
   ],
   "result": {
-    "item": "colossalchests:colossal_chest_copper"
+    "id": "colossalchests:colossal_chest_silver"
   },
   "conditions": [
     {
-      "type": "forge:and",
+      "type": "neoforge:and",
       "values": [
         {
-          "type": "forge:not",
+          "type": "neoforge:not",
           "value": {
-            "type": "forge:tag_empty",
-            "tag": "forge:ingots/copper"
+            "type": "neoforge:tag_empty",
+            "tag": "c:ingots/silver"
           }
         },
         {

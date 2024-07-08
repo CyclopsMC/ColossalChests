@@ -2,6 +2,7 @@ package org.cyclops.colossalchests.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -90,22 +91,22 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
     }
 
     @Override
-    public void read(CompoundTag tag) {
-        super.read(tag);
-        inventory.read(tag.getCompound("inventory"));
+    public void read(CompoundTag tag, HolderLookup.Provider provider) {
+        super.read(tag, provider);
+        inventory.read(provider, tag.getCompound("inventory"));
         if (tag.contains("CustomName", Tag.TAG_STRING)) {
-            this.customName = Component.Serializer.fromJson(tag.getString("CustomName"));
+            this.customName = Component.Serializer.fromJson(tag.getString("CustomName"), provider);
         }
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         CompoundTag subTag = new CompoundTag();
-        inventory.write(subTag);
+        inventory.write(provider, subTag);
         tag.put("inventory", subTag);
         if (this.customName != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(this.customName));
+            tag.putString("CustomName", Component.Serializer.toJson(this.customName, provider));
         }
     }
 

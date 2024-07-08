@@ -1,20 +1,20 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "III",
-    "ILI",
-    "III"
+    " C ",
+    "CWC",
+    " C "
   ],
   "key": {
-    "I": {
-      "tag": "forge:ingots/iron"
+    "C": {
+      "tag": "c:cobblestones"
     },
-    "L": {
-      "tag": "minecraft:logs"
+    "W": {
+      "item": "colossalchests:chest_wall_gold"
     }
   },
   "result": {
-    "item": "colossalchests:chest_wall_iron"
+    "id": "colossalchests:interface_gold"
   },
   "conditions": [
     {

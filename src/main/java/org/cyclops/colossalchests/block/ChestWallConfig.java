@@ -22,7 +22,8 @@ public class ChestWallConfig extends BlockConfig {
                         .strength(5.0F)
                         .sound(SoundType.WOOD)
                         .requiresCorrectToolForDrops()
-                        .noOcclusion(),
+                        .noOcclusion()
+                        .isValidSpawn((state, level, pos, entityType) -> false),
                         material),
                 (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties(), material)
         );

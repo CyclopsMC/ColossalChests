@@ -3,12 +3,9 @@ package org.cyclops.colossalchests.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -28,7 +25,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
+import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.cyclopscore.block.BlockWithEntity;
@@ -60,7 +57,7 @@ public class Interface extends BlockWithEntity implements CubeDetector.IDetectio
         NeoForge.EVENT_BUS.addListener(this::onLivingSpawn);
     }
 
-    public void onLivingSpawn(MobSpawnEvent.FinalizeSpawn event) {
+    public void onLivingSpawn(FinalizeSpawnEvent event) {
         // Only isValidSpawn is insufficient in some cases, so we add this forceful check as well.
         if (event.getSpawnType() != MobSpawnType.CHUNK_GENERATION && event.getEntity().getBlockStateOn().getBlock() == this) {
             event.setSpawnCancelled(true);
@@ -96,11 +93,6 @@ public class Interface extends BlockWithEntity implements CubeDetector.IDetectio
     @Override
     public boolean propagatesSkylightDown(BlockState blockState, BlockGetter blockReader, BlockPos blockPos) {
         return blockState.getValue(ENABLED);
-    }
-
-    @Override
-    public boolean isValidSpawn(BlockState state, BlockGetter world, BlockPos pos, SpawnPlacements.Type type, EntityType<?> entityType) {
-        return false;
     }
 
     @Override
@@ -157,18 +149,17 @@ public class Interface extends BlockWithEntity implements CubeDetector.IDetectio
     }
 
     @Override
-    public InteractionResult use(BlockState blockState, Level world, BlockPos blockPos, Player player, InteractionHand hand, BlockHitResult rayTraceResult) {
+    public InteractionResult useWithoutItem(BlockState blockState, Level world, BlockPos blockPos, Player player, BlockHitResult rayTraceResult) {
         if(blockState.getValue(ENABLED)) {
             BlockPos tileLocation = ColossalChest.getCoreLocation(material, world, blockPos);
             if(tileLocation != null) {
-                return world.getBlockState(tileLocation).getBlock().
-                        use(blockState, world, tileLocation, player, hand, rayTraceResult);
+                return world.getBlockState(tileLocation).useWithoutItem(world, player, rayTraceResult.withPosition(tileLocation));
             }
         } else {
-            ColossalChest.addPlayerChatError(material, world, blockPos, player, hand);
+            ColossalChest.addPlayerChatError(material, world, blockPos, player);
             return InteractionResult.FAIL;
         }
-        return super.use(blockState, world, blockPos, player, hand, rayTraceResult);
+        return super.useWithoutItem(blockState, world, blockPos, player, rayTraceResult);
     }
 
     @Override

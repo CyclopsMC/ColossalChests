@@ -6,6 +6,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,9 +31,10 @@ import java.util.function.IntFunction;
  * @author rubensworks
  *
  */
-public class ServerboundContainerClickPacketOverride extends PacketCodec {
+public class ServerboundContainerClickPacketOverride extends PacketCodec<ServerboundContainerClickPacketOverride> {
 
-	public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "serverbound_container_click_packet_override");
+	public static final Type<ServerboundContainerClickPacketOverride> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "serverbound_container_click_packet_override"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacketOverride> CODEC = getCodec(ServerboundContainerClickPacketOverride::new);
 
 	@CodecField
 	private int windowId;
@@ -48,11 +51,11 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec {
 	private Int2ObjectMap<ItemStack> changedSlots;
 
     public ServerboundContainerClickPacketOverride() {
-		super(ID);
+		super(TYPE);
     }
 
     public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ClickType mode, ItemStack clickedItem, Int2ObjectMap<ItemStack> changedSlots) {
-		super(ID);
+		super(TYPE);
         this.windowId = windowId;
 		this.stateId = stateId;
 		this.slotId = slotId;
@@ -63,16 +66,16 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec {
     }
 
 	@Override
-	public void encode(FriendlyByteBuf output) {
+	public void encode(RegistryFriendlyByteBuf output) {
 		super.encode(output);
-		output.writeMap(this.changedSlots, FriendlyByteBuf::writeInt, FriendlyByteBuf::writeItem);
+		output.writeMap(this.changedSlots, FriendlyByteBuf::writeInt, (b, i) -> ItemStack.OPTIONAL_STREAM_CODEC.encode(output, i));
 	}
 
 	@Override
-	public void decode(FriendlyByteBuf input) {
+	public void decode(RegistryFriendlyByteBuf input) {
 		super.decode(input);
 		IntFunction<Int2ObjectOpenHashMap<ItemStack>> intfunction = FriendlyByteBuf.limitValue(Int2ObjectOpenHashMap::new, 128);
-		this.changedSlots = Int2ObjectMaps.unmodifiable(input.readMap(intfunction, FriendlyByteBuf::readInt, FriendlyByteBuf::readItem));
+		this.changedSlots = Int2ObjectMaps.unmodifiable(input.readMap(intfunction, FriendlyByteBuf::readInt, b -> ItemStack.OPTIONAL_STREAM_CODEC.decode(input)));
 	}
 
 	@Override

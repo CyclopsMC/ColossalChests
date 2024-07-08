@@ -255,7 +255,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                 CompoundTag tag = new CompoundTag();
                 tag.putInt("slot", i);
                 tag.put("stack", ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
-                        .getOrThrow(false, JsonParseException::new));
+                        .getOrThrow(JsonParseException::new));
                 int tagSize = getTagSize(tag);
                 if (bufferSize + tagSize + 100 < maxBufferSize) {
                     sendList.add(tag);

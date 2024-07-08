@@ -12,6 +12,6 @@
     }
   ],
   "result": {
-    "item": "colossalchests:upgrade_tool"
+    "id": "colossalchests:upgrade_tool"
   }
 }

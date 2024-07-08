@@ -1,20 +1,20 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "PPP",
-    "PLP",
-    "PPP"
+    "III",
+    "ILI",
+    "III"
   ],
   "key": {
-    "P": {
-      "item": "minecraft:obsidian"
+    "I": {
+      "tag": "c:ingots/gold"
     },
     "L": {
       "tag": "minecraft:logs"
     }
   },
   "result": {
-    "item": "colossalchests:chest_wall_obsidian"
+    "id": "colossalchests:chest_wall_gold"
   },
   "conditions": [
     {

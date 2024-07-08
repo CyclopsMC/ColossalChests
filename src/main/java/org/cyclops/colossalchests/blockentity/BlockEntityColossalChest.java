@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -222,7 +223,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         // Don't send the inventory to the client.
         // The client will receive the data once the gui is opened.
         SimpleInventory oldInventory = this.inventory;
@@ -230,7 +231,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         this.inventory = null;
         this.lastValidInventory = null;
         this.recreateNullInventory = false;
-        CompoundTag tag = super.getUpdateTag();
+        CompoundTag tag = super.getUpdateTag(provider);
         this.inventory = oldInventory;
         this.lastValidInventory = oldLastInventory;
         this.recreateNullInventory = true;
@@ -238,7 +239,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     @Override
-    public void read(CompoundTag tag) {
+    public void read(CompoundTag tag, HolderLookup.Provider provider) {
         SimpleInventory oldInventory = this.inventory;
         SimpleInventory oldLastInventory = this.lastValidInventory;
 
@@ -249,38 +250,38 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
             this.lastValidInventory = null;
             this.recreateNullInventory = false;
         }
-        super.read(tag);
+        super.read(tag, provider);
         if (getLevel() != null && getLevel().isClientSide) {
             this.inventory = oldInventory;
             this.lastValidInventory = oldLastInventory;
             this.recreateNullInventory = true;
         } else {
-            getInventory().read(tag.getCompound("inventory"));
+            getInventory().read(provider, tag.getCompound("inventory"));
             if (tag.contains("lastValidInventory", Tag.TAG_COMPOUND)) {
                 this.lastValidInventory = new LargeInventory(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
-                this.lastValidInventory.read(tag.getCompound("lastValidInventory"));
+                this.lastValidInventory.read(provider, tag.getCompound("lastValidInventory"));
             }
         }
 
         if (tag.contains("CustomName", Tag.TAG_STRING)) {
-            this.customName = Component.Serializer.fromJson(tag.getString("CustomName"));
+            this.customName = Component.Serializer.fromJson(tag.getString("CustomName"), provider);
         }
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
         if (this.customName != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(this.customName));
+            tag.putString("CustomName", Component.Serializer.toJson(this.customName, provider));
         }
         if (this.inventory != null) {
             CompoundTag subTag = new CompoundTag();
-            this.inventory.write(subTag);
+            this.inventory.write(provider, subTag);
             tag.put("inventory", subTag);
         }
         if (this.lastValidInventory != null) {
             CompoundTag subTag = new CompoundTag();
-            this.lastValidInventory.write(subTag);
+            this.lastValidInventory.write(provider, subTag);
             tag.put("lastValidInventory", subTag);
             tag.putInt("lastValidInventorySize", this.lastValidInventory.getContainerSize());
         }
@@ -288,7 +289,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
 
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this, (blockEntity) -> getUpdateTag());
+        return ClientboundBlockEntityDataPacket.create(this, (blockEntity, provider) -> getUpdateTag(provider));
     }
 
     protected int calculateInventorySize() {

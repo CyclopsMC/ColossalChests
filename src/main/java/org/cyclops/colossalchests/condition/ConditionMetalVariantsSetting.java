@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.condition;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import org.cyclops.colossalchests.GeneralConfig;
@@ -11,7 +11,7 @@ import org.cyclops.colossalchests.GeneralConfig;
  */
 public record ConditionMetalVariantsSetting() implements ICondition {
 
-    public static final Codec<ConditionMetalVariantsSetting> CODEC = RecordCodecBuilder.create(
+    public static final MapCodec<ConditionMetalVariantsSetting> CODEC = RecordCodecBuilder.mapCodec(
             builder -> builder.point(new ConditionMetalVariantsSetting())
     );
 
@@ -21,7 +21,7 @@ public record ConditionMetalVariantsSetting() implements ICondition {
     }
 
     @Override
-    public Codec<? extends ICondition> codec() {
+    public MapCodec<? extends ICondition> codec() {
         return CODEC;
     }
 

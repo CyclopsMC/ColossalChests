@@ -7,24 +7,24 @@
   ],
   "key": {
     "C": {
-      "tag": "forge:cobblestone"
+      "tag": "c:cobblestones"
     },
     "W": {
-      "item": "colossalchests:chest_wall_copper"
+      "item": "colossalchests:chest_wall_silver"
     }
   },
   "result": {
-    "item": "colossalchests:interface_copper"
+    "id": "colossalchests:interface_silver"
   },
   "conditions": [
     {
-      "type": "forge:and",
+      "type": "neoforge:and",
       "values": [
         {
-          "type": "forge:not",
+          "type": "neoforge:not",
           "value": {
-            "type": "forge:tag_empty",
-            "tag": "forge:ingots/copper"
+            "type": "neoforge:tag_empty",
+            "tag": "c:ingots/silver"
           }
         },
         {

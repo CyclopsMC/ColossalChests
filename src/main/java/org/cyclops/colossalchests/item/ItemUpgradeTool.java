@@ -211,7 +211,7 @@ public class ItemUpgradeTool extends Item {
         while (it.hasNext()) {
             ItemStack stack = it.next();
             if (!stack.isEmpty()) {
-                if (ItemStack.isSameItemSameTags(stack, consumeStack)) {
+                if (ItemStack.isSameItemSameComponents(stack, consumeStack)) {
                     int previousValidItems = validItems;
                     validItems += stack.getCount();
                     validItems = Math.min(consumeStack.getCount(), validItems);

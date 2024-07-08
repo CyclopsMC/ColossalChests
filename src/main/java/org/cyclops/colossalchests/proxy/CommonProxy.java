@@ -25,9 +25,9 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerPacketHandlers(packetHandler);
 
         // Register packets.
-        packetHandler.register(ClientboundContainerSetContentPacketWindow.ID, ClientboundContainerSetContentPacketWindow::new);
-        packetHandler.register(ServerboundContainerClickPacketOverride.ID, ServerboundContainerClickPacketOverride::new);
-        packetHandler.register(ClientboundContainerSetSlotPacketLarge.ID, ClientboundContainerSetSlotPacketLarge::new);
+        packetHandler.register(ClientboundContainerSetContentPacketWindow.TYPE, ClientboundContainerSetContentPacketWindow.CODEC);
+        packetHandler.register(ServerboundContainerClickPacketOverride.TYPE, ServerboundContainerClickPacketOverride.CODEC);
+        packetHandler.register(ClientboundContainerSetSlotPacketLarge.TYPE, ClientboundContainerSetSlotPacketLarge.CODEC);
     }
 
 }

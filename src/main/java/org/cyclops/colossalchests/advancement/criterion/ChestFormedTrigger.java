@@ -6,7 +6,6 @@ import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.cyclopscore.advancement.criterion.ICriterionInstanceTestable;
@@ -21,9 +20,9 @@ public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigge
 
     public static final Codec<ChestFormedTrigger.Instance> CODEC = RecordCodecBuilder.create(
             p_311401_ -> p_311401_.group(
-                            ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ChestFormedTrigger.Instance::player),
-                            ExtraCodecs.strictOptionalField(ChestMaterial.CODEC, "material").forGetter(ChestFormedTrigger.Instance::material),
-                            ExtraCodecs.strictOptionalField(Codec.INT, "minimumSize").forGetter(ChestFormedTrigger.Instance::minimumSize)
+                            EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ChestFormedTrigger.Instance::player),
+                            ChestMaterial.CODEC.optionalFieldOf("material").forGetter(ChestFormedTrigger.Instance::material),
+                            Codec.INT.optionalFieldOf("minimumSize").forGetter(ChestFormedTrigger.Instance::minimumSize)
                     )
                     .apply(p_311401_, ChestFormedTrigger.Instance::new)
     );

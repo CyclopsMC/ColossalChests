@@ -3,6 +3,7 @@ package org.cyclops.colossalchests.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
@@ -114,7 +115,7 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(world, pos, state, placer, stack);
-        if (stack.hasCustomHoverName()) {
+        if (stack.has(DataComponents.CUSTOM_NAME)) {
             BlockEntityUncolossalChest tile = BlockEntityHelpers.get(world, pos, BlockEntityUncolossalChest.class).orElse(null);
             if (tile != null) {
                 tile.setCustomName(stack.getHoverName());
@@ -169,7 +170,7 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     }
 
     @Override
-    public boolean isPathfindable(BlockState p_196266_1_, BlockGetter p_196266_2_, BlockPos p_196266_3_, PathComputationType p_196266_4_) {
+    protected boolean isPathfindable(BlockState p_60475_, PathComputationType p_60478_) {
         return false;
     }
 

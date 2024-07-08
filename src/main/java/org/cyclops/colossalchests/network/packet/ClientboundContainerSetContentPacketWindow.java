@@ -1,8 +1,11 @@
 package org.cyclops.colossalchests.network.packet;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,9 +25,10 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  * @author rubensworks
  *
  */
-public class ClientboundContainerSetContentPacketWindow extends PacketCodec {
+public class ClientboundContainerSetContentPacketWindow extends PacketCodec<ClientboundContainerSetContentPacketWindow> {
 
-	public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "clientbound_container_set_content_packet_window");
+	public static final Type<ClientboundContainerSetContentPacketWindow> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "clientbound_container_set_content_packet_window"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacketWindow> CODEC = getCodec(ClientboundContainerSetContentPacketWindow::new);
 
 	@CodecField
 	private int windowId;
@@ -34,11 +38,11 @@ public class ClientboundContainerSetContentPacketWindow extends PacketCodec {
 	private CompoundTag itemStacks;
 
     public ClientboundContainerSetContentPacketWindow() {
-		super(ID);
+		super(TYPE);
     }
 
     public ClientboundContainerSetContentPacketWindow(int windowId, int stateId, CompoundTag itemStacks) {
-		super(ID);
+		super(TYPE);
 		this.windowId = windowId;
 		this.stateId = stateId;
 		this.itemStacks = itemStacks;
@@ -54,18 +58,18 @@ public class ClientboundContainerSetContentPacketWindow extends PacketCodec {
 	public void actionClient(Level world, Player player) {
 		// Modified code from NetHandlerPlayClient#handleWindowItems
 		if (windowId == 0) {
-			putStacksInSlotsWithOffset(player.inventoryMenu);
+			putStacksInSlotsWithOffset(world.registryAccess(), player.inventoryMenu);
 		} else if (windowId == player.containerMenu.containerId) {
-			putStacksInSlotsWithOffset(player.containerMenu);
+			putStacksInSlotsWithOffset(world.registryAccess(), player.containerMenu);
 		}
 	}
 
-	protected void putStacksInSlotsWithOffset(AbstractContainerMenu container) {
+	protected void putStacksInSlotsWithOffset(HolderLookup.Provider provider, AbstractContainerMenu container) {
 		ListTag list = itemStacks.getList("stacks", Tag.TAG_COMPOUND);
 		for (int i = 0; i < list.size(); i++) {
 			CompoundTag tag = list.getCompound(i);
 			int slot = tag.getInt("slot");
-			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
+			ItemStack stack = ItemStack.parseOptional(provider, tag.getCompound("stack"));
 			container.setItem(slot, this.stateId, stack);
 		}
 	}

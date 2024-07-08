@@ -21,17 +21,17 @@ import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
  */
 public class RegistryEntries {
 
-    public static final DeferredHolder<Item, Item> ITEM_CHEST = DeferredHolder.create(Registries.ITEM, new ResourceLocation("minecraft:chest"));
+    public static final DeferredHolder<Item, Item> ITEM_CHEST = DeferredHolder.create(Registries.ITEM, ResourceLocation.parse("minecraft:chest"));
 
-    public static final DeferredHolder<Block, Block> BLOCK_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK, new ResourceLocation("colossalchests:uncolossal_chest"));
+    public static final DeferredHolder<Block, Block> BLOCK_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK, ResourceLocation.parse("colossalchests:uncolossal_chest"));
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityColossalChest>> BLOCK_ENTITY_COLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, new ResourceLocation("colossalchests:colossal_chest"));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityInterface>> BLOCK_ENTITY_INTERFACE = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, new ResourceLocation("colossalchests:interface"));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityUncolossalChest>> BLOCK_ENTITY_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, new ResourceLocation("colossalchests:uncolossal_chest"));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityColossalChest>> BLOCK_ENTITY_COLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests:colossal_chest"));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityInterface>> BLOCK_ENTITY_INTERFACE = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests:interface"));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityUncolossalChest>> BLOCK_ENTITY_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests:uncolossal_chest"));
 
-    public static final DeferredHolder<MenuType<?>, MenuType<ContainerColossalChest>> CONTAINER_COLOSSAL_CHEST = DeferredHolder.create(Registries.MENU, new ResourceLocation("colossalchests:colossal_chest"));
-    public static final DeferredHolder<MenuType<?>, MenuType<ContainerUncolossalChest>> CONTAINER_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.MENU, new ResourceLocation("colossalchests:uncolossal_chest"));
+    public static final DeferredHolder<MenuType<?>, MenuType<ContainerColossalChest>> CONTAINER_COLOSSAL_CHEST = DeferredHolder.create(Registries.MENU, ResourceLocation.parse("colossalchests:colossal_chest"));
+    public static final DeferredHolder<MenuType<?>, MenuType<ContainerUncolossalChest>> CONTAINER_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.MENU, ResourceLocation.parse("colossalchests:uncolossal_chest"));
 
-    public static final DeferredHolder<CriterionTrigger<?>, ChestFormedTrigger> TRIGGER_CHEST_FORMED = DeferredHolder.create(Registries.TRIGGER_TYPE, new ResourceLocation("colossalchests:chest_formed"));
+    public static final DeferredHolder<CriterionTrigger<?>, ChestFormedTrigger> TRIGGER_CHEST_FORMED = DeferredHolder.create(Registries.TRIGGER_TYPE, ResourceLocation.parse("colossalchests:chest_formed"));
 
 }

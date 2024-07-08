@@ -23,6 +23,6 @@ public class ContainerScreenUncolossalChest extends ContainerScreenExtended<Cont
 
     @Override
     protected ResourceLocation constructGuiTexture() {
-        return new ResourceLocation("textures/gui/container/hopper.png");
+        return ResourceLocation.parse("textures/gui/container/hopper.png");
     }
 }

@@ -1,20 +1,20 @@
 {
   "type": "minecraft:crafting_shaped",
   "pattern": [
-    "III",
-    "ILI",
-    "III"
+    " C ",
+    "CWC",
+    " C "
   ],
   "key": {
-    "I": {
-      "item": "minecraft:diamond"
+    "C": {
+      "tag": "c:cobblestones"
     },
-    "L": {
-      "tag": "minecraft:logs"
+    "W": {
+      "item": "colossalchests:chest_wall_diamond"
     }
   },
   "result": {
-    "item": "colossalchests:chest_wall_diamond"
+    "id": "colossalchests:interface_diamond"
   },
   "conditions": [
     {

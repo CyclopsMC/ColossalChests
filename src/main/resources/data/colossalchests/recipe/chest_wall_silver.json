@@ -7,24 +7,24 @@
   ],
   "key": {
     "I": {
-      "tag": "forge:ingots/copper"
+      "tag": "c:ingots/silver"
     },
     "L": {
       "tag": "minecraft:logs"
     }
   },
   "result": {
-    "item": "colossalchests:chest_wall_copper"
+    "id": "colossalchests:chest_wall_silver"
   },
   "conditions": [
     {
-      "type": "forge:and",
+      "type": "neoforge:and",
       "values": [
         {
-          "type": "forge:not",
+          "type": "neoforge:not",
           "value": {
-            "type": "forge:tag_empty",
-            "tag": "forge:ingots/copper"
+            "type": "neoforge:tag_empty",
+            "tag": "c:ingots/silver"
           }
         },
         {

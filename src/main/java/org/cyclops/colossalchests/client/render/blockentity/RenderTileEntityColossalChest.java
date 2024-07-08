@@ -41,21 +41,21 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     static {
         Calendar calendar = Calendar.getInstance();
         boolean christmas = calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) >= 24 && calendar.get(Calendar.DATE) <= 26;
-        TEXTURES_CHEST.put(ChestMaterial.WOOD, new ResourceLocation("entity/chest/" + (christmas ? "christmas" : "normal") + ""));
-        TEXTURES_CHEST.put(ChestMaterial.COPPER, new ResourceLocation(Reference.MOD_ID, "models/chest_copper"));
-        TEXTURES_CHEST.put(ChestMaterial.IRON, new ResourceLocation(Reference.MOD_ID, "models/chest_iron"));
-        TEXTURES_CHEST.put(ChestMaterial.SILVER, new ResourceLocation(Reference.MOD_ID, "models/chest_silver"));
-        TEXTURES_CHEST.put(ChestMaterial.GOLD, new ResourceLocation(Reference.MOD_ID, "models/chest_gold"));
-        TEXTURES_CHEST.put(ChestMaterial.DIAMOND, new ResourceLocation(Reference.MOD_ID, "models/chest_diamond"));
-        TEXTURES_CHEST.put(ChestMaterial.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, "models/chest_obsidian"));
+        TEXTURES_CHEST.put(ChestMaterial.WOOD, ResourceLocation.parse("entity/chest/" + (christmas ? "christmas" : "normal") + ""));
+        TEXTURES_CHEST.put(ChestMaterial.COPPER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_copper"));
+        TEXTURES_CHEST.put(ChestMaterial.IRON, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_iron"));
+        TEXTURES_CHEST.put(ChestMaterial.SILVER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_silver"));
+        TEXTURES_CHEST.put(ChestMaterial.GOLD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_gold"));
+        TEXTURES_CHEST.put(ChestMaterial.DIAMOND, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_diamond"));
+        TEXTURES_CHEST.put(ChestMaterial.OBSIDIAN, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_obsidian"));
 
-        TEXTURES_INTERFACE.put(ChestMaterial.WOOD, new ResourceLocation(Reference.MOD_ID, "blocks/interface_wood"));
-        TEXTURES_INTERFACE.put(ChestMaterial.COPPER, new ResourceLocation(Reference.MOD_ID, "blocks/interface_copper"));
-        TEXTURES_INTERFACE.put(ChestMaterial.IRON, new ResourceLocation(Reference.MOD_ID, "blocks/interface_iron"));
-        TEXTURES_INTERFACE.put(ChestMaterial.SILVER, new ResourceLocation(Reference.MOD_ID, "blocks/interface_silver"));
-        TEXTURES_INTERFACE.put(ChestMaterial.GOLD, new ResourceLocation(Reference.MOD_ID, "blocks/interface_gold"));
-        TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, new ResourceLocation(Reference.MOD_ID, "blocks/interface_diamond"));
-        TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, new ResourceLocation(Reference.MOD_ID, "blocks/interface_obsidian"));
+        TEXTURES_INTERFACE.put(ChestMaterial.WOOD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_wood"));
+        TEXTURES_INTERFACE.put(ChestMaterial.COPPER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_copper"));
+        TEXTURES_INTERFACE.put(ChestMaterial.IRON, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_iron"));
+        TEXTURES_INTERFACE.put(ChestMaterial.SILVER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_silver"));
+        TEXTURES_INTERFACE.put(ChestMaterial.GOLD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_gold"));
+        TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_diamond"));
+        TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_obsidian"));
     }
 
     public RenderTileEntityColossalChest(BlockEntityRendererProvider.Context context) {
@@ -201,10 +201,10 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
             float vMax = (sprite.getV1() - sprite.getV0()) * (1 - uvScale) + sprite.getV0();
 
             Matrix4f matrix = matrixStack.last().pose();
-            buffer.vertex(matrix, posMax, posMax, indent).color(255, 255, 255, alpha).uv(uMin, vMax).uv2(combinedLightIn).endVertex();
-            buffer.vertex(matrix, posMax, posMin, indent).color(255, 255, 255, alpha).uv(uMin, vMin).uv2(combinedLightIn).endVertex();
-            buffer.vertex(matrix, posMin, posMin, indent).color(255, 255, 255, alpha).uv(uMax, vMin).uv2(combinedLightIn).endVertex();
-            buffer.vertex(matrix, posMin, posMax, indent).color(255, 255, 255, alpha).uv(uMax, vMax).uv2(combinedLightIn).endVertex();
+            buffer.addVertex(matrix, posMax, posMax, indent).setColor(255, 255, 255, alpha).setUv(uMin, vMax).setLight(combinedLightIn);
+            buffer.addVertex(matrix, posMax, posMin, indent).setColor(255, 255, 255, alpha).setUv(uMin, vMin).setLight(combinedLightIn);
+            buffer.addVertex(matrix, posMin, posMin, indent).setColor(255, 255, 255, alpha).setUv(uMax, vMin).setLight(combinedLightIn);
+            buffer.addVertex(matrix, posMin, posMax, indent).setColor(255, 255, 255, alpha).setUv(uMax, vMax).setLight(combinedLightIn);
             matrixStack.popPose();
         }
     }

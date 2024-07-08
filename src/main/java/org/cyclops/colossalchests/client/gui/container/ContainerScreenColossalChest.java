@@ -61,7 +61,7 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
 
     @Override
     protected ResourceLocation constructGuiTexture() {
-        return new ResourceLocation(Reference.MOD_ID, "textures/gui/colossal_chest.png");
+        return ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/colossal_chest.png");
     }
 
     @Override

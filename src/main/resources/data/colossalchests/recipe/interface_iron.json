@@ -7,14 +7,14 @@
   ],
   "key": {
     "C": {
-      "tag": "forge:cobblestone"
+      "tag": "c:cobblestones"
     },
     "W": {
       "item": "colossalchests:chest_wall_iron"
     }
   },
   "result": {
-    "item": "colossalchests:interface_iron"
+    "id": "colossalchests:interface_iron"
   },
   "conditions": [
     {

@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.inventory.MenuType;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
  */
 public class ChestMaterial {
 
-    public static final Codec<ChestMaterial> CODEC = ExtraCodecs.stringResolverCodec(
+    public static final Codec<ChestMaterial> CODEC = Codec.stringResolver(
                     ChestMaterial::getName,
                     ChestMaterial::valueOfSafe
     );

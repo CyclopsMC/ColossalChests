@@ -7,13 +7,13 @@
   ],
   "key": {
     "C": {
-      "tag": "forge:cobblestone"
+      "tag": "c:cobblestones"
     },
     "W": {
       "item": "colossalchests:chest_wall_wood"
     }
   },
   "result": {
-    "item": "colossalchests:interface_wood"
+    "id": "colossalchests:interface_wood"
   }
 }

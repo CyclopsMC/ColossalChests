@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "item": "colossalchests:chest_wall_iron"
+      "id": "colossalchests:chest_wall_iron"
     },
     "title": {
       "translate": "advancement.colossalchests.iron"

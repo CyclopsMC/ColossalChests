@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "item": "colossalchests:colossal_chest_wood"
+      "id": "colossalchests:colossal_chest_wood"
     },
     "title": {
       "translate": "advancement.colossalchests.large.wood"

@@ -1,7 +1,7 @@
 {
   "display": {
     "icon": {
-      "item": "colossalchests:uncolossal_chest"
+      "id": "colossalchests:uncolossal_chest"
     },
     "title": {
       "translate": "advancement.colossalchests.uncolossal"

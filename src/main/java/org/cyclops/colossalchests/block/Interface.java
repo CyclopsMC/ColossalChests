@@ -5,7 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -24,8 +23,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.cyclopscore.block.BlockWithEntity;
@@ -54,15 +51,7 @@ public class Interface extends BlockWithEntity implements CubeDetector.IDetectio
 
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ENABLED, false));
-        NeoForge.EVENT_BUS.addListener(this::onLivingSpawn);
     }
-
-    public void onLivingSpawn(FinalizeSpawnEvent event) {
-        // Only isValidSpawn is insufficient in some cases, so we add this forceful check as well.
-        if (event.getSpawnType() != MobSpawnType.CHUNK_GENERATION && event.getEntity().getBlockStateOn().getBlock() == this) {
-            event.setSpawnCancelled(true);
-        }
-}
 
     @Override
     public String getDescriptionId() {

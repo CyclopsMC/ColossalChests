@@ -1,0 +1,7 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.19.1 or higher.
+
+Fixes:
+* Revert "Fix entities sometimes spawning in chest, Closes #163"
+  This reverts commit 143b480a45c1344033aa3c6232ea0f19cd17acde.
+  Closes #165

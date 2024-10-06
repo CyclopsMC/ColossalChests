@@ -9,13 +9,13 @@ import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests.advancement.criterion.ChestFormedTriggerConfig;
 import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.block.ChestWallConfig;
-import org.cyclops.colossalchests.block.ColossalChestConfig;
-import org.cyclops.colossalchests.block.InterfaceConfig;
-import org.cyclops.colossalchests.block.UncolossalChestConfig;
-import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfig;
-import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfig;
-import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfig;
+import org.cyclops.colossalchests.block.ChestWallConfigNeoForge;
+import org.cyclops.colossalchests.block.ColossalChestConfigNeoForge;
+import org.cyclops.colossalchests.block.InterfaceConfigNeoForge;
+import org.cyclops.colossalchests.block.UncolossalChestConfigNeoForge;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfigNeoForge;
+import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfigNeoForge;
+import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfigNeoForge;
 import org.cyclops.colossalchests.condition.ConditionMetalVariantsSettingConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
@@ -24,7 +24,7 @@ import org.cyclops.colossalchests.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.colossalchests.proxy.ClientProxy;
 import org.cyclops.colossalchests.proxy.CommonProxy;
-import org.cyclops.cyclopscore.config.ConfigHandler;
+import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
 import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
@@ -44,7 +44,10 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
     public static ColossalChests _instance;
 
     public ColossalChests(IEventBus modEventBus) {
-        super(Reference.MOD_ID, (instance) -> _instance = instance, modEventBus);
+        super(Reference.MOD_ID, (instance) -> {
+            ColossalChestsInstance.MOD = instance;
+            _instance = instance;
+        }, modEventBus);
     }
 
     @Override
@@ -67,35 +70,35 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
     @Override
     protected CreativeModeTab.Builder constructDefaultCreativeModeTab(CreativeModeTab.Builder builder) {
         return super.constructDefaultCreativeModeTab(builder)
-                .icon(() -> new ItemStack(RegistryEntriesCommon.ITEM_CHEST));
+                .icon(() -> new ItemStack(RegistryEntries.ITEM_CHEST));
     }
 
     @Override
-    protected void onConfigsRegister(ConfigHandler configHandler) {
+    protected void onConfigsRegister(ConfigHandlerCommon configHandler) {
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig<>(this));
 
         for (ChestMaterial material : ChestMaterial.VALUES) {
-            configHandler.addConfigurable(new ChestWallConfig(material));
-            configHandler.addConfigurable(new ColossalChestConfig(material));
-            configHandler.addConfigurable(new InterfaceConfig(material));
+            configHandler.addConfigurable(new ChestWallConfigNeoForge<>(this, material));
+            configHandler.addConfigurable(new ColossalChestConfigNeoForge<>(this, material));
+            configHandler.addConfigurable(new InterfaceConfigNeoForge<>(this, material));
         }
+        configHandler.addConfigurable(new UncolossalChestConfigNeoForge<>(this));
 
-        configHandler.addConfigurable(new UncolossalChestConfig());
-        configHandler.addConfigurable(new ItemUpgradeToolConfig(true));
-        configHandler.addConfigurable(new ItemUpgradeToolConfig(false));
+        configHandler.addConfigurable(new ItemUpgradeToolConfig<>(this, true));
+        configHandler.addConfigurable(new ItemUpgradeToolConfig<>(this, false));
 
-        configHandler.addConfigurable(new BlockEntityColossalChestConfig());
-        configHandler.addConfigurable(new BlockEntityInterfaceConfig());
-        configHandler.addConfigurable(new BlockEntityUncolossalChestConfig());
+        configHandler.addConfigurable(new BlockEntityColossalChestConfigNeoForge<>(this));
+        configHandler.addConfigurable(new BlockEntityInterfaceConfigNeoForge<>(this));
+        configHandler.addConfigurable(new BlockEntityUncolossalChestConfigNeoForge<>(this));
 
-        configHandler.addConfigurable(new ContainerColossalChestConfig());
-        configHandler.addConfigurable(new ContainerUncolossalChestConfig());
+        configHandler.addConfigurable(new ContainerColossalChestConfig<>(this));
+        configHandler.addConfigurable(new ContainerUncolossalChestConfig<>(this));
 
         configHandler.addConfigurable(new ConditionMetalVariantsSettingConfig());
 
-        configHandler.addConfigurable(new ChestFormedTriggerConfig());
+        configHandler.addConfigurable(new ChestFormedTriggerConfig<>(this));
     }
 
     /**

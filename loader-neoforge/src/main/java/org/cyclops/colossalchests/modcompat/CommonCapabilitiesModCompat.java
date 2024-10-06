@@ -47,7 +47,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
             CapabilityConstructorRegistry registry = ColossalChests._instance.getCapabilityConstructorRegistry();
 
             // Slotless item handler
-            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST::get,
+            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST::value,
                     new ICapabilityConstructor<BlockEntityColossalChest, Direction, ISlotlessItemHandler, BlockEntityType<BlockEntityColossalChest>>() {
                         @Override
                         public BaseCapability<ISlotlessItemHandler, Direction> getCapability() {
@@ -60,7 +60,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                                     (IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) blockEntity.getInventory());
                         }
                     });
-            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::get,
+            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::value,
                     new ICapabilityConstructor<BlockEntityInterface, Direction, ISlotlessItemHandler, BlockEntityType<BlockEntityInterface>>() {
                         @Override
                         public BaseCapability<ISlotlessItemHandler, Direction> getCapability() {
@@ -81,7 +81,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                     });
 
             // Inventory state
-            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST::get,
+            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST::value,
                     new ICapabilityConstructor<BlockEntityColossalChest, Direction, IInventoryState, BlockEntityType<BlockEntityColossalChest>>() {
                         @Override
                         public BaseCapability<IInventoryState, Direction> getCapability() {
@@ -93,7 +93,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                             return (blockEntity, side) -> () -> ((SimpleInventory) blockEntity.getInventory()).getState();
                         }
                     });
-            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::get,
+            registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::value,
                     new ICapabilityConstructor<BlockEntityInterface, Direction, IInventoryState, BlockEntityType<BlockEntityInterface>>() {
                         @Override
                         public BaseCapability<IInventoryState, Direction> getCapability() {

@@ -1,3 +1,3 @@
 "ignoredFiles": [
-    "src/main/resources/assets/colossalchests/textures/gui/colossal_chest.png"
+    "loader-common/src/main/resources/assets/colossalchests/textures/gui/colossal_chest.png"
 ]

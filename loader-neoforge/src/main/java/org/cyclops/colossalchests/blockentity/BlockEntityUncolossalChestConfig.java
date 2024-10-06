@@ -8,7 +8,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.ColossalChests;
-import org.cyclops.colossalchests.RegistryEntries;
+import org.cyclops.colossalchests.RegistryEntriesCommon;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityUncolossalChest;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockEntityConfig;
 
@@ -24,7 +24,7 @@ public class BlockEntityUncolossalChestConfig extends BlockEntityConfig<BlockEnt
                 ColossalChests._instance,
                 "uncolossal_chest",
                 (eConfig) -> new BlockEntityType<>(BlockEntityUncolossalChest::new,
-                        Sets.newHashSet(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.get()), null)
+                        Sets.newHashSet(RegistryEntriesCommon.BLOCK_UNCOLOSSAL_CHEST.value()), null)
         );
         ColossalChests._instance.getModEventBus().addListener(this::registerCapabilities);
     }

@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests.RegistryEntries;
+import org.cyclops.colossalchests.RegistryEntriesCommon;
 import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
 import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
@@ -178,7 +179,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
         }
 
         BlockState blockState = getLevel().getBlockState(getBlockPos());
-        if(blockState.getBlock() != RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.get()) return Direction.NORTH;
+        if(blockState.getBlock() != RegistryEntriesCommon.BLOCK_UNCOLOSSAL_CHEST.value()) return Direction.NORTH;
         return BlockHelpers.getSafeBlockStateProperty(blockState, UncolossalChest.FACING, Direction.NORTH);
     }
 

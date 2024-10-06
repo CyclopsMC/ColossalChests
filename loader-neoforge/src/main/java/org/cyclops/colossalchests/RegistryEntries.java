@@ -4,8 +4,6 @@ import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.cyclops.colossalchests.advancement.criterion.ChestFormedTrigger;
@@ -19,11 +17,8 @@ import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
  * Referenced registry entries.
  * @author rubensworks
  */
-public class RegistryEntries {
-
-    public static final DeferredHolder<Item, Item> ITEM_CHEST = DeferredHolder.create(Registries.ITEM, ResourceLocation.parse("minecraft:chest"));
-
-    public static final DeferredHolder<Block, Block> BLOCK_UNCOLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK, ResourceLocation.parse("colossalchests:uncolossal_chest"));
+@Deprecated
+public class RegistryEntries { // TODO: rm
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityColossalChest>> BLOCK_ENTITY_COLOSSAL_CHEST = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests:colossal_chest"));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BlockEntityInterface>> BLOCK_ENTITY_INTERFACE = DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests:interface"));

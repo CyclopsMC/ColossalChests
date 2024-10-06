@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import org.cyclops.colossalchests.RegistryEntries;
+import org.cyclops.colossalchests.RegistryEntriesCommon;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChest;
 import org.cyclops.cyclopscore.client.render.blockentity.ItemStackBlockEntityRendererBase;
 
@@ -16,7 +16,7 @@ import org.cyclops.cyclopscore.client.render.blockentity.ItemStackBlockEntityRen
 public class ItemStackTileEntityUncolossalChestRender extends ItemStackBlockEntityRendererBase {
 
     public ItemStackTileEntityUncolossalChestRender() {
-        super(() -> new BlockEntityUncolossalChest(BlockPos.ZERO, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.get().defaultBlockState()));
+        super(() -> new BlockEntityUncolossalChest(BlockPos.ZERO, RegistryEntriesCommon.BLOCK_UNCOLOSSAL_CHEST.value().defaultBlockState()));
     }
 
     public static class ClientItemExtensions implements IClientItemExtensions {

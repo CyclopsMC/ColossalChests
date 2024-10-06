@@ -67,14 +67,14 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
     @Override
     protected CreativeModeTab.Builder constructDefaultCreativeModeTab(CreativeModeTab.Builder builder) {
         return super.constructDefaultCreativeModeTab(builder)
-                .icon(() -> new ItemStack(RegistryEntries.ITEM_CHEST));
+                .icon(() -> new ItemStack(RegistryEntriesCommon.ITEM_CHEST));
     }
 
     @Override
     protected void onConfigsRegister(ConfigHandler configHandler) {
         super.onConfigsRegister(configHandler);
 
-        configHandler.addConfigurable(new GeneralConfig());
+        configHandler.addConfigurable(new GeneralConfig<>(this));
 
         for (ChestMaterial material : ChestMaterial.VALUES) {
             configHandler.addConfigurable(new ChestWallConfig(material));

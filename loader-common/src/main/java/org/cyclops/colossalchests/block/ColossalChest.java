@@ -43,12 +43,14 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.cyclopscore.block.BlockWithEntityGuiCommon;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
 import org.spongepowered.asm.mixin.Interface;
 
 import javax.annotation.Nullable;
+import java.util.function.BiFunction;
 
 /**
  * A machine that can infuse stuff with blood.
@@ -62,10 +64,10 @@ public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetec
     protected final ChestMaterial material;
     public final MapCodec<ColossalChest> codec;
 
-    public ColossalChest(BlockBehaviour.Properties properties, ChestMaterial material) {
-        super(properties, BlockEntityColossalChest::new);
+    public ColossalChest(BlockBehaviour.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntityCommon> blockEntitySupplier) {
+        super(properties, blockEntitySupplier);
         this.material = material;
-        this.codec = BlockBehaviour.simpleCodec((props) -> new ColossalChest(props, material));
+        this.codec = BlockBehaviour.simpleCodec((props) -> new ColossalChest(props, material, blockEntitySupplier));
 
         material.setBlockCore(this);
 

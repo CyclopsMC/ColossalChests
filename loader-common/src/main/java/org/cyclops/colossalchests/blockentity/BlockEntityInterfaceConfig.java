@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
  */
 public class BlockEntityInterfaceConfig<M extends IModBase> extends BlockEntityConfigCommon<BlockEntityInterface, M> {
 
-    public BlockEntityInterfaceConfig(M mod) {
+    public BlockEntityInterfaceConfig(M mod, BlockEntityType.BlockEntitySupplier<? extends BlockEntityInterface> blockEntitySupplier) {
         super(
                 mod,
                 "interface",
-                (eConfig) -> new BlockEntityType<>(BlockEntityInterface::new,
+                (eConfig) -> new BlockEntityType<>(blockEntitySupplier,
                         ChestMaterial.VALUES.stream()
                                 .map(ChestMaterial::getBlockInterface)
                                 .collect(Collectors.toSet()), null)

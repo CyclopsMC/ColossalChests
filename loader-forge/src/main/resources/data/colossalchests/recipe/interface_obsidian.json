@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "CWC",
+    " C "
+  ],
+  "key": {
+    "C": {
+      "tag": "forge:cobblestone"
+    },
+    "W": {
+      "item": "colossalchests:chest_wall_obsidian"
+    }
+  },
+  "result": {
+    "id": "colossalchests:interface_obsidian"
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
+}

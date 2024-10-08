@@ -147,8 +147,8 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
             throw new IllegalArgumentException("Listener already listening");
         } else {
             this.containerListeners.add(listener);
-            if(listener instanceof ServerPlayer) {
-                updateCraftingInventory((ServerPlayer) listener, getItems());
+            if (this.player instanceof ServerPlayer serverPlayer && serverPlayer.containerListener == listener) {
+                updateCraftingInventory(serverPlayer, getItems());
             } else {
                 // TODO: rm?
                 //listener.refreshContainer(this, this.getItems());
@@ -179,8 +179,8 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
                 if (!firstDetectionCheck) {
                     for (int j = 0; j < this.containerListeners.size(); ++j) {
                         ContainerListener listener = this.containerListeners.get(j);
-                        if (listener instanceof ServerPlayer) {
-                            sendSlotContentsToPlayer((ServerPlayer) listener, this, i, itemstack1);
+                        if (this.player instanceof ServerPlayer serverPlayer && serverPlayer.containerListener == listener) {
+                            sendSlotContentsToPlayer(serverPlayer, this, i, itemstack1);
                         } else {
                             listener.slotChanged(this, i, itemstack1);
                         }
@@ -249,7 +249,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
             if (itemStack != null) {
                 CompoundTag tag = new CompoundTag();
                 tag.putInt("slot", i);
-                tag.put("stack", ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
+                tag.put("stack", ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
                         .getOrThrow(JsonParseException::new));
                 int tagSize = getTagSize(tag);
                 if (bufferSize + tagSize + 100 < maxBufferSize) {

@@ -2,3 +2,6 @@ accessWidener v1 named
 
 # Guis
 accessible field net/minecraft/world/inventory/AbstractContainerMenu containerListeners Ljava/util/List;
+
+# ServerPlayer
+accessible field net/minecraft/server/level/ServerPlayer containerListener Lnet/minecraft/world/inventory/ContainerListener;

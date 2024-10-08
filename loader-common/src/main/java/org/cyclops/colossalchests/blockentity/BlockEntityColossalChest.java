@@ -80,7 +80,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
     private final ChestLidController chestLidController = new ChestLidController();
 
     private SimpleInventoryCommon lastValidInventory = null;
-    private SimpleInventoryCommon inventory = null;
+    protected SimpleInventoryCommon inventory = null;
 
     @NBTPersist
     private Vec3i size = IModHelpers.get().getLocationHelpers().copyLocation(Vec3i.ZERO);

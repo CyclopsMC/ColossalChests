@@ -10,7 +10,7 @@ import org.cyclops.cyclopscore.init.ModBase;
  */
 public class BlockEntityInterfaceConfigNeoForge<M extends ModBase> extends BlockEntityInterfaceConfig<M> {
     public BlockEntityInterfaceConfigNeoForge(M mod) {
-        super(mod);
+        super(mod, BlockEntityInterface::new);
         mod.getModEventBus().addListener(this::registerCapabilities);
     }
 

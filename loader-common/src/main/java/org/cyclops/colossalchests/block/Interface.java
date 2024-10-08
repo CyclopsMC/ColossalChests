@@ -24,7 +24,10 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.cyclopscore.block.BlockWithEntityCommon;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
 import org.cyclops.cyclopscore.helper.IModHelpers;
+
+import java.util.function.BiFunction;
 
 /**
  * Part of the Colossal Blood Chest multiblock structure.
@@ -38,10 +41,10 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
     protected final ChestMaterial material;
     public final MapCodec<Interface> codec;
 
-    public Interface(Block.Properties properties, ChestMaterial material) {
-        super(properties, BlockEntityInterface::new);
+    public Interface(Block.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntityCommon> blockEntitySupplier) {
+        super(properties, blockEntitySupplier);
         this.material = material;
-        this.codec = BlockBehaviour.simpleCodec((props) -> new Interface(props, material));
+        this.codec = BlockBehaviour.simpleCodec((props) -> new Interface(props, material, blockEntitySupplier));
 
         material.setBlockInterface(this);
 

@@ -8,13 +8,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 
 /**
  * @author rubensworks
  */
 public class InterfaceNeoForge extends Interface {
     public InterfaceNeoForge(Properties properties, ChestMaterial material) {
-        super(properties, material);
+        super(properties, material, BlockEntityInterface::new);
     }
 
     @Override

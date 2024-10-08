@@ -24,8 +24,8 @@ public class BlockEntityUncolossalChestConfig<M extends IModBase> extends BlockE
     }
 
     @Override
-    public void onRegistered() {
-        super.onRegistered();
+    public void onForgeRegistered() {
+        super.onForgeRegistered();
         if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
             getMod().getProxy().registerRenderer(getInstance(), RenderTileEntityUncolossalChest::new);
         }

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "ILI",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "result": {
+    "id": "colossalchests:chest_wall_iron"
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
+}

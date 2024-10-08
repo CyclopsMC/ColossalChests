@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests.inventory.container;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -11,7 +12,7 @@ import org.cyclops.cyclopscore.inventory.container.InventoryContainerCommon;
  */
 public class ContainerUncolossalChest extends InventoryContainerCommon {
 
-    public ContainerUncolossalChest(int id, Inventory playerInventory) {
+    public ContainerUncolossalChest(int id, Inventory playerInventory, FriendlyByteBuf buf) {
         this(id, playerInventory, new SimpleContainer(5));
     }
 

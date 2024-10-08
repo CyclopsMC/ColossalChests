@@ -7,11 +7,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -121,6 +123,21 @@ public class ChestWall extends Block implements CubeDetector.IDetectionListener,
     @Override
     public boolean canSurvive(BlockState blockState, LevelReader world, BlockPos blockPos) {
         return super.canSurvive(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
+    }
+
+    public void onBlockExplodedCommon(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
+        // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
+        world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+        wasExploded(world, pos, explosion);
+    }
+
+    @Override
+    public float getExplosionResistance() {
+        if (this.material.isExplosionResistant()) {
+            return 10000F;
+        }
+        return 0;
     }
 
 }

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "colossalchests:chest_wall_diamond"
+    },
+    {
+      "tag": "c:ingots/iron"
+    }
+  ],
+  "result": {
+    "id": "colossalchests:colossal_chest_diamond"
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
+}

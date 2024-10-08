@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "colossalchests:chest_wall_silver"
+    },
+    {
+      "tag": "c:ingots/iron"
+    }
+  ],
+  "result": {
+    "id": "colossalchests:colossal_chest_silver"
+  },
+  "conditions": [
+    {
+      "type": "neoforge:and",
+      "values": [
+        {
+          "type": "neoforge:not",
+          "value": {
+            "type": "neoforge:tag_empty",
+            "tag": "c:ingots/silver"
+          }
+        },
+        {
+          "type": "colossalchests:metal_variants_enabled"
+        }
+      ]
+    }
+  ]
+}

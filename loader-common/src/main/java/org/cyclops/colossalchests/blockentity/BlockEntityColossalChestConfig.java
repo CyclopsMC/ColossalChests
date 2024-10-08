@@ -36,8 +36,8 @@ public class BlockEntityColossalChestConfig<M extends IModBase> extends BlockEnt
     }
 
     @Override
-    public void onRegistered() {
-        super.onRegistered();
+    public void onForgeRegistered() {
+        super.onForgeRegistered();
         if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
             getMod().getProxy().registerRenderer(getInstance(), getBlockEntityRendererProvider());
         }

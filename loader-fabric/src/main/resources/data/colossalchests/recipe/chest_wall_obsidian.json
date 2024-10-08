@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PPP",
+    "PLP",
+    "PPP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:obsidian"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "result": {
+    "id": "colossalchests:chest_wall_obsidian"
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
+}

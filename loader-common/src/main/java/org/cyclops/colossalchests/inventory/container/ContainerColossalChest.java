@@ -23,6 +23,7 @@ import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests.ColossalChestsInstance;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
@@ -249,8 +250,13 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
             if (itemStack != null) {
                 CompoundTag tag = new CompoundTag();
                 tag.putInt("slot", i);
-                tag.put("stack", ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
-                        .getOrThrow(JsonParseException::new));
+                try {
+                    tag.put("stack", ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
+                            .getOrThrow(JsonParseException::new));
+                } catch (JsonParseException e) {
+                    ColossalChestsInstance.MOD.log(Level.ERROR, "Error while attempting to send a stack to a client " + itemStack);
+                    e.printStackTrace();
+                }
                 int tagSize = getTagSize(tag);
                 if (bufferSize + tagSize + 100 < maxBufferSize) {
                     sendList.add(tag);

@@ -12,8 +12,9 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
+import org.cyclops.cyclopscore.inventory.IndexedInventoryCommon;
 import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
-import org.cyclops.cyclopscore.inventory.SimpleInventory;
+import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
 import org.cyclops.cyclopscore.modcompat.ICompatInitializer;
 import org.cyclops.cyclopscore.modcompat.IModCompat;
 import org.cyclops.cyclopscore.modcompat.capabilities.CapabilityConstructorRegistry;
@@ -56,8 +57,11 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 
                         @Override
                         public ICapabilityProvider<BlockEntityColossalChest, Direction, ISlotlessItemHandler> createProvider(BlockEntityType<BlockEntityColossalChest> capabilityKey) {
-                            return (blockEntity, side) -> new IndexedSlotlessItemHandlerWrapper(new InvWrapper(blockEntity.getInventory()),
-                                    (IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) blockEntity.getInventory());
+                            return (blockEntity, side) -> {
+                                IndexedInventoryCommon inv = (IndexedInventoryCommon) blockEntity.getInventory();
+                                return new IndexedSlotlessItemHandlerWrapper(new InvWrapper(inv),
+                                        new InventoryIndexReferenceIndexedInventoryCommon(inv));
+                            };
                         }
                     });
             registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::value,
@@ -73,7 +77,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                                 BlockEntityColossalChest core = blockEntity.getCore();
                                 if (core != null) {
                                     return new IndexedSlotlessItemHandlerWrapper(new InvWrapper(core.getInventory()),
-                                            (IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference) core.getInventory());
+                                            new InventoryIndexReferenceIndexedInventoryCommon((IndexedInventoryCommon) core.getInventory()));
                                 }
                                 return null;
                             };
@@ -90,7 +94,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 
                         @Override
                         public ICapabilityProvider<BlockEntityColossalChest, Direction, IInventoryState> createProvider(BlockEntityType<BlockEntityColossalChest> capabilityKey) {
-                            return (blockEntity, side) -> () -> ((SimpleInventory) blockEntity.getInventory()).getState();
+                            return (blockEntity, side) -> () -> ((SimpleInventoryCommon) blockEntity.getInventory()).getState();
                         }
                     });
             registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::value,
@@ -105,7 +109,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                             return (blockEntity, side) -> {
                                 BlockEntityColossalChest core = blockEntity.getCore();
                                 if (core != null) {
-                                    return () -> ((SimpleInventory) core.getInventory()).getState();
+                                    return () -> ((SimpleInventoryCommon) core.getInventory()).getState();
                                 }
                                 return null;
                             };

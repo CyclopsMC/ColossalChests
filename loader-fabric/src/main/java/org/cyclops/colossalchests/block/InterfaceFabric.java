@@ -10,7 +10,11 @@ import org.cyclops.cyclopscore.events.IBlockExplodedEvent;
 public class InterfaceFabric extends Interface {
     public InterfaceFabric(Properties properties, ChestMaterial material) {
         super(properties, material, BlockEntityInterface::new);
-        IBlockExplodedEvent.EVENT.register((blockState, level, blockPos, explosion, biConsumer) -> onBlockExplodedCommon(blockState, level, blockPos, explosion));
+        IBlockExplodedEvent.EVENT.register((blockState, level, blockPos, explosion, biConsumer) -> {
+            if (blockState.getBlock() == this) {
+                onBlockExplodedCommon(blockState, level, blockPos, explosion);
+            }
+        });
     }
 
     @Override

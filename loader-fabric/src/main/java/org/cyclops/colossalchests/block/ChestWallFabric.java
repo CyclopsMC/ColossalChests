@@ -9,7 +9,11 @@ import org.cyclops.cyclopscore.events.IBlockExplodedEvent;
 public class ChestWallFabric extends ChestWall {
     public ChestWallFabric(Properties properties, ChestMaterial material) {
         super(properties, material);
-        IBlockExplodedEvent.EVENT.register((blockState, level, blockPos, explosion, biConsumer) -> onBlockExplodedCommon(blockState, level, blockPos, explosion));
+        IBlockExplodedEvent.EVENT.register((blockState, level, blockPos, explosion, biConsumer) -> {
+            if (blockState.getBlock() == this) {
+                onBlockExplodedCommon(blockState, level, blockPos, explosion);
+            }
+        });
     }
 
     @Override

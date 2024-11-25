@@ -5,6 +5,7 @@ org.cyclops.colossalchests.blockentity
 org.cyclops.colossalchests.client.gui.container
 org.cyclops.colossalchests.client.render.blockentity
 org.cyclops.colossalchests.condition
+org.cyclops.colossalchests.gametest
 org.cyclops.colossalchests.inventory.container
 org.cyclops.colossalchests.item
 org.cyclops.colossalchests.modcompat

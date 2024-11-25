@@ -22,6 +22,8 @@ import org.cyclops.cyclopscore.config.DeferredHolderCommon;
 public class RegistryEntries {
 
     public static final DeferredHolderCommon<Item, Item> ITEM_CHEST = DeferredHolderCommon.create(Registries.ITEM, ResourceLocation.parse("minecraft:chest"));
+    public static final DeferredHolderCommon<Item, Item> ITEM_UPGRADE_TOOL = DeferredHolderCommon.create(Registries.ITEM, ResourceLocation.parse("colossalchests:upgrade_tool"));
+    public static final DeferredHolderCommon<Item, Item> ITEM_UPGRADE_TOOL_REVERSE = DeferredHolderCommon.create(Registries.ITEM, ResourceLocation.parse("colossalchests:upgrade_tool_reverse"));
 
     public static final DeferredHolderCommon<Block, Block> BLOCK_UNCOLOSSAL_CHEST = DeferredHolderCommon.create(Registries.BLOCK, ResourceLocation.parse("colossalchests:uncolossal_chest"));
 

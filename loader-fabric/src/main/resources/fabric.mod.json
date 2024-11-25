@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "org.cyclops.colossalchests.ColossalChestsFabric"
+    ],
+    "fabric-gametest": [
+      "org.cyclops.colossalchests.gametest.GameTestsCommon"
     ]
   },
   "accessWidener" : "colossalchests.accesswidener",

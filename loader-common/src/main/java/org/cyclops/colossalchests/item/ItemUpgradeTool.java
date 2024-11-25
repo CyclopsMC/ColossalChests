@@ -187,7 +187,9 @@ public class ItemUpgradeTool extends Item {
                 tileInterface.setCorePosition(coreLocation.get());
             }
 
-            RegistryEntries.TRIGGER_CHEST_FORMED.value().test((ServerPlayer) player, newType, size.getX() + 1);
+            if (player instanceof ServerPlayer serverPlayer) {
+                RegistryEntries.TRIGGER_CHEST_FORMED.value().test(serverPlayer, newType, size.getX() + 1);
+            }
         }
 
         // Add the lower tier items to the players inventory again.

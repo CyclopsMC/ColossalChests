@@ -1,11 +1,8 @@
 {
-    "_comment": "General",
     "itemGroup.colossalchests": "巨型箱子",
     "general.colossalchests.description": "因为常规的箱子太小了。",
     "general.colossalchests.colossalchest": "%s巨型箱子（%s）",
     "general.colossalchests.uncolossalchest": "微缩箱子",
-
-    "_comment": "Advancements",
     "advancement.colossalchests.wood": "木质巨型箱子",
     "advancement.colossalchests.wood.desc": "搭建一个木质巨型箱子",
     "advancement.colossalchests.copper": "铜巨型箱子",
@@ -36,8 +33,6 @@
     "advancement.colossalchests.large.diamond.desc": "搭建一个大小至少为10x10x10钻石巨型箱子",
     "advancement.colossalchests.large.obsidian": "史诗级黑曜石巨型箱子",
     "advancement.colossalchests.large.obsidian.desc": "搭建一个大小至少为10x10x10黑曜石巨型箱子",
-
-    "_comment": "Blocks",
     "block.colossalchests.colossal_chest": "巨型箱子核心",
     "block.colossalchests.colossal_chest.info": "每个巨型箱子仅需一个",
     "block.colossalchests.chest_wall": "巨型箱子箱壁",
@@ -46,14 +41,8 @@
     "block.colossalchests.interface.info": "用于和管道或漏斗相连",
     "block.colossalchests.uncolossal_chest": "微缩箱子",
     "block.colossalchests.uncolossal_chest.info": "这才是最大的箱子！！！",
-
-    "_comment": "Items",
     "item.colossalchests.upgrade_tool": "箱子升级工具",
     "item.colossalchests.upgrade_tool.info": "在物品栏拥有所需材料的前提下将箱子升级到下一个等级。",
-    "item.colossalchests.upgrade_tool.reverse": "箱子降级工具",
-    "item.colossalchests.upgrade_tool.reverse.info": "在物品栏拥有所需材料的前提下将箱子降低一个等级。需要注意的是，多出来的东西会蹦的满地都是。",
-
-    "_comment": "Materials",
     "material.colossalchests.wood": "木质",
     "material.colossalchests.copper": "铜",
     "material.colossalchests.iron": "铁",
@@ -61,8 +50,6 @@
     "material.colossalchests.gold": "金",
     "material.colossalchests.diamond": "钻石",
     "material.colossalchests.obsidian": "黑曜石",
-
-    "_comment": "Multiblock",
     "multiblock.colossalchests.error.prefix": "巨型箱子",
     "multiblock.colossalchests.error.prefix.info": "巨型箱子结构错误",
     "multiblock.colossalchests.error.unexpected": "不可预料的巨型箱子结构错误。",

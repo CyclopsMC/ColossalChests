@@ -2,7 +2,7 @@ package org.cyclops.colossalchests.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 /**
  * @author rubensworks
@@ -13,7 +13,7 @@ public class BlockEntityColossalChestNeoForge extends BlockEntityColossalChest {
     }
 
     @Override
-    public void setInventory(SimpleInventoryCommon inventory) {
+    public void setInventory(SimpleInventory inventory) {
         invalidateCapabilities();
         super.setInventory(inventory);
     }

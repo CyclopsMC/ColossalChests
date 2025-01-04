@@ -23,7 +23,7 @@ public class BlockEntityColossalChestConfig<M extends IModBase> extends BlockEnt
                 (eConfig) -> new BlockEntityType<>(((BlockEntityColossalChestConfig) eConfig).getBlockEntitySupplier(),
                         ChestMaterial.VALUES.stream()
                                 .map(ChestMaterial::getBlockCore)
-                                .collect(Collectors.toSet()), null)
+                                .collect(Collectors.toSet()))
         );
     }
 
@@ -36,8 +36,8 @@ public class BlockEntityColossalChestConfig<M extends IModBase> extends BlockEnt
     }
 
     @Override
-    public void onForgeRegistered() {
-        super.onForgeRegistered();
+    public void onRegistryRegistered() {
+        super.onRegistryRegistered();
         if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
             getMod().getProxy().registerRenderer(getInstance(), getBlockEntityRendererProvider());
         }

@@ -6,7 +6,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChest;
-import org.cyclops.cyclopscore.helper.MinecraftHelpers;
 import org.cyclops.cyclopscore.modcompat.ICompatInitializer;
 import org.cyclops.cyclopscore.modcompat.IModCompat;
 
@@ -51,8 +50,8 @@ public class IronChestModCompat implements IModCompat {
 
     @Override
     public ICompatInitializer createInitializer() {
-        return () -> {
-            if(MinecraftHelpers.isClientSide()) {
+        return (mod) -> {
+            if(mod.getModHelpers().getMinecraftHelpers().isClientSide()) {
                 overrideTextures();
             }
         };

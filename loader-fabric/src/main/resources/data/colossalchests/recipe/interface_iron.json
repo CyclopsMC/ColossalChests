@@ -6,12 +6,8 @@
     " C "
   ],
   "key": {
-    "C": {
-      "tag": "c:cobblestones"
-    },
-    "W": {
-      "item": "colossalchests:chest_wall_iron"
-    }
+    "C": "#c:cobblestones",
+    "W": "colossalchests:chest_wall_iron"
   },
   "result": {
     "id": "colossalchests:interface_iron"

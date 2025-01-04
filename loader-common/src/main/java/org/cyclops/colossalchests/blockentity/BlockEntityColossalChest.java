@@ -33,14 +33,14 @@ import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
-import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
 import org.cyclops.cyclopscore.helper.DirectionHelpers;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
-import org.cyclops.cyclopscore.inventory.IndexedInventoryCommon;
-import org.cyclops.cyclopscore.inventory.LargeInventoryCommon;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.IndexedInventory;
+import org.cyclops.cyclopscore.inventory.LargeInventory;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 
 import javax.annotation.Nullable;
@@ -53,7 +53,7 @@ import java.util.Random;
  * @author rubensworks
  *
  */
-public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implements MenuProvider, LidBlockEntity {
+public class BlockEntityColossalChest extends CyclopsBlockEntity implements MenuProvider, LidBlockEntity {
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         protected void onOpen(Level level, BlockPos pos, BlockState blockState) {
@@ -79,8 +79,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
     };
     private final ChestLidController chestLidController = new ChestLidController();
 
-    private SimpleInventoryCommon lastValidInventory = null;
-    protected SimpleInventoryCommon inventory = null;
+    private SimpleInventory lastValidInventory = null;
+    protected SimpleInventory inventory = null;
 
     @NBTPersist
     private Vec3i size = IModHelpers.get().getLocationHelpers().copyLocation(Vec3i.ZERO);
@@ -148,7 +148,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
                     this.lastValidInventory = this.inventory;
                 }
             }
-            setInventory(new LargeInventoryCommon(0, 0));
+            setInventory(new LargeInventory(0, 0));
         }
 
         // Send an immediate update
@@ -164,11 +164,11 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
         return ChestMaterial.VALUES.get(this.materialId);
     }
 
-    public SimpleInventoryCommon getLastValidInventory() {
+    public SimpleInventory getLastValidInventory() {
         return lastValidInventory;
     }
 
-    public void setLastValidInventory(SimpleInventoryCommon lastValidInventory) {
+    public void setLastValidInventory(SimpleInventory lastValidInventory) {
         this.lastValidInventory = lastValidInventory;
     }
 
@@ -180,11 +180,11 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
         return getLevel() != null && getLevel().isClientSide;
     }
 
-    protected LargeInventoryCommon constructInventory() {
+    protected LargeInventory constructInventory() {
         if (!isClientSide() && GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        LargeInventoryCommon inv = !isClientSide() ? new IndexedInventoryCommon(calculateInventorySize(), 64) {
+        LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64) {
             @Override
             public void startOpen(Player entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
@@ -200,15 +200,15 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
                     BlockEntityColossalChest.this.stopOpen(entityPlayer);
                 }
             }
-        } : new LargeInventoryCommon(calculateInventorySize(), 64);
+        } : new LargeInventory(calculateInventorySize(), 64);
         inv.addDirtyMarkListener(this);
 
         return inv;
     }
 
-    protected LargeInventoryCommon constructInventoryDebug() {
-        LargeInventoryCommon inv = !isClientSide() ? new IndexedInventoryCommon(calculateInventorySize(), 64)
-                : new LargeInventoryCommon(calculateInventorySize(), 64);
+    protected LargeInventory constructInventoryDebug() {
+        LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64)
+                : new LargeInventory(calculateInventorySize(), 64);
         Random random = new Random();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             inv.setItem(i, new ItemStack(Iterables.get(BuiltInRegistries.ITEM,
@@ -221,8 +221,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         // Don't send the inventory to the client.
         // The client will receive the data once the gui is opened.
-        SimpleInventoryCommon oldInventory = this.inventory;
-        SimpleInventoryCommon oldLastInventory = this.lastValidInventory;
+        SimpleInventory oldInventory = this.inventory;
+        SimpleInventory oldLastInventory = this.lastValidInventory;
         this.inventory = null;
         this.lastValidInventory = null;
         this.recreateNullInventory = false;
@@ -235,8 +235,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
 
     @Override
     public void read(CompoundTag tag, HolderLookup.Provider provider) {
-        SimpleInventoryCommon oldInventory = this.inventory;
-        SimpleInventoryCommon oldLastInventory = this.lastValidInventory;
+        SimpleInventory oldInventory = this.inventory;
+        SimpleInventory oldLastInventory = this.lastValidInventory;
 
         if (getLevel() != null && getLevel().isClientSide) {
             // Don't read the inventory on the client.
@@ -253,7 +253,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
         } else {
             getInventory().read(provider, tag.getCompound("inventory"));
             if (tag.contains("lastValidInventory", Tag.TAG_COMPOUND)) {
-                this.lastValidInventory = new LargeInventoryCommon(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
+                this.lastValidInventory = new LargeInventory(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
                 this.lastValidInventory.read(provider, tag.getCompound("lastValidInventory"));
             }
         }
@@ -295,7 +295,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
         return (int) Math.ceil((Math.pow(size, 3) * 27) * getMaterial().getInventoryMultiplier() / 9) * 9;
     }
 
-    public void setInventory(SimpleInventoryCommon inventory) {
+    public void setInventory(SimpleInventory inventory) {
         this.inventory = inventory;
     }
 
@@ -307,7 +307,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
 
     public INBTInventory getInventory() {
         if(lastValidInventory != null) {
-            return new IndexedInventoryCommon();
+            return new IndexedInventory();
         }
         ensureInventoryInitialized();
         if(inventory == null && this.recreateNullInventory) {

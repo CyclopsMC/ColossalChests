@@ -6,25 +6,21 @@
     "III"
   ],
   "key": {
-    "I": {
-      "tag": "forge:ingots/copper"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
+    "I": "#c:ingots/copper",
+    "L": "#minecraft:logs"
   },
   "result": {
     "id": "colossalchests:chest_wall_copper"
   },
   "conditions": [
     {
-      "type": "neoforge:and",
+      "type": "forge:and",
       "values": [
         {
-          "type": "neoforge:not",
+          "type": "forge:not",
           "value": {
-            "type": "neoforge:tag_empty",
-            "tag": "forge:ingots/copper"
+            "type": "forge:tag_empty",
+            "tag": "c:ingots/copper"
           }
         },
         {

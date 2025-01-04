@@ -11,7 +11,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.wrapper.InvWrapper;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 /**
  * @author rubensworks
@@ -25,7 +25,7 @@ public class BlockEntityColossalChestForge extends BlockEntityColossalChest {
     }
 
     @Override
-    public void setInventory(SimpleInventoryCommon inventory) {
+    public void setInventory(SimpleInventory inventory) {
         this.capabilityItemHandler.invalidate();
         super.setInventory(inventory);
         if (this.inventory.getContainerSize() > 0) {

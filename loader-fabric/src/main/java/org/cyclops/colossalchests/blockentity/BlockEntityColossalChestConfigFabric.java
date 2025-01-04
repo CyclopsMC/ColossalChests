@@ -13,8 +13,8 @@ public class BlockEntityColossalChestConfigFabric<M extends ModBaseFabric> exten
     }
 
     @Override
-    public void onForgeRegistered() {
-        super.onForgeRegistered();
+    public void onRegistryRegistered() {
+        super.onRegistryRegistered();
         // If this would cause performance issues, we could implement a custom Storage instead of InventoryStorage that makes better use of Storage's capabilities.
         // If so, also use this in BlockEntityInterfaceConfigFabric
         ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), context), getInstance());

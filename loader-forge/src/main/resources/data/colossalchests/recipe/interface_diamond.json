@@ -6,12 +6,8 @@
     " C "
   ],
   "key": {
-    "C": {
-      "tag": "forge:cobblestone"
-    },
-    "W": {
-      "item": "colossalchests:chest_wall_diamond"
-    }
+    "C": "#c:cobblestones",
+    "W": "colossalchests:chest_wall_diamond"
   },
   "result": {
     "id": "colossalchests:interface_diamond"

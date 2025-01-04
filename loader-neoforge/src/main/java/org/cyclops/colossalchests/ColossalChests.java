@@ -8,11 +8,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests.advancement.criterion.ChestFormedTriggerConfig;
-import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.block.ChestWallConfigNeoForge;
-import org.cyclops.colossalchests.block.ColossalChestConfigNeoForge;
-import org.cyclops.colossalchests.block.InterfaceConfigNeoForge;
-import org.cyclops.colossalchests.block.UncolossalChestConfigNeoForge;
+import org.cyclops.colossalchests.block.*;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfigNeoForge;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfigNeoForge;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfigNeoForge;
@@ -25,7 +21,7 @@ import org.cyclops.colossalchests.modcompat.IronChestModCompat;
 import org.cyclops.colossalchests.proxy.ClientProxy;
 import org.cyclops.colossalchests.proxy.CommonProxy;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
-import org.cyclops.cyclopscore.init.ModBaseVersionable;
+import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
@@ -36,7 +32,7 @@ import org.cyclops.cyclopscore.proxy.ICommonProxy;
  *
  */
 @Mod(Reference.MOD_ID)
-public class ColossalChests extends ModBaseVersionable<ColossalChests> {
+public class ColossalChests extends ModBaseNeoForge<ColossalChests> {
 
     /**
      * The unique instance of this mod.

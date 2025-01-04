@@ -19,7 +19,7 @@ import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.colossalchests.network.packet.ServerboundContainerClickPacketOverride;
 import org.cyclops.cyclopscore.client.gui.component.button.ButtonArrow;
-import org.cyclops.cyclopscore.client.gui.container.ContainerScreenScrollingCommon;
+import org.cyclops.cyclopscore.client.gui.container.ContainerScreenScrolling;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import java.util.List;
  * @author rubensworks
  *
  */
-public class ContainerScreenColossalChest extends ContainerScreenScrollingCommon<ContainerColossalChest> {
+public class ContainerScreenColossalChest extends ContainerScreenScrolling<ContainerColossalChest> {
 
     private static final int TEXTUREWIDTH = 195;
     private static final int TEXTUREHEIGHT = 194;
@@ -116,6 +116,6 @@ public class ContainerScreenColossalChest extends ContainerScreenScrollingCommon
         }
 
         // Original: this.connection.send(new ServerboundContainerClickPacket(p_171800_, abstractcontainermenu.getStateId(), p_171801_, p_171802_, p_171803_, abstractcontainermenu.getCarried().copy(), changedSloits));
-        ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundContainerClickPacketOverride(windowId, abstractcontainermenu.getStateId(), slotId, mouseButtonClicked, clickType, abstractcontainermenu.getCarried().copy(), changedSlots));
+        ColossalChestsInstance.MOD.getPacketHandler().sendToServer(new ServerboundContainerClickPacketOverride(windowId, abstractcontainermenu.getStateId(), slotId, mouseButtonClicked, clickType, abstractcontainermenu.getCarried().copy(), changedSlots));
     }
 }

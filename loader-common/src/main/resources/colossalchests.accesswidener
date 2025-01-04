@@ -5,3 +5,8 @@ accessible field net/minecraft/world/inventory/AbstractContainerMenu containerLi
 
 # ServerPlayer
 accessible field net/minecraft/server/level/ServerPlayer containerListener Lnet/minecraft/world/inventory/ContainerListener;
+
+# BlockEntityType
+accessible class net/minecraft/world/level/block/entity/BlockEntityType
+accessible method net/minecraft/world/level/block/entity/BlockEntityType <init> (Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V
+accessible class net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier

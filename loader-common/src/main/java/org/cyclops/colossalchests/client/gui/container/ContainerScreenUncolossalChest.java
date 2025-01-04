@@ -5,12 +5,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
-import org.cyclops.cyclopscore.client.gui.container.ContainerScreenExtendedCommon;
+import org.cyclops.cyclopscore.client.gui.container.ContainerScreenExtended;
 
 /**
  * @author rubensworks
  */
-public class ContainerScreenUncolossalChest extends ContainerScreenExtendedCommon<ContainerUncolossalChest> {
+public class ContainerScreenUncolossalChest extends ContainerScreenExtended<ContainerUncolossalChest> {
     public ContainerScreenUncolossalChest(ContainerUncolossalChest container, Inventory inventory, Component title) {
         super(container, inventory, title);
     }

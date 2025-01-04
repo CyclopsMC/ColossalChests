@@ -6,12 +6,12 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChestNeoForge;
-import org.cyclops.cyclopscore.init.ModBase;
+import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 
 /**
  * @author rubensworks
  */
-public class BlockEntityColossalChestConfigNeoForge<M extends ModBase> extends BlockEntityColossalChestConfig<M> {
+public class BlockEntityColossalChestConfigNeoForge<M extends ModBaseNeoForge<?>> extends BlockEntityColossalChestConfig<M> {
     public BlockEntityColossalChestConfigNeoForge(M mod) {
         super(mod);
         mod.getModEventBus().addListener(this::registerCapabilities);

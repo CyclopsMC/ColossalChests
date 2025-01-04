@@ -6,12 +6,8 @@
     "PPP"
   ],
   "key": {
-    "P": {
-      "item": "minecraft:obsidian"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
+    "P": "minecraft:obsidian",
+    "L": "#minecraft:logs"
   },
   "result": {
     "id": "colossalchests:chest_wall_obsidian"

@@ -21,7 +21,7 @@ public class BlockEntityInterfaceConfig<M extends IModBase> extends BlockEntityC
                 (eConfig) -> new BlockEntityType<>(blockEntitySupplier,
                         ChestMaterial.VALUES.stream()
                                 .map(ChestMaterial::getBlockInterface)
-                                .collect(Collectors.toSet()), null)
+                                .collect(Collectors.toSet()))
         );
     }
 

@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "colossalchests:chest_wall_wood"
-    },
-    {
-      "tag": "minecraft:planks"
-    }
+    "colossalchests:chest_wall_wood",
+    "#minecraft:planks"
   ],
   "result": {
     "id": "colossalchests:uncolossal_chest"

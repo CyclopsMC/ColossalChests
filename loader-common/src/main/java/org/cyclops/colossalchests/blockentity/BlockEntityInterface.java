@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests.RegistryEntries;
-import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
 
@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference;
  * @author rubensworks
  *
  */
-public class BlockEntityInterface extends CyclopsBlockEntityCommon {
+public class BlockEntityInterface extends CyclopsBlockEntity {
 
     @NBTPersist
     private Vec3i corePosition = null;

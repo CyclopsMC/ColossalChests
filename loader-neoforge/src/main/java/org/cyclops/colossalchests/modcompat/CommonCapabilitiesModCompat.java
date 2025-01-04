@@ -12,9 +12,9 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
-import org.cyclops.cyclopscore.inventory.IndexedInventoryCommon;
+import org.cyclops.cyclopscore.inventory.IndexedInventory;
 import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.modcompat.ICompatInitializer;
 import org.cyclops.cyclopscore.modcompat.IModCompat;
 import org.cyclops.cyclopscore.modcompat.capabilities.CapabilityConstructorRegistry;
@@ -44,7 +44,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 
     @Override
     public ICompatInitializer createInitializer() {
-        return () -> {
+        return (mod) -> {
             CapabilityConstructorRegistry registry = ColossalChests._instance.getCapabilityConstructorRegistry();
 
             // Slotless item handler
@@ -58,7 +58,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                         @Override
                         public ICapabilityProvider<BlockEntityColossalChest, Direction, ISlotlessItemHandler> createProvider(BlockEntityType<BlockEntityColossalChest> capabilityKey) {
                             return (blockEntity, side) -> {
-                                IndexedInventoryCommon inv = (IndexedInventoryCommon) blockEntity.getInventory();
+                                IndexedInventory inv = (IndexedInventory) blockEntity.getInventory();
                                 return new IndexedSlotlessItemHandlerWrapper(new InvWrapper(inv),
                                         new InventoryIndexReferenceIndexedInventoryCommon(inv));
                             };
@@ -77,7 +77,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                                 BlockEntityColossalChest core = blockEntity.getCore();
                                 if (core != null) {
                                     return new IndexedSlotlessItemHandlerWrapper(new InvWrapper(core.getInventory()),
-                                            new InventoryIndexReferenceIndexedInventoryCommon((IndexedInventoryCommon) core.getInventory()));
+                                            new InventoryIndexReferenceIndexedInventoryCommon((IndexedInventory) core.getInventory()));
                                 }
                                 return null;
                             };
@@ -94,7 +94,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
 
                         @Override
                         public ICapabilityProvider<BlockEntityColossalChest, Direction, IInventoryState> createProvider(BlockEntityType<BlockEntityColossalChest> capabilityKey) {
-                            return (blockEntity, side) -> () -> ((SimpleInventoryCommon) blockEntity.getInventory()).getState();
+                            return (blockEntity, side) -> () -> ((SimpleInventory) blockEntity.getInventory()).getState();
                         }
                     });
             registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_INTERFACE::value,
@@ -109,7 +109,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                             return (blockEntity, side) -> {
                                 BlockEntityColossalChest core = blockEntity.getCore();
                                 if (core != null) {
-                                    return () -> ((SimpleInventoryCommon) core.getInventory()).getState();
+                                    return () -> ((SimpleInventory) core.getInventory()).getState();
                                 }
                                 return null;
                             };

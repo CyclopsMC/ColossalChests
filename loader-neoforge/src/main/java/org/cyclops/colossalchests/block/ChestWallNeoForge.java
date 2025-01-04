@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
@@ -27,7 +28,7 @@ public class ChestWallNeoForge extends ChestWall {
     }
 
     @Override
-    public void onBlockExploded(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+    public void onBlockExploded(BlockState state, ServerLevel world, BlockPos pos, Explosion explosion) {
         super.onBlockExplodedCommon(state, world, pos, explosion);
     }
 

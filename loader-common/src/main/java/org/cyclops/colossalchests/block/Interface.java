@@ -3,16 +3,12 @@ package org.cyclops.colossalchests.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.LevelWriter;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -24,9 +20,9 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
-import org.cyclops.cyclopscore.block.BlockWithEntityCommon;
+import org.cyclops.cyclopscore.block.BlockWithEntity;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
-import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 
 import java.util.function.BiFunction;
@@ -36,14 +32,14 @@ import java.util.function.BiFunction;
  * @author rubensworks
  *
  */
-public class Interface extends BlockWithEntityCommon implements CubeDetector.IDetectionListener, IBlockChestMaterial {
+public class Interface extends BlockWithEntity implements CubeDetector.IDetectionListener, IBlockChestMaterial {
 
     public static final BooleanProperty ENABLED = ColossalChest.ENABLED;
 
     protected final ChestMaterial material;
     public final MapCodec<Interface> codec;
 
-    public Interface(Block.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntityCommon> blockEntitySupplier) {
+    public Interface(Block.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntity> blockEntitySupplier) {
         super(properties, blockEntitySupplier);
         this.material = material;
         this.codec = BlockBehaviour.simpleCodec((props) -> new Interface(props, material, blockEntitySupplier));
@@ -52,12 +48,6 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
 
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ENABLED, false));
-    }
-
-    @Override
-    public String getDescriptionId() {
-        String baseKey = super.getDescriptionId();
-        return baseKey.substring(0, baseKey.lastIndexOf('_'));
     }
 
     @Override
@@ -77,11 +67,11 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
 
     @Override
     public RenderShape getRenderShape(BlockState blockState) {
-        return blockState.getValue(ENABLED) ? RenderShape.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
+        return blockState.getValue(ENABLED) ? RenderShape.MODEL : super.getRenderShape(blockState);
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState blockState, BlockGetter blockReader, BlockPos blockPos) {
+    public boolean propagatesSkylightDown(BlockState blockState) {
         return blockState.getValue(ENABLED);
     }
 
@@ -129,7 +119,7 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
         }
     }
 
-    public void onBlockExplodedCommon(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+    public void onBlockExplodedCommon(BlockState state, ServerLevel world, BlockPos pos, Explosion explosion) {
         if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);

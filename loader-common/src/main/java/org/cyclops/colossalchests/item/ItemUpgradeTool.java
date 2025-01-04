@@ -28,7 +28,7 @@ import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.IInventoryHelpers;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.cyclops.cyclopscore.inventory.PlayerInventoryIterator;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import java.util.List;
 
@@ -141,7 +141,7 @@ public class ItemUpgradeTool extends Item {
         // Update the chest material and move the contents to the new tile
         if(!world.isClientSide) {
             tile.setSize(Vec3i.ZERO);
-            SimpleInventoryCommon oldInventory = tile.getLastValidInventory();
+            SimpleInventory oldInventory = tile.getLastValidInventory();
             Direction oldRotation = tile.getRotation();
             Vec3 oldRenderOffset = tile.getRenderOffset();
             List<Vec3i> oldInterfaceLocations = Lists.newArrayList(tile.getInterfaceLocations());

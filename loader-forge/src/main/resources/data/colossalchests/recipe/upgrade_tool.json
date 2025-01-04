@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "minecraft:stick"
-    },
-    {
-      "item": "colossalchests:chest_wall_wood"
-    },
-    {
-      "item": "minecraft:stick"
-    }
+    "minecraft:stick",
+    "colossalchests:chest_wall_wood",
+    "minecraft:stick"
   ],
   "result": {
     "id": "colossalchests:upgrade_tool"

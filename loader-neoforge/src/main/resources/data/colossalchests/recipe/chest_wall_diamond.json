@@ -6,12 +6,8 @@
     "III"
   ],
   "key": {
-    "I": {
-      "item": "minecraft:diamond"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
+    "I": "minecraft:diamond",
+    "L": "#minecraft:logs"
   },
   "result": {
     "id": "colossalchests:chest_wall_diamond"

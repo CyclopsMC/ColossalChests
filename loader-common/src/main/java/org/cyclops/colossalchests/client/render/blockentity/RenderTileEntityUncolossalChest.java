@@ -3,7 +3,9 @@ package org.cyclops.colossalchests.client.render.blockentity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChest;
 
 /**
@@ -18,7 +20,15 @@ public class RenderTileEntityUncolossalChest extends RenderTileEntityChestBase<B
     }
 
     @Override
+    public boolean shouldRender(BlockEntityUncolossalChest blockEntity, Vec3 cameraPos) {
+        return blockEntity.getBlockPos() == BlockPos.ZERO || super.shouldRender(blockEntity, cameraPos);
+    }
+
+    @Override
     protected Direction getDirection(BlockEntityUncolossalChest tile) {
+        if (tile.getBlockPos() == BlockPos.ZERO) {
+            return Direction.SOUTH;
+        }
         return tile.getRotation();
     }
 

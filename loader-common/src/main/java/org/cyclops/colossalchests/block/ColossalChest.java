@@ -7,11 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
+import net.minecraft.network.chat.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -20,12 +16,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.LevelWriter;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -42,14 +33,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
-import org.cyclops.cyclopscore.block.BlockWithEntityGuiCommon;
+import org.cyclops.cyclopscore.block.BlockWithEntityGui;
 import org.cyclops.cyclopscore.block.multi.CubeDetector;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
-import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.IBlockEntityHelpers;
 import org.cyclops.cyclopscore.helper.IModHelpers;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.spongepowered.asm.mixin.Interface;
 
 import javax.annotation.Nullable;
@@ -60,14 +51,14 @@ import java.util.function.BiFunction;
  *
  * @author rubensworks
  */
-public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetector.IDetectionListener, IBlockChestMaterial {
+public class ColossalChest extends BlockWithEntityGui implements CubeDetector.IDetectionListener, IBlockChestMaterial {
 
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     protected final ChestMaterial material;
     public final MapCodec<ColossalChest> codec;
 
-    public ColossalChest(BlockBehaviour.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntityCommon> blockEntitySupplier) {
+    public ColossalChest(BlockBehaviour.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntity> blockEntitySupplier) {
         super(properties, blockEntitySupplier);
         this.material = material;
         this.codec = BlockBehaviour.simpleCodec((props) -> new ColossalChest(props, material, blockEntitySupplier));
@@ -95,12 +86,6 @@ public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetec
         if (level.getBlockEntity(pos) instanceof BlockEntityColossalChest uncolossalChest) {
             uncolossalChest.recheckOpen();
         }
-    }
-
-    @Override
-    public String getDescriptionId() {
-        String baseKey = super.getDescriptionId();
-        return baseKey.substring(0, baseKey.lastIndexOf('_'));
     }
 
     @Override
@@ -132,11 +117,11 @@ public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetec
 
     @Override
     public RenderShape getRenderShape(BlockState blockState) {
-        return blockState.getValue(ENABLED) ? RenderShape.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
+        return blockState.getValue(ENABLED) ? RenderShape.MODEL : super.getRenderShape(blockState);
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState blockState, BlockGetter blockReader, BlockPos blockPos) {
+    public boolean propagatesSkylightDown(BlockState blockState) {
         return blockState.getValue(ENABLED);
     }
 
@@ -232,7 +217,7 @@ public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetec
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.sendSystemMessage(Component.translatable("multiblock.colossalchests.error.unexpected"));
+                player.displayClientMessage(Component.translatable("multiblock.colossalchests.error.unexpected"), true);
             }
         }
     }
@@ -251,7 +236,7 @@ public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetec
                 );
         chat.append(prefix);
         chat.append(error);
-        player.sendSystemMessage(chat);
+        player.displayClientMessage(chat, true);
     }
 
     @Override
@@ -288,14 +273,14 @@ public class ColossalChest extends BlockWithEntityGuiCommon implements CubeDetec
             IModHelpers.get().getBlockEntityHelpers().get(world, blockPos, BlockEntityColossalChest.class)
                     .ifPresent(tile -> {
                         // Last inventory overrides inventory when the chest is in a disabled state.
-                        SimpleInventoryCommon lastInventory = tile.getLastValidInventory();
+                        SimpleInventory lastInventory = tile.getLastValidInventory();
                         IModHelpers.get().getInventoryHelpers().dropItems(world, lastInventory != null ? lastInventory : tile.getInventory(), blockPos);
                     });
             super.onRemove(oldState, world, blockPos, newState, isMoving);
         }
     }
 
-    public void onBlockExplodedCommon(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+    public void onBlockExplodedCommon(BlockState state, ServerLevel world, BlockPos pos, Explosion explosion) {
         if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);

@@ -5,12 +5,12 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import org.cyclops.colossalchests.RegistryEntries;
-import org.cyclops.cyclopscore.inventory.container.InventoryContainerCommon;
+import org.cyclops.cyclopscore.inventory.container.InventoryContainer;
 
 /**
  * @author rubensworks
  */
-public class ContainerUncolossalChest extends InventoryContainerCommon {
+public class ContainerUncolossalChest extends InventoryContainer {
 
     public ContainerUncolossalChest(int id, Inventory playerInventory, FriendlyByteBuf buf) {
         this(id, playerInventory, new SimpleContainer(5));

@@ -13,8 +13,8 @@ public class BlockEntityUncolossalChestConfigFabric<M extends ModBaseFabric> ext
     }
 
     @Override
-    public void onForgeRegistered() {
-        super.onForgeRegistered();
+    public void onRegistryRegistered() {
+        super.onRegistryRegistered();
         ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), context), getInstance());
     }
 }

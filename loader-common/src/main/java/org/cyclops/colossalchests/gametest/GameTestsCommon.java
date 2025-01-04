@@ -214,10 +214,10 @@ public class GameTestsCommon {
     public void testColossalWood5x5HopperInsert(GameTestHelper helper) {
         // For some unknown reason, this test does not work in Fabric (does work in-game only if the player is close)
         // TODO: try to re-enable later
-        if (isFabric()) {
-            helper.succeed();
-            return;
-        }
+//        if (isFabric()) {
+//            helper.succeed();
+//            return;
+//        }
 
         createChest(helper, POS.above().south(), ChestMaterial.WOOD, 5);
 
@@ -367,7 +367,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -433,7 +433,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -466,7 +466,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -499,7 +499,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -532,7 +532,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -565,7 +565,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -598,7 +598,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -664,7 +664,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -697,7 +697,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -730,7 +730,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -763,7 +763,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -796,7 +796,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult.indicateItemUse(), "Interaction must succeed");
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, "Interaction must succeed");
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory

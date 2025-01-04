@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "colossalchests:chest_wall_gold"
-    },
-    {
-      "tag": "forge:ingots/iron"
-    }
+    "colossalchests:chest_wall_gold",
+    "#c:ingots/iron"
   ],
   "result": {
     "id": "colossalchests:colossal_chest_gold"

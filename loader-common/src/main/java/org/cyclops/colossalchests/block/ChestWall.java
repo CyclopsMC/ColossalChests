@@ -2,16 +2,12 @@ package org.cyclops.colossalchests.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.LevelWriter;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
@@ -45,12 +41,6 @@ public class ChestWall extends Block implements CubeDetector.IDetectionListener,
     }
 
     @Override
-    public String getDescriptionId() {
-        String baseKey = super.getDescriptionId();
-        return baseKey.substring(0, baseKey.lastIndexOf('_'));
-    }
-
-    @Override
     public ChestMaterial getMaterial() {
         return material;
     }
@@ -62,11 +52,11 @@ public class ChestWall extends Block implements CubeDetector.IDetectionListener,
 
     @Override
     public RenderShape getRenderShape(BlockState blockState) {
-        return blockState.getValue(ENABLED) ? RenderShape.ENTITYBLOCK_ANIMATED : super.getRenderShape(blockState);
+        return blockState.getValue(ENABLED) ? RenderShape.MODEL : super.getRenderShape(blockState);
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState blockState, BlockGetter blockReader, BlockPos blockPos) {
+    public boolean propagatesSkylightDown(BlockState blockState) {
         return blockState.getValue(ENABLED);
     }
 
@@ -125,7 +115,7 @@ public class ChestWall extends Block implements CubeDetector.IDetectionListener,
         return super.canSurvive(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
     }
 
-    public void onBlockExplodedCommon(BlockState state, Level world, BlockPos pos, Explosion explosion) {
+    public void onBlockExplodedCommon(BlockState state, ServerLevel world, BlockPos pos, Explosion explosion) {
         if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);

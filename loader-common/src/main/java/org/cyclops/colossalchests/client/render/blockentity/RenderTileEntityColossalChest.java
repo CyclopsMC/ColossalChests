@@ -9,12 +9,12 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
@@ -59,22 +59,22 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     @Override
-    protected void handleRotation(BlockEntityColossalChest tile, PoseStack matrixStack) {
+    protected void handleRotation(BlockEntityColossalChest blockEntity, PoseStack poseStack) {
         // Move origin to center of chest
-        if(tile.isStructureComplete()) {
-            Vec3 renderOffset = tile.getRenderOffset();
-            matrixStack.translate(-renderOffset.x, -renderOffset.y, -renderOffset.z);
+        if(blockEntity.isStructureComplete()) {
+            Vec3 renderOffset = blockEntity.getRenderOffset();
+            poseStack.translate(-renderOffset.x, -renderOffset.y, -renderOffset.z);
         }
 
         // Rotate
-        super.handleRotation(tile, matrixStack);
+        super.handleRotation(blockEntity, poseStack);
 
         // Move chest slightly higher
-        matrixStack.translate(0F, tile.getSizeSingular() * 0.0625F, 0F);
+        poseStack.translate(0F, blockEntity.getSizeSingular() * 0.0625F, 0F);
 
         // Scale
-        float size = tile.getSizeSingular() * 1.125F;
-        matrixStack.scale(size, size, size);
+        float size = blockEntity.getSizeSingular() * 1.125F;
+        poseStack.scale(size, size, size);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     protected Material getMaterialInterface(BlockEntityColossalChest tile) {
-        return new Material(InventoryMenu.BLOCK_ATLAS, TEXTURES_INTERFACE.get(tile.getMaterial()));
+        return new Material(TextureAtlas.LOCATION_BLOCKS, TEXTURES_INTERFACE.get(tile.getMaterial()));
     }
 
     protected void setMatrixOrientation(PoseStack matrixStack, Direction direction) {

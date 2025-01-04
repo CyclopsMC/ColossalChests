@@ -29,10 +29,10 @@ import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.network.packet.ClientboundContainerSetContentPacketWindow;
 import org.cyclops.colossalchests.network.packet.ClientboundContainerSetSlotPacketLarge;
-import org.cyclops.cyclopscore.inventory.LargeInventoryCommon;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
-import org.cyclops.cyclopscore.inventory.container.ContainerExtendedCommon;
-import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainerCommon;
+import org.cyclops.cyclopscore.inventory.LargeInventory;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
+import org.cyclops.cyclopscore.inventory.container.ContainerExtended;
+import org.cyclops.cyclopscore.inventory.container.ScrollingInventoryContainer;
 import org.cyclops.cyclopscore.inventory.slot.SlotExtended;
 
 import java.io.UnsupportedEncodingException;
@@ -44,7 +44,7 @@ import java.util.List;
  * @author rubensworks
  *
  */
-public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Slot> {
+public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
 
     private static final int INVENTORY_OFFSET_X = 9;
     private static final int INVENTORY_OFFSET_Y = 112;
@@ -67,7 +67,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
     private boolean firstDetectionCheck = true;
 
     public ContainerColossalChest(int id, Inventory playerInventory, FriendlyByteBuf data) {
-        this(id, playerInventory, new LargeInventoryCommon(data.readInt(), 64));
+        this(id, playerInventory, new LargeInventory(data.readInt(), 64));
     }
 
     public ContainerColossalChest(int id, Inventory playerInventory, Container inventory) {
@@ -114,16 +114,16 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
         Slot slot = getSlot(slotIndex);
         // Yes I know this is ugly.
         // If you are reading this and know a better way, please tell me.
-        ContainerExtendedCommon.setSlotPosX(slot, Integer.MIN_VALUE);
-        ContainerExtendedCommon.setSlotPosY(slot, Integer.MIN_VALUE);
+        ContainerExtended.setSlotPosX(slot, Integer.MIN_VALUE);
+        ContainerExtended.setSlotPosY(slot, Integer.MIN_VALUE);
     }
 
     protected void enableSlot(int slotIndex, int row, int column) {
         Slot slot = getSlot(slotIndex);
         // Yes I know this is ugly.
         // If you are reading this and know a better way, please tell me.
-        ContainerExtendedCommon.setSlotPosX(slot, CHEST_INVENTORY_OFFSET_X + column * 18);
-        ContainerExtendedCommon.setSlotPosY(slot, CHEST_INVENTORY_OFFSET_Y + row * 18);
+        ContainerExtended.setSlotPosX(slot, CHEST_INVENTORY_OFFSET_X + column * 18);
+        ContainerExtended.setSlotPosY(slot, CHEST_INVENTORY_OFFSET_Y + row * 18);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
 
     @Override
     public void broadcastChanges() {
-        int newState = ((SimpleInventoryCommon) inventory).getState();
+        int newState = ((SimpleInventory) inventory).getState();
         if (lastInventoryState != newState) {
             lastInventoryState = newState;
             detectAndSendChangesOverride();
@@ -195,7 +195,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
     // Adapted from EntityPlayerMP#sendSlotContents
     protected void sendSlotContentsToPlayer(ServerPlayer player, AbstractContainerMenu containerToSend, int slotInd, ItemStack stack) {
         if (!(containerToSend.getSlot(slotInd) instanceof ResultSlot)) {
-            ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToPlayer(
+            ColossalChestsInstance.MOD.getPacketHandler().sendToPlayer(
                     new ClientboundContainerSetSlotPacketLarge(containerToSend.containerId, getStateId(), slotInd, stack), player);
         }
     }
@@ -266,7 +266,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
                     bufferSize += tagSize;
                 } else {
                     // Flush
-                    ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToPlayer(new ClientboundContainerSetContentPacketWindow(containerId, getStateId(), sendBuffer), player);
+                    ColossalChestsInstance.MOD.getPacketHandler().sendToPlayer(new ClientboundContainerSetContentPacketWindow(containerId, getStateId(), sendBuffer), player);
                     sendBuffer = new CompoundTag();
                     sendList = new ListTag();
                     sendList.add(tag);
@@ -278,7 +278,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainerCommon<Sl
         }
         if (sendList.size() > 0) {
             // Flush
-            ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToPlayer(new ClientboundContainerSetContentPacketWindow(containerId, getStateId(), sendBuffer), player);
+            ColossalChestsInstance.MOD.getPacketHandler().sendToPlayer(new ClientboundContainerSetContentPacketWindow(containerId, getStateId(), sendBuffer), player);
         }
         playerNetServerHandler.send(new ClientboundContainerSetSlotPacket(-1, getStateId(), -1, getCarried()));
     }

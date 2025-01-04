@@ -3,8 +3,8 @@ package org.cyclops.colossalchests.modcompat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.cyclops.cyclopscore.inventory.IndexedInventoryCommon;
-import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
+import org.cyclops.cyclopscore.inventory.IInventoryIndexReference;
+import org.cyclops.cyclopscore.inventory.IndexedInventory;
 
 import java.util.Map;
 import java.util.PrimitiveIterator;
@@ -12,11 +12,11 @@ import java.util.PrimitiveIterator;
 /**
  * @author rubensworks
  */
-public class InventoryIndexReferenceIndexedInventoryCommon implements IndexedSlotlessItemHandlerWrapper.IInventoryIndexReference {
+public class InventoryIndexReferenceIndexedInventoryCommon implements IInventoryIndexReference {
 
-    private final IndexedInventoryCommon inventory;
+    private final IndexedInventory inventory;
 
-    public InventoryIndexReferenceIndexedInventoryCommon(IndexedInventoryCommon inventory) {
+    public InventoryIndexReferenceIndexedInventoryCommon(IndexedInventory inventory) {
         this.inventory = inventory;
     }
 

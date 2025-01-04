@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests.block;
 
-import net.minecraft.world.item.Item;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import org.cyclops.colossalchests.item.ItemBlockMaterial;
 import org.cyclops.cyclopscore.init.IModBase;
 
@@ -15,9 +16,17 @@ public class ColossalChestConfigForge<M extends IModBase> extends ColossalChestC
         super(
                 mod,
             "colossal_chest_" + material.getName(),
-                eConfig -> new ColossalChestForge(((ColossalChestConfig<M>) eConfig).getProperties(), material),
-                (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties(), material)
+                (eConfig, properties) -> new ColossalChestForge(((ColossalChestConfig<M>) eConfig).getProperties(), material),
+                ItemBlockMaterial.getItemConstructor(material, "colossal_chest")
         );
+    }
+
+    @Override
+    public void onRegistryRegistered() {
+        super.onRegistryRegistered();
+        if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
+            ItemBlockRenderTypes.setRenderLayer(getInstance(), RenderType.cutoutMipped());
+        }
     }
 
 }

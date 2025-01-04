@@ -6,12 +6,8 @@
     "PPP"
   ],
   "key": {
-    "P": {
-      "tag": "minecraft:planks"
-    },
-    "L": {
-      "tag": "minecraft:logs"
-    }
+    "P": "#minecraft:planks",
+    "L": "#minecraft:logs"
   },
   "result": {
     "id": "colossalchests:chest_wall_wood"

@@ -23,9 +23,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
-import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.helper.IModHelpers;
-import org.cyclops.cyclopscore.inventory.SimpleInventoryCommon;
+import org.cyclops.cyclopscore.inventory.SimpleInventory;
 
 import javax.annotation.Nullable;
 
@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
  * @author rubensworks
  *
  */
-public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon implements MenuProvider, LidBlockEntity {
+public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements MenuProvider, LidBlockEntity {
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         protected void onOpen(Level level, BlockPos pos, BlockState blockState) {
@@ -62,11 +62,11 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon impleme
 
     private Component customName = null;
 
-    private final SimpleInventoryCommon inventory;
+    private final SimpleInventory inventory;
 
     public BlockEntityUncolossalChest(BlockPos blockPos, BlockState blockState) {
         super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), blockPos, blockState);
-        this.inventory = new SimpleInventoryCommon(5, 64) {
+        this.inventory = new SimpleInventory(5, 64) {
             @Override
             public void startOpen(Player entityPlayer) {
                 if (!entityPlayer.isSpectator()) {
@@ -86,7 +86,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon impleme
         this.inventory.addDirtyMarkListener(this);
     }
 
-    public SimpleInventoryCommon getInventory() {
+    public SimpleInventory getInventory() {
         return inventory;
     }
 

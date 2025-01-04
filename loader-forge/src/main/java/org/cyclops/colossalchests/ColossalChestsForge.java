@@ -3,12 +3,9 @@ package org.cyclops.colossalchests;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.cyclops.colossalchests.advancement.criterion.ChestFormedTriggerConfig;
-import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.block.ChestWallConfigForge;
-import org.cyclops.colossalchests.block.ColossalChestConfigForge;
-import org.cyclops.colossalchests.block.InterfaceConfigForge;
-import org.cyclops.colossalchests.block.UncolossalChestConfigForge;
+import org.cyclops.colossalchests.block.*;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfigForge;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfigForge;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfigForge;
@@ -36,11 +33,11 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
      */
     public static ColossalChestsForge _instance;
 
-    public ColossalChestsForge() {
+    public ColossalChestsForge(FMLJavaModLoadingContext context) {
         super(Reference.MOD_ID, (instance) -> {
             _instance = instance;
             ColossalChestsInstance.MOD = instance;
-        });
+        }, context);
     }
 
     @Override

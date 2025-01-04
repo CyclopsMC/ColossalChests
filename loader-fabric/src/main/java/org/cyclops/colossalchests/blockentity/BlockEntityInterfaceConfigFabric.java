@@ -13,8 +13,8 @@ public class BlockEntityInterfaceConfigFabric<M extends ModBaseFabric> extends B
     }
 
     @Override
-    public void onForgeRegistered() {
-        super.onForgeRegistered();
+    public void onRegistryRegistered() {
+        super.onRegistryRegistered();
         ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> {
             BlockEntityColossalChest core = blockEntity.getCore();
             if (core != null) {

@@ -3,12 +3,12 @@ package org.cyclops.colossalchests.blockentity;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
-import org.cyclops.cyclopscore.init.ModBase;
+import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 
 /**
  * @author rubensworks
  */
-public class BlockEntityInterfaceConfigNeoForge<M extends ModBase> extends BlockEntityInterfaceConfig<M> {
+public class BlockEntityInterfaceConfigNeoForge<M extends ModBaseNeoForge<?>> extends BlockEntityInterfaceConfig<M> {
     public BlockEntityInterfaceConfigNeoForge(M mod) {
         super(mod, BlockEntityInterface::new);
         mod.getModEventBus().addListener(this::registerCapabilities);

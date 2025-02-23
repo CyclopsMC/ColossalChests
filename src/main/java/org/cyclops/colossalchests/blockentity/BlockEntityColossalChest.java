@@ -211,6 +211,11 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
                     BlockEntityColossalChest.this.stopOpen(entityPlayer);
                 }
             }
+
+            @Override
+            public boolean stillValid(Player entityplayer) {
+                return super.stillValid(entityplayer) && level.getBlockEntity(worldPosition) == BlockEntityColossalChest.this;
+            }
         } : new LargeInventory(calculateInventorySize(), 64);
         inv.addDirtyMarkListener(this);
 

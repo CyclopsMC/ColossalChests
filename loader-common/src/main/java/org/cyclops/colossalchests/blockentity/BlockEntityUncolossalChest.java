@@ -82,6 +82,11 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon impleme
                     BlockEntityUncolossalChest.this.stopOpen(entityPlayer);
                 }
             }
+
+            @Override
+            public boolean stillValid(Player entityplayer) {
+                return super.stillValid(entityplayer) && level.getBlockEntity(worldPosition) == BlockEntityUncolossalChest.this;
+            }
         };
         this.inventory.addDirtyMarkListener(this);
     }

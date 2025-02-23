@@ -84,6 +84,11 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
                     BlockEntityUncolossalChest.this.stopOpen(entityPlayer);
                 }
             }
+
+            @Override
+            public boolean stillValid(Player entityplayer) {
+                return super.stillValid(entityplayer) && level.getBlockEntity(worldPosition) == BlockEntityUncolossalChest.this;
+            }
         };
         this.inventory.addDirtyMarkListener(this);
         addCapabilityInternal(ForgeCapabilities.ITEM_HANDLER, LazyOptional.of(() -> new InvWrapper(this.inventory)));

@@ -3,15 +3,7 @@ package org.cyclops.colossalchests.inventory.container;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonParseException;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.EndTag;
-import net.minecraft.nbt.IntArrayTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.NumericTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -254,7 +246,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
                 CompoundTag tag = new CompoundTag();
                 tag.putInt("slot", i);
                 try {
-                    tag.put("stack", ItemStack.OPTIONAL_CODEC.encodeStart(NbtOps.INSTANCE, itemStack)
+                    tag.put("stack", ItemStack.OPTIONAL_CODEC.encodeStart(player.registryAccess().createSerializationContext(NbtOps.INSTANCE), itemStack)
                             .getOrThrow(JsonParseException::new));
                 } catch (JsonParseException e) {
                     ColossalChestsInstance.MOD.log(Level.ERROR, "Error while attempting to send a stack to a client " + itemStack);

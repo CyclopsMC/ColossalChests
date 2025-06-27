@@ -57,6 +57,5 @@
     "multiblock.colossalchests.error.prefix.info": "Devasa Sandık çoklu blok yapı hatası",
     "multiblock.colossalchests.error.unexpected": "Beklenmedik Devasa Sandık yapı hatası.",
     "multiblock.colossalchests.error.material": "%s malzeme bloğu %s konumunda, %s beklenirken bulundu.",
-    "multiblock.colossalchests.error.upgrade": "Bu sandığı yükseltmek için yeterli eşya yok, %s çekirdek, %s arayüz ve %s duvarın %s malzemesi hâline ihtiyacınız var.",
-    "multiblock.colossalchests.error.upgradeLimit": "Bu sandığı artık dönüştüremezsiniz."
+    "multiblock.colossalchests.error.upgrade": "Bu sandığı yükseltmek için yeterli eşya yok, %s çekirdek, %s arayüz ve %s duvarın %s malzemesi hâline ihtiyacınız var."
 }

@@ -6,6 +6,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.HashedPatchMap;
+import net.minecraft.network.HashedStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -105,17 +107,19 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
         }
 
         abstractcontainermenu.clicked(slotId, mouseButtonClicked, clickType, playerIn);
-        Int2ObjectMap<ItemStack> changedSlots = new Int2ObjectOpenHashMap<>();
+        Int2ObjectMap<HashedStack> changedSlots = new Int2ObjectOpenHashMap<>();
+        HashedPatchMap.HashGenerator hashGenerator = Minecraft.getInstance().gameMode.connection.decoratedHashOpsGenenerator();
 
         for(int j = 0; j < i; ++j) {
             ItemStack itemstack = list.get(j);
             ItemStack itemstack1 = nonnulllist.get(j).getItem();
             if (!ItemStack.matches(itemstack, itemstack1)) {
-                changedSlots.put(j, itemstack1.copy());
+                changedSlots.put(j, HashedStack.create(itemstack1, hashGenerator));
             }
         }
 
         // Original: this.connection.send(new ServerboundContainerClickPacket(p_171800_, abstractcontainermenu.getStateId(), p_171801_, p_171802_, p_171803_, abstractcontainermenu.getCarried().copy(), changedSloits));
-        ColossalChestsInstance.MOD.getPacketHandler().sendToServer(new ServerboundContainerClickPacketOverride(windowId, abstractcontainermenu.getStateId(), slotId, mouseButtonClicked, clickType, abstractcontainermenu.getCarried().copy(), changedSlots));
+        HashedStack clickedItem = HashedStack.create(abstractcontainermenu.getCarried(), hashGenerator);
+        ColossalChestsInstance.MOD.getPacketHandler().sendToServer(new ServerboundContainerClickPacketOverride(windowId, abstractcontainermenu.getStateId(), slotId, mouseButtonClicked, clickType, clickedItem, changedSlots));
     }
 }

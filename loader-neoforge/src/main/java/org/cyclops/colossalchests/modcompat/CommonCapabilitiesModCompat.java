@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.BaseCapability;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
-import org.cyclops.colossalchests.ColossalChests;
+import org.cyclops.colossalchests.ColossalChestsNeoForge;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
@@ -45,7 +45,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
     @Override
     public ICompatInitializer createInitializer() {
         return (mod) -> {
-            CapabilityConstructorRegistry registry = ColossalChests._instance.getCapabilityConstructorRegistry();
+            CapabilityConstructorRegistry registry = ColossalChestsNeoForge._instance.getCapabilityConstructorRegistry();
 
             // Slotless item handler
             registry.registerBlockEntity(RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST::value,

@@ -8,13 +8,14 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfigCommon;
 import org.cyclops.cyclopscore.init.IModBase;
 
-import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * @author rubensworks
@@ -29,9 +30,9 @@ public class ItemBlockMaterial extends BlockItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, Item.TooltipContext context, List<Component> list, TooltipFlag flag) {
-        list.add(Component.translatable(material.getUnlocalizedName()).withStyle(ChatFormatting.BLUE));
-        super.appendHoverText(itemStack, context, list, flag);
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay tooltipDisplay, Consumer<Component> tooltipAdder, TooltipFlag flag) {
+        tooltipAdder.accept(Component.translatable(material.getUnlocalizedName()).withStyle(ChatFormatting.BLUE));
+        super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flag);
     }
 
     public static <M extends IModBase> BiFunction<BlockConfigCommon<M>, Block, ? extends Item> getItemConstructor(ChestMaterial material, String descriptionSuffix) {

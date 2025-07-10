@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.proxy;
 
-import org.cyclops.colossalchests.ColossalChests;
+import org.cyclops.colossalchests.ColossalChestsNeoForge;
 import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 import org.cyclops.cyclopscore.proxy.ClientProxyComponent;
 
@@ -17,8 +17,8 @@ public class ClientProxy extends ClientProxyComponent {
     }
 
     @Override
-    public ModBaseNeoForge<ColossalChests> getMod() {
-        return ColossalChests._instance;
+    public ModBaseNeoForge<ColossalChestsNeoForge> getMod() {
+        return ColossalChestsNeoForge._instance;
     }
 
 }

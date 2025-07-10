@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.proxy;
 
-import org.cyclops.colossalchests.ColossalChests;
+import org.cyclops.colossalchests.ColossalChestsNeoForge;
 import org.cyclops.colossalchests.network.packet.ClientboundContainerSetContentPacketWindow;
 import org.cyclops.colossalchests.network.packet.ClientboundContainerSetSlotPacketLarge;
 import org.cyclops.colossalchests.network.packet.ServerboundContainerClickPacketOverride;
@@ -16,8 +16,8 @@ import org.cyclops.cyclopscore.proxy.CommonProxyComponent;
 public class CommonProxy extends CommonProxyComponent {
 
     @Override
-    public ModBaseNeoForge<ColossalChests> getMod() {
-        return ColossalChests._instance;
+    public ModBaseNeoForge<ColossalChestsNeoForge> getMod() {
+        return ColossalChestsNeoForge._instance;
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfigForg
 import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfigForge;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfigForge;
 import org.cyclops.colossalchests.condition.ConditionMetalVariantsSettingConfigForge;
+import org.cyclops.colossalchests.gametest.GameTestsCommon;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
@@ -87,5 +88,10 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         configHandler.addConfigurable(new ConditionMetalVariantsSettingConfigForge());
 
         configHandler.addConfigurable(new ChestFormedTriggerConfig<>(this));
+    }
+
+    @Override
+    public Class<?>[] getGameTestClasses() {
+        return new Class<?>[] { GameTestsCommon.class };
     }
 }

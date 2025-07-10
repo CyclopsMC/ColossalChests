@@ -8,8 +8,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -27,6 +27,8 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
@@ -93,6 +95,8 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     private int rotation = 0;
     @NBTPersist(useDefaultValue = false)
     private List<Vec3i> interfaceLocations = Lists.newArrayList();
+    @NBTPersist
+    private boolean disableDrops = false;
 
     private boolean recreateNullInventory = true;
 
@@ -234,7 +238,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     @Override
-    public void read(CompoundTag tag, HolderLookup.Provider provider) {
+    public void read(ValueInput input) {
         SimpleInventory oldInventory = this.inventory;
         SimpleInventory oldLastInventory = this.lastValidInventory;
 
@@ -245,40 +249,34 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
             this.lastValidInventory = null;
             this.recreateNullInventory = false;
         }
-        super.read(tag, provider);
+        super.read(input);
         if (getLevel() != null && getLevel().isClientSide) {
             this.inventory = oldInventory;
             this.lastValidInventory = oldLastInventory;
             this.recreateNullInventory = true;
         } else {
-            getInventory().read(provider, tag.getCompound("inventory"));
-            if (tag.contains("lastValidInventory", Tag.TAG_COMPOUND)) {
-                this.lastValidInventory = new LargeInventory(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
-                this.lastValidInventory.read(provider, tag.getCompound("lastValidInventory"));
-            }
+            getInventory().read(input.child("inventory").orElseThrow());
+            input.child("lastValidInventory").ifPresent(child -> {
+                this.lastValidInventory = new LargeInventory(input.getInt("lastValidInventorySize").orElseThrow(), this.inventory.getMaxStackSize());
+                this.lastValidInventory.read(child);
+            });
         }
 
-        if (tag.contains("CustomName", Tag.TAG_STRING)) {
-            this.customName = Component.Serializer.fromJson(tag.getString("CustomName"), provider);
-        }
+        this.customName = input.read("CustomName", ComponentSerialization.CODEC).orElse(null);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
         if (this.customName != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(this.customName, provider));
+            output.store("CustomName", ComponentSerialization.CODEC, this.customName);
         }
         if (this.inventory != null) {
-            CompoundTag subTag = new CompoundTag();
-            this.inventory.write(provider, subTag);
-            tag.put("inventory", subTag);
+            this.inventory.write(output.child("inventory"));
         }
         if (this.lastValidInventory != null) {
-            CompoundTag subTag = new CompoundTag();
-            this.lastValidInventory.write(provider, subTag);
-            tag.put("lastValidInventory", subTag);
-            tag.putInt("lastValidInventorySize", this.lastValidInventory.getContainerSize());
+            this.lastValidInventory.write(output.child("lastValidInventory"));
+            output.putInt("lastValidInventorySize", this.lastValidInventory.getContainerSize());
         }
     }
 
@@ -452,5 +450,20 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     @Override
     public float getOpenNess(float value) {
         return this.chestLidController.getOpenness(value);
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+
+        // Last inventory overrides inventory when the chest is in a disabled state.
+        if (!this.disableDrops) {
+            SimpleInventory lastInventory = this.getLastValidInventory();
+            IModHelpers.get().getInventoryHelpers().dropItems(getLevel(), lastInventory != null ? lastInventory : this.getInventory(), pos);
+        }
+    }
+
+    public void disableDrops() {
+        this.disableDrops = true;
     }
 }

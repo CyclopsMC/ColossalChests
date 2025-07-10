@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.HashedStack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
@@ -43,22 +44,22 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec<Serverb
     @CodecField
     private int usedButton;
     @CodecField
-    private ItemStack clickedItem;
+    private HashedStack clickedItem;
     @CodecField
     private String mode;
-    private Int2ObjectMap<ItemStack> changedSlots;
+    private Int2ObjectMap<HashedStack> changedSlots;
 
     public ServerboundContainerClickPacketOverride() {
         super(TYPE);
     }
 
-    public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ClickType mode, ItemStack clickedItem, Int2ObjectMap<ItemStack> changedSlots) {
+    public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ClickType mode, HashedStack clickedItem, Int2ObjectMap<HashedStack> changedSlots) {
         super(TYPE);
         this.windowId = windowId;
         this.stateId = stateId;
         this.slotId = slotId;
         this.usedButton = usedButton;
-        this.clickedItem = clickedItem != null ? clickedItem.copy() : null;
+        this.clickedItem = clickedItem;
         this.mode = mode.name();
         this.changedSlots = changedSlots;
     }
@@ -66,14 +67,14 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec<Serverb
     @Override
     public void encode(RegistryFriendlyByteBuf output) {
         super.encode(output);
-        output.writeMap(this.changedSlots, FriendlyByteBuf::writeInt, (b, i) -> ItemStack.OPTIONAL_STREAM_CODEC.encode(output, i));
+        output.writeMap(this.changedSlots, FriendlyByteBuf::writeInt, (b, i) -> HashedStack.STREAM_CODEC.encode(output, i));
     }
 
     @Override
     public void decode(RegistryFriendlyByteBuf input) {
         super.decode(input);
-        IntFunction<Int2ObjectOpenHashMap<ItemStack>> intfunction = FriendlyByteBuf.limitValue(Int2ObjectOpenHashMap::new, 128);
-        this.changedSlots = Int2ObjectMaps.unmodifiable(input.readMap(intfunction, FriendlyByteBuf::readInt, b -> ItemStack.OPTIONAL_STREAM_CODEC.decode(input)));
+        IntFunction<Int2ObjectOpenHashMap<HashedStack>> intfunction = FriendlyByteBuf.limitValue(Int2ObjectOpenHashMap::new, 128);
+        this.changedSlots = Int2ObjectMaps.unmodifiable(input.readMap(intfunction, FriendlyByteBuf::readInt, b -> HashedStack.STREAM_CODEC.decode(input)));
     }
 
     @Override
@@ -104,8 +105,8 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec<Serverb
                 player.containerMenu.suppressRemoteUpdates();
                 player.containerMenu.clicked(slotId, usedButton, ClickType.valueOf(mode), player);
 
-                for(Int2ObjectMap.Entry<ItemStack> entry : Int2ObjectMaps.fastIterable(changedSlots)) {
-                    player.containerMenu.setRemoteSlotNoCopy(entry.getIntKey(), entry.getValue());
+                for(Int2ObjectMap.Entry<HashedStack> entry : Int2ObjectMaps.fastIterable(changedSlots)) {
+                    player.containerMenu.setRemoteSlotUnsafe(entry.getIntKey(), entry.getValue());
                 }
 
                 player.containerMenu.setRemoteCarried(clickedItem);

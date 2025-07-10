@@ -16,6 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * A modified copy of {@link ChestRenderer}.
@@ -41,7 +42,8 @@ public abstract class RenderTileEntityChestBase<T extends BlockEntity & LidBlock
         poseStack.mulPose(Axis.YP.rotationDegrees(-f));
     }
 
-    public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    @Override
+    public void render(T blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Vec3 cameraPos) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.5F, 0.5F);
         handleRotation(blockEntity, poseStack);

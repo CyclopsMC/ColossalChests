@@ -3,7 +3,6 @@ package org.cyclops.colossalchests.blockentity;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -21,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 public class BlockEntityUncolossalChestConfigForge<M extends ModBaseForge> extends BlockEntityUncolossalChestConfig<M> {
     public BlockEntityUncolossalChestConfigForge(M mod) {
         super(mod);
-        MinecraftForge.EVENT_BUS.addGenericListener(BlockEntity.class, this::registerCapabilities);
+        AttachCapabilitiesEvent.BlockEntities.BUS.addListener(this::registerCapabilities);
     }
 
     public void registerCapabilities(AttachCapabilitiesEvent<BlockEntity> event) {

@@ -2,8 +2,6 @@ package org.cyclops.colossalchests;
 
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
@@ -13,6 +11,7 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestConfigNeoF
 import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfigNeoForge;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfigNeoForge;
 import org.cyclops.colossalchests.condition.ConditionMetalVariantsSettingConfig;
+import org.cyclops.colossalchests.gametest.GameTestsCommon;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
@@ -32,14 +31,14 @@ import org.cyclops.cyclopscore.proxy.ICommonProxy;
  *
  */
 @Mod(Reference.MOD_ID)
-public class ColossalChests extends ModBaseNeoForge<ColossalChests> {
+public class ColossalChestsNeoForge extends ModBaseNeoForge<ColossalChestsNeoForge> {
 
     /**
      * The unique instance of this mod.
      */
-    public static ColossalChests _instance;
+    public static ColossalChestsNeoForge _instance;
 
-    public ColossalChests(IEventBus modEventBus) {
+    public ColossalChestsNeoForge(IEventBus modEventBus) {
         super(Reference.MOD_ID, (instance) -> {
             ColossalChestsInstance.MOD = instance;
             _instance = instance;
@@ -53,7 +52,6 @@ public class ColossalChests extends ModBaseNeoForge<ColossalChests> {
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     protected IClientProxy constructClientProxy() {
         return new ClientProxy();
     }
@@ -97,6 +95,11 @@ public class ColossalChests extends ModBaseNeoForge<ColossalChests> {
         configHandler.addConfigurable(new ChestFormedTriggerConfig<>(this));
     }
 
+    @Override
+    public Class<?>[] getGameTestClasses() {
+        return new Class<?>[] { GameTestsCommon.class };
+    }
+
     /**
      * Log a new info message for this mod.
      * @param message The message to show.
@@ -111,7 +114,7 @@ public class ColossalChests extends ModBaseNeoForge<ColossalChests> {
      * @param message The message to show.
      */
     public static void clog(Level level, String message) {
-        ColossalChests._instance.getLoggerHelper().log(level, message);
+        ColossalChestsNeoForge._instance.getLoggerHelper().log(level, message);
     }
 
 }

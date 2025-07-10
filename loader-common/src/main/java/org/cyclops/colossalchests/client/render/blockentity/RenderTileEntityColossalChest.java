@@ -78,11 +78,11 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     @Override
-    public void render(BlockEntityColossalChest tile, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLightIn, int combinedOverlayIn) {
+    public void render(BlockEntityColossalChest tile, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLightIn, int combinedOverlayIn, Vec3 cameraPos) {
         if (tile.isStructureComplete()) {
             matrixStack.pushPose();
 
-            super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn);
+            super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn, cameraPos);
 
             // Render interface overlays
             if(tile.isStructureComplete() && tile.getOpenNess(0) == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
@@ -104,7 +104,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     @Override
-    public boolean shouldRenderOffScreen(BlockEntityColossalChest tile) {
+    public boolean shouldRenderOffScreen() {
         return true;
     }
 

@@ -145,6 +145,7 @@ public class ItemUpgradeTool extends Item {
             Direction oldRotation = tile.getRotation();
             Vec3 oldRenderOffset = tile.getRenderOffset();
             List<Vec3i> oldInterfaceLocations = Lists.newArrayList(tile.getInterfaceLocations());
+            tile.disableDrops();
             Wrapper<BlockPos> coreLocation = new Wrapper<>(null);
             List<BlockPos> interfaceLocations = Lists.newArrayList();
             validMaterial.getChestDetector().detect(world, pos, null, (location, blockState) -> {

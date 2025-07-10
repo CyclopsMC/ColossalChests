@@ -40,7 +40,6 @@ import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.helper.IBlockEntityHelpers;
 import org.cyclops.cyclopscore.helper.IModHelpers;
-import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.spongepowered.asm.mixin.Interface;
 
 import javax.annotation.Nullable;
@@ -229,8 +228,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
                 .append(Component.literal("]: "))
                 .setStyle(Style.EMPTY.
                         withColor(TextColor.fromLegacyFormat(ChatFormatting.GRAY)).
-                        withHoverEvent(new HoverEvent(
-                                HoverEvent.Action.SHOW_TEXT,
+                        withHoverEvent(new HoverEvent.ShowText(
                                 Component.translatable("multiblock.colossalchests.error.prefix.info")
                         ))
                 );
@@ -265,19 +263,6 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     @Override
     public boolean canSurvive(BlockState blockState, LevelReader world, BlockPos blockPos) {
         return super.canSurvive(blockState, world, blockPos) && ColossalChest.canPlace(world, blockPos);
-    }
-
-    @Override
-    public void onRemove(BlockState oldState, Level world, BlockPos blockPos, BlockState newState, boolean isMoving) {
-        if (oldState.getBlock().getClass() != newState.getBlock().getClass()) {
-            IModHelpers.get().getBlockEntityHelpers().get(world, blockPos, BlockEntityColossalChest.class)
-                    .ifPresent(tile -> {
-                        // Last inventory overrides inventory when the chest is in a disabled state.
-                        SimpleInventory lastInventory = tile.getLastValidInventory();
-                        IModHelpers.get().getInventoryHelpers().dropItems(world, lastInventory != null ? lastInventory : tile.getInventory(), blockPos);
-                    });
-            super.onRemove(oldState, world, blockPos, newState, isMoving);
-        }
     }
 
     public void onBlockExplodedCommon(BlockState state, ServerLevel world, BlockPos pos, Explosion explosion) {

@@ -3,7 +3,7 @@ package org.cyclops.colossalchests.network.packet;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -62,11 +62,11 @@ public class ClientboundContainerSetContentPacketWindow extends PacketCodec<Clie
     }
 
     protected void putStacksInSlotsWithOffset(HolderLookup.Provider provider, AbstractContainerMenu container) {
-        ListTag list = itemStacks.getList("stacks", Tag.TAG_COMPOUND);
+        ListTag list = itemStacks.getList("stacks").orElseThrow();
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag tag = list.getCompound(i);
-            int slot = tag.getInt("slot");
-            ItemStack stack = ItemStack.parseOptional(provider, tag.getCompound("stack"));
+            CompoundTag tag = list.getCompound(i).orElseThrow();
+            int slot = tag.getInt("slot").orElseThrow();
+            ItemStack stack = ItemStack.OPTIONAL_CODEC.decode(provider.createSerializationContext(NbtOps.INSTANCE), tag.getCompound("stack").orElseThrow()).getOrThrow().getFirst();
             container.setItem(slot, this.stateId, stack);
         }
     }

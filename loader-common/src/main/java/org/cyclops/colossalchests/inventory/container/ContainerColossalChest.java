@@ -199,7 +199,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         if (tag instanceof CompoundTag) {
             CompoundTag compound = (CompoundTag) tag;
             int size = 0;
-            for (String key : compound.getAllKeys()) {
+            for (String key : compound.keySet()) {
                 try {
                     size += key.getBytes("UTF-8").length;
                 } catch (UnsupportedEncodingException e) {}
@@ -223,7 +223,7 @@ public class ContainerColossalChest extends ScrollingInventoryContainer<Slot> {
         }
         if (tag instanceof StringTag) {
             try {
-                return ((StringTag) tag).getAsString().getBytes("UTF-8").length + 1;
+                return tag.asString().orElseThrow().getBytes("UTF-8").length + 1;
             } catch (UnsupportedEncodingException e) {}
         }
         return tag.toString().length();

@@ -2,14 +2,13 @@ package org.cyclops.colossalchests.blockentity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,6 +19,8 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
@@ -96,22 +97,18 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
     }
 
     @Override
-    public void read(CompoundTag tag, HolderLookup.Provider provider) {
-        super.read(tag, provider);
-        inventory.read(provider, tag.getCompound("inventory"));
-        if (tag.contains("CustomName", Tag.TAG_STRING)) {
-            this.customName = Component.Serializer.fromJson(tag.getString("CustomName"), provider);
-        }
+    public void read(ValueInput input) {
+        super.read(input);
+        inventory.read(input.child("inventory").orElseThrow());
+        this.customName = input.read("CustomName", ComponentSerialization.CODEC).orElse(null);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
-        super.saveAdditional(tag, provider);
-        CompoundTag subTag = new CompoundTag();
-        inventory.write(provider, subTag);
-        tag.put("inventory", subTag);
+    public void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        inventory.write(output.child("inventory"));
         if (this.customName != null) {
-            tag.putString("CustomName", Component.Serializer.toJson(this.customName, provider));
+            output.store("CustomName", ComponentSerialization.CODEC, this.customName);
         }
     }
 
@@ -191,5 +188,13 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player playerEntity) {
         return new ContainerUncolossalChest(id, playerInventory, this.getInventory());
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+
+        Containers.dropContents(level, pos, this.getInventory());
+        level.updateNeighbourForOutputSignal(pos, state.getBlock());
     }
 }

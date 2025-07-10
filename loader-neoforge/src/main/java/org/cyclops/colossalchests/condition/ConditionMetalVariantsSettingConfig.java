@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.condition;
 
-import org.cyclops.colossalchests.ColossalChests;
+import org.cyclops.colossalchests.ColossalChestsNeoForge;
 import org.cyclops.cyclopscore.config.extendedconfig.ConditionConfigNeoForge;
 
 /**
@@ -11,7 +11,7 @@ public class ConditionMetalVariantsSettingConfig extends ConditionConfigNeoForge
 
     public ConditionMetalVariantsSettingConfig() {
         super(
-                ColossalChests._instance,
+                ColossalChestsNeoForge._instance,
                 "metal_variants_enabled",
                 ConditionMetalVariantsSetting.CODEC
         );

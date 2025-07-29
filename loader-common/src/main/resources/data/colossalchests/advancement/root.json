@@ -9,7 +9,7 @@
     "description": {
       "translate": "general.colossalchests.description"
     },
-    "background": "textures/gui/advancements/backgrounds/adventure.png",
+    "background": "minecraft:gui/advancements/backgrounds/adventure",
     "show_toast": false,
     "announce_to_chat": false
   },

@@ -52,6 +52,5 @@
     "multiblock.colossalchests.error.prefix.info": "Flerblocksstrukturfel i kolossal kista",
     "multiblock.colossalchests.error.unexpected": "Oväntat strukturfel i kolossal kista.",
     "multiblock.colossalchests.error.material": "Hittade ett block av materialet %s på %s, men %s förväntades.",
-    "multiblock.colossalchests.error.upgrade": "Inte tillräckligt många föremål för att uppgradera denna kista. Du behöver %s kärna, %s gränssnitt och %s väggar av åtminstone materialet %s.",
-    "multiblock.colossalchests.error.upgradeLimit": "Du kan inte omvandla denna kista vidare."
+    "multiblock.colossalchests.error.upgrade": "Inte tillräckligt många föremål för att uppgradera denna kista. Du behöver %s kärna, %s gränssnitt och %s väggar av åtminstone materialet %s."
 }

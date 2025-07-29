@@ -57,6 +57,5 @@
     "multiblock.colossalchests.error.prefix.info": "巨大チェストのマルチブロック構造エラー",
     "multiblock.colossalchests.error.unexpected": "予期しない巨大チェストの構造エラー",
     "multiblock.colossalchests.error.material": "%sの%sが予想されていましたが、%sが見つかりました",
-    "multiblock.colossalchests.error.upgrade": "このチェストを強化するのに十分なアイテムがありません。%4$sの素材の少なくとも%1$s個のコア、%2$s個のインターフェース、%3$s個の壁が必要です",
-    "multiblock.colossalchests.error.upgradeLimit": "このチェストを強化／弱化することはできません"
+    "multiblock.colossalchests.error.upgrade": "このチェストを強化するのに十分なアイテムがありません。%4$sの素材の少なくとも%1$s個のコア、%2$s個のインターフェース、%3$s個の壁が必要です"
 }

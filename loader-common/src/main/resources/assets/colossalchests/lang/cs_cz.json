@@ -57,6 +57,5 @@
     "multiblock.colossalchests.error.prefix.info": "Chyba multiblokové struktury \"Kolosální truhla\"",
     "multiblock.colossalchests.error.unexpected": "Neočekávaná chyba struktury \"Kolosální truhla\".",
     "multiblock.colossalchests.error.material": "Nalezen blok materiálu %s v %s, zatímco %s byl očekáván.",
-    "multiblock.colossalchests.error.upgrade": "Nedostatek předmětů pro vylepšení této truhly, potřebuješ %s jader, %s rozhraní a %s stěn alespoň z materiálu %s.",
-    "multiblock.colossalchests.error.upgradeLimit": "Tuto truhlu už nelze víc transformovat."
+    "multiblock.colossalchests.error.upgrade": "Nedostatek předmětů pro vylepšení této truhly, potřebuješ %s jader, %s rozhraní a %s stěn alespoň z materiálu %s."
 }

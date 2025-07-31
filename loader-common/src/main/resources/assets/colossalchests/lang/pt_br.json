@@ -1,11 +1,7 @@
 {
-    "_comment": "General",
-    "itemGroup.colossalchests": "Colossal Chests",
     "general.colossalchests.description": "Para quando baús normais são pequenos demais.",
     "general.colossalchests.colossalchest": "Baú Colossal de %s (%s)",
     "general.colossalchests.uncolossalchest": "Baú Incolossal",
-
-    "_comment": "Advancements",
     "advancement.colossalchests.wood": "Baú Colossal de Madeira",
     "advancement.colossalchests.wood.desc": "Forme um Baú Colossal de Madeira",
     "advancement.colossalchests.copper": "Baú Colossal de Cobre",
@@ -36,8 +32,6 @@
     "advancement.colossalchests.large.diamond.desc": "Forme um Baú Colossal de Diamante de pelo menos 10x10x10",
     "advancement.colossalchests.large.obsidian": "Baú Colossal de Obsidian Épico",
     "advancement.colossalchests.large.obsidian.desc": "Forme um Baú Colossal de Obsidian de pelo menos 10x10x10",
-
-    "_comment": "Blocks",
     "block.colossalchests.colossal_chest": "Núcleo de Baú Colossal",
     "block.colossalchests.colossal_chest.info": "Exatamente um é necessário para construir a estrutura de um Baú Colossal",
     "block.colossalchests.chest_wall": "Parede de Baú Colossal",
@@ -46,24 +40,16 @@
     "block.colossalchests.interface.info": "Para interagir com canos e funis",
     "block.colossalchests.uncolossal_chest": "Baú Incolossal",
     "block.colossalchests.uncolossal_chest.info": "O mais colossal de todos!",
-
-    "_comment": "Items",
     "item.colossalchests.upgrade_tool": "Ferramenta de Melhoria de Baú",
     "item.colossalchests.upgrade_tool.info": "Melhora um Baú Colossal para o próximo nível ao ter todos os itens necessários no seu inventário.",
     "item.colossalchests.upgrade_tool_reverse": "Ferramenta de Rebaixamento de Baú",
     "item.colossalchests.upgrade_tool_reverse.info": "Rebaixa um Baú Colossal para o nível anterior ao ter todos os itens necessários no seu inventário. AVISO: itens podem ejetar se o baú se tornar pequeno demais para o conteúdo.",
-
-    "_comment": "Materials",
     "material.colossalchests.wood": "Madeira",
     "material.colossalchests.copper": "Cobre",
     "material.colossalchests.iron": "Ferro",
     "material.colossalchests.silver": "Prata",
     "material.colossalchests.gold": "Ouro",
     "material.colossalchests.diamond": "Diamante",
-    "material.colossalchests.obsidian": "Obsidian",
-
-    "_comment": "Multiblock",
-    "multiblock.colossalchests.error.prefix": "ColossalChests",
     "multiblock.colossalchests.error.prefix.info": "Erro na estrutura multiblock do Baú Colossal",
     "multiblock.colossalchests.error.unexpected": "Erro inesperado na estrutura do Baú Colossal.",
     "multiblock.colossalchests.error.material": "Encontrado um bloco do material %s em %s, quando %s era esperado.",

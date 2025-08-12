@@ -88,15 +88,19 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(world, pos, state, placer, stack);
-        ColossalChest.triggerDetector(this.material, world, pos, true, placer instanceof Player ? (Player) placer : null);
+        ColossalChest.triggerDetector(this.material, world, pos, true, placer instanceof Player ? (Player) placer : null, canBlockSnapshotsBeCaptured());
     }
 
     @Override
     public void onPlace(BlockState blockStateNew, Level world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
         super.onPlace(blockStateNew, world, blockPos, blockStateOld, isMoving);
         if(!isCaptureBlockSnapshots(world) && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.getValue(ENABLED)) {
-            ColossalChest.triggerDetector(this.material, world, blockPos, true, null);
+            ColossalChest.triggerDetector(this.material, world, blockPos, true, null, true);
         }
+    }
+
+    protected boolean canBlockSnapshotsBeCaptured() {
+        return false;
     }
 
     protected boolean isCaptureBlockSnapshots(Level level) {
@@ -105,7 +109,7 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
 
     @Override
     public void destroy(LevelAccessor world, BlockPos blockPos, BlockState blockState) {
-        if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
+        if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null, true);
         super.destroy(world, blockPos, blockState);
     }
 
@@ -130,7 +134,7 @@ public class Interface extends BlockWithEntityCommon implements CubeDetector.IDe
     }
 
     public void onBlockExplodedCommon(BlockState state, Level world, BlockPos pos, Explosion explosion) {
-        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
+        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null, true);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         wasExploded(world, pos, explosion);

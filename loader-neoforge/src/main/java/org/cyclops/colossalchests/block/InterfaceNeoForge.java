@@ -23,6 +23,11 @@ public class InterfaceNeoForge extends Interface {
     }
 
     @Override
+    protected boolean canBlockSnapshotsBeCaptured() {
+        return true;
+    }
+
+    @Override
     protected boolean isCaptureBlockSnapshots(Level level) {
         return level.captureBlockSnapshots;
     }

@@ -1,0 +1,10 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.25.3 or higher.
+
+Additions:
+* Add translations through Crowdin (#189)
+* Add PT_BR localization (#190)
+
+Fixes:
+* Fix item loss when replacing walls in Fabric, Closes #191
+* Fix some spelling and grammar typos in lang (#187)

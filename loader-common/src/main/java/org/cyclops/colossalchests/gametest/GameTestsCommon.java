@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
@@ -838,6 +839,29 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalWood3x3BreakPlaceWallAsPlayer(GameTestHelper helper) {
+        HashSet<BlockPos> interfaces = Sets.newHashSet(POS.east().above(), POS.south().above());
+        BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
+
+        // Insert item
+        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+
+        // Break wall
+        destroyBlock(helper, POS.east());
+
+        // Replace wall
+        setBlockAsPlayer(helper, POS.east(), ChestMaterial.WOOD.getBlockWall());
+
+        helper.succeedWhen(() -> {
+            assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
+
+            // Chest must still contain item, and there must be no dropped items on the ground
+            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
+            helper.assertEntityNotPresent(EntityType.ITEM);
+        });
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testColossalWood3x3BreakPlaceInterface(GameTestHelper helper) {
         HashSet<BlockPos> interfaces = Sets.newHashSet(POS.east().above(), POS.south().above());
         BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
@@ -850,6 +874,29 @@ public class GameTestsCommon {
 
         // Replace interface
         helper.setBlock(POS.east().above(), ChestMaterial.WOOD.getBlockInterface());
+
+        helper.succeedWhen(() -> {
+            assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
+
+            // Chest must still contain item, and there must be no dropped items on the ground
+            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
+            helper.assertEntityNotPresent(EntityType.ITEM);
+        });
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalWood3x3BreakPlaceInterfaceAsPlayer(GameTestHelper helper) {
+        HashSet<BlockPos> interfaces = Sets.newHashSet(POS.east().above(), POS.south().above());
+        BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
+
+        // Insert item
+        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+
+        // Break interface
+        destroyBlock(helper, POS.east().above());
+
+        // Replace interface
+        setBlockAsPlayer(helper, POS.east().above(), ChestMaterial.WOOD.getBlockInterface());
 
         helper.succeedWhen(() -> {
             assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
@@ -875,6 +922,31 @@ public class GameTestsCommon {
 
         // Replace core
         helper.setBlock(POS.offset(4, 1, 4), ChestMaterial.WOOD.getBlockCore());
+
+        helper.succeedWhen(() -> {
+            // Chest must not contain item, and all items must be dropped on the ground
+            assertChestValid(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, interfaces, true);
+            helper.assertItemEntityPresent(Items.APPLE);
+            helper.assertItemEntityPresent(Items.ACACIA_LEAVES);
+            helper.assertItemEntityPresent(Items.WHITE_WOOL);
+        });
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalWood3x3BreakPlaceCoreAsPlayer(GameTestHelper helper) {
+        HashSet<BlockPos> interfaces = Sets.newHashSet(POS.offset(4, 1, 4).east().above(), POS.offset(4, 1, 4).south().above());
+        BlockEntityColossalChest core = createChest(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
+
+        // Insert item
+        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(1, new ItemStack(Items.ACACIA_LEAVES));
+        core.getInventory().setItem(2, new ItemStack(Items.WHITE_WOOL));
+
+        // Break core
+        destroyBlock(helper, POS.offset(4, 1, 4));
+
+        // Replace core
+        setBlockAsPlayer(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD.getBlockCore());
 
         helper.succeedWhen(() -> {
             // Chest must not contain item, and all items must be dropped on the ground
@@ -1051,6 +1123,14 @@ public class GameTestsCommon {
         if (removed) {
             blockState.getBlock().destroy(helper.getLevel(), helper.absolutePos(pos), blockState);
         }
+    }
+
+    private void setBlockAsPlayer(GameTestHelper helper, BlockPos pos, Block block) {
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack itemStack = new ItemStack(block);
+        player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(pos.getCenter(), Direction.DOWN, helper.absolutePos(pos), false)));
+        helper.assertTrue(interactionResult.consumesAction(), Component.literal("Block placement as player failed"));
     }
 
     protected boolean isFabric() {

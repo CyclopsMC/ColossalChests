@@ -124,8 +124,8 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
         return blockState.getValue(ENABLED);
     }
 
-    public static DetectionResult triggerDetector(ChestMaterial material, LevelAccessor world, BlockPos blockPos, boolean valid, @Nullable Player player) {
-        DetectionResult detectionResult = material.getChestDetector().detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), true);
+    public static DetectionResult triggerDetector(ChestMaterial material, LevelAccessor world, BlockPos blockPos, boolean valid, @Nullable Player player, boolean changeState) {
+        DetectionResult detectionResult = material.getChestDetector().detect(world, blockPos, valid ? null : blockPos, new MaterialValidationAction(), changeState);
         if (player instanceof ServerPlayer && detectionResult.getError() == null) {
             BlockState blockState = world.getBlockState(blockPos);
             if (blockState.getValue(ENABLED)) {
@@ -151,14 +151,14 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
                 tile.setSize(Vec3i.ZERO);
             }
         }
-        triggerDetector(this.material, world, pos, true, placer instanceof Player ? (Player) placer : null);
+        triggerDetector(this.material, world, pos, true, placer instanceof Player ? (Player) placer : null, true);
     }
 
     @Override
     public void onPlace(BlockState blockStateNew, Level world, BlockPos blockPos, BlockState blockStateOld, boolean isMoving) {
         super.onPlace(blockStateNew, world, blockPos, blockStateOld, isMoving);
         if(!isCaptureBlockSnapshots(world) && blockStateNew.getBlock() != blockStateOld.getBlock() && !blockStateNew.getValue(ENABLED)) {
-            triggerDetector(this.material, world, blockPos, true, null);
+            triggerDetector(this.material, world, blockPos, true, null, true);
         }
     }
 
@@ -256,7 +256,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
 
     @Override
     public void destroy(LevelAccessor world, BlockPos blockPos, BlockState blockState) {
-        if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null);
+        if(blockState.getValue(ENABLED)) ColossalChest.triggerDetector(material, world, blockPos, false, null, true);
         super.destroy(world, blockPos, blockState);
     }
 
@@ -266,7 +266,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     }
 
     public void onBlockExplodedCommon(BlockState state, ServerLevel world, BlockPos pos, Explosion explosion) {
-        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null);
+        if(world.getBlockState(pos).getValue(ENABLED)) ColossalChest.triggerDetector(material, world, pos, false, null, true);
         // IForgeBlock.super.onBlockExploded(state, world, pos, explosion);
         world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
         wasExploded(world, pos, explosion);

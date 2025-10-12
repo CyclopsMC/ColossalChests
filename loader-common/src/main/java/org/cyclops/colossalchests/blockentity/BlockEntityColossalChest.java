@@ -451,6 +451,9 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
 
     @Override
     public float getOpenNess(float value) {
+        if (!GeneralConfig.visuallyOpen) {
+            return 0;
+        }
         return this.chestLidController.getOpenness(value);
     }
 }

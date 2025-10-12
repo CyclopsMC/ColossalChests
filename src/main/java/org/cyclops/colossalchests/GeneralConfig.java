@@ -37,6 +37,8 @@ public class GeneralConfig extends DummyConfig {
 
     @ConfigurableProperty(category = "general", comment = "If the interface input overlay should always be rendered on chests.", isCommandable = true, configLocation = ModConfig.Type.CLIENT)
     public static boolean alwaysShowInterfaceOverlay = true;
+    @ConfigurableProperty(category = "general", comment = "If the lid should open when accessing the chest GUI.", isCommandable = true, configLocation = ModConfig.Type.CLIENT)
+    public static boolean visuallyOpen = true;
 
     @ConfigurableProperty(category = "general", comment = "Always create full creative-mode chests when formed. Should not be used in survival worlds!", isCommandable = true, configLocation = ModConfig.Type.SERVER)
     public static boolean creativeChests = false;

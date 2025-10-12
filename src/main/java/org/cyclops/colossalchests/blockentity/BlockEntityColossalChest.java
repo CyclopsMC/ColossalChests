@@ -490,6 +490,9 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
 
     @Override
     public float getOpenNess(float value) {
+        if (!GeneralConfig.visuallyOpen) {
+            return 0;
+        }
         return this.chestLidController.getOpenness(value);
     }
 }

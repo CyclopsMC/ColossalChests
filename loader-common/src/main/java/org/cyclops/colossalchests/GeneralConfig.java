@@ -23,6 +23,8 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
 
     @ConfigurablePropertyCommon(category = "general", comment = "If the interface input overlay should always be rendered on chests.", isCommandable = true, configLocation = ModConfigLocation.CLIENT)
     public static boolean alwaysShowInterfaceOverlay = true;
+    @ConfigurablePropertyCommon(category = "general", comment = "If the lid should open when accessing the chest GUI.", isCommandable = true, configLocation = ModConfigLocation.CLIENT)
+    public static boolean visuallyOpen = true;
 
     @ConfigurablePropertyCommon(category = "general", comment = "Always create full creative-mode chests when formed. Should not be used in survival worlds!", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static boolean creativeChests = false;

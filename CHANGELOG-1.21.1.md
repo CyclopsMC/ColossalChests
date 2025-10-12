@@ -1,29 +1,15 @@
 # Changelog for Minecraft 1.21.1
 All notable changes to this project will be documented in this file.
 
-<a name="1.21.1-1.8.9"></a>
-## [1.21.1-1.8.9](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.8...1.21.1-1.8.9) - 2024-11-19 10:36:01 +0100
+<a name="1.21.1-1.8.14"></a>
+## [1.21.1-1.8.14](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.13...1.21.1-1.8.14) - 2025-10-12 15:07:17
 
 
-### Fixed
-* Fix Fabric crash on explosion, Closes #174
-
-<a name="1.21.1-1.8.8"></a>
-## [1.21.1-1.8.8](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.7...1.21.1-1.8.8) - 2024-10-16 17:51:43 +0200
-
-
-### Fixed
-* Fix crash when using Integrated Tunnels with chests, Closes #169
-
-<a name="1.21.1-1.8.7"></a>
-## [1.21.1-1.8.7](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.13...1.21.1-1.8.7) - 2024-10-09 17:06:29 +0200
-
-
-### Changed
-* Refactor code to be compatible with NeoForge, Forge, and Fabric.
+### Added
+* Add config option to disable chest opening, Closes #167
 
 <a name="1.21.1-1.8.13"></a>
-## [1.21.1-1.8.13](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.12...1.21.1-1.8.13) - 2025-08-12 20:40:00
+## [1.21.1-1.8.13](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.12...1.21.1-1.8.13) - 2025-08-12 20:40:00 +0200
 
 
 ### Added
@@ -97,8 +83,29 @@ Closes #165
 * Fix enchanted items not being displayed, Closes #181
 
 <a name="1.21.1-1.8.10"></a>
-## [1.21.1-1.8.10] - 2024-11-25 16:11:47 +0100
+## [1.21.1-1.8.10](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.9...1.21.1-1.8.10) - 2024-11-25 16:11:47 +0100
 
 
 ### Fixed
 * Fix client disconnect when opening large chests
+
+<a name="1.21.1-1.8.9"></a>
+## [1.21.1-1.8.9](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.8...1.21.1-1.8.9) - 2024-11-19 10:36:01 +0100
+
+
+### Fixed
+* Fix Fabric crash on explosion, Closes #174
+
+<a name="1.21.1-1.8.8"></a>
+## [1.21.1-1.8.8](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.7...1.21.1-1.8.8) - 2024-10-16 17:51:43 +0200
+
+
+### Fixed
+* Fix crash when using Integrated Tunnels with chests, Closes #169
+
+<a name="1.21.1-1.8.7"></a>
+## [1.21.1-1.8.7] - 2024-10-09 17:06:29 +0200
+
+
+### Changed
+* Refactor code to be compatible with NeoForge, Forge, and Fabric.

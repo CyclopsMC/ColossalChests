@@ -13,6 +13,7 @@ import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import org.cyclops.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
 import org.cyclops.cyclopscore.inventory.IndexedInventory;
+import org.cyclops.cyclopscore.inventory.IndexedItemResourceHandler;
 import org.cyclops.cyclopscore.inventory.IndexedSlotlessItemHandlerWrapper;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.modcompat.ICompatInitializer;
@@ -59,7 +60,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                         public ICapabilityProvider<BlockEntityColossalChest, Direction, ISlotlessItemHandler> createProvider(BlockEntityType<BlockEntityColossalChest> capabilityKey) {
                             return (blockEntity, side) -> {
                                 IndexedInventory inv = (IndexedInventory) blockEntity.getInventory();
-                                return new IndexedSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(inv),
+                                return new IndexedSlotlessItemHandlerWrapper(new IndexedItemResourceHandler(inv, VanillaContainerWrapper.of(inv)),
                                         new InventoryIndexReferenceIndexedInventoryCommon(inv));
                             };
                         }
@@ -76,7 +77,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                             return (blockEntity, side) -> {
                                 BlockEntityColossalChest core = blockEntity.getCore();
                                 if (core != null) {
-                                    return new IndexedSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(core.getInventory()),
+                                    return new IndexedSlotlessItemHandlerWrapper(new IndexedItemResourceHandler((IndexedInventory) core.getInventory(), VanillaContainerWrapper.of(core.getInventory())),
                                             new InventoryIndexReferenceIndexedInventoryCommon((IndexedInventory) core.getInventory()));
                                 }
                                 return null;

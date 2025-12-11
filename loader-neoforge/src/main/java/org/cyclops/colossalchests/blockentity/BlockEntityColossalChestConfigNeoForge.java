@@ -8,6 +8,8 @@ import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChest;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChestNeoForge;
 import org.cyclops.cyclopscore.init.ModBaseNeoForge;
+import org.cyclops.cyclopscore.inventory.IInventoryIndexReference;
+import org.cyclops.cyclopscore.inventory.IndexedItemResourceHandler;
 
 /**
  * @author rubensworks
@@ -32,7 +34,7 @@ public class BlockEntityColossalChestConfigNeoForge<M extends ModBaseNeoForge<?>
         event.registerBlockEntity(
                 Capabilities.Item.BLOCK,
                 getInstance(),
-                (blockEntity, context) -> VanillaContainerWrapper.of(blockEntity.getInventory())
+                (blockEntity, context) -> new IndexedItemResourceHandler((IInventoryIndexReference) blockEntity.getInventory(), VanillaContainerWrapper.of(blockEntity.getInventory()))
         );
     }
 }

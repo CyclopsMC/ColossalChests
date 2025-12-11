@@ -4,6 +4,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.cyclops.cyclopscore.init.ModBaseNeoForge;
+import org.cyclops.cyclopscore.inventory.IInventoryIndexReference;
+import org.cyclops.cyclopscore.inventory.IndexedItemResourceHandler;
 
 /**
  * @author rubensworks
@@ -21,7 +23,7 @@ public class BlockEntityInterfaceConfigNeoForge<M extends ModBaseNeoForge<?>> ex
                 (blockEntity, context) -> {
                     BlockEntityColossalChest core = blockEntity.getCore();
                     if (core != null) {
-                        return VanillaContainerWrapper.of(core.getInventory());
+                        return new IndexedItemResourceHandler((IInventoryIndexReference) core.getInventory(), VanillaContainerWrapper.of(core.getInventory()));
                     }
                     return null;
                 }

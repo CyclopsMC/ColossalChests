@@ -42,7 +42,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         Calendar calendar = Calendar.getInstance();
         boolean christmas = calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) >= 24 && calendar.get(Calendar.DATE) <= 26;
         TEXTURES_CHEST.put(ChestMaterial.WOOD, ResourceLocation.parse("entity/chest/" + (christmas ? "christmas" : "normal") + ""));
-        TEXTURES_CHEST.put(ChestMaterial.COPPER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_copper"));
+        TEXTURES_CHEST.put(ChestMaterial.COPPER, ResourceLocation.parse("entity/chest/copper"));
         TEXTURES_CHEST.put(ChestMaterial.IRON, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_iron"));
         TEXTURES_CHEST.put(ChestMaterial.SILVER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_silver"));
         TEXTURES_CHEST.put(ChestMaterial.GOLD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_gold"));

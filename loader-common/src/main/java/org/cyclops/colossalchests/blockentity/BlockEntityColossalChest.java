@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -58,19 +59,23 @@ import java.util.Random;
 public class BlockEntityColossalChest extends CyclopsBlockEntity implements MenuProvider, LidBlockEntity {
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+        @Override
         protected void onOpen(Level level, BlockPos pos, BlockState blockState) {
             BlockEntityColossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_OPEN, getSizeSingular());
         }
 
+        @Override
         protected void onClose(Level level, BlockPos pos, BlockState blockState) {
             BlockEntityColossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_CLOSE, getSizeSingular());
         }
 
+        @Override
         protected void openerCountChanged(Level level, BlockPos pos, BlockState blockState, int p_155364_, int p_155365_) {
             BlockEntityColossalChest.this.signalOpenCount(level, pos, blockState, p_155364_, p_155365_);
         }
 
-        protected boolean isOwnContainer(Player player) {
+        @Override
+        public boolean isOwnContainer(Player player) {
             if (!(player.containerMenu instanceof ContainerColossalChest)) {
                 return false;
             } else {
@@ -181,7 +186,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     protected boolean isClientSide() {
-        return getLevel() != null && getLevel().isClientSide;
+        return getLevel() != null && getLevel().isClientSide();
     }
 
     protected LargeInventory constructInventory() {
@@ -190,19 +195,15 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         }
         LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64) {
             @Override
-            public void startOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.startOpen(entityPlayer);
-                    BlockEntityColossalChest.this.startOpen(entityPlayer);
-                }
+            public void startOpen(ContainerUser entityPlayer) {
+                super.startOpen(entityPlayer);
+                BlockEntityColossalChest.this.startOpen(entityPlayer);
             }
 
             @Override
-            public void stopOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.stopOpen(entityPlayer);
-                    BlockEntityColossalChest.this.stopOpen(entityPlayer);
-                }
+            public void stopOpen(ContainerUser entityPlayer) {
+                super.stopOpen(entityPlayer);
+                BlockEntityColossalChest.this.stopOpen(entityPlayer);
             }
         } : new LargeInventory(calculateInventorySize(), 64);
         inv.addDirtyMarkListener(this);
@@ -242,7 +243,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         SimpleInventory oldInventory = this.inventory;
         SimpleInventory oldLastInventory = this.lastValidInventory;
 
-        if (getLevel() != null && getLevel().isClientSide) {
+        if (getLevel() != null && getLevel().isClientSide()) {
             // Don't read the inventory on the client.
             // The client will receive the data once the gui is opened.
             this.inventory = null;
@@ -250,7 +251,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
             this.recreateNullInventory = false;
         }
         super.read(input);
-        if (getLevel() != null && getLevel().isClientSide) {
+        if (getLevel() != null && getLevel().isClientSide()) {
             this.inventory = oldInventory;
             this.lastValidInventory = oldLastInventory;
             this.recreateNullInventory = true;
@@ -298,7 +299,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
     }
 
     protected void ensureInventoryInitialized() {
-        if (getLevel() != null && getLevel().isClientSide && (inventory == null || inventory.getContainerSize() != calculateInventorySize())) {
+        if (getLevel() != null && getLevel().isClientSide() && (inventory == null || inventory.getContainerSize() != calculateInventorySize())) {
             setInventory(constructInventory());
         }
     }
@@ -419,16 +420,16 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         }
     }
 
-    public void startOpen(Player player) {
-        if (!this.remove && !player.isSpectator()) {
-            this.openersCounter.incrementOpeners(player, this.getLevel(), this.getBlockPos(), this.getBlockState());
+    public void startOpen(ContainerUser player) {
+        if (!this.remove) {
+            this.openersCounter.incrementOpeners(player.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), player.getContainerInteractionRange());
         }
 
     }
 
-    public void stopOpen(Player player) {
-        if (!this.remove && !player.isSpectator()) {
-            this.openersCounter.decrementOpeners(player, this.getLevel(), this.getBlockPos(), this.getBlockState());
+    public void stopOpen(ContainerUser player) {
+        if (!this.remove) {
+            this.openersCounter.decrementOpeners(player.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
         }
     }
 

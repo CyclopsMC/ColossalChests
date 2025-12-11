@@ -1,12 +1,12 @@
 package org.cyclops.colossalchests.client.render.blockentity;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.BlockPos;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChest;
 import org.cyclops.cyclopscore.client.render.blockentity.ItemStackBlockEntityRendererBase;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author rubensworks
@@ -21,13 +21,13 @@ public class ItemStackTileEntityUncolossalChestRender extends ItemStackBlockEnti
         public static final MapCodec<ItemStackTileEntityUncolossalChestRender.Unbaked> MAP_CODEC = MapCodec.unit(ItemStackTileEntityUncolossalChestRender.Unbaked::new);
 
         @Override
-        public MapCodec<ItemStackTileEntityUncolossalChestRender.Unbaked> type() {
-            return MAP_CODEC;
+        public @Nullable SpecialModelRenderer<?> bake(BakingContext bakingContext) {
+            return new ItemStackTileEntityUncolossalChestRender();
         }
 
         @Override
-        public SpecialModelRenderer<?> bake(EntityModelSet entityModelSet) {
-            return new ItemStackTileEntityUncolossalChestRender();
+        public MapCodec<ItemStackTileEntityUncolossalChestRender.Unbaked> type() {
+            return MAP_CODEC;
         }
     }
 

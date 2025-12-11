@@ -16,11 +16,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.RegistryEntries;
-import org.cyclops.colossalchests.block.ChestMaterial;
-import org.cyclops.colossalchests.block.ChestWall;
-import org.cyclops.colossalchests.block.ColossalChest;
-import org.cyclops.colossalchests.block.IBlockChestMaterial;
-import org.cyclops.colossalchests.block.Interface;
+import org.cyclops.colossalchests.block.*;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.colossalchests.blockentity.BlockEntityInterface;
 import org.cyclops.cyclopscore.block.multi.DetectionResult;
@@ -139,7 +135,7 @@ public class ItemUpgradeTool extends Item {
         consumeItems(player, requiredWalls.copy(), false);
 
         // Update the chest material and move the contents to the new tile
-        if(!world.isClientSide) {
+        if(!world.isClientSide()) {
             tile.setSize(Vec3i.ZERO);
             SimpleInventory oldInventory = tile.getLastValidInventory();
             Direction oldRotation = tile.getRotation();

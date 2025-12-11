@@ -77,7 +77,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? BaseEntityBlock.createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST.value(), BlockEntityColossalChest::lidAnimateTick) : null;
+        return level.isClientSide() ? BaseEntityBlock.createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_COLOSSAL_CHEST.value(), BlockEntityColossalChest::lidAnimateTick) : null;
     }
 
     @Override
@@ -211,7 +211,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
      * @param player The player.
      */
     public static void addPlayerChatError(ChestMaterial material, Level world, BlockPos blockPos, Player player) {
-        if(!world.isClientSide && player.getItemInHand(player.getUsedItemHand()).isEmpty()) {
+        if(!world.isClientSide() && player.getItemInHand(player.getUsedItemHand()).isEmpty()) {
             DetectionResult result = material.getChestDetector().detect(world, blockPos, null,  new MaterialValidationAction(), false);
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());

@@ -4,7 +4,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.BaseCapability;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.cyclops.colossalchests.ColossalChestsNeoForge;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.RegistryEntries;
@@ -59,7 +59,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                         public ICapabilityProvider<BlockEntityColossalChest, Direction, ISlotlessItemHandler> createProvider(BlockEntityType<BlockEntityColossalChest> capabilityKey) {
                             return (blockEntity, side) -> {
                                 IndexedInventory inv = (IndexedInventory) blockEntity.getInventory();
-                                return new IndexedSlotlessItemHandlerWrapper(new InvWrapper(inv),
+                                return new IndexedSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(inv),
                                         new InventoryIndexReferenceIndexedInventoryCommon(inv));
                             };
                         }
@@ -76,7 +76,7 @@ public class CommonCapabilitiesModCompat implements IModCompat {
                             return (blockEntity, side) -> {
                                 BlockEntityColossalChest core = blockEntity.getCore();
                                 if (core != null) {
-                                    return new IndexedSlotlessItemHandlerWrapper(new InvWrapper(core.getInventory()),
+                                    return new IndexedSlotlessItemHandlerWrapper(VanillaContainerWrapper.of(core.getInventory()),
                                             new InventoryIndexReferenceIndexedInventoryCommon((IndexedInventory) core.getInventory()));
                                 }
                                 return null;

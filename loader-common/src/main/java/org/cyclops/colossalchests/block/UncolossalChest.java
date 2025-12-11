@@ -66,7 +66,7 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? BaseEntityBlock.createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), BlockEntityUncolossalChest::lidAnimateTick) : null;
+        return level.isClientSide() ? BaseEntityBlock.createTickerHelper(blockEntityType, RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), BlockEntityUncolossalChest::lidAnimateTick) : null;
     }
 
     @Override
@@ -129,8 +129,8 @@ public class UncolossalChest extends BlockWithEntityGui implements SimpleWaterlo
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState blockState, Level world, BlockPos pos) {
-        return IModHelpers.get().getBlockEntityHelpers().get(world, pos, BlockEntityUncolossalChest.class)
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+        return IModHelpers.get().getBlockEntityHelpers().get(level, pos, BlockEntityUncolossalChest.class)
                 .map(tile -> AbstractContainerMenu.getRedstoneSignalFromContainer(tile.getInventory()))
                 .orElse(0);
     }

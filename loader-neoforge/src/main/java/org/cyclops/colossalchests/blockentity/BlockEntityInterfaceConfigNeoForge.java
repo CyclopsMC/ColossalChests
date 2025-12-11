@@ -2,7 +2,7 @@ package org.cyclops.colossalchests.blockentity;
 
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 
 /**
@@ -16,12 +16,12 @@ public class BlockEntityInterfaceConfigNeoForge<M extends ModBaseNeoForge<?>> ex
 
     public void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
-                Capabilities.ItemHandler.BLOCK,
+                Capabilities.Item.BLOCK,
                 getInstance(),
                 (blockEntity, context) -> {
                     BlockEntityColossalChest core = blockEntity.getCore();
                     if (core != null) {
-                        return new InvWrapper(core.getInventory());
+                        return VanillaContainerWrapper.of(core.getInventory());
                     }
                     return null;
                 }

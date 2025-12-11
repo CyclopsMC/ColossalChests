@@ -5,10 +5,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -20,9 +22,11 @@ import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,7 +34,7 @@ import java.util.Map;
  * @author rubensworks
  *
  */
-public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<BlockEntityColossalChest> {
+public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<BlockEntityColossalChest, RenderTileEntityColossalChest.RenderState> {
 
     public static final Map<ChestMaterial, ResourceLocation> TEXTURES_CHEST = Maps.newHashMap();
     public static final Map<ChestMaterial, ResourceLocation> TEXTURES_INTERFACE = Maps.newHashMap();
@@ -59,48 +63,65 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     @Override
-    protected void handleRotation(BlockEntityColossalChest blockEntity, PoseStack poseStack) {
+    protected void handleRotation(RenderState renderState, PoseStack poseStack) {
         // Move origin to center of chest
-        if(blockEntity.isStructureComplete()) {
-            Vec3 renderOffset = blockEntity.getRenderOffset();
+        if(renderState.structureComplete) {
+            Vec3 renderOffset = renderState.renderOffset;
             poseStack.translate(-renderOffset.x, -renderOffset.y, -renderOffset.z);
         }
 
         // Rotate
-        super.handleRotation(blockEntity, poseStack);
+        super.handleRotation(renderState, poseStack);
 
         // Move chest slightly higher
-        poseStack.translate(0F, blockEntity.getSizeSingular() * 0.0625F, 0F);
+        poseStack.translate(0F, renderState.sizeSingular * 0.0625F, 0F);
 
         // Scale
-        float size = blockEntity.getSizeSingular() * 1.125F;
+        float size = renderState.sizeSingular * 1.125F;
         poseStack.scale(size, size, size);
     }
 
     @Override
-    public void render(BlockEntityColossalChest tile, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int combinedLightIn, int combinedOverlayIn, Vec3 cameraPos) {
-        if (tile.isStructureComplete()) {
-            matrixStack.pushPose();
+    public void submit(RenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+        if (renderState.structureComplete) {
+            poseStack.pushPose();
 
-            super.render(tile, partialTicks, matrixStack, renderTypeBuffer, combinedLightIn, combinedOverlayIn, cameraPos);
+            super.submit(renderState, poseStack, submitNodeCollector, cameraRenderState);
 
             // Render interface overlays
-            if(tile.isStructureComplete() && tile.getOpenNess(0) == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
-                matrixStack.pushPose();
-                Material materialInterface = getMaterialInterface(tile);
-                VertexConsumer buffer = materialInterface.buffer(renderTypeBuffer, RenderType::text);
-                for (Vec3i interfaceLocation : tile.getInterfaceLocations()) {
-                    float translateX = interfaceLocation.getX() - tile.getBlockPos().getX();
-                    float translateY = interfaceLocation.getY() - tile.getBlockPos().getY();
-                    float translateZ = interfaceLocation.getZ() - tile.getBlockPos().getZ();
-                    matrixStack.translate(translateX, translateY, translateZ);
-                    renderInterface(matrixStack, buffer, materialInterface.sprite(), interfaceLocation.equals(tile.getBlockPos()), combinedLightIn);
-                    matrixStack.translate(-translateX, -translateY, -translateZ);
-                }
-                matrixStack.popPose();
+            if(renderState.openNessRaw == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
+                poseStack.pushPose();
+                Material materialInterface = getMaterialInterface(renderState);
+                submitNodeCollector.submitCustomGeometry(poseStack, RenderType.text(materialInterface.atlasLocation()), (pose, vertexConsumer) -> {
+                    for (Vec3i interfaceLocation : renderState.interfaceLocations) {
+                        float translateX = (float) (interfaceLocation.getX() - cameraRenderState.pos.x());
+                        float translateY = (float) (interfaceLocation.getY() - cameraRenderState.pos.y());
+                        float translateZ = (float) (interfaceLocation.getZ() - cameraRenderState.pos.z());
+                        poseStack.translate(translateX, translateY, translateZ);
+                        submitInterface(poseStack, vertexConsumer, materials.get(materialInterface), interfaceLocation.equals(renderState.blockPos), renderState.lightCoords);
+                        poseStack.translate(-translateX, -translateY, -translateZ);
+                    }
+                });
+                poseStack.popPose();
             }
-            matrixStack.popPose();
+            poseStack.popPose();
         }
+    }
+
+    @Override
+    public RenderState createRenderState() {
+        return new RenderState();
+    }
+
+    @Override
+    public void extractRenderState(BlockEntityColossalChest blockEntity, RenderState renderState, float partialTick, Vec3 cameraPosition, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+        super.extractRenderState(blockEntity, renderState, partialTick, cameraPosition, breakProgress);
+        renderState.material = blockEntity.getMaterial();
+        renderState.direction = blockEntity.getRotation().getOpposite();
+        renderState.structureComplete = blockEntity.isStructureComplete();
+        renderState.renderOffset = blockEntity.getRenderOffset();
+        renderState.sizeSingular = blockEntity.getSizeSingular();
+        renderState.interfaceLocations = blockEntity.getInterfaceLocations();
     }
 
     @Override
@@ -109,17 +130,17 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     @Override
-    protected Direction getDirection(BlockEntityColossalChest tile) {
-        return tile.getRotation().getOpposite();
+    protected Direction getDirection(RenderState renderState) {
+        return renderState.direction;
     }
 
     @Override
-    protected Material getMaterial(BlockEntityColossalChest tile) {
-        return new Material(Sheets.CHEST_SHEET, TEXTURES_CHEST.get(tile.getMaterial()));
+    protected Material getMaterial(RenderState renderState) {
+        return new Material(Sheets.CHEST_SHEET, TEXTURES_CHEST.get(renderState.material));
     }
 
-    protected Material getMaterialInterface(BlockEntityColossalChest tile) {
-        return new Material(TextureAtlas.LOCATION_BLOCKS, TEXTURES_INTERFACE.get(tile.getMaterial()));
+    protected Material getMaterialInterface(RenderState renderState) {
+        return new Material(TextureAtlas.LOCATION_BLOCKS, TEXTURES_INTERFACE.get(renderState.material));
     }
 
     protected void setMatrixOrientation(PoseStack matrixStack, Direction direction) {
@@ -166,7 +187,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         matrixStack.mulPose(Axis.XP.rotationDegrees(rotationX));
     }
 
-    protected void renderInterface(PoseStack matrixStack, VertexConsumer buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {
+    protected void submitInterface(PoseStack matrixStack, VertexConsumer buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {
         for (Direction side : Direction.values()) {
             matrixStack.pushPose();
             float scale = 0.063F;
@@ -194,5 +215,14 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
             buffer.addVertex(matrix, posMin, posMax, indent).setColor(255, 255, 255, alpha).setUv(uMax, vMax).setLight(combinedLightIn);
             matrixStack.popPose();
         }
+    }
+
+    public static class RenderState extends RenderTileEntityChestBase.RenderState {
+        public ChestMaterial material;
+        public Direction direction;
+        public boolean structureComplete;
+        public Vec3 renderOffset;
+        public int sizeSingular;
+        public List<Vec3i> interfaceLocations;
     }
 }

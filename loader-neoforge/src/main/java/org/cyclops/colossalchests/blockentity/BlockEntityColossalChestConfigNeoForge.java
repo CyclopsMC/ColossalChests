@@ -4,7 +4,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.items.wrapper.InvWrapper;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
+import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChest;
 import org.cyclops.colossalchests.client.render.blockentity.RenderTileEntityColossalChestNeoForge;
 import org.cyclops.cyclopscore.init.ModBaseNeoForge;
 
@@ -23,15 +24,15 @@ public class BlockEntityColossalChestConfigNeoForge<M extends ModBaseNeoForge<?>
     }
 
     @Override
-    protected BlockEntityRendererProvider<BlockEntityColossalChest> getBlockEntityRendererProvider() {
+    protected BlockEntityRendererProvider<BlockEntityColossalChest, RenderTileEntityColossalChest.RenderState> getBlockEntityRendererProvider() {
         return RenderTileEntityColossalChestNeoForge::new;
     }
 
     public void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
-                Capabilities.ItemHandler.BLOCK,
+                Capabilities.Item.BLOCK,
                 getInstance(),
-                (blockEntity, context) -> new InvWrapper(blockEntity.getInventory())
+                (blockEntity, context) -> VanillaContainerWrapper.of(blockEntity.getInventory())
         );
     }
 }

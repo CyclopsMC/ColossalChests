@@ -31,7 +31,7 @@ public class BlockEntityColossalChestConfig<M extends IModBase> extends BlockEnt
         return BlockEntityColossalChest::new;
     }
 
-    protected BlockEntityRendererProvider<BlockEntityColossalChest> getBlockEntityRendererProvider() {
+    protected BlockEntityRendererProvider<BlockEntityColossalChest, RenderTileEntityColossalChest.RenderState> getBlockEntityRendererProvider() {
         return RenderTileEntityColossalChest::new;
     }
 

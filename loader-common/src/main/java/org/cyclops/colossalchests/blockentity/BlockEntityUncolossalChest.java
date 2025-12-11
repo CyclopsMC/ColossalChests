@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.ContainerUser;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -38,19 +39,23 @@ import javax.annotation.Nullable;
 public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements MenuProvider, LidBlockEntity {
 
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+        @Override
         protected void onOpen(Level level, BlockPos pos, BlockState blockState) {
             BlockEntityUncolossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_OPEN);
         }
 
+        @Override
         protected void onClose(Level level, BlockPos pos, BlockState blockState) {
             BlockEntityUncolossalChest.playSound(level, pos, blockState, SoundEvents.CHEST_CLOSE);
         }
 
+        @Override
         protected void openerCountChanged(Level level, BlockPos pos, BlockState blockState, int p_155364_, int p_155365_) {
             BlockEntityUncolossalChest.this.signalOpenCount(level, pos, blockState, p_155364_, p_155365_);
         }
 
-        protected boolean isOwnContainer(Player player) {
+        @Override
+        public boolean isOwnContainer(Player player) {
             if (!(player.containerMenu instanceof ContainerUncolossalChest)) {
                 return false;
             } else {
@@ -69,19 +74,15 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
         super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), blockPos, blockState);
         this.inventory = new SimpleInventory(5, 64) {
             @Override
-            public void startOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.startOpen(entityPlayer);
-                    BlockEntityUncolossalChest.this.startOpen(entityPlayer);
-                }
+            public void startOpen(ContainerUser entityPlayer) {
+                super.startOpen(entityPlayer);
+                BlockEntityUncolossalChest.this.startOpen(entityPlayer);
             }
 
             @Override
-            public void stopOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.stopOpen(entityPlayer);
-                    BlockEntityUncolossalChest.this.stopOpen(entityPlayer);
-                }
+            public void stopOpen(ContainerUser entityPlayer) {
+                super.stopOpen(entityPlayer);
+                BlockEntityUncolossalChest.this.stopOpen(entityPlayer);
             }
 
             @Override
@@ -126,16 +127,16 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
         }
     }
 
-    public void startOpen(Player player) {
-        if (!this.remove && !player.isSpectator()) {
-            this.openersCounter.incrementOpeners(player, this.getLevel(), this.getBlockPos(), this.getBlockState());
+    public void startOpen(ContainerUser player) {
+        if (!this.remove) {
+            this.openersCounter.incrementOpeners(player.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), player.getContainerInteractionRange());
         }
 
     }
 
-    public void stopOpen(Player player) {
-        if (!this.remove && !player.isSpectator()) {
-            this.openersCounter.decrementOpeners(player, this.getLevel(), this.getBlockPos(), this.getBlockState());
+    public void stopOpen(ContainerUser player) {
+        if (!this.remove) {
+            this.openersCounter.decrementOpeners(player.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
         }
     }
 

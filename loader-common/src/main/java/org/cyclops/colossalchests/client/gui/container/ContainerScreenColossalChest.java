@@ -10,6 +10,7 @@ import net.minecraft.network.HashedPatchMap;
 import net.minecraft.network.HashedStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -77,7 +78,7 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     }
 
     protected void drawForgegroundString(GuiGraphics guiGraphics) {
-        guiGraphics.drawString(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, 4210752, false);
+        guiGraphics.drawString(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, ARGB.opaque(4210752), false);
     }
 
     @Override

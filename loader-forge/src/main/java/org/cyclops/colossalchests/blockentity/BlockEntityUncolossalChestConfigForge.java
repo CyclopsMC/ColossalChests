@@ -2,7 +2,6 @@ package org.cyclops.colossalchests.blockentity;
 
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -23,7 +22,7 @@ public class BlockEntityUncolossalChestConfigForge<M extends ModBaseForge> exten
         AttachCapabilitiesEvent.BlockEntities.BUS.addListener(this::registerCapabilities);
     }
 
-    public void registerCapabilities(AttachCapabilitiesEvent<BlockEntity> event) {
+    public void registerCapabilities(AttachCapabilitiesEvent.BlockEntities event) {
         if (event.getObject().getType() == getInstance()) {
             event.addCapability(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, getNamedId()), new ICapabilityProvider() {
                 @Override

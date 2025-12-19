@@ -7,7 +7,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -25,7 +25,7 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  */
 public class ClientboundContainerSetContentPacketWindow extends PacketCodec<ClientboundContainerSetContentPacketWindow> {
 
-    public static final Type<ClientboundContainerSetContentPacketWindow> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "clientbound_container_set_content_packet_window"));
+    public static final Type<ClientboundContainerSetContentPacketWindow> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Reference.MOD_ID, "clientbound_container_set_content_packet_window"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacketWindow> CODEC = getCodec(ClientboundContainerSetContentPacketWindow::new);
 
     @CodecField

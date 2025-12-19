@@ -10,7 +10,7 @@ import net.minecraft.network.HashedStack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
@@ -32,7 +32,7 @@ import java.util.function.IntFunction;
  */
 public class ServerboundContainerClickPacketOverride extends PacketCodec<ServerboundContainerClickPacketOverride> {
 
-    public static final Type<ServerboundContainerClickPacketOverride> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "serverbound_container_click_packet_override"));
+    public static final Type<ServerboundContainerClickPacketOverride> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Reference.MOD_ID, "serverbound_container_click_packet_override"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacketOverride> CODEC = getCodec(ServerboundContainerClickPacketOverride::new);
 
     @CodecField

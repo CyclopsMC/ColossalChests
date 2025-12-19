@@ -25,7 +25,7 @@ public class ChestWallConfigFabric<M extends IModBase> extends ChestWallConfig<M
     public void onRegistryRegistered() {
         super.onRegistryRegistered();
         if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
-            BlockRenderLayerMap.putBlock(getInstance(), ChunkSectionLayer.CUTOUT_MIPPED);
+            BlockRenderLayerMap.putBlock(getInstance(), ChunkSectionLayer.CUTOUT);
         }
     }
 

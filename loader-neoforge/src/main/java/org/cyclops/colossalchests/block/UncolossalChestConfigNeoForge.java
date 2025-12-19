@@ -14,7 +14,7 @@ public class UncolossalChestConfigNeoForge<M extends ModBaseNeoForge<?>> extends
     public UncolossalChestConfigNeoForge(M mod) {
         super(mod);
         if (mod.getModHelpers().getMinecraftHelpers().isClientSide()) {
-            mod.getModEventBus().addListener((RegisterSpecialModelRendererEvent event) -> event.register(getResourceKey().location(), ItemStackTileEntityUncolossalChestRender.Unbaked.MAP_CODEC));
+            mod.getModEventBus().addListener((RegisterSpecialModelRendererEvent event) -> event.register(getResourceKey().identifier(), ItemStackTileEntityUncolossalChestRender.Unbaked.MAP_CODEC));
         }
     }
 

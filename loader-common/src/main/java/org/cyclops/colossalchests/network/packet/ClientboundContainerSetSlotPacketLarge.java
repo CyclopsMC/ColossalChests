@@ -3,7 +3,7 @@ package org.cyclops.colossalchests.network.packet;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +20,7 @@ import org.cyclops.cyclopscore.network.PacketCodec;
  */
 public class ClientboundContainerSetSlotPacketLarge extends PacketCodec<ClientboundContainerSetSlotPacketLarge> {
 
-    public static final Type<ClientboundContainerSetSlotPacketLarge> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "clientbound_container_set_slot_packet_large"));
+    public static final Type<ClientboundContainerSetSlotPacketLarge> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Reference.MOD_ID, "clientbound_container_set_slot_packet_large"));
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetSlotPacketLarge> CODEC = getCodec(ClientboundContainerSetSlotPacketLarge::new);
 
     @CodecField

@@ -25,7 +25,7 @@ public class InterfaceConfigFabric<M extends IModBase> extends InterfaceConfig<M
     public void onRegistryRegistered() {
         super.onRegistryRegistered();
         if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
-            BlockRenderLayerMap.putBlock(getInstance(), ChunkSectionLayer.CUTOUT_MIPPED);
+            BlockRenderLayerMap.putBlock(getInstance(), ChunkSectionLayer.CUTOUT);
         }
     }
 

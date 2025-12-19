@@ -2,7 +2,7 @@ package org.cyclops.colossalchests.client.gui.container;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
@@ -23,7 +23,7 @@ public class ContainerScreenUncolossalChest extends ContainerScreenExtended<Cont
     }
 
     @Override
-    protected ResourceLocation constructGuiTexture() {
-        return ResourceLocation.parse("textures/gui/container/hopper.png");
+    protected Identifier constructGuiTexture() {
+        return Identifier.parse("textures/gui/container/hopper.png");
     }
 }

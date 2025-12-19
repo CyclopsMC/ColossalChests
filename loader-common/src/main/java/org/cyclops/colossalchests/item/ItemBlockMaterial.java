@@ -37,7 +37,7 @@ public class ItemBlockMaterial extends BlockItem {
 
     public static <M extends IModBase> BiFunction<BlockConfigCommon<M>, Block, ? extends Item> getItemConstructor(ChestMaterial material, String descriptionSuffix) {
         return (eConfig, block) -> new ItemBlockMaterial(block, new Item.Properties()
-                .setId(ResourceKey.create(Registries.ITEM, eConfig.getResourceKey().location()))
+                .setId(ResourceKey.create(Registries.ITEM, eConfig.getResourceKey().identifier()))
                 .overrideDescription("block.colossalchests." + descriptionSuffix), material);
     }
 }

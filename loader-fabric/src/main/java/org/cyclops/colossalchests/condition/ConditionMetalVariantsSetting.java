@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceCondition;
 import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditionType;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +20,7 @@ public record ConditionMetalVariantsSetting() implements ResourceCondition {
             builder -> builder.point(new ConditionMetalVariantsSetting())
     );
     public static final ResourceConditionType<ConditionMetalVariantsSetting> TYPE = ResourceConditionType.create(
-            ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "metal_variants_enabled"),
+            Identifier.fromNamespaceAndPath(Reference.MOD_ID, "metal_variants_enabled"),
             CODEC
     );
 

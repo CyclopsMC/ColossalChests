@@ -5,18 +5,18 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.Reference;
@@ -36,26 +36,26 @@ import java.util.Map;
  */
 public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<BlockEntityColossalChest, RenderTileEntityColossalChest.RenderState> {
 
-    public static final Map<ChestMaterial, ResourceLocation> TEXTURES_CHEST = Maps.newHashMap();
-    public static final Map<ChestMaterial, ResourceLocation> TEXTURES_INTERFACE = Maps.newHashMap();
+    public static final Map<ChestMaterial, Identifier> TEXTURES_CHEST = Maps.newHashMap();
+    public static final Map<ChestMaterial, Identifier> TEXTURES_INTERFACE = Maps.newHashMap();
     static {
         Calendar calendar = Calendar.getInstance();
         boolean christmas = calendar.get(Calendar.MONTH) + 1 == 12 && calendar.get(Calendar.DATE) >= 24 && calendar.get(Calendar.DATE) <= 26;
-        TEXTURES_CHEST.put(ChestMaterial.WOOD, ResourceLocation.parse("entity/chest/" + (christmas ? "christmas" : "normal") + ""));
-        TEXTURES_CHEST.put(ChestMaterial.COPPER, ResourceLocation.parse("entity/chest/copper"));
-        TEXTURES_CHEST.put(ChestMaterial.IRON, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_iron"));
-        TEXTURES_CHEST.put(ChestMaterial.SILVER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_silver"));
-        TEXTURES_CHEST.put(ChestMaterial.GOLD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_gold"));
-        TEXTURES_CHEST.put(ChestMaterial.DIAMOND, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_diamond"));
-        TEXTURES_CHEST.put(ChestMaterial.OBSIDIAN, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_obsidian"));
+        TEXTURES_CHEST.put(ChestMaterial.WOOD, Identifier.parse("entity/chest/" + (christmas ? "christmas" : "normal") + ""));
+        TEXTURES_CHEST.put(ChestMaterial.COPPER, Identifier.parse("entity/chest/copper"));
+        TEXTURES_CHEST.put(ChestMaterial.IRON, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_iron"));
+        TEXTURES_CHEST.put(ChestMaterial.SILVER, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_silver"));
+        TEXTURES_CHEST.put(ChestMaterial.GOLD, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_gold"));
+        TEXTURES_CHEST.put(ChestMaterial.DIAMOND, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_diamond"));
+        TEXTURES_CHEST.put(ChestMaterial.OBSIDIAN, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_obsidian"));
 
-        TEXTURES_INTERFACE.put(ChestMaterial.WOOD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_wood"));
-        TEXTURES_INTERFACE.put(ChestMaterial.COPPER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_copper"));
-        TEXTURES_INTERFACE.put(ChestMaterial.IRON, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_iron"));
-        TEXTURES_INTERFACE.put(ChestMaterial.SILVER, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_silver"));
-        TEXTURES_INTERFACE.put(ChestMaterial.GOLD, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_gold"));
-        TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_diamond"));
-        TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_obsidian"));
+        TEXTURES_INTERFACE.put(ChestMaterial.WOOD, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_wood"));
+        TEXTURES_INTERFACE.put(ChestMaterial.COPPER, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_copper"));
+        TEXTURES_INTERFACE.put(ChestMaterial.IRON, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_iron"));
+        TEXTURES_INTERFACE.put(ChestMaterial.SILVER, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_silver"));
+        TEXTURES_INTERFACE.put(ChestMaterial.GOLD, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_gold"));
+        TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_diamond"));
+        TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_obsidian"));
     }
 
     public RenderTileEntityColossalChest(BlockEntityRendererProvider.Context context) {
@@ -92,7 +92,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
             if(renderState.openNessRaw == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
                 poseStack.pushPose();
                 Material materialInterface = getMaterialInterface(renderState);
-                submitNodeCollector.submitCustomGeometry(poseStack, RenderType.text(materialInterface.atlasLocation()), (pose, vertexConsumer) -> {
+                submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(materialInterface.atlasLocation()), (pose, vertexConsumer) -> {
                     for (Vec3i interfaceLocation : renderState.interfaceLocations) {
                         float translateX = (float) (interfaceLocation.getX() - cameraRenderState.pos.x());
                         float translateY = (float) (interfaceLocation.getY() - cameraRenderState.pos.y());

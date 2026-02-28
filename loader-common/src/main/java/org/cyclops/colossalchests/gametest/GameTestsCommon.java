@@ -1147,6 +1147,15 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementRootNegative(GameTestHelper helper) {
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        serverPlayer.getInventory().add(new ItemStack(Items.DIRT));
+        CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), new ItemStack(Items.DIRT));
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, ResourceLocation.parse("colossalchests:root")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementRoot(GameTestHelper helper) {
         ServerPlayer serverPlayer = makeMockServerPlayer(helper);
         serverPlayer.getInventory().add(new ItemStack(Items.CHEST));
@@ -1156,11 +1165,54 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementUncolossalNegative(GameTestHelper helper) {
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, POS, Blocks.CHEST);
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, ResourceLocation.parse("colossalchests:uncolossal")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementUncolossal(GameTestHelper helper) {
         ServerPlayer serverPlayer = makeMockServerPlayer(helper);
         placeBlockAsServerPlayer(helper, serverPlayer, POS, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value());
 
         helper.succeedWhen(() -> assertAdvancementDone(helper, serverPlayer, ResourceLocation.parse("colossalchests:uncolossal")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseWoodNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.COPPER, "colossalchests:base/wood");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseCopperNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/copper");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseIronNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/iron");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseSilverNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/silver");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseGoldNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/gold");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseDiamondNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/diamond");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseObsidianNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/obsidian");
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
@@ -1199,6 +1251,41 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeWoodNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.WOOD, "colossalchests:size/wood");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeCopperNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.COPPER, "colossalchests:size/copper");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeIronNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.IRON, "colossalchests:size/iron");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeSilverNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.SILVER, "colossalchests:size/silver");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeGoldNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.GOLD, "colossalchests:size/gold");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeDiamondNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.DIAMOND, "colossalchests:size/diamond");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeObsidianNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.OBSIDIAN, "colossalchests:size/obsidian");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementSizeWood(GameTestHelper helper) {
         testAdvancementSize(helper, ChestMaterial.WOOD, "colossalchests:size/wood");
     }
@@ -1233,6 +1320,24 @@ public class GameTestsCommon {
         testAdvancementSize(helper, ChestMaterial.OBSIDIAN, "colossalchests:size/obsidian");
     }
 
+    private void testAdvancementBaseNegative(GameTestHelper helper, ChestMaterial material, String advancementId) {
+        BlockPos excludedWall = POS.offset(1, 0, 0);
+        createChest(helper, POS, material, 2, Sets.newHashSet(excludedWall));
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, excludedWall, material.getBlockWall());
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, ResourceLocation.parse(advancementId)));
+    }
+
+    private void testAdvancementSizeNegative(GameTestHelper helper, ChestMaterial material, String advancementId) {
+        BlockPos excludedWall = POS.offset(1, 0, 0);
+        createChest(helper, POS, material, 2, Sets.newHashSet(excludedWall));
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, excludedWall, material.getBlockWall());
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, ResourceLocation.parse(advancementId)));
+    }
+
     private void testAdvancementBase(GameTestHelper helper, ChestMaterial material, String advancementId) {
         BlockPos excludedWall = POS.offset(1, 0, 0);
         createChest(helper, POS, material, 2, Sets.newHashSet(excludedWall));
@@ -1262,6 +1367,14 @@ public class GameTestsCommon {
         serverPlayer.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         itemStack.useOn(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND,
                 new BlockHitResult(Vec3.atCenterOf(helper.absolutePos(pos)), Direction.DOWN, helper.absolutePos(pos), false)));
+    }
+
+    private void assertAdvancementNotDone(GameTestHelper helper, ServerPlayer player, ResourceLocation advancementId) {
+        AdvancementHolder holder = helper.getLevel().getServer().getAdvancements().get(advancementId);
+        helper.assertTrue(holder != null, "Advancement " + advancementId + " not found");
+        helper.assertTrue(
+                !player.getAdvancements().getOrStartProgress(holder).isDone(),
+                "Advancement " + advancementId + " should not have been obtained");
     }
 
     private void assertAdvancementDone(GameTestHelper helper, ServerPlayer player, ResourceLocation advancementId) {

@@ -1,10 +1,14 @@
 package org.cyclops.colossalchests.gametest;
 
 import com.google.common.collect.Sets;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -19,6 +23,7 @@ import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests.Reference;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.*;
@@ -1140,6 +1145,245 @@ public class GameTestsCommon {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementRootNegative(GameTestHelper helper) {
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        serverPlayer.getInventory().add(new ItemStack(Items.DIRT));
+        CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), new ItemStack(Items.DIRT));
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, Identifier.parse("colossalchests:root")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementRoot(GameTestHelper helper) {
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        serverPlayer.getInventory().add(new ItemStack(Items.CHEST));
+        CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), new ItemStack(Items.CHEST));
+
+        helper.succeedWhen(() -> assertAdvancementDone(helper, serverPlayer, Identifier.parse("colossalchests:root")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementUncolossalNegative(GameTestHelper helper) {
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, POS, Blocks.CHEST);
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, Identifier.parse("colossalchests:uncolossal")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementUncolossal(GameTestHelper helper) {
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, POS, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value());
+
+        helper.succeedWhen(() -> assertAdvancementDone(helper, serverPlayer, Identifier.parse("colossalchests:uncolossal")));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseWoodNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.COPPER, "colossalchests:base/wood");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseCopperNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/copper");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseIronNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/iron");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseSilverNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/silver");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseGoldNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/gold");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseDiamondNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/diamond");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseObsidianNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/obsidian");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseWood(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.WOOD, "colossalchests:base/wood");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseCopper(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.COPPER, "colossalchests:base/copper");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseIron(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.IRON, "colossalchests:base/iron");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseSilver(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.SILVER, "colossalchests:base/silver");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseGold(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.GOLD, "colossalchests:base/gold");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseDiamond(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.DIAMOND, "colossalchests:base/diamond");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseObsidian(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.OBSIDIAN, "colossalchests:base/obsidian");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeWoodNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.WOOD, "colossalchests:size/wood");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeCopperNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.COPPER, "colossalchests:size/copper");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeIronNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.IRON, "colossalchests:size/iron");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeSilverNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.SILVER, "colossalchests:size/silver");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeGoldNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.GOLD, "colossalchests:size/gold");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeDiamondNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.DIAMOND, "colossalchests:size/diamond");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeObsidianNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.OBSIDIAN, "colossalchests:size/obsidian");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeWood(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.WOOD, "colossalchests:size/wood");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeCopper(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.COPPER, "colossalchests:size/copper");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeIron(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.IRON, "colossalchests:size/iron");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeSilver(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.SILVER, "colossalchests:size/silver");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeGold(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.GOLD, "colossalchests:size/gold");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeDiamond(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.DIAMOND, "colossalchests:size/diamond");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeObsidian(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.OBSIDIAN, "colossalchests:size/obsidian");
+    }
+
+    private void testAdvancementBaseNegative(GameTestHelper helper, ChestMaterial material, String advancementId) {
+        BlockPos excludedWall = POS.offset(1, 0, 0);
+        createChest(helper, POS, material, 2, Sets.newHashSet(excludedWall));
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, excludedWall, material.getBlockWall());
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, Identifier.parse(advancementId)));
+    }
+
+    private void testAdvancementSizeNegative(GameTestHelper helper, ChestMaterial material, String advancementId) {
+        BlockPos excludedWall = POS.offset(1, 0, 0);
+        createChest(helper, POS, material, 2, Sets.newHashSet(excludedWall));
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, excludedWall, material.getBlockWall());
+
+        helper.succeedWhen(() -> assertAdvancementNotDone(helper, serverPlayer, Identifier.parse(advancementId)));
+    }
+
+    private void testAdvancementBase(GameTestHelper helper, ChestMaterial material, String advancementId) {
+        BlockPos excludedWall = POS.offset(1, 0, 0);
+        createChest(helper, POS, material, 2, Sets.newHashSet(excludedWall));
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, excludedWall, material.getBlockWall());
+
+        helper.succeedWhen(() -> assertAdvancementDone(helper, serverPlayer, Identifier.parse(advancementId)));
+    }
+
+    private void testAdvancementSize(GameTestHelper helper, ChestMaterial material, String advancementId) {
+        BlockPos chestStart = BlockPos.ZERO;
+        BlockPos excludedWall = chestStart.offset(9, 0, 0);
+        createChest(helper, chestStart, material, 10, Sets.newHashSet(excludedWall));
+        ServerPlayer serverPlayer = makeMockServerPlayer(helper);
+        placeBlockAsServerPlayer(helper, serverPlayer, excludedWall, material.getBlockWall());
+
+        helper.succeedWhen(() -> assertAdvancementDone(helper, serverPlayer, Identifier.parse(advancementId)));
+    }
+
+    @SuppressWarnings("removal")
+    private ServerPlayer makeMockServerPlayer(GameTestHelper helper) {
+        return helper.makeMockServerPlayerInLevel();
+    }
+
+    private void placeBlockAsServerPlayer(GameTestHelper helper, ServerPlayer serverPlayer, BlockPos pos, Block block) {
+        ItemStack itemStack = new ItemStack(block);
+        serverPlayer.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
+        itemStack.useOn(new UseOnContext(serverPlayer, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(helper.absolutePos(pos)), Direction.DOWN, helper.absolutePos(pos), false)));
+    }
+
+    private void assertAdvancementNotDone(GameTestHelper helper, ServerPlayer player, Identifier advancementId) {
+        AdvancementHolder holder = helper.getLevel().getServer().getAdvancements().get(advancementId);
+        helper.assertTrue(holder != null, "Advancement " + advancementId + " not found");
+        helper.assertTrue(
+                !player.getAdvancements().getOrStartProgress(holder).isDone(),
+                "Advancement " + advancementId + " should not have been obtained");
+    }
+
+    private void assertAdvancementDone(GameTestHelper helper, ServerPlayer player, Identifier advancementId) {
+        AdvancementHolder holder = helper.getLevel().getServer().getAdvancements().get(advancementId);
+        helper.assertTrue(holder != null, "Advancement " + advancementId + " not found");
+        helper.assertTrue(
+                player.getAdvancements().getOrStartProgress(holder).isDone(),
+                "Advancement " + advancementId + " has not been obtained");
     }
 
 }

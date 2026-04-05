@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.HashedPatchMap;
 import net.minecraft.network.HashedStack;
@@ -14,7 +14,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests.ColossalChestsInstance;
@@ -77,18 +77,18 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
         return TEXTUREHEIGHT;
     }
 
-    protected void drawForgegroundString(GuiGraphics guiGraphics) {
-        guiGraphics.drawString(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, ARGB.opaque(4210752), false);
+    protected void drawForgegroundString(GuiGraphicsExtractor guiGraphicsExtractor) {
+        guiGraphicsExtractor.text(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, ARGB.opaque(4210752), false);
     }
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        drawForgegroundString(guiGraphics);
+    protected void extractLabels(GuiGraphicsExtractor guiGraphicsExtractor, int mouseX, int mouseY) {
+        drawForgegroundString(guiGraphicsExtractor);
         //super.drawGuiContainerForegroundLayer(matrixStack, mouseX, mouseY);
     }
 
     @Override
-    protected void slotClicked(Slot slotIn, int slotId, int clickedButton, ClickType clickType) {
+    protected void slotClicked(Slot slotIn, int slotId, int clickedButton, ContainerInput clickType) {
         if (slotIn != null) {
             slotId = slotIn.index;
         }
@@ -97,7 +97,7 @@ public class ContainerScreenColossalChest extends ContainerScreenScrolling<Conta
     }
 
     // Adapted from MultiPlayerGameMode#handleInventoryMouseClick
-    protected void handleInventoryMouseClick(int windowId, int slotId, int mouseButtonClicked, ClickType clickType, Player playerIn) {
+    protected void handleInventoryMouseClick(int windowId, int slotId, int mouseButtonClicked, ContainerInput clickType, Player playerIn) {
         AbstractContainerMenu abstractcontainermenu = playerIn.containerMenu;
         NonNullList<Slot> nonnulllist = abstractcontainermenu.slots;
         int i = nonnulllist.size();

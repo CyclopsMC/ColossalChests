@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.client.gui.container;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -17,9 +17,9 @@ public class ContainerScreenUncolossalChest extends ContainerScreenExtended<Cont
     }
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int p_146979_1_, int p_146979_2_) {
+    protected void extractLabels(GuiGraphicsExtractor guiGraphicsExtractor, int p_146979_1_, int p_146979_2_) {
         //super.drawGuiContainerForegroundLayer(matrixStack, p_146979_1_, p_146979_2_);
-        guiGraphics.drawString(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, ARGB.opaque(4210752), false);
+        guiGraphicsExtractor.text(this.font, getTitle().getString(), 8 + offsetX, 6 + offsetY, ARGB.opaque(4210752), false);
     }
 
     @Override

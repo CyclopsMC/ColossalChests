@@ -10,10 +10,10 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.resources.Identifier;
@@ -91,7 +91,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
             // Render interface overlays
             if(renderState.openNessRaw == 0 && (GeneralConfig.alwaysShowInterfaceOverlay || Minecraft.getInstance().player.isCrouching())) {
                 poseStack.pushPose();
-                Material materialInterface = getMaterialInterface(renderState);
+                SpriteId materialInterface = getMaterialInterface(renderState);
                 submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(materialInterface.atlasLocation()), (pose, vertexConsumer) -> {
                     for (Vec3i interfaceLocation : renderState.interfaceLocations) {
                         float translateX = (float) (interfaceLocation.getX() - cameraRenderState.pos.x());
@@ -135,12 +135,12 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
     }
 
     @Override
-    protected Material getMaterial(RenderState renderState) {
-        return new Material(Sheets.CHEST_SHEET, TEXTURES_CHEST.get(renderState.material));
+    protected SpriteId getMaterial(RenderState renderState) {
+        return new SpriteId(Sheets.CHEST_SHEET, TEXTURES_CHEST.get(renderState.material));
     }
 
-    protected Material getMaterialInterface(RenderState renderState) {
-        return new Material(TextureAtlas.LOCATION_BLOCKS, TEXTURES_INTERFACE.get(renderState.material));
+    protected SpriteId getMaterialInterface(RenderState renderState) {
+        return new SpriteId(TextureAtlas.LOCATION_BLOCKS, TEXTURES_INTERFACE.get(renderState.material));
     }
 
     protected void setMatrixOrientation(PoseStack matrixStack, Direction direction) {

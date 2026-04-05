@@ -407,7 +407,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         float increaseAngle = 0.15F / Math.min(5, size);
         level.playSound((Player)null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, soundEvent, SoundSource.BLOCKS,
                 (float) (0.5F + (0.5F * Math.log(size))),
-                level.random.nextFloat() * 0.1F + 0.45F + increaseAngle);
+                level.getRandom().nextFloat() * 0.1F + 0.45F + increaseAngle);
     }
 
     @Override

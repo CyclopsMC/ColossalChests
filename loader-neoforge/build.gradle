@@ -8,15 +8,15 @@ plugins {
 dependencies {
     // Add something like 'cyclopscore_version_local=0.1.0-DEV' to your secrets.properties if you want to use a custom local CyclopsCore version.
     if (secrets.cyclopscore_version_local) {
-        implementation "org.cyclops.cyclopscore:cyclopscore-${project.minecraft_version}-neoforge:${secrets.cyclopscore_version_local}:deobf"
+        implementation "org.cyclops.cyclopscore:cyclopscore-${project.minecraft_version}-neoforge:${secrets.cyclopscore_version_local}"
     } else {
-        implementation "org.cyclops.cyclopscore:cyclopscore-${project.minecraft_version}-neoforge:${project.cyclopscore_version}:deobf"
+        implementation "org.cyclops.cyclopscore:cyclopscore-${project.minecraft_version}-neoforge:${project.cyclopscore_version}"
     }
 	
     if(secrets.commoncapabilities_version_local) {
-        implementation "org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${secrets.commoncapabilities_version_local}:deobf"
+        implementation "org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${secrets.commoncapabilities_version_local}"
     } else {
-        implementation("org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${project.neoforge_commoncapabilities_version}:deobf") { // https://dl.bintray.com/cyclopsmc/dev/org/cyclops/commoncapabilities/CommonCapabilities/
+        implementation("org.cyclops.commoncapabilities:commoncapabilities-${project.minecraft_version}-neoforge:${project.neoforge_commoncapabilities_version}") { // https://dl.bintray.com/cyclopsmc/dev/org/cyclops/commoncapabilities/CommonCapabilities/
             exclude group: 'org.cyclops.cyclopscore', module: 'cyclopscore'
         }
     }

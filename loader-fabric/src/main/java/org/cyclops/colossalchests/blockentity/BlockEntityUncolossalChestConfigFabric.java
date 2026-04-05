@@ -1,6 +1,6 @@
 package org.cyclops.colossalchests.blockentity;
 
-import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import org.cyclops.cyclopscore.init.ModBaseFabric;
 
@@ -15,6 +15,6 @@ public class BlockEntityUncolossalChestConfigFabric<M extends ModBaseFabric> ext
     @Override
     public void onRegistryRegistered() {
         super.onRegistryRegistered();
-        ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), context), getInstance());
+        ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> ContainerStorage.of(blockEntity.getInventory(), context), getInstance());
     }
 }

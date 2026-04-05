@@ -13,7 +13,7 @@ import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.cyclops.colossalchests.Reference;
@@ -53,7 +53,7 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec<Serverb
         super(TYPE);
     }
 
-    public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ClickType mode, HashedStack clickedItem, Int2ObjectMap<HashedStack> changedSlots) {
+    public ServerboundContainerClickPacketOverride(int windowId, int stateId, int slotId, int usedButton, ContainerInput mode, HashedStack clickedItem, Int2ObjectMap<HashedStack> changedSlots) {
         super(TYPE);
         this.windowId = windowId;
         this.stateId = stateId;
@@ -103,7 +103,7 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec<Serverb
             } else {
                 boolean flag = this.stateId != player.containerMenu.getStateId();
                 player.containerMenu.suppressRemoteUpdates();
-                player.containerMenu.clicked(slotId, usedButton, ClickType.valueOf(mode), player);
+                player.containerMenu.clicked(slotId, usedButton, ContainerInput.valueOf(mode), player);
 
                 for(Int2ObjectMap.Entry<HashedStack> entry : Int2ObjectMaps.fastIterable(changedSlots)) {
                     player.containerMenu.setRemoteSlotUnsafe(entry.getIntKey(), entry.getValue());

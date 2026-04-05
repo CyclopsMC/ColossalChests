@@ -2,7 +2,7 @@ package org.cyclops.colossalchests.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -19,7 +19,7 @@ public class InterfaceNeoForge extends Interface {
     }
 
     @Override
-    public boolean shouldDisplayFluidOverlay(BlockState blockState, BlockAndTintGetter world, BlockPos pos, FluidState fluidState) {
+    public boolean shouldDisplayFluidOverlay(BlockState blockState, BlockAndLightGetter world, BlockPos pos, FluidState fluidState) {
         return true;
     }
 

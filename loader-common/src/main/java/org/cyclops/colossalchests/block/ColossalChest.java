@@ -216,7 +216,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
             if (result != null && result.getError() != null) {
                 addPlayerChatError(player, result.getError());
             } else {
-                player.displayClientMessage(Component.translatable("multiblock.colossalchests.error.unexpected"), true);
+                player.sendOverlayMessage(Component.translatable("multiblock.colossalchests.error.unexpected"));
             }
         }
     }
@@ -234,7 +234,7 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
                 );
         chat.append(prefix);
         chat.append(error);
-        player.displayClientMessage(chat, true);
+        player.sendOverlayMessage(chat);
     }
 
     @Override

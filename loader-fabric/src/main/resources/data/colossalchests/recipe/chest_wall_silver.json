@@ -14,19 +14,12 @@
   },
   "conditions": [
     {
-      "type": "neoforge:and",
-      "values": [
-        {
-          "type": "neoforge:not",
-          "value": {
-            "type": "neoforge:tag_empty",
-            "tag": "c:ingots/silver"
-          }
-        },
-        {
-          "type": "colossalchests:metal_variants_enabled"
-        }
-      ]
+      "type": "fabric:tags_populated",
+      "registry": "minecraft:item",
+      "tags": ["c:ingots/silver"]
+    },
+    {
+      "type": "colossalchests:metal_variants_enabled"
     }
   ]
 }

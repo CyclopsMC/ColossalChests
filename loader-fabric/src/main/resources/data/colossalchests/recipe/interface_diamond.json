@@ -14,7 +14,7 @@
   },
   "fabric:load_conditions": [
     {
-      "type": "colossalchests:metal_variants_enabled"
+      "condition": "colossalchests:metal_variants_enabled"
     }
   ]
 }

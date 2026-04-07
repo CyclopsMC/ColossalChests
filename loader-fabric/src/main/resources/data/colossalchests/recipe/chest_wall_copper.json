@@ -14,12 +14,12 @@
   },
   "fabric:load_conditions": [
     {
-      "type": "fabric:tags_populated",
+      "condition": "fabric:tags_populated",
       "registry": "minecraft:item",
-      "tags": ["c:ingots/copper"]
+      "values": ["c:ingots/copper"]
     },
     {
-      "type": "colossalchests:metal_variants_enabled"
+      "condition": "colossalchests:metal_variants_enabled"
     }
   ]
 }

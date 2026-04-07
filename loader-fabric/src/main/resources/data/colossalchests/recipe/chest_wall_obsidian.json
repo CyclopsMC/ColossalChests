@@ -12,9 +12,9 @@
   "result": {
     "id": "colossalchests:chest_wall_obsidian"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
-      "type": "colossalchests:metal_variants_enabled"
+      "condition": "colossalchests:metal_variants_enabled"
     }
   ]
 }

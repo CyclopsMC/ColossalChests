@@ -12,9 +12,9 @@
   "result": {
     "id": "colossalchests:interface_gold"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
-      "type": "colossalchests:metal_variants_enabled"
+      "condition": "colossalchests:metal_variants_enabled"
     }
   ]
 }

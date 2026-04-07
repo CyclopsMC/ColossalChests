@@ -12,21 +12,14 @@
   "result": {
     "id": "colossalchests:chest_wall_copper"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
-      "type": "neoforge:and",
-      "values": [
-        {
-          "type": "neoforge:not",
-          "value": {
-            "type": "neoforge:tag_empty",
-            "tag": "c:ingots/copper"
-          }
-        },
-        {
-          "type": "colossalchests:metal_variants_enabled"
-        }
-      ]
+      "condition": "fabric:tags_populated",
+      "registry": "minecraft:item",
+      "values": ["c:ingots/copper"]
+    },
+    {
+      "condition": "colossalchests:metal_variants_enabled"
     }
   ]
 }

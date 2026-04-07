@@ -12,7 +12,7 @@
   "result": {
     "id": "colossalchests:interface_obsidian"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
       "type": "colossalchests:metal_variants_enabled"
     }

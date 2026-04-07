@@ -7,7 +7,7 @@
   "result": {
     "id": "colossalchests:colossal_chest_gold"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
       "type": "colossalchests:metal_variants_enabled"
     }

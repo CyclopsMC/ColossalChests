@@ -12,7 +12,7 @@
   "result": {
     "id": "colossalchests:interface_silver"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
       "type": "fabric:tags_populated",
       "registry": "minecraft:item",

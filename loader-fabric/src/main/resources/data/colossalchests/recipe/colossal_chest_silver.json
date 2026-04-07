@@ -7,7 +7,7 @@
   "result": {
     "id": "colossalchests:colossal_chest_silver"
   },
-  "conditions": [
+  "fabric:load_conditions": [
     {
       "type": "fabric:tags_populated",
       "registry": "minecraft:item",

@@ -1,4 +1,6 @@
 {
+    "_comment": "Multiblock",
+    "itemGroup.colossalchests": "Colossal Chests",
     "general.colossalchests.description": "Para quando baús normais são pequenos demais.",
     "general.colossalchests.colossalchest": "Baú Colossal de %s (%s)",
     "general.colossalchests.uncolossalchest": "Baú Incolossal",
@@ -50,6 +52,8 @@
     "material.colossalchests.silver": "Prata",
     "material.colossalchests.gold": "Ouro",
     "material.colossalchests.diamond": "Diamante",
+    "material.colossalchests.obsidian": "Obsidiana",
+    "multiblock.colossalchests.error.prefix": "Baú Colossal",
     "multiblock.colossalchests.error.prefix.info": "Erro na estrutura multiblock do Baú Colossal",
     "multiblock.colossalchests.error.unexpected": "Erro inesperado na estrutura do Baú Colossal.",
     "multiblock.colossalchests.error.material": "Encontrado um bloco do material %s em %s, quando %s era esperado.",

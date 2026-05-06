@@ -23,7 +23,11 @@ public class BlockEntityInterfaceConfigNeoForge<M extends ModBaseNeoForge<?>> ex
                 (blockEntity, context) -> {
                     BlockEntityColossalChest core = blockEntity.getCore();
                     if (core != null) {
-                        return new IndexedItemResourceHandler((IInventoryIndexReference) core.getInventory(), VanillaContainerWrapper.of(core.getInventory()));
+                        if (core.getInventory() instanceof IInventoryIndexReference inventoryIndexReference) {
+                            return new IndexedItemResourceHandler(inventoryIndexReference, VanillaContainerWrapper.of(core.getInventory()));
+                        } else {
+                            return VanillaContainerWrapper.of(core.getInventory());
+                        }
                     }
                     return null;
                 }

@@ -34,7 +34,13 @@ public class BlockEntityColossalChestConfigNeoForge<M extends ModBaseNeoForge<?>
         event.registerBlockEntity(
                 Capabilities.Item.BLOCK,
                 getInstance(),
-                (blockEntity, context) -> new IndexedItemResourceHandler((IInventoryIndexReference) blockEntity.getInventory(), VanillaContainerWrapper.of(blockEntity.getInventory()))
+                (blockEntity, context) -> {
+                    if (blockEntity.getInventory() instanceof IInventoryIndexReference inventoryIndexReference) {
+                        return new IndexedItemResourceHandler(inventoryIndexReference, VanillaContainerWrapper.of(blockEntity.getInventory()));
+                    } else {
+                        return VanillaContainerWrapper.of(blockEntity.getInventory());
+                    }
+                }
         );
     }
 }

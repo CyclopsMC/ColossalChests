@@ -60,7 +60,7 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
     @Override
     protected CreativeModeTab.Builder constructDefaultCreativeModeTab(CreativeModeTab.Builder builder) {
         return super.constructDefaultCreativeModeTab(builder)
-                .icon(() -> new ItemStack(RegistryEntries.ITEM_CHEST));
+                .icon(() -> new ItemStack(RegistryEntries.ITEM_CHEST.getHolder()));
     }
 
     @Override

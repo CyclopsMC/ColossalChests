@@ -2,7 +2,7 @@ package org.cyclops.colossalchests.gametest;
 
 import com.google.common.collect.Sets;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -11,7 +11,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -235,13 +235,13 @@ public class GameTestsCommon {
 
         // Throw items in hopper
         helper.spawnItem(Items.APPLE, POS.above().above());
-        helper.spawnItem(Items.WHITE_WOOL, POS.above().above());
+        helper.spawnItem(Items.WOOL.white(), POS.above().above());
         helper.spawnItem(Items.ACACIA_LEAVES, POS.above().above());
 
         // Expect items to be in chest
         helper.succeedWhen(() -> {
             assertCoreContains(helper, POS.above().south(), new ItemStack(Items.APPLE));
-            assertCoreContains(helper, POS.above().south(), new ItemStack(Items.WHITE_WOOL));
+            assertCoreContains(helper, POS.above().south(), new ItemStack(Items.WOOL.white()));
             assertCoreContains(helper, POS.above().south(), new ItemStack(Items.ACACIA_LEAVES));
         });
     }
@@ -257,13 +257,13 @@ public class GameTestsCommon {
 
         // Initialize items in core
         core.getInventory().setItem(0, new ItemStack(Items.APPLE));
-        core.getInventory().setItem(1, new ItemStack(Items.WHITE_WOOL));
+        core.getInventory().setItem(1, new ItemStack(Items.WOOL.white()));
         core.getInventory().setItem(2, new ItemStack(Items.ACACIA_LEAVES));
 
         // Expect items to be in hopper
         helper.succeedWhen(() -> {
             assertHopperContains(helper, POS.south(), new ItemStack(Items.APPLE));
-            assertHopperContains(helper, POS.south(), new ItemStack(Items.WHITE_WOOL));
+            assertHopperContains(helper, POS.south(), new ItemStack(Items.WOOL.white()));
             assertHopperContains(helper, POS.south(), new ItemStack(Items.ACACIA_LEAVES));
         });
     }
@@ -291,13 +291,13 @@ public class GameTestsCommon {
 
         // Throw items in hopper
         helper.spawnItem(Items.APPLE, POS.above().above());
-        helper.spawnItem(Items.WHITE_WOOL, POS.above().above());
+        helper.spawnItem(Items.WOOL.white(), POS.above().above());
         helper.spawnItem(Items.ACACIA_LEAVES, POS.above().above());
 
         // Expect items to be in hopper
         helper.succeedWhen(() -> {
             assertHopperContains(helper, POS.south(), new ItemStack(Items.APPLE));
-            assertHopperContains(helper, POS.south(), new ItemStack(Items.WHITE_WOOL));
+            assertHopperContains(helper, POS.south(), new ItemStack(Items.WOOL.white()));
             assertHopperContains(helper, POS.south(), new ItemStack(Items.ACACIA_LEAVES));
         });
     }
@@ -347,13 +347,13 @@ public class GameTestsCommon {
 
         // Throw items in top hopper
         helper.spawnItem(Items.APPLE, POS.offset(0, 5, 0).above().above());
-        helper.spawnItem(Items.WHITE_WOOL, POS.offset(0, 5, 0).above().above());
+        helper.spawnItem(Items.WOOL.white(), POS.offset(0, 5, 0).above().above());
         helper.spawnItem(Items.ACACIA_LEAVES, POS.offset(0, 5, 0).above().above());
 
         // Expect items to be in hopper
         helper.succeedWhen(() -> {
             assertHopperContains(helper, POS.south(), new ItemStack(Items.APPLE));
-            assertHopperContains(helper, POS.south(), new ItemStack(Items.WHITE_WOOL));
+            assertHopperContains(helper, POS.south(), new ItemStack(Items.WOOL.white()));
             assertHopperContains(helper, POS.south() , new ItemStack(Items.ACACIA_LEAVES));
         });
     }
@@ -368,12 +368,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -401,12 +401,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 22));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.FAIL, Component.literal("Interaction must fail"));
 
         helper.succeedWhen(() -> {
@@ -434,12 +434,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -467,12 +467,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -500,12 +500,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -533,12 +533,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -566,12 +566,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -599,12 +599,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -632,12 +632,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockWall(), 22));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.FAIL, Component.literal("Interaction must fail"));
 
         helper.succeedWhen(() -> {
@@ -665,12 +665,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -698,12 +698,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -731,12 +731,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -764,12 +764,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -797,12 +797,12 @@ public class GameTestsCommon {
 
         // Upgrade
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockCore(), 1));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockWall(), 23));
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(POS.getCenter(), Direction.NORTH, helper.absolutePos(POS), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
         helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
@@ -839,7 +839,7 @@ public class GameTestsCommon {
 
             // Chest must still contain item, and there must be no dropped items on the ground
             assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            helper.assertEntityNotPresent(EntityTypes.ITEM);
         });
     }
 
@@ -862,7 +862,7 @@ public class GameTestsCommon {
 
             // Chest must still contain item, and there must be no dropped items on the ground
             assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            helper.assertEntityNotPresent(EntityTypes.ITEM);
         });
     }
 
@@ -885,7 +885,7 @@ public class GameTestsCommon {
 
             // Chest must still contain item, and there must be no dropped items on the ground
             assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            helper.assertEntityNotPresent(EntityTypes.ITEM);
         });
     }
 
@@ -908,7 +908,7 @@ public class GameTestsCommon {
 
             // Chest must still contain item, and there must be no dropped items on the ground
             assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            helper.assertEntityNotPresent(EntityTypes.ITEM);
         });
     }
 
@@ -920,7 +920,7 @@ public class GameTestsCommon {
         // Insert item
         core.getInventory().setItem(0, new ItemStack(Items.APPLE));
         core.getInventory().setItem(1, new ItemStack(Items.ACACIA_LEAVES));
-        core.getInventory().setItem(2, new ItemStack(Items.WHITE_WOOL));
+        core.getInventory().setItem(2, new ItemStack(Items.WOOL.white()));
 
         // Break core
         destroyBlock(helper, POS.offset(4, 1, 4));
@@ -933,7 +933,7 @@ public class GameTestsCommon {
             assertChestValid(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, interfaces, true);
             helper.assertItemEntityPresent(Items.APPLE);
             helper.assertItemEntityPresent(Items.ACACIA_LEAVES);
-            helper.assertItemEntityPresent(Items.WHITE_WOOL);
+            helper.assertItemEntityPresent(Items.WOOL.white());
         });
     }
 
@@ -945,7 +945,7 @@ public class GameTestsCommon {
         // Insert item
         core.getInventory().setItem(0, new ItemStack(Items.APPLE));
         core.getInventory().setItem(1, new ItemStack(Items.ACACIA_LEAVES));
-        core.getInventory().setItem(2, new ItemStack(Items.WHITE_WOOL));
+        core.getInventory().setItem(2, new ItemStack(Items.WOOL.white()));
 
         // Break core
         destroyBlock(helper, POS.offset(4, 1, 4));
@@ -958,7 +958,7 @@ public class GameTestsCommon {
             assertChestValid(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, interfaces, true);
             helper.assertItemEntityPresent(Items.APPLE);
             helper.assertItemEntityPresent(Items.ACACIA_LEAVES);
-            helper.assertItemEntityPresent(Items.WHITE_WOOL);
+            helper.assertItemEntityPresent(Items.WOOL.white());
         });
     }
 
@@ -1134,7 +1134,7 @@ public class GameTestsCommon {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         ItemStack itemStack = new ItemStack(block);
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
-        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(pos.getCenter(), Direction.DOWN, helper.absolutePos(pos), false)));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(pos), Direction.DOWN, helper.absolutePos(pos), false)));
         helper.assertTrue(interactionResult.consumesAction(), Component.literal("Block placement as player failed"));
     }
 

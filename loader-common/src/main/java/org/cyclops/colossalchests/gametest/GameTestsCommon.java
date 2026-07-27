@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -825,7 +824,7 @@ public class GameTestsCommon {
         BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
 
         // Insert item
-        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(0, new ItemStack(Items.DIAMOND));
 
         // Break wall
         destroyBlock(helper, POS.east());
@@ -837,8 +836,8 @@ public class GameTestsCommon {
             assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
 
             // Chest must still contain item, and there must be no dropped items on the ground
-            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            assertCoreContains(helper, POS, new ItemStack(Items.DIAMOND));
+            helper.assertItemEntityNotPresent(Items.DIAMOND);
         });
     }
 
@@ -848,7 +847,7 @@ public class GameTestsCommon {
         BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
 
         // Insert item
-        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(0, new ItemStack(Items.DIAMOND));
 
         // Break wall
         destroyBlock(helper, POS.east());
@@ -860,8 +859,8 @@ public class GameTestsCommon {
             assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
 
             // Chest must still contain item, and there must be no dropped items on the ground
-            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            assertCoreContains(helper, POS, new ItemStack(Items.DIAMOND));
+            helper.assertItemEntityNotPresent(Items.DIAMOND);
         });
     }
 
@@ -871,7 +870,7 @@ public class GameTestsCommon {
         BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
 
         // Insert item
-        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(0, new ItemStack(Items.DIAMOND));
 
         // Break interface
         destroyBlock(helper, POS.east().above());
@@ -883,8 +882,8 @@ public class GameTestsCommon {
             assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
 
             // Chest must still contain item, and there must be no dropped items on the ground
-            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            assertCoreContains(helper, POS, new ItemStack(Items.DIAMOND));
+            helper.assertItemEntityNotPresent(Items.DIAMOND);
         });
     }
 
@@ -894,7 +893,7 @@ public class GameTestsCommon {
         BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
 
         // Insert item
-        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(0, new ItemStack(Items.DIAMOND));
 
         // Break interface
         destroyBlock(helper, POS.east().above());
@@ -906,8 +905,8 @@ public class GameTestsCommon {
             assertChestValid(helper, POS, ChestMaterial.WOOD, 3, interfaces, false);
 
             // Chest must still contain item, and there must be no dropped items on the ground
-            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
-            helper.assertEntityNotPresent(EntityType.ITEM);
+            assertCoreContains(helper, POS, new ItemStack(Items.DIAMOND));
+            helper.assertItemEntityNotPresent(Items.DIAMOND);
         });
     }
 
@@ -917,7 +916,7 @@ public class GameTestsCommon {
         BlockEntityColossalChest core = createChest(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
 
         // Insert item
-        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(0, new ItemStack(Items.DIAMOND));
         core.getInventory().setItem(1, new ItemStack(Items.ACACIA_LEAVES));
         core.getInventory().setItem(2, new ItemStack(Items.WHITE_WOOL));
 
@@ -930,7 +929,7 @@ public class GameTestsCommon {
         helper.succeedWhen(() -> {
             // Chest must not contain item, and all items must be dropped on the ground
             assertChestValid(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, interfaces, true);
-            helper.assertItemEntityPresent(Items.APPLE);
+            helper.assertItemEntityPresent(Items.DIAMOND);
             helper.assertItemEntityPresent(Items.ACACIA_LEAVES);
             helper.assertItemEntityPresent(Items.WHITE_WOOL);
         });
@@ -942,7 +941,7 @@ public class GameTestsCommon {
         BlockEntityColossalChest core = createChest(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, Sets.newHashSet(), interfaces);
 
         // Insert item
-        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+        core.getInventory().setItem(0, new ItemStack(Items.DIAMOND));
         core.getInventory().setItem(1, new ItemStack(Items.ACACIA_LEAVES));
         core.getInventory().setItem(2, new ItemStack(Items.WHITE_WOOL));
 
@@ -955,7 +954,7 @@ public class GameTestsCommon {
         helper.succeedWhen(() -> {
             // Chest must not contain item, and all items must be dropped on the ground
             assertChestValid(helper, POS.offset(4, 1, 4), ChestMaterial.WOOD, 3, interfaces, true);
-            helper.assertItemEntityPresent(Items.APPLE);
+            helper.assertItemEntityPresent(Items.DIAMOND);
             helper.assertItemEntityPresent(Items.ACACIA_LEAVES);
             helper.assertItemEntityPresent(Items.WHITE_WOOL);
         });

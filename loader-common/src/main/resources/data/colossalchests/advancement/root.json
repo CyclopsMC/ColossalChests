@@ -34,6 +34,9 @@
       "colossalchests:colossal_chest_obsidian",
       "colossalchests:chest_wall_obsidian",
       "colossalchests:interface_obsidian",
+      "colossalchests:colossal_chest_netherite",
+      "colossalchests:chest_wall_netherite",
+      "colossalchests:interface_netherite",
       "colossalchests:upgrade_tool",
       "colossalchests:upgrade_tool_2",
       "colossalchests:upgrade_tool_reverse"

@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests:chest_wall_netherite"
+    },
+    "title": {
+      "translate": "advancement.colossalchests.netherite"
+    },
+    "description": {
+      "translate": "advancement.colossalchests.netherite.desc"
+    }
+  },
+  "parent": "colossalchests:root",
+  "criteria": {
+    "criteria_0": {
+      "trigger": "colossalchests:chest_formed",
+      "conditions": {
+        "material": "NETHERITE"
+      }
+    }
+  }
+}

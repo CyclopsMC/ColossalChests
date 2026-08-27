@@ -15,7 +15,7 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     @ConfigurablePropertyCommon(category = "general", comment = "If items should be ejected from the chests if one of the structure blocks are removed.", configLocation = ModConfigLocation.SERVER)
     public static boolean ejectItemsOnDestroy = false;
 
-    @ConfigurablePropertyCommon(category = "general", comment = "If the higher tier metal variants (including diamond and obsidian) can be crafted.", configLocation = ModConfigLocation.SERVER)
+    @ConfigurablePropertyCommon(category = "general", comment = "If the higher tier metal variants (including diamond, obsidian and netherite) can be crafted.", configLocation = ModConfigLocation.SERVER)
     public static boolean metalVariants = true;
 
     @ConfigurablePropertyCommon(category = "core", comment = "Maximum buffer byte size for adaptive inventory slots fragmentation.")
@@ -43,6 +43,8 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     public static double chestInventoryMaterialFactorDiamond = 4;
     @ConfigurablePropertyCommon(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static double chestInventoryMaterialFactorObsidian = 4;
+    @ConfigurablePropertyCommon(category = "general", comment = "Multiplier for the number of inventory slots for this chest material.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static double chestInventoryMaterialFactorNetherite = 5;
 
     public GeneralConfig(M mod) {
         super(mod, "general");

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    "CWC",
+    " C "
+  ],
+  "key": {
+    "C": "#c:cobblestones",
+    "W": "colossalchests:chest_wall_netherite"
+  },
+  "result": {
+    "id": "colossalchests:interface_netherite"
+  },
+  "conditions": [
+    {
+      "type": "colossalchests:metal_variants_enabled"
+    }
+  ]
+}

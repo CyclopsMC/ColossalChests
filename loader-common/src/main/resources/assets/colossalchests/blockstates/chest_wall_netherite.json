@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "enabled=false": { "model": "colossalchests:block/chest_wall_netherite" },
+    "enabled=true": { "model": "colossalchests:block/chest_wall_off" }
+  }
+}

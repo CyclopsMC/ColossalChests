@@ -43,6 +43,7 @@ public class ChestMaterial {
     public static final ChestMaterial GOLD = new ChestMaterial("gold", () -> GeneralConfig.chestInventoryMaterialFactorGold);
     public static final ChestMaterial DIAMOND = new ChestMaterial("diamond", () -> GeneralConfig.chestInventoryMaterialFactorDiamond);
     public static final ChestMaterial OBSIDIAN = new ChestMaterial("obsidian", () -> GeneralConfig.chestInventoryMaterialFactorObsidian);
+    public static final ChestMaterial NETHERITE = new ChestMaterial("netherite", () -> GeneralConfig.chestInventoryMaterialFactorNetherite);
 
     private final String name;
     private final Supplier<Double> inventoryMultiplier;
@@ -89,7 +90,7 @@ public class ChestMaterial {
     }
 
     public boolean isExplosionResistant() {
-        return this == OBSIDIAN;
+        return this == OBSIDIAN || this == NETHERITE;
     }
 
     public int ordinal() {

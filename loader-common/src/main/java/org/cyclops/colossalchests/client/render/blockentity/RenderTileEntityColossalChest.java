@@ -48,6 +48,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         TEXTURES_CHEST.put(ChestMaterial.GOLD, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_gold"));
         TEXTURES_CHEST.put(ChestMaterial.DIAMOND, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_diamond"));
         TEXTURES_CHEST.put(ChestMaterial.OBSIDIAN, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_obsidian"));
+        TEXTURES_CHEST.put(ChestMaterial.NETHERITE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "models/chest_netherite"));
 
         TEXTURES_INTERFACE.put(ChestMaterial.WOOD, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_wood"));
         TEXTURES_INTERFACE.put(ChestMaterial.COPPER, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_copper"));
@@ -56,6 +57,7 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         TEXTURES_INTERFACE.put(ChestMaterial.GOLD, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_gold"));
         TEXTURES_INTERFACE.put(ChestMaterial.DIAMOND, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_diamond"));
         TEXTURES_INTERFACE.put(ChestMaterial.OBSIDIAN, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_obsidian"));
+        TEXTURES_INTERFACE.put(ChestMaterial.NETHERITE, Identifier.fromNamespaceAndPath(Reference.MOD_ID, "blocks/interface_netherite"));
     }
 
     public RenderTileEntityColossalChest(BlockEntityRendererProvider.Context context) {

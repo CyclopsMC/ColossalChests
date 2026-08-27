@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "enabled=false": { "model": "colossalchests:block/interface_netherite" },
+    "enabled=true": { "model": "colossalchests:block/interface_off" }
+  }
+}

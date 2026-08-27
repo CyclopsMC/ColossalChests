@@ -20,6 +20,8 @@
     "advancement.colossalchests.diamond.desc": "Form a diamond Colossal Chest",
     "advancement.colossalchests.obsidian": "Obsidian Colossal Chest",
     "advancement.colossalchests.obsidian.desc": "Form an obsidian Colossal Chest",
+    "advancement.colossalchests.netherite": "Netherite Colossal Chest",
+    "advancement.colossalchests.netherite.desc": "Form a netherite Colossal Chest",
     "advancement.colossalchests.uncolossal": "The most colossal of 'em all!",
     "advancement.colossalchests.uncolossal.desc": "Obtain an Uncolossal Chest",
     "advancement.colossalchests.large.wood": "Epic Wooden Colossal Chest",
@@ -36,6 +38,8 @@
     "advancement.colossalchests.large.diamond.desc": "Form a diamond Colossal Chest of at least 10x10x10",
     "advancement.colossalchests.large.obsidian": "Epic Obsidian Colossal Chest",
     "advancement.colossalchests.large.obsidian.desc": "Form an obsidian Colossal Chest of at least 10x10x10",
+    "advancement.colossalchests.large.netherite": "Epic Netherite Colossal Chest",
+    "advancement.colossalchests.large.netherite.desc": "Form a netherite Colossal Chest of at least 10x10x10",
 
     "_comment": "Blocks",
     "block.colossalchests.colossal_chest": "Colossal Chest Core",
@@ -61,6 +65,7 @@
     "material.colossalchests.gold": "Gold",
     "material.colossalchests.diamond": "Diamond",
     "material.colossalchests.obsidian": "Obsidian",
+    "material.colossalchests.netherite": "Netherite",
 
     "_comment": "Multiblock",
     "multiblock.colossalchests.error.prefix": "ColossalChests",

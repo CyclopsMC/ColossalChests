@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "colossalchests:chest_wall_netherite",
+    "#c:ingots/iron"
+  ],
+  "result": {
+    "id": "colossalchests:colossal_chest_netherite"
+  },
+  "fabric:load_conditions": [
+    {
+      "condition": "colossalchests:metal_variants_enabled"
+    }
+  ]
+}

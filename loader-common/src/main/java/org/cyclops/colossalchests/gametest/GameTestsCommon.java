@@ -15,6 +15,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -30,6 +35,7 @@ import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
 import org.cyclops.cyclopscore.gametest.GameTest;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -214,6 +220,20 @@ public class GameTestsCommon {
         createChest(helper, POS, ChestMaterial.OBSIDIAN, 9);
 
         helper.succeedWhen(() -> assertChestValid(helper, POS, ChestMaterial.OBSIDIAN, 9));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalNetherite5x5(GameTestHelper helper) {
+        createChest(helper, POS, ChestMaterial.NETHERITE, 5);
+
+        helper.succeedWhen(() -> assertChestValid(helper, POS, ChestMaterial.NETHERITE, 5));
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalNetherite9x9(GameTestHelper helper) {
+        createChest(helper, POS, ChestMaterial.NETHERITE, 9);
+
+        helper.succeedWhen(() -> assertChestValid(helper, POS, ChestMaterial.NETHERITE, 9));
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
@@ -589,6 +609,39 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalObsidian3x3Upgrade(GameTestHelper helper) {
+        HashSet<BlockPos> interfaces = Sets.newHashSet(POS.east().above(), POS.south().above());
+        BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.OBSIDIAN, 3, Sets.newHashSet(), interfaces);
+
+        // Insert item
+        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+
+        // Upgrade
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL.getHolder());
+        player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
+        player.getInventory().add(new ItemStack(ChestMaterial.NETHERITE.getBlockCore(), 1));
+        player.getInventory().add(new ItemStack(ChestMaterial.NETHERITE.getBlockInterface(), 2));
+        player.getInventory().add(new ItemStack(ChestMaterial.NETHERITE.getBlockWall(), 23));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+
+        helper.succeedWhen(() -> {
+            // Chest must be transformed and keep inventory
+            assertChestValid(helper, POS, ChestMaterial.NETHERITE, 3, interfaces, false);
+            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
+
+            // Player items must be swapped
+            assertPlayerInventoryNotContains(helper, player, new ItemStack(ChestMaterial.NETHERITE.getBlockCore(), 1));
+            assertPlayerInventoryNotContains(helper, player, new ItemStack(ChestMaterial.NETHERITE.getBlockInterface(), 2));
+            assertPlayerInventoryNotContains(helper, player, new ItemStack(ChestMaterial.NETHERITE.getBlockWall(), 23));
+            assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockCore(), 1));
+            assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
+            assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
+        });
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testColossalCopper3x3Downgrade(GameTestHelper helper) {
         HashSet<BlockPos> interfaces = Sets.newHashSet(POS.east().above(), POS.south().above());
         BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.COPPER, 3, Sets.newHashSet(), interfaces);
@@ -816,6 +869,39 @@ public class GameTestsCommon {
             assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockCore(), 1));
             assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
             assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
+        });
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testColossalNetherite3x3Downgrade(GameTestHelper helper) {
+        HashSet<BlockPos> interfaces = Sets.newHashSet(POS.east().above(), POS.south().above());
+        BlockEntityColossalChest core = createChest(helper, POS, ChestMaterial.NETHERITE, 3, Sets.newHashSet(), interfaces);
+
+        // Insert item
+        core.getInventory().setItem(0, new ItemStack(Items.APPLE));
+
+        // Upgrade
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack itemStack = new ItemStack(RegistryEntries.ITEM_UPGRADE_TOOL_REVERSE.getHolder());
+        player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
+        player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockCore(), 1));
+        player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
+        player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
+        InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
+        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+
+        helper.succeedWhen(() -> {
+            // Chest must be transformed and keep inventory
+            assertChestValid(helper, POS, ChestMaterial.OBSIDIAN, 3, interfaces, false);
+            assertCoreContains(helper, POS, new ItemStack(Items.APPLE));
+
+            // Player items must be swapped
+            assertPlayerInventoryNotContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockCore(), 1));
+            assertPlayerInventoryNotContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
+            assertPlayerInventoryNotContains(helper, player, new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
+            assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.NETHERITE.getBlockCore(), 1));
+            assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.NETHERITE.getBlockInterface(), 2));
+            assertPlayerInventoryContains(helper, player, new ItemStack(ChestMaterial.NETHERITE.getBlockWall(), 23));
         });
     }
 
@@ -1147,6 +1233,49 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testRecipeChestWallNetherite(GameTestHelper helper) {
+        assertRecipeResult(helper, RecipeType.SMITHING, new SmithingRecipeInput(
+                new ItemStack(Items.GOLD_INGOT),
+                new ItemStack(ChestMaterial.DIAMOND.getBlockWall()),
+                new ItemStack(Items.NETHERITE_SCRAP)
+        ), new ItemStack(ChestMaterial.NETHERITE.getBlockWall()));
+
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testRecipeColossalChestNetherite(GameTestHelper helper) {
+        assertRecipeResult(helper, RecipeType.CRAFTING, CraftingInput.of(2, 1, List.of(
+                new ItemStack(ChestMaterial.NETHERITE.getBlockWall()),
+                new ItemStack(Items.IRON_INGOT)
+        )), new ItemStack(ChestMaterial.NETHERITE.getBlockCore()));
+
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testRecipeInterfaceNetherite(GameTestHelper helper) {
+        ItemStack cobblestone = new ItemStack(Items.COBBLESTONE);
+        assertRecipeResult(helper, RecipeType.CRAFTING, CraftingInput.of(3, 3, List.of(
+                ItemStack.EMPTY, cobblestone, ItemStack.EMPTY,
+                cobblestone, new ItemStack(ChestMaterial.NETHERITE.getBlockWall()), cobblestone,
+                ItemStack.EMPTY, cobblestone, ItemStack.EMPTY
+        )), new ItemStack(ChestMaterial.NETHERITE.getBlockInterface()));
+
+        helper.succeed();
+    }
+
+    private <I extends RecipeInput, T extends Recipe<I>> void assertRecipeResult(GameTestHelper helper, RecipeType<T> recipeType,
+                                                                                I input, ItemStack expected) {
+        ItemStack result = helper.getLevel().recipeAccess()
+                .getRecipeFor(recipeType, input, helper.getLevel())
+                .map(recipe -> recipe.value().assemble(input))
+                .orElse(ItemStack.EMPTY);
+        helper.assertTrue(ItemStack.isSameItem(result, expected),
+                "Expected recipe result " + expected.getItem() + ", but got " + result.getItem());
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementRootNegative(GameTestHelper helper) {
         ServerPlayer serverPlayer = makeMockServerPlayer(helper);
         serverPlayer.getInventory().add(new ItemStack(Items.DIRT));
@@ -1216,6 +1345,11 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseNetheriteNegative(GameTestHelper helper) {
+        testAdvancementBaseNegative(helper, ChestMaterial.WOOD, "colossalchests:base/netherite");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementBaseWood(GameTestHelper helper) {
         testAdvancementBase(helper, ChestMaterial.WOOD, "colossalchests:base/wood");
     }
@@ -1248,6 +1382,11 @@ public class GameTestsCommon {
     @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementBaseObsidian(GameTestHelper helper) {
         testAdvancementBase(helper, ChestMaterial.OBSIDIAN, "colossalchests:base/obsidian");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementBaseNetherite(GameTestHelper helper) {
+        testAdvancementBase(helper, ChestMaterial.NETHERITE, "colossalchests:base/netherite");
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
@@ -1286,6 +1425,11 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeNetheriteNegative(GameTestHelper helper) {
+        testAdvancementSizeNegative(helper, ChestMaterial.NETHERITE, "colossalchests:size/netherite");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementSizeWood(GameTestHelper helper) {
         testAdvancementSize(helper, ChestMaterial.WOOD, "colossalchests:size/wood");
     }
@@ -1318,6 +1462,11 @@ public class GameTestsCommon {
     @GameTest(template = TEMPLATE_EMPTY)
     public void testAdvancementSizeObsidian(GameTestHelper helper) {
         testAdvancementSize(helper, ChestMaterial.OBSIDIAN, "colossalchests:size/obsidian");
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementSizeNetherite(GameTestHelper helper) {
+        testAdvancementSize(helper, ChestMaterial.NETHERITE, "colossalchests:size/netherite");
     }
 
     private void testAdvancementBaseNegative(GameTestHelper helper, ChestMaterial material, String advancementId) {

@@ -1,0 +1,18 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.29.5 or higher.
+
+Additions:
+* Add Netherite Colossal Chests as new top tier, Closes #168
+
+Netherite becomes the new highest chest material, above obsidian:
+* Inventory multiplier of 5 (obsidian and diamond are 4)
+* Blast-resistant, like obsidian
+* Top of the chest upgrade/downgrade tool chain
+
+Chest walls are obtained by upgrading diamond chest walls at a smithing
+table with netherite scrap. The netherite upgrade smithing template is
+deliberately not used as the template ingredient, since the smithing menu
+consumes all three input slots, which would cost one template per wall.
+A gold ingot is used instead, mirroring the scrap plus gold cost of a
+netherite ingot. Cores and interfaces are crafted from netherite walls
+just like the other materials.

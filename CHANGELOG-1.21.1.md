@@ -1,8 +1,28 @@
 # Changelog for Minecraft 1.21.1
 All notable changes to this project will be documented in this file.
 
+<a name="1.21.1-1.9.0"></a>
+## [1.21.1-1.9.0](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.14...1.21.1-1.9.0) - 2026-08-27 20:29:38
+
+
+### Added
+* Add Netherite Colossal Chests as new top tier, Closes #168
+
+Netherite becomes the new highest chest material, above obsidian:
+* Inventory multiplier of 5 (obsidian and diamond are 4)
+* Blast-resistant, like obsidian
+* Top of the chest upgrade/downgrade tool chain
+
+Chest walls are obtained by upgrading diamond chest walls at a smithing
+table with netherite scrap. The netherite upgrade smithing template is
+deliberately not used as the template ingredient, since the smithing menu
+consumes all three input slots, which would cost one template per wall.
+A gold ingot is used instead, mirroring the scrap plus gold cost of a
+netherite ingot. Cores and interfaces are crafted from netherite walls
+just like the other materials.
+
 <a name="1.21.1-1.8.14"></a>
-## [1.21.1-1.8.14](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.13...1.21.1-1.8.14) - 2025-10-12 15:07:17
+## [1.21.1-1.8.14](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.13...1.21.1-1.8.14) - 2025-10-12 15:07:17 +0200
 
 
 ### Added

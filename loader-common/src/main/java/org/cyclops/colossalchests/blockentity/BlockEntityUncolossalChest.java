@@ -24,6 +24,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
+import org.cyclops.colossalchests.inventory.InventoryUncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
 import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -68,46 +69,41 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntity implements Me
 
     private Component customName = null;
 
-    private final SimpleInventory inventory;
+    private SimpleInventory inventory = null;
 
     public BlockEntityUncolossalChest(BlockPos blockPos, BlockState blockState) {
         super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), blockPos, blockState);
-        this.inventory = new SimpleInventory(5, 64) {
-            @Override
-            public void startOpen(ContainerUser entityPlayer) {
-                super.startOpen(entityPlayer);
-                BlockEntityUncolossalChest.this.startOpen(entityPlayer);
-            }
+    }
 
-            @Override
-            public void stopOpen(ContainerUser entityPlayer) {
-                super.stopOpen(entityPlayer);
-                BlockEntityUncolossalChest.this.stopOpen(entityPlayer);
-            }
-
-            @Override
-            public boolean stillValid(Player entityplayer) {
-                return super.stillValid(entityplayer) && level.getBlockEntity(worldPosition) == BlockEntityUncolossalChest.this;
-            }
-        };
-        this.inventory.addDirtyMarkListener(this);
+    /**
+     * Create the inventory that holds this chest's contents.
+     * Loaders can override this to change how such inventories are identified.
+     * @return The inventory.
+     */
+    protected InventoryUncolossalChest createInventory() {
+        return new InventoryUncolossalChest(this, 5, 64);
     }
 
     public SimpleInventory getInventory() {
-        return inventory;
+        // Constructed lazily, so that loaders can override createInventory without it being called from the constructor
+        if (this.inventory == null) {
+            this.inventory = createInventory();
+            this.inventory.addDirtyMarkListener(this);
+        }
+        return this.inventory;
     }
 
     @Override
     public void read(ValueInput input) {
         super.read(input);
-        inventory.read(input.child("inventory").orElseThrow());
+        getInventory().read(input.child("inventory").orElseThrow());
         this.customName = input.read("CustomName", ComponentSerialization.CODEC).orElse(null);
     }
 
     @Override
     public void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-        inventory.write(output.child("inventory"));
+        getInventory().write(output.child("inventory"));
         if (this.customName != null) {
             output.store("CustomName", ComponentSerialization.CODEC, this.customName);
         }

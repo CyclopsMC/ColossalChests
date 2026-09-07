@@ -18,9 +18,13 @@ public class BlockEntityUncolossalChestConfig<M extends IModBase> extends BlockE
         super(
                 mod,
                 "uncolossal_chest",
-                (eConfig) -> new BlockEntityType<>(BlockEntityUncolossalChest::new,
+                (eConfig) -> new BlockEntityType<>(((BlockEntityUncolossalChestConfig) eConfig).getBlockEntitySupplier(),
                         Sets.newHashSet(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value()))
         );
+    }
+
+    protected BlockEntityType.BlockEntitySupplier<? extends BlockEntityUncolossalChest> getBlockEntitySupplier() {
+        return BlockEntityUncolossalChest::new;
     }
 
     @Override

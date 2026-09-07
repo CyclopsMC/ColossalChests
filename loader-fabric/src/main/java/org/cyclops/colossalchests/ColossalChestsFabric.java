@@ -14,6 +14,7 @@ import org.cyclops.colossalchests.blockentity.BlockEntityInterfaceConfigFabric;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestConfigFabric;
 import org.cyclops.colossalchests.condition.ConditionMetalVariantsSettingConfig;
 import org.cyclops.colossalchests.gametest.GameTestsCommon;
+import org.cyclops.colossalchests.gametest.GameTestsFabric;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChestConfig;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChestConfig;
 import org.cyclops.colossalchests.item.ItemUpgradeToolConfig;
@@ -93,6 +94,6 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
 
     @Override
     public Class<?>[] getGameTestClasses() {
-        return new Class<?>[] { GameTestsCommon.class };
+        return new Class<?>[] { GameTestsCommon.class, GameTestsFabric.class };
     }
 }

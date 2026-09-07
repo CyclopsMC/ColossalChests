@@ -1,0 +1,5 @@
+As always, don't forget to backup your world before updating!
+Requires CyclopsCore version 1.25.3 or higher.
+
+Fixes:
+* Fix items disappearing when inserted into chests on Fabric (#209), Closes #208

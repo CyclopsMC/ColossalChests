@@ -35,13 +35,13 @@ import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
+import org.cyclops.colossalchests.inventory.InventoryColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntity;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
 import org.cyclops.cyclopscore.helper.DirectionHelpers;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.cyclops.cyclopscore.inventory.INBTInventory;
-import org.cyclops.cyclopscore.inventory.IndexedInventory;
 import org.cyclops.cyclopscore.inventory.LargeInventory;
 import org.cyclops.cyclopscore.inventory.SimpleInventory;
 import org.cyclops.cyclopscore.persist.nbt.NBTPersist;
@@ -157,7 +157,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
                     this.lastValidInventory = this.inventory;
                 }
             }
-            setInventory(new LargeInventory(0, 0));
+            setInventory(createInventoryLarge(0, 0));
         }
 
         // Send an immediate update
@@ -189,31 +189,42 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         return getLevel() != null && getLevel().isClientSide();
     }
 
+    /**
+     * Create an inventory that can hold this chest's contents.
+     * Loaders can override this to change how such inventories are identified.
+     * @param size The amount of slots.
+     * @param stackLimit The stack limit for each slot.
+     * @return The inventory.
+     */
+    protected InventoryColossalChest createInventory(int size, int stackLimit) {
+        return new InventoryColossalChest(this, size, stackLimit);
+    }
+
+    /**
+     * Create an inventory that is never exposed to other blocks, such as the client-side copy.
+     * Loaders can override this to change how such inventories are identified.
+     * @param size The amount of slots.
+     * @param stackLimit The stack limit for each slot.
+     * @return The inventory.
+     */
+    protected LargeInventory createInventoryLarge(int size, int stackLimit) {
+        return new LargeInventory(size, stackLimit);
+    }
+
     protected LargeInventory constructInventory() {
         if (!isClientSide() && GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64) {
-            @Override
-            public void startOpen(ContainerUser entityPlayer) {
-                super.startOpen(entityPlayer);
-                BlockEntityColossalChest.this.startOpen(entityPlayer);
-            }
-
-            @Override
-            public void stopOpen(ContainerUser entityPlayer) {
-                super.stopOpen(entityPlayer);
-                BlockEntityColossalChest.this.stopOpen(entityPlayer);
-            }
-        } : new LargeInventory(calculateInventorySize(), 64);
+        LargeInventory inv = !isClientSide() ? createInventory(calculateInventorySize(), 64)
+                : createInventoryLarge(calculateInventorySize(), 64);
         inv.addDirtyMarkListener(this);
 
         return inv;
     }
 
     protected LargeInventory constructInventoryDebug() {
-        LargeInventory inv = !isClientSide() ? new IndexedInventory(calculateInventorySize(), 64)
-                : new LargeInventory(calculateInventorySize(), 64);
+        LargeInventory inv = !isClientSide() ? createInventory(calculateInventorySize(), 64)
+                : createInventoryLarge(calculateInventorySize(), 64);
         Random random = new Random();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             inv.setItem(i, new ItemStack(Iterables.get(BuiltInRegistries.ITEM,
@@ -258,7 +269,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
         } else {
             getInventory().read(input.child("inventory").orElseThrow());
             input.child("lastValidInventory").ifPresent(child -> {
-                this.lastValidInventory = new LargeInventory(input.getInt("lastValidInventorySize").orElseThrow(), this.inventory.getMaxStackSize());
+                this.lastValidInventory = createInventoryLarge(input.getInt("lastValidInventorySize").orElseThrow(), this.inventory.getMaxStackSize());
                 this.lastValidInventory.read(child);
             });
         }
@@ -306,7 +317,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntity implements Menu
 
     public INBTInventory getInventory() {
         if(lastValidInventory != null) {
-            return new IndexedInventory();
+            return createInventory(0, 0);
         }
         ensureInventoryInitialized();
         if(inventory == null && this.recreateNullInventory) {

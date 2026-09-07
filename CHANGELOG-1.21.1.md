@@ -1,8 +1,15 @@
 # Changelog for Minecraft 1.21.1
 All notable changes to this project will be documented in this file.
 
+<a name="1.21.1-1.9.1"></a>
+## [1.21.1-1.9.1](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.9.0...1.21.1-1.9.1) - 2026-09-07 17:07:31
+
+
+### Fixed
+* Fix items disappearing when inserted into chests on Fabric (#209), Closes #208
+
 <a name="1.21.1-1.9.0"></a>
-## [1.21.1-1.9.0](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.14...1.21.1-1.9.0) - 2026-08-27 20:29:38
+## [1.21.1-1.9.0](https://github.com/CyclopsMC/ColossalChests/compare/1.21.1-1.8.14...1.21.1-1.9.0) - 2026-08-27 20:29:38 +0200
 
 
 ### Added

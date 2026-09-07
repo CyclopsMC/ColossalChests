@@ -17,6 +17,8 @@ public class BlockEntityColossalChestConfigFabric<M extends ModBaseFabric> exten
         super.onForgeRegistered();
         // If this would cause performance issues, we could implement a custom Storage instead of InventoryStorage that makes better use of Storage's capabilities.
         // If so, also use this in BlockEntityInterfaceConfigFabric
-        ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), context), getInstance());
+        // Pass no direction: our inventories expose all slots to all sides,
+        // and a direction would make Fabric allocate a new sided wrapper per slot on every lookup.
+        ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), null), getInstance());
     }
 }

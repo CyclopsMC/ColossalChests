@@ -15,10 +15,12 @@ public class BlockEntityInterfaceConfigFabric<M extends ModBaseFabric> extends B
     @Override
     public void onForgeRegistered() {
         super.onForgeRegistered();
+        // Pass no direction: our inventories expose all slots to all sides,
+        // and a direction would make Fabric allocate a new sided wrapper per slot on every lookup.
         ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> {
             BlockEntityColossalChest core = blockEntity.getCore();
             if (core != null) {
-                return InventoryStorage.of(core.getInventory(), context);
+                return InventoryStorage.of(core.getInventory(), null);
             }
             return null;
         }, getInstance());

@@ -15,6 +15,8 @@ public class BlockEntityUncolossalChestConfigFabric<M extends ModBaseFabric> ext
     @Override
     public void onForgeRegistered() {
         super.onForgeRegistered();
-        ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), context), getInstance());
+        // Pass no direction: our inventories expose all slots to all sides,
+        // and a direction would make Fabric allocate a new sided wrapper per slot on every lookup.
+        ItemStorage.SIDED.registerForBlockEntity((blockEntity, context) -> InventoryStorage.of(blockEntity.getInventory(), null), getInstance());
     }
 }

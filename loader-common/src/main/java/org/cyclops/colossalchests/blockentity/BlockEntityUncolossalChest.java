@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
+import org.cyclops.colossalchests.inventory.InventoryIdentitySimple;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
 import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -66,7 +67,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon impleme
 
     public BlockEntityUncolossalChest(BlockPos blockPos, BlockState blockState) {
         super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), blockPos, blockState);
-        this.inventory = new SimpleInventoryCommon(5, 64) {
+        this.inventory = new InventoryIdentitySimple(5, 64) {
             @Override
             public void startOpen(Player entityPlayer) {
                 if (!entityPlayer.isSpectator()) {

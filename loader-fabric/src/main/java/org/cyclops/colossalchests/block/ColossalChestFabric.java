@@ -1,7 +1,7 @@
 package org.cyclops.colossalchests.block;
 
 import net.minecraft.world.level.Level;
-import org.cyclops.colossalchests.blockentity.BlockEntityColossalChest;
+import org.cyclops.colossalchests.blockentity.BlockEntityColossalChestFabric;
 import org.cyclops.cyclopscore.events.IBlockExplodedEvent;
 
 /**
@@ -9,7 +9,7 @@ import org.cyclops.cyclopscore.events.IBlockExplodedEvent;
  */
 public class ColossalChestFabric extends ColossalChest {
     public ColossalChestFabric(Properties properties, ChestMaterial material) {
-        super(properties, material, BlockEntityColossalChest::new);
+        super(properties, material, BlockEntityColossalChestFabric::new);
         IBlockExplodedEvent.EVENT.register((blockState, level, blockPos, explosion, biConsumer) -> {
             if (blockState.getBlock() == this) {
                 onBlockExplodedCommon(blockState, level, blockPos, explosion);

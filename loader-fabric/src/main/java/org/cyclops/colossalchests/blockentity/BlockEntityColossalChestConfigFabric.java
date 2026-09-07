@@ -2,6 +2,7 @@ package org.cyclops.colossalchests.blockentity;
 
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.cyclops.cyclopscore.init.ModBaseFabric;
 
 /**
@@ -10,6 +11,11 @@ import org.cyclops.cyclopscore.init.ModBaseFabric;
 public class BlockEntityColossalChestConfigFabric<M extends ModBaseFabric> extends BlockEntityColossalChestConfig<M> {
     public BlockEntityColossalChestConfigFabric(M mod) {
         super(mod);
+    }
+
+    @Override
+    protected BlockEntityType.BlockEntitySupplier<? extends BlockEntityColossalChest> getBlockEntitySupplier() {
+        return BlockEntityColossalChestFabric::new;
     }
 
     @Override

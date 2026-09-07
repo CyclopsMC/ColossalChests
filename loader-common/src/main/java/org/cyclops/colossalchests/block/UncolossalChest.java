@@ -39,9 +39,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChest;
 import org.cyclops.cyclopscore.block.BlockWithEntityGuiCommon;
+import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 
 import javax.annotation.Nullable;
+
+import java.util.function.BiFunction;
 
 /**
  * A small chest.
@@ -52,12 +55,17 @@ public class UncolossalChest extends BlockWithEntityGuiCommon implements SimpleW
 
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
-    public static final MapCodec<UncolossalChest> CODEC = BlockBehaviour.simpleCodec(UncolossalChest::new);
-
     private final VoxelShape SHAPE = Block.box(5.0D, 0.0D, 5.0D, 11.0D, 6, 11.0D);
 
+    public final MapCodec<UncolossalChest> codec;
+
     public UncolossalChest(Block.Properties properties) {
-        super(properties, BlockEntityUncolossalChest::new);
+        this(properties, BlockEntityUncolossalChest::new);
+    }
+
+    public UncolossalChest(Block.Properties properties, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntityCommon> blockEntitySupplier) {
+        super(properties, blockEntitySupplier);
+        this.codec = BlockBehaviour.simpleCodec((props) -> new UncolossalChest(props, blockEntitySupplier));
 
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
@@ -66,7 +74,7 @@ public class UncolossalChest extends BlockWithEntityGuiCommon implements SimpleW
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
+        return codec;
     }
 
     @Override

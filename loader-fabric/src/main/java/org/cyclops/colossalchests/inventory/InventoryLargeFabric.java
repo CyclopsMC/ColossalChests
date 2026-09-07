@@ -5,13 +5,13 @@ import org.cyclops.cyclopscore.inventory.LargeInventoryCommon;
 /**
  * A {@link LargeInventoryCommon} that is identified by its instance instead of its contents.
  *
- * See {@link InventoryIdentitySimple} for why this is needed.
+ * See {@link InventoryColossalChestFabric} for why this is needed.
  *
  * @author rubensworks
  */
-public class InventoryIdentityLarge extends LargeInventoryCommon {
+public class InventoryLargeFabric extends LargeInventoryCommon {
 
-    public InventoryIdentityLarge(int size, int stackLimit) {
+    public InventoryLargeFabric(int size, int stackLimit) {
         super(size, stackLimit);
     }
 

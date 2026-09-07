@@ -3,6 +3,7 @@ package org.cyclops.colossalchests.block;
 import net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import org.cyclops.colossalchests.blockentity.BlockEntityUncolossalChestFabric;
 import org.cyclops.colossalchests.client.render.blockentity.ItemStackTileEntityUncolossalChestRenderFabric;
 import org.cyclops.cyclopscore.datastructure.Wrapper;
 import org.cyclops.cyclopscore.init.ModBaseFabric;
@@ -18,7 +19,7 @@ public class UncolossalChestConfigFabric<M extends ModBaseFabric> extends Uncolo
         super(
                 mod,
                 "uncolossal_chest",
-                eConfig -> new UncolossalChest(((UncolossalChestConfig<M>) eConfig).getProperties()),
+                eConfig -> new UncolossalChest(((UncolossalChestConfig<M>) eConfig).getProperties(), BlockEntityUncolossalChestFabric::new),
                 (eConfig, block) -> new BlockItem(block, new Item.Properties())
         );
     }

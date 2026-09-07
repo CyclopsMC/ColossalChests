@@ -32,8 +32,7 @@ import org.cyclops.colossalchests.GeneralConfig;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.colossalchests.block.ColossalChestConfig;
-import org.cyclops.colossalchests.inventory.InventoryIdentityIndexed;
-import org.cyclops.colossalchests.inventory.InventoryIdentityLarge;
+import org.cyclops.colossalchests.inventory.InventoryColossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerColossalChest;
 import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
 import org.cyclops.cyclopscore.datastructure.EnumFacingMap;
@@ -149,7 +148,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
                     this.lastValidInventory = this.inventory;
                 }
             }
-            setInventory(new InventoryIdentityLarge(0, 0));
+            setInventory(createInventoryLarge(0, 0));
         }
 
         // Send an immediate update
@@ -181,35 +180,42 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
         return getLevel() != null && getLevel().isClientSide;
     }
 
+    /**
+     * Create an inventory that can hold this chest's contents.
+     * Loaders can override this to change how such inventories are identified.
+     * @param size The amount of slots.
+     * @param stackLimit The stack limit for each slot.
+     * @return The inventory.
+     */
+    protected InventoryColossalChest createInventory(int size, int stackLimit) {
+        return new InventoryColossalChest(this, size, stackLimit);
+    }
+
+    /**
+     * Create an inventory that is never exposed to other blocks, such as the client-side copy.
+     * Loaders can override this to change how such inventories are identified.
+     * @param size The amount of slots.
+     * @param stackLimit The stack limit for each slot.
+     * @return The inventory.
+     */
+    protected LargeInventoryCommon createInventoryLarge(int size, int stackLimit) {
+        return new LargeInventoryCommon(size, stackLimit);
+    }
+
     protected LargeInventoryCommon constructInventory() {
         if (!isClientSide() && GeneralConfig.creativeChests) {
             return constructInventoryDebug();
         }
-        LargeInventoryCommon inv = !isClientSide() ? new InventoryIdentityIndexed(calculateInventorySize(), 64) {
-            @Override
-            public void startOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.startOpen(entityPlayer);
-                    BlockEntityColossalChest.this.startOpen(entityPlayer);
-                }
-            }
-
-            @Override
-            public void stopOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.stopOpen(entityPlayer);
-                    BlockEntityColossalChest.this.stopOpen(entityPlayer);
-                }
-            }
-        } : new InventoryIdentityLarge(calculateInventorySize(), 64);
+        LargeInventoryCommon inv = !isClientSide() ? createInventory(calculateInventorySize(), 64)
+                : createInventoryLarge(calculateInventorySize(), 64);
         inv.addDirtyMarkListener(this);
 
         return inv;
     }
 
     protected LargeInventoryCommon constructInventoryDebug() {
-        LargeInventoryCommon inv = !isClientSide() ? new InventoryIdentityIndexed(calculateInventorySize(), 64)
-                : new InventoryIdentityLarge(calculateInventorySize(), 64);
+        LargeInventoryCommon inv = !isClientSide() ? createInventory(calculateInventorySize(), 64)
+                : createInventoryLarge(calculateInventorySize(), 64);
         Random random = new Random();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             inv.setItem(i, new ItemStack(Iterables.get(BuiltInRegistries.ITEM,
@@ -254,7 +260,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
         } else {
             getInventory().read(provider, tag.getCompound("inventory"));
             if (tag.contains("lastValidInventory", Tag.TAG_COMPOUND)) {
-                this.lastValidInventory = new InventoryIdentityLarge(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
+                this.lastValidInventory = createInventoryLarge(tag.getInt("lastValidInventorySize"), this.inventory.getMaxStackSize());
                 this.lastValidInventory.read(provider, tag.getCompound("lastValidInventory"));
             }
         }
@@ -308,7 +314,7 @@ public class BlockEntityColossalChest extends CyclopsBlockEntityCommon implement
 
     public INBTInventory getInventory() {
         if(lastValidInventory != null) {
-            return new InventoryIdentityIndexed(0, 0);
+            return createInventory(0, 0);
         }
         ensureInventoryInitialized();
         if(inventory == null && this.recreateNullInventory) {

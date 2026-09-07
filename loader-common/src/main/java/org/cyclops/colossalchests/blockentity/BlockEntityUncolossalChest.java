@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests.RegistryEntries;
 import org.cyclops.colossalchests.block.UncolossalChest;
+import org.cyclops.colossalchests.inventory.InventoryUncolossalChest;
 import org.cyclops.colossalchests.inventory.container.ContainerUncolossalChest;
 import org.cyclops.cyclopscore.blockentity.CyclopsBlockEntityCommon;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -62,43 +63,34 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon impleme
 
     private Component customName = null;
 
-    private final SimpleInventoryCommon inventory;
+    private SimpleInventoryCommon inventory = null;
 
     public BlockEntityUncolossalChest(BlockPos blockPos, BlockState blockState) {
         super(RegistryEntries.BLOCK_ENTITY_UNCOLOSSAL_CHEST.value(), blockPos, blockState);
-        this.inventory = new SimpleInventoryCommon(5, 64) {
-            @Override
-            public void startOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.startOpen(entityPlayer);
-                    BlockEntityUncolossalChest.this.startOpen(entityPlayer);
-                }
-            }
+    }
 
-            @Override
-            public void stopOpen(Player entityPlayer) {
-                if (!entityPlayer.isSpectator()) {
-                    super.stopOpen(entityPlayer);
-                    BlockEntityUncolossalChest.this.stopOpen(entityPlayer);
-                }
-            }
-
-            @Override
-            public boolean stillValid(Player entityplayer) {
-                return super.stillValid(entityplayer) && level.getBlockEntity(worldPosition) == BlockEntityUncolossalChest.this;
-            }
-        };
-        this.inventory.addDirtyMarkListener(this);
+    /**
+     * Create the inventory that holds this chest's contents.
+     * Loaders can override this to change how such inventories are identified.
+     * @return The inventory.
+     */
+    protected InventoryUncolossalChest createInventory() {
+        return new InventoryUncolossalChest(this, 5, 64);
     }
 
     public SimpleInventoryCommon getInventory() {
-        return inventory;
+        // Constructed lazily, so that loaders can override createInventory without it being called from the constructor
+        if (this.inventory == null) {
+            this.inventory = createInventory();
+            this.inventory.addDirtyMarkListener(this);
+        }
+        return this.inventory;
     }
 
     @Override
     public void read(CompoundTag tag, HolderLookup.Provider provider) {
         super.read(tag, provider);
-        inventory.read(provider, tag.getCompound("inventory"));
+        getInventory().read(provider, tag.getCompound("inventory"));
         if (tag.contains("CustomName", Tag.TAG_STRING)) {
             this.customName = Component.Serializer.fromJson(tag.getString("CustomName"), provider);
         }
@@ -108,7 +100,7 @@ public class BlockEntityUncolossalChest extends CyclopsBlockEntityCommon impleme
     public void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         CompoundTag subTag = new CompoundTag();
-        inventory.write(provider, subTag);
+        getInventory().write(provider, subTag);
         tag.put("inventory", subTag);
         if (this.customName != null) {
             tag.putString("CustomName", Component.Serializer.toJson(this.customName, provider));

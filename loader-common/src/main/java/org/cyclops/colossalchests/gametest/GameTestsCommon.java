@@ -237,13 +237,6 @@ public class GameTestsCommon {
 
     @GameTest(template = TEMPLATE_EMPTY)
     public void testColossalWood5x5HopperInsert(GameTestHelper helper) {
-        // For some unknown reason, this test does not work in Fabric (does work in-game only if the player is close)
-        // TODO: try to re-enable later
-        if (isFabric()) {
-            helper.succeed();
-            return;
-        }
-
         createChest(helper, POS.above().south(), ChestMaterial.WOOD, 5);
 
         // Place hopper towards core
@@ -288,13 +281,6 @@ public class GameTestsCommon {
 
     @GameTest(template = TEMPLATE_EMPTY)
     public void testColossalWood5x5HopperInsertExtract(GameTestHelper helper) {
-        // For some unknown reason, this test does not work in Fabric (does work in-game only if the player is close)
-        // TODO: try to re-enable later
-        if (isFabric()) {
-            helper.succeed();
-            return;
-        }
-
         BlockEntityColossalChest core = createChest(helper, POS.above().south(), ChestMaterial.WOOD, 5);
 
         // Place hopper towards core
@@ -344,13 +330,6 @@ public class GameTestsCommon {
 
     @GameTest(template = TEMPLATE_EMPTY)
     public void testColossalWood5x5InterfacesHopperInsertExtract(GameTestHelper helper) {
-        // For some unknown reason, this test does not work in Fabric (does work in-game only if the player is close)
-        // TODO: try to re-enable later
-        if (isFabric()) {
-            helper.succeed();
-            return;
-        }
-
         createChest(helper, POS.above(), ChestMaterial.WOOD, 5, Sets.newHashSet(), Sets.newHashSet(POS.offset(0, 5, 0), POS.above().south()));
 
         // Place hopper towards top interface
@@ -1220,15 +1199,6 @@ public class GameTestsCommon {
         player.setItemInHand(InteractionHand.MAIN_HAND, itemStack);
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(pos.getCenter(), Direction.DOWN, helper.absolutePos(pos), false)));
         helper.assertTrue(interactionResult.consumesAction(), "Block placement as player failed");
-    }
-
-    protected boolean isFabric() {
-        try {
-            Class.forName("net.fabricmc.fabric.api.transfer.v1.item.ItemStorage");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
     }
 
     @GameTest(template = TEMPLATE_EMPTY)

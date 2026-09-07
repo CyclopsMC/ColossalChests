@@ -1,8 +1,15 @@
 # Changelog for Minecraft 26.1.2
 All notable changes to this project will be documented in this file.
 
+<a name="26.1.2-1.9.1"></a>
+## [26.1.2-1.9.1](https://github.com/CyclopsMC/ColossalChests/compare/26.1.2-1.9.0...26.1.2-1.9.1) - 2026-09-07 17:21:40
+
+
+### Fixed
+* Fix items disappearing when inserted into chests on Fabric (#209), Closes #208
+
 <a name="26.1.2-1.9.0"></a>
-## [26.1.2-1.9.0](https://github.com/CyclopsMC/ColossalChests/compare/26.1.2-1.8.16...26.1.2-1.9.0) - 2026-08-27 20:29:56
+## [26.1.2-1.9.0](https://github.com/CyclopsMC/ColossalChests/compare/26.1.2-1.8.16...26.1.2-1.9.0) - 2026-08-27 20:29:56 +0200
 
 
 ### Added

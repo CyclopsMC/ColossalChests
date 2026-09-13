@@ -23,6 +23,7 @@
     ],
     "fabric-gametest": [
       "org.cyclops.colossalchests.gametest.GameTestsCommon",
+      "org.cyclops.colossalchests.gametest.GameTestsPerformance",
       "org.cyclops.colossalchests.gametest.GameTestsFabric"
     ]
   },

@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
@@ -48,7 +47,7 @@ public abstract class RenderTileEntityChestBase<T extends BlockEntity & LidBlock
 
     protected void handleRotation(S renderState, PoseStack poseStack) {
         float f = getDirection(renderState).toYRot();
-        poseStack.mulPose(Axis.YP.rotationDegrees(-f));
+        poseStack.rotateDegrees(Axis.YP, -f);
     }
 
     @Override
@@ -70,8 +69,12 @@ public abstract class RenderTileEntityChestBase<T extends BlockEntity & LidBlock
         g = 1.0F - g;
         g = 1.0F - g * g * g;
         SpriteId material = getMaterial(renderState);
-        TextureAtlasSprite textureAtlasSprite = this.materials.get(material);
-        submitNodeCollector.submitModel(this.singleModel, g, poseStack, material.renderType(RenderTypes::entityCutout), renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, textureAtlasSprite, 0, renderState.breakProgress);
+        submitNodeCollector.submitModel(this.singleModel, g, poseStack, renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, material, this.materials, 0);
+        if (renderState.breakProgress != null) {
+            submitNodeCollector.order(1)
+                    .submitCrumblingOverlay(this.singleModel, g, poseStack, material.renderType(RenderTypes::entityCutout),
+                            renderState.lightCoords, OverlayTexture.NO_OVERLAY, -1, renderState.breakProgress);
+        }
 
         poseStack.popPose();
     }

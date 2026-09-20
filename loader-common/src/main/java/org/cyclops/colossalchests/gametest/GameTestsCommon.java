@@ -372,7 +372,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -438,7 +438,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -471,7 +471,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -504,7 +504,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -537,7 +537,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -570,7 +570,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -603,7 +603,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.NETHERITE.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.NETHERITE.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -636,7 +636,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.WOOD.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -702,7 +702,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.COPPER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -735,7 +735,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.IRON.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -768,7 +768,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.SILVER.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -801,7 +801,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.GOLD.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -834,7 +834,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.DIAMOND.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory
@@ -867,7 +867,7 @@ public class GameTestsCommon {
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockInterface(), 2));
         player.getInventory().add(new ItemStack(ChestMaterial.OBSIDIAN.getBlockWall(), 23));
         InteractionResult interactionResult = itemStack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(POS), Direction.NORTH, helper.absolutePos(POS), false)));
-        helper.assertTrue(interactionResult == InteractionResult.SUCCESS, Component.literal("Interaction must succeed"));
+        helper.assertTrue(interactionResult instanceof InteractionResult.Success, Component.literal("Interaction must succeed"));
 
         helper.succeedWhen(() -> {
             // Chest must be transformed and keep inventory

@@ -40,7 +40,7 @@ public class BlockEntityInterface extends CyclopsBlockEntity {
         }
         if (coreReference.get() == null) {
             coreReference = new WeakReference<>(
-                    IModHelpers.get().getBlockEntityHelpers().get(getLevel(), new BlockPos(corePosition), BlockEntityColossalChest.class).orElse(null));
+                    IModHelpers.get().getBlockEntityHelpers().get(getLevel(), new BlockPos(corePosition.getX(), corePosition.getY(), corePosition.getZ()), BlockEntityColossalChest.class).orElse(null));
         }
         return coreReference.get();
     }

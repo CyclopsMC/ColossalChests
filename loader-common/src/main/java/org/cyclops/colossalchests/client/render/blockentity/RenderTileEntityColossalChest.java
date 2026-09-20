@@ -185,8 +185,8 @@ public class RenderTileEntityColossalChest extends RenderTileEntityChestBase<Blo
         } else if (direction == Direction.DOWN) {
             rotationX = 90;
         }
-        matrixStack.mulPose(Axis.YP.rotationDegrees(rotationY));
-        matrixStack.mulPose(Axis.XP.rotationDegrees(rotationX));
+        matrixStack.rotateDegrees(Axis.YP, rotationY);
+        matrixStack.rotateDegrees(Axis.XP, rotationX);
     }
 
     protected void submitInterface(PoseStack matrixStack, VertexConsumer buffer, TextureAtlasSprite sprite, boolean core, int combinedLightIn) {

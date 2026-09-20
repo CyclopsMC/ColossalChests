@@ -1,6 +1,5 @@
 package org.cyclops.colossalchests.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,12 +54,10 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     protected final ChestMaterial material;
-    public final MapCodec<ColossalChest> codec;
 
     public ColossalChest(BlockBehaviour.Properties properties, ChestMaterial material, BiFunction<BlockPos, BlockState, ? extends CyclopsBlockEntity> blockEntitySupplier) {
         super(properties, blockEntitySupplier);
         this.material = material;
-        this.codec = BlockBehaviour.simpleCodec((props) -> new ColossalChest(props, material, blockEntitySupplier));
 
         material.setBlockCore(this);
 
@@ -109,10 +106,6 @@ public class ColossalChest extends BlockWithEntityGui implements CubeDetector.ID
         return true;
     }
 
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return codec;
-    }
 
     @Override
     public RenderShape getRenderShape(BlockState blockState) {

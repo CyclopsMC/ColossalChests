@@ -2,10 +2,10 @@ package org.cyclops.colossalchests.advancement.criterion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
-import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.apache.commons.lang3.tuple.Pair;
 import org.cyclops.colossalchests.block.ChestMaterial;
 import org.cyclops.cyclopscore.advancement.criterion.ICriterionInstanceTestable;
@@ -20,7 +20,7 @@ public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigge
 
     public static final Codec<ChestFormedTrigger.Instance> CODEC = RecordCodecBuilder.create(
             p_311401_ -> p_311401_.group(
-                            EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ChestFormedTrigger.Instance::player),
+                            LootItemCondition.CODEC.optionalFieldOf("player").forGetter(ChestFormedTrigger.Instance::player),
                             ChestMaterial.CODEC.optionalFieldOf("material").forGetter(ChestFormedTrigger.Instance::material),
                             Codec.INT.optionalFieldOf("minimumSize").forGetter(ChestFormedTrigger.Instance::minimumSize)
                     )
@@ -37,7 +37,7 @@ public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigge
     }
 
     public static record Instance(
-            Optional<ContextAwarePredicate> player,
+            Optional<Holder<LootItemCondition>> player,
             Optional<ChestMaterial> material,
             Optional<Integer> minimumSize
     ) implements SimpleCriterionTrigger.SimpleInstance, ICriterionInstanceTestable<Pair<ChestMaterial, Integer>> {

@@ -5,9 +5,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.HashedStack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.resources.Identifier;
@@ -22,7 +22,6 @@ import org.cyclops.cyclopscore.network.CodecField;
 import org.cyclops.cyclopscore.network.PacketCodec;
 
 import java.util.ArrayList;
-import java.util.function.IntFunction;
 
 /**
  * Packet for window clicks to the server as an alternative to
@@ -64,17 +63,22 @@ public class ServerboundContainerClickPacketOverride extends PacketCodec<Serverb
         this.changedSlots = changedSlots;
     }
 
+    private static final int MAX_SLOT_COUNT = 128;
+
+    // Keeps int keys rather than vanilla's shorts, since a colossal chest has far more than 32767 slots
+    private static final StreamCodec<RegistryFriendlyByteBuf, Int2ObjectMap<HashedStack>> SLOTS_STREAM_CODEC =
+            ByteBufCodecs.map(Int2ObjectOpenHashMap::new, ByteBufCodecs.VAR_INT, HashedStack.STREAM_CODEC, MAX_SLOT_COUNT);
+
     @Override
     public void encode(RegistryFriendlyByteBuf output) {
         super.encode(output);
-        output.writeMap(this.changedSlots, FriendlyByteBuf::writeInt, (b, i) -> HashedStack.STREAM_CODEC.encode(output, i));
+        SLOTS_STREAM_CODEC.encode(output, this.changedSlots);
     }
 
     @Override
     public void decode(RegistryFriendlyByteBuf input) {
         super.decode(input);
-        IntFunction<Int2ObjectOpenHashMap<HashedStack>> intfunction = FriendlyByteBuf.limitValue(Int2ObjectOpenHashMap::new, 128);
-        this.changedSlots = Int2ObjectMaps.unmodifiable(input.readMap(intfunction, FriendlyByteBuf::readInt, b -> HashedStack.STREAM_CODEC.decode(input)));
+        this.changedSlots = Int2ObjectMaps.unmodifiable(SLOTS_STREAM_CODEC.decode(input));
     }
 
     @Override

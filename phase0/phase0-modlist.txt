@@ -1,0 +1,8 @@
+# Opens the mod list from the title screen and shows colossalchests2.
+click --widget "Mods"
+wait --screen ModListScreen --timeout 5000
+set-text "/root/children[2]" "colossal"
+click --at 50,40
+wait --ticks 5
+screenshot --name phase0-modlist
+key ESCAPE

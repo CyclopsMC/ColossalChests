@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "enabled=false": { "model": "colossalchests:block/interface_diamond" },
-    "enabled=true": { "model": "colossalchests:block/interface_off" }
-  }
-}

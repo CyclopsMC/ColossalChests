@@ -30,3 +30,7 @@ extra-mods
 # Ignore files specific to dev environments
 secrets.properties
 changelog.txt
+
+# ClientDevBridge session state (golden images are intentionally kept)
+.clientdevbridge/*
+!.clientdevbridge/golden/

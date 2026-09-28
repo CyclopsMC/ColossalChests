@@ -41,3 +41,12 @@ artifacts {
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
 }
 
+
+// Unit tests in common run against vanilla Minecraft classes.
+neoForge {
+    addModdingDependenciesTo(sourceSets.test)
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+}

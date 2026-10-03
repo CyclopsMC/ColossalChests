@@ -1,14 +1,16 @@
 package org.cyclops.colossalchests2.blockentity;
 
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.capability.ItemHandlerChestStorage;
+import org.cyclops.colossalchests2.client.render.RenderChestCoreNeoForge;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.cyclopscore.init.ModBase;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +25,11 @@ public class BlockEntityChestCoreConfigNeoForge<M extends ModBase<?>> extends Bl
         super(mod, BlockEntityChestCore::new);
         mod.getModEventBus().addListener(this::registerCapabilities);
         BlockEntityChestCore.capabilityInvalidator = Level::invalidateCapabilities;
+    }
+
+    @Override
+    protected BlockEntityRendererProvider<BlockEntityChestCore> getRendererProvider() {
+        return RenderChestCoreNeoForge::new;
     }
 
     protected void registerCapabilities(RegisterCapabilitiesEvent event) {

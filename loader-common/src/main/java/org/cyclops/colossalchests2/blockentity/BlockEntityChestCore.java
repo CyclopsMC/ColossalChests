@@ -1,17 +1,29 @@
 package org.cyclops.colossalchests2.blockentity;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
@@ -20,6 +32,7 @@ import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
+import org.cyclops.colossalchests2.multiblock.ChestShape;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.LevelStructureView;
 import org.cyclops.colossalchests2.multiblock.StructureDetector;
@@ -29,6 +42,7 @@ import org.cyclops.colossalchests2.storage.ResizeResult;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -40,6 +54,10 @@ import java.util.Set;
 public class BlockEntityChestCore extends BlockEntity {
 
     public static final int DATA_VERSION = 1;
+    /**
+     * Block event that carries the number of viewers, which opens the lid on clients.
+     */
+    public static final int EVENT_VIEWERS = 1;
     private static final int UNLOADED_RETRY_TICKS = 20;
 
     public static CapabilityInvalidator capabilityInvalidator = CapabilityInvalidator.NOOP;
@@ -47,10 +65,12 @@ public class BlockEntityChestCore extends BlockEntity {
     private final ChestStorage storage;
     private final ItemHandlerLogic itemHandlerLogic;
     private final Set<ServerPlayer> viewers = Sets.newHashSet();
+    private final ChestLidController lidController = new ChestLidController();
 
     @Nullable
     private ChestStructure structure;
     private int lastSize;
+    private List<BlockPos> decoratedPositions = List.of();
     private boolean registered;
     private boolean validationRequested = true;
     private int validationCooldown;
@@ -69,6 +89,10 @@ public class BlockEntityChestCore extends BlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BlockEntityChestCore core) {
         core.tick();
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, BlockEntityChestCore core) {
+        core.lidController.tickLid();
     }
 
     public ChestStorage getStorage() {
@@ -101,6 +125,37 @@ public class BlockEntityChestCore extends BlockEntity {
         return structure != null;
     }
 
+    /**
+     * @return The side the chest's lock faces, or south while dormant.
+     */
+    public Direction getFacing() {
+        return structure == null ? Direction.SOUTH : ChestShape.getFacing(structure, worldPosition);
+    }
+
+    /**
+     * Members of the formed structure that are not plain walls, such as the core itself.
+     * These are the only positions that can draw something on top of the giant chest. Synced to clients.
+     * @return Absolute positions, empty while dormant.
+     */
+    public List<BlockPos> getDecoratedPositions() {
+        return decoratedPositions;
+    }
+
+    /**
+     * @return The area this core renders in, the whole giant chest while formed.
+     */
+    public AABB getRenderBounds() {
+        return structure == null ? new AABB(worldPosition) : ChestShape.getRenderBounds(structure);
+    }
+
+    /**
+     * @param partialTick The partial tick.
+     * @return How far the lid is open, from 0 to 1. Only meaningful on the client.
+     */
+    public float getOpenness(float partialTick) {
+        return lidController.getOpenness(partialTick);
+    }
+
     public int getComparatorSignal() {
         return isFormed() ? StorageSignals.getComparatorSignal(storage) : 0;
     }
@@ -119,11 +174,32 @@ public class BlockEntityChestCore extends BlockEntity {
     public void addViewer(ServerPlayer player) {
         if (viewers.add(player)) {
             storage.markAllDirty();
+            onViewersChanged(viewers.size() == 1 ? SoundEvents.CHEST_OPEN : null);
         }
     }
 
     public void removeViewer(ServerPlayer player) {
-        viewers.remove(player);
+        if (viewers.remove(player)) {
+            onViewersChanged(viewers.isEmpty() ? SoundEvents.CHEST_CLOSE : null);
+        }
+    }
+
+    private void onViewersChanged(@Nullable SoundEvent sound) {
+        level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_VIEWERS, viewers.size());
+        if (sound != null && structure != null) {
+            double half = structure.size() / 2D;
+            level.playSound(null, structure.min().getX() + half, structure.min().getY() + half, structure.min().getZ() + half,
+                    sound, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
+        }
+    }
+
+    @Override
+    public boolean triggerEvent(int id, int param) {
+        if (id == EVENT_VIEWERS) {
+            lidController.shouldBeOpen(param > 0);
+            return true;
+        }
+        return super.triggerEvent(id, param);
     }
 
     public Set<ServerPlayer> getViewers() {
@@ -178,9 +254,15 @@ public class BlockEntityChestCore extends BlockEntity {
 
     protected void setStructure(@Nullable ChestStructure newStructure) {
         boolean formedState = getBlockState().getValue(BlockChestCore.FORMED);
+        List<BlockPos> newDecorated = findDecoratedPositions(newStructure);
         if (Objects.equals(structure, newStructure) && formedState == (newStructure != null)) {
+            if (!newDecorated.equals(decoratedPositions)) {
+                decoratedPositions = newDecorated;
+                syncToClients();
+            }
             return;
         }
+        this.decoratedPositions = newDecorated;
         ChestStructure oldStructure = this.structure;
         this.structure = newStructure;
         if (oldStructure != null) {
@@ -202,6 +284,25 @@ public class BlockEntityChestCore extends BlockEntity {
         invalidateCapabilities(newStructure);
         contentsChanged = true;
         setChanged();
+        syncToClients();
+    }
+
+    private List<BlockPos> findDecoratedPositions(@Nullable ChestStructure structure) {
+        if (structure == null) {
+            return List.of();
+        }
+        List<BlockPos> positions = Lists.newArrayList();
+        for (BlockPos pos : structure.shell()) {
+            if (!(level.getBlockState(pos).getBlock() instanceof BlockChestWall)) {
+                positions.add(pos);
+            }
+        }
+        return ImmutableList.copyOf(positions);
+    }
+
+    private void syncToClients() {
+        BlockState state = getBlockState();
+        level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
     }
 
     /**
@@ -210,6 +311,7 @@ public class BlockEntityChestCore extends BlockEntity {
     public void dissolve() {
         ChestStructure oldStructure = this.structure;
         this.structure = null;
+        this.decoratedPositions = List.of();
         if (oldStructure != null) {
             for (BlockPos pos : oldStructure.shell()) {
                 setWallFormed(pos, false);
@@ -285,10 +387,30 @@ public class BlockEntityChestCore extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.putInt("data_version", DATA_VERSION);
         tag.put("storage", ChestStorage.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), storage.toContents()).getOrThrow());
+        saveStructure(tag);
+    }
+
+    private void saveStructure(CompoundTag tag) {
         if (structure != null) {
             tag.put("structure", ChestStructure.CODEC.encodeStart(NbtOps.INSTANCE, structure).getOrThrow());
+            tag.put("decorated", BlockPos.CODEC.listOf().encodeStart(NbtOps.INSTANCE, decoratedPositions).getOrThrow());
         }
         tag.putInt("last_size", lastSize);
+    }
+
+    /**
+     * Clients only receive what they render: the structure, not the contents.
+     */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveStructure(tag);
+        return tag;
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
@@ -301,6 +423,9 @@ public class BlockEntityChestCore extends BlockEntity {
                     .ifPresent(storage::loadContents);
         }
         structure = tag.contains("structure") ? ChestStructure.CODEC.parse(NbtOps.INSTANCE, tag.get("structure")).result().orElse(null) : null;
+        decoratedPositions = structure != null && tag.contains("decorated", Tag.TAG_LIST)
+                ? BlockPos.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("decorated")).result().map(ImmutableList::copyOf).orElse(ImmutableList.of())
+                : List.of();
         lastSize = tag.getInt("last_size");
         applyProfile(true);
     }

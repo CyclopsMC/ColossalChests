@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -19,6 +20,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.jetbrains.annotations.Nullable;
@@ -66,9 +69,49 @@ public class BlockChestCore extends BaseEntityBlock {
         builder.add(FORMED);
     }
 
+    /**
+     * Formed members are drawn by the core's giant chest instead of as blocks.
+     */
+    public static RenderShape getFormedRenderShape(BlockState state) {
+        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
+    }
+
+    /**
+     * Formed members must not hide the faces of neighbouring blocks, as the giant chest does not cover them while its lid is open.
+     */
+    public static VoxelShape getFormedOcclusionShape(BlockState state, VoxelShape unformedShape) {
+        return state.getValue(FORMED) ? Shapes.empty() : unformedShape;
+    }
+
+    /**
+     * Formed members let light through, so blocks next to an open lid are not drawn dark.
+     */
+    public static int getFormedLightBlock(BlockState state, int unformedLightBlock) {
+        return state.getValue(FORMED) ? 0 : unformedLightBlock;
+    }
+
+    public static boolean getFormedPropagatesSkylightDown(BlockState state, boolean unformedPropagates) {
+        return state.getValue(FORMED) || unformedPropagates;
+    }
+
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-        return RenderShape.MODEL;
+        return getFormedRenderShape(state);
+    }
+
+    @Override
+    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return getFormedOcclusionShape(state, super.getOcclusionShape(state, level, pos));
+    }
+
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return getFormedLightBlock(state, super.getLightBlock(state, level, pos));
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return getFormedPropagatesSkylightDown(state, super.propagatesSkylightDown(state, level, pos));
     }
 
     @Nullable
@@ -80,7 +123,8 @@ public class BlockChestCore extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, RegistryEntries.BLOCK_ENTITY_CHEST_CORE.value(), BlockEntityChestCore::serverTick);
+        return createTickerHelper(type, RegistryEntries.BLOCK_ENTITY_CHEST_CORE.value(),
+                level.isClientSide ? BlockEntityChestCore::clientTick : BlockEntityChestCore::serverTick);
     }
 
     @Override

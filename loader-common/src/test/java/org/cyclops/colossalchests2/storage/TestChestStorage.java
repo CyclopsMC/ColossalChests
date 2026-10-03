@@ -429,6 +429,35 @@ public class TestChestStorage extends BootstrapTest {
         assertArrayEquals(new int[]{0, 1, 2}, storage.drainDirtySlots());
     }
 
+    // Snapshots
+
+    @Test
+    public void testSnapshotRestore() {
+        storage.insert(0, STONE, 10, false);
+        DeepSlot[] snapshot = storage.snapshotSlots();
+        storage.insert(0, STONE, 5, false);
+        storage.insert(1, DIRT, 5, false);
+        storage.drainDirtySlots();
+        changes.clear();
+        storage.restoreSlots(snapshot);
+        assertEquals(10, storage.getSlot(0).getCount());
+        assertSame(DeepSlot.EMPTY, storage.getSlot(1));
+        assertArrayEquals(new int[]{0, 1}, storage.drainDirtySlots());
+        assertEquals(List.of(0, 1), changes);
+    }
+
+    @Test
+    public void testSnapshotIsIndependent() {
+        DeepSlot[] snapshot = storage.snapshotSlots();
+        storage.insert(0, STONE, 10, false);
+        assertSame(DeepSlot.EMPTY, snapshot[0]);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRestoreWrongSize() {
+        storage.restoreSlots(new DeepSlot[1]);
+    }
+
     // Serialization
 
     @Test

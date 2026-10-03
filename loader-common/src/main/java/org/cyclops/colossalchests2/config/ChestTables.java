@@ -7,12 +7,12 @@ import org.cyclops.colossalchests2.Reference;
 import java.util.Map;
 
 /**
- * The data-driven tables of D-2 and D-5.
+ * Data-driven values for materials and chest capacity.
  * Each material and (later) each upgrade is its own file in its owner's namespace,
  * so mods and datapacks can add entries without overwriting each other:
  * <ul>
  *     <li>data/[namespace]/colossalchests2/material/[name].json</li>
- *     <li>data/[namespace]/colossalchests2/upgrade/[name].json (with the upgrade phase)</li>
+ *     <li>data/[namespace]/colossalchests2/upgrade/[name].json for upgrade values and per-material limits (not loaded yet)</li>
  *     <li>data/colossalchests2/colossalchests2/chest.json for chest-wide values</li>
  * </ul>
  * @param materials Material properties by material id.

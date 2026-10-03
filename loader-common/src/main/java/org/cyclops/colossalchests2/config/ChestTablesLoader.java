@@ -11,7 +11,7 @@ import java.util.Optional;
 
 /**
  * Holds the active {@link ChestTables}.
- * Stub: parsing works, wiring into datapack reloading comes with the multiblock phase.
+ * Parsing works, but nothing loads these files from datapacks yet, so {@link #get()} returns the defaults.
  * @author rubensworks
  */
 public class ChestTablesLoader {

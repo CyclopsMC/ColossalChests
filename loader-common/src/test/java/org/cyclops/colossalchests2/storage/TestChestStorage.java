@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -305,11 +306,16 @@ public class TestChestStorage extends BootstrapTest {
 
     @Test
     public void testSetCompressionForm() {
-        storage.setCompressionForm(0, 1);
+        storage.setCompressionForm(0, Items.IRON_INGOT);
         assertSame(DeepSlot.EMPTY, storage.getSlot(0));
         storage.insert(0, STONE, 5, false);
-        storage.setCompressionForm(0, 1);
-        assertEquals(1, storage.getSlot(0).getCompressionForm());
+        storage.setCompressionForm(0, Items.IRON_INGOT);
+        assertEquals(Optional.of(Items.IRON_INGOT), storage.getSlot(0).getCompressionForm());
+        int state = storage.getState();
+        storage.setCompressionForm(0, Items.IRON_INGOT);
+        assertEquals(state, storage.getState());
+        storage.setCompressionForm(0, null);
+        assertEquals(Optional.empty(), storage.getSlot(0).getCompressionForm());
     }
 
     // Resize
@@ -446,7 +452,7 @@ public class TestChestStorage extends BootstrapTest {
         big.insert(40, named, 3, false);
         big.insert(41, damaged, 1, false);
         big.lockTo(80, PEARL);
-        big.setCompressionForm(5, 2);
+        big.setCompressionForm(5, Items.IRON_NUGGET);
         // Lower the technical cap: slot 5 is now above it and extract-only.
         big.forceProfile(big.getProfile().withMaxItemsPerSlot(Integer.MAX_VALUE));
         assertTrue(big.isExtractOnly(5));
@@ -464,7 +470,7 @@ public class TestChestStorage extends BootstrapTest {
         assertTrue(loaded.isExtractOnly(5));
         assertFalse(loaded.isExtractOnly(0));
         assertTrue(loaded.getSlot(80).isLocked());
-        assertEquals(2, loaded.getSlot(5).getCompressionForm());
+        assertEquals(Optional.of(Items.IRON_NUGGET), loaded.getSlot(5).getCompressionForm());
     }
 
     @Test
@@ -477,9 +483,28 @@ public class TestChestStorage extends BootstrapTest {
     }
 
     @Test
+    public void testUnknownCompressionFormLoadsAsDefault() {
+        var json = com.google.gson.JsonParser.parseString(
+                "{\"slot_count\": 1, \"slots\": [{\"slot\": 0, \"item\": {\"id\": \"minecraft:stone\"}, \"count\": 3, \"form\": \"othermod:missing\"}]}");
+        storage.loadContents(ChestStorage.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertEquals(3, storage.getSlot(0).getCount());
+        assertEquals(Optional.empty(), storage.getSlot(0).getCompressionForm());
+    }
+
+    @Test
+    public void testUndecodableEntrySkipped() {
+        var json = com.google.gson.JsonParser.parseString(
+                "{\"slot_count\": 2, \"slots\": [{\"slot\": 0, \"item\": {\"id\": \"othermod:missing\"}, \"count\": 3},"
+                        + " {\"slot\": 1, \"item\": {\"id\": \"minecraft:stone\"}, \"count\": 4}]}");
+        storage.loadContents(ChestStorage.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow());
+        assertSame(DeepSlot.EMPTY, storage.getSlot(0));
+        assertEquals(4, storage.getSlot(1).getCount());
+    }
+
+    @Test
     public void testLoadContentsNeverDropsEntries() {
         ChestStorage.Contents contents = new ChestStorage.Contents(2, List.of(
-                new ChestStorage.Contents.Entry(4, STONE, 7, false, DeepSlot.FORM_DEFAULT)));
+                new ChestStorage.Contents.Entry(4, STONE, 7, false, Optional.empty())));
         storage.loadContents(contents);
         assertEquals(5, storage.getSlotCount());
         assertEquals(7, storage.getSlot(4).getCount());

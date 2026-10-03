@@ -27,7 +27,7 @@ public class TestCapacityProfile {
     @Test
     public void testOfDepth() {
         CapacityProfile profile = CapacityProfile.ofDepth(16);
-        assertEquals(new CapacityProfile(16, 1, CapacityProfile.DEFAULT_MAX_ITEMS_PER_SLOT, true), profile);
+        assertEquals(new CapacityProfile(16, CapacityProfile.DEFAULT_MAX_ITEMS_PER_SLOT, true, 1), profile);
     }
 
     @Test
@@ -78,12 +78,12 @@ public class TestCapacityProfile {
     public void testWithers() {
         CapacityProfile profile = CapacityProfile.ofDepth(4)
                 .withDepth(8).withNonStackableCapacity(3).withMaxItemsPerSlot(99).withAcceptNonStackables(false);
-        assertEquals(new CapacityProfile(8, 3, 99, false), profile);
+        assertEquals(new CapacityProfile(8, 99, false, 3), profile);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalid() {
-        new CapacityProfile(-1, 1, 1, true);
+        new CapacityProfile(-1, 1, true, 1);
     }
 
     @Test(expected = IllegalArgumentException.class)

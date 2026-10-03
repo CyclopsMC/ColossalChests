@@ -1,20 +1,28 @@
 package org.cyclops.colossalchests2.storage;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.IntConsumer;
 
 /**
  * Deep-slot storage engine: a fixed number of slots, each holding one item type with a long count.
- * Capacity is determined by a {@link CapacityProfile}. Slots holding more than their capacity are
- * extract-only; that state is derived, never stored, so lowering capacity never deletes items.
+ * Capacity is determined by a {@link CapacityProfile}.
+ * Slots holding more than their capacity are extract-only.
+ * This ensures that lowering capacity never deletes items.
  * @author rubensworks
  */
 public class ChestStorage {
@@ -212,7 +220,7 @@ public class ChestStorage {
         if (deepSlot.getCount() > 0) {
             return false;
         }
-        setSlot(slot, DeepSlot.of(type, 0, true, DeepSlot.FORM_DEFAULT));
+        setSlot(slot, DeepSlot.of(type, 0, true, null));
         return true;
     }
 
@@ -244,11 +252,11 @@ public class ChestStorage {
 
     /**
      * @param slot A slot index.
-     * @param form The selected compression form.
+     * @param form The item of the compression form to extract in, or null for the default.
      */
-    public void setCompressionForm(int slot, int form) {
+    public void setCompressionForm(int slot, @Nullable Item form) {
         DeepSlot deepSlot = slots[slot];
-        if (!deepSlot.isEmpty() && deepSlot.getCompressionForm() != form) {
+        if (!deepSlot.isEmpty() && !deepSlot.getCompressionForm().equals(Optional.ofNullable(form))) {
             setSlot(slot, deepSlot.withCompressionForm(form));
         }
     }
@@ -405,7 +413,7 @@ public class ChestStorage {
         slots = new DeepSlot[slotCount];
         Arrays.fill(slots, DeepSlot.EMPTY);
         for (Contents.Entry entry : contents.entries()) {
-            slots[entry.slot()] = DeepSlot.of(entry.item(), entry.count(), entry.locked(), entry.form());
+            slots[entry.slot()] = DeepSlot.of(entry.item(), entry.count(), entry.locked(), entry.form().orElse(null));
         }
         dirty.clear();
         markAllDirty();
@@ -414,23 +422,46 @@ public class ChestStorage {
 
     /**
      * Sparse serialized form: only filled or reserved slots are written.
+     * Entries that cannot be decoded, for example because their item's mod was removed, are skipped
+     * instead of failing the whole storage.
      * @param slotCount The slot count.
      * @param entries The non-empty slots.
      */
     public record Contents(int slotCount, List<Entry> entries) {
 
+        private static final Codec<List<Entry>> CODEC_ENTRIES = new Codec<>() {
+            @Override
+            public <T> DataResult<Pair<List<Entry>, T>> decode(DynamicOps<T> ops, T input) {
+                return ops.getList(input).map(elements -> {
+                    List<Entry> entries = Lists.newArrayList();
+                    elements.accept(element -> Entry.CODEC.parse(ops, element).ifSuccess(entries::add));
+                    return Pair.of(entries, input);
+                });
+            }
+
+            @Override
+            public <T> DataResult<T> encode(List<Entry> input, DynamicOps<T> ops, T prefix) {
+                return Entry.CODEC.listOf().encode(input, ops, prefix);
+            }
+        };
+
         public static final Codec<Contents> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.intRange(0, Integer.MAX_VALUE).fieldOf("slot_count").forGetter(Contents::slotCount),
-                Entry.CODEC.listOf().optionalFieldOf("slots", List.of()).forGetter(Contents::entries)
+                CODEC_ENTRIES.optionalFieldOf("slots", List.of()).forGetter(Contents::entries)
         ).apply(i, Contents::new));
 
-        public record Entry(int slot, ItemStack item, long count, boolean locked, int form) {
+        public record Entry(int slot, ItemStack item, long count, boolean locked, Optional<Item> form) {
+            // Unknown form items decode as no form, which falls back to the default form.
+            private static final Codec<Optional<Item>> CODEC_FORM = ResourceLocation.CODEC.xmap(
+                    BuiltInRegistries.ITEM::getOptional,
+                    form -> BuiltInRegistries.ITEM.getKey(form.orElseThrow()));
+
             public static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
                     Codec.intRange(0, Integer.MAX_VALUE).fieldOf("slot").forGetter(Entry::slot),
                     ItemStack.SINGLE_ITEM_CODEC.fieldOf("item").forGetter(Entry::item),
                     Codec.LONG.fieldOf("count").forGetter(Entry::count),
                     Codec.BOOL.optionalFieldOf("locked", false).forGetter(Entry::locked),
-                    Codec.INT.optionalFieldOf("form", DeepSlot.FORM_DEFAULT).forGetter(Entry::form)
+                    CODEC_FORM.optionalFieldOf("form", Optional.empty()).forGetter(Entry::form)
             ).apply(i, Entry::new));
         }
     }

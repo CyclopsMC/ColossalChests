@@ -6,17 +6,17 @@ package org.cyclops.colossalchests2.storage;
  * Profiles are built with a {@link Builder}: the structure sets the base depth,
  * and each installed upgrade applies its own modifiers, so the profile knows nothing about upgrade types.
  * @param depth Stacks per slot for stackable items.
- * @param nonStackableCapacity Items per slot for non-stackable items, independent of depth.
  * @param maxItemsPerSlot Technical cap per slot.
  * @param acceptNonStackables If items with a max stack size of 1 are accepted at all.
+ * @param nonStackableCapacity Items per slot for non-stackable items, independent of depth.
  * @author rubensworks
  */
-public record CapacityProfile(long depth, long nonStackableCapacity, long maxItemsPerSlot, boolean acceptNonStackables) {
+public record CapacityProfile(long depth, long maxItemsPerSlot, boolean acceptNonStackables, long nonStackableCapacity) {
 
     public static final long DEFAULT_MAX_ITEMS_PER_SLOT = Integer.MAX_VALUE;
 
     public CapacityProfile {
-        if (depth < 0 || nonStackableCapacity < 0 || maxItemsPerSlot < 0) {
+        if (depth < 0 || maxItemsPerSlot < 0 || nonStackableCapacity < 0) {
             throw new IllegalArgumentException("Invalid capacity profile");
         }
     }
@@ -38,19 +38,19 @@ public record CapacityProfile(long depth, long nonStackableCapacity, long maxIte
     }
 
     public CapacityProfile withDepth(long depth) {
-        return new CapacityProfile(depth, nonStackableCapacity, maxItemsPerSlot, acceptNonStackables);
-    }
-
-    public CapacityProfile withNonStackableCapacity(long nonStackableCapacity) {
-        return new CapacityProfile(depth, nonStackableCapacity, maxItemsPerSlot, acceptNonStackables);
+        return new CapacityProfile(depth, maxItemsPerSlot, acceptNonStackables, nonStackableCapacity);
     }
 
     public CapacityProfile withMaxItemsPerSlot(long maxItemsPerSlot) {
-        return new CapacityProfile(depth, nonStackableCapacity, maxItemsPerSlot, acceptNonStackables);
+        return new CapacityProfile(depth, maxItemsPerSlot, acceptNonStackables, nonStackableCapacity);
     }
 
     public CapacityProfile withAcceptNonStackables(boolean acceptNonStackables) {
-        return new CapacityProfile(depth, nonStackableCapacity, maxItemsPerSlot, acceptNonStackables);
+        return new CapacityProfile(depth, maxItemsPerSlot, acceptNonStackables, nonStackableCapacity);
+    }
+
+    public CapacityProfile withNonStackableCapacity(long nonStackableCapacity) {
+        return new CapacityProfile(depth, maxItemsPerSlot, acceptNonStackables, nonStackableCapacity);
     }
 
     /**
@@ -128,8 +128,8 @@ public record CapacityProfile(long depth, long nonStackableCapacity, long maxIte
         }
 
         public CapacityProfile build() {
-            return new CapacityProfile(depth, saturatedMultiply(nonStackableMultiplier, nonStackableFactor),
-                    maxItemsPerSlot, acceptNonStackables);
+            return new CapacityProfile(depth, maxItemsPerSlot, acceptNonStackables,
+                    saturatedMultiply(nonStackableMultiplier, nonStackableFactor));
         }
 
         private static long requirePositive(long value) {

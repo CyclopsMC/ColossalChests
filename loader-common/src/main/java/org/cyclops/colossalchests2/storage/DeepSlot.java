@@ -1,8 +1,12 @@
 package org.cyclops.colossalchests2.storage;
 
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * An immutable slot of a {@link ChestStorage}: one item type with a long count.
@@ -11,15 +15,15 @@ import java.util.Objects;
  */
 public final class DeepSlot {
 
-    public static final int FORM_DEFAULT = -1;
-    public static final DeepSlot EMPTY = new DeepSlot(ItemStack.EMPTY, 0, false, FORM_DEFAULT);
+    public static final DeepSlot EMPTY = new DeepSlot(ItemStack.EMPTY, 0, false, null);
 
     private final ItemStack prototype;
     private final long count;
     private final boolean locked;
-    private final int compressionForm;
+    @Nullable
+    private final Item compressionForm;
 
-    private DeepSlot(ItemStack prototype, long count, boolean locked, int compressionForm) {
+    private DeepSlot(ItemStack prototype, long count, boolean locked, @Nullable Item compressionForm) {
         this.prototype = prototype;
         this.count = count;
         this.locked = locked;
@@ -31,21 +35,21 @@ public final class DeepSlot {
      * @param prototype The item type, its count is ignored.
      * @param count The amount of items.
      * @param locked If the slot is locked to its type.
-     * @param compressionForm The selected compression form, or {@link #FORM_DEFAULT}.
+     * @param compressionForm The item of the compression form to extract in, or null (or air) for the default.
      * @return The slot, {@link #EMPTY} if nothing is stored and nothing is reserved.
      */
-    public static DeepSlot of(ItemStack prototype, long count, boolean locked, int compressionForm) {
+    public static DeepSlot of(ItemStack prototype, long count, boolean locked, @Nullable Item compressionForm) {
         if (count < 0) {
             throw new IllegalArgumentException("Negative count: " + count);
         }
         if (prototype.isEmpty() || (count == 0 && !locked)) {
             return EMPTY;
         }
-        return new DeepSlot(prototype.copyWithCount(1), count, locked, compressionForm);
+        return new DeepSlot(prototype.copyWithCount(1), count, locked, compressionForm == Items.AIR ? null : compressionForm);
     }
 
     public static DeepSlot of(ItemStack prototype, long count) {
-        return of(prototype, count, false, FORM_DEFAULT);
+        return of(prototype, count, false, null);
     }
 
     /**
@@ -63,8 +67,14 @@ public final class DeepSlot {
         return locked;
     }
 
-    public int getCompressionForm() {
-        return compressionForm;
+    /**
+     * The form, as an item, that the player picked to extract this slot's contents in.
+     * Stored as an item rather than a position in the compression family, so it survives datapack changes to
+     * the family. If the item is no longer a form of the slot's family, the largest form should be used.
+     * @return The picked form, or empty for the default (the largest form).
+     */
+    public Optional<Item> getCompressionForm() {
+        return Optional.ofNullable(compressionForm);
     }
 
     /**
@@ -90,7 +100,7 @@ public final class DeepSlot {
         return of(prototype, count, locked, compressionForm);
     }
 
-    public DeepSlot withCompressionForm(int compressionForm) {
+    public DeepSlot withCompressionForm(@Nullable Item compressionForm) {
         return of(prototype, count, locked, compressionForm);
     }
 
@@ -99,7 +109,7 @@ public final class DeepSlot {
         return obj instanceof DeepSlot that
                 && this.count == that.count
                 && this.locked == that.locked
-                && this.compressionForm == that.compressionForm
+                && Objects.equals(this.compressionForm, that.compressionForm)
                 && ItemStack.isSameItemSameComponents(this.prototype, that.prototype);
     }
 
@@ -111,6 +121,6 @@ public final class DeepSlot {
     @Override
     public String toString() {
         return "DeepSlot{" + (isEmpty() ? "empty" : prototype.getItem() + " x" + count)
-                + (locked ? ", locked" : "") + (compressionForm != FORM_DEFAULT ? ", form=" + compressionForm : "") + "}";
+                + (locked ? ", locked" : "") + (compressionForm != null ? ", form=" + compressionForm : "") + "}";
     }
 }

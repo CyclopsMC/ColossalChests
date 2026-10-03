@@ -4,6 +4,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.Test;
 
+import java.util.Optional;
+
 import static org.junit.Assert.*;
 
 /**
@@ -20,7 +22,7 @@ public class TestDeepSlot extends BootstrapTest {
 
     @Test
     public void testLockedAtZeroKeepsType() {
-        DeepSlot slot = DeepSlot.of(new ItemStack(Items.STONE), 0, true, DeepSlot.FORM_DEFAULT);
+        DeepSlot slot = DeepSlot.of(new ItemStack(Items.STONE), 0, true, null);
         assertFalse(slot.isEmpty());
         assertTrue(slot.isLocked());
         assertEquals(0, slot.getCount());
@@ -49,7 +51,9 @@ public class TestDeepSlot extends BootstrapTest {
     public void testWithers() {
         DeepSlot slot = DeepSlot.of(new ItemStack(Items.STONE), 5);
         assertEquals(7, slot.withCount(7).getCount());
-        assertEquals(2, slot.withCompressionForm(2).getCompressionForm());
+        assertEquals(Optional.of(Items.IRON_INGOT), slot.withCompressionForm(Items.IRON_INGOT).getCompressionForm());
+        assertEquals(Optional.empty(), slot.withCompressionForm(Items.IRON_INGOT).withCompressionForm(null).getCompressionForm());
+        assertEquals(Optional.empty(), slot.withCompressionForm(Items.AIR).getCompressionForm());
         assertTrue(slot.withLocked(true).isLocked());
     }
 
@@ -62,7 +66,9 @@ public class TestDeepSlot extends BootstrapTest {
         assertNotEquals(a, a.withCount(6));
         assertNotEquals(a, a.withLocked(true));
         assertNotEquals(a, DeepSlot.of(new ItemStack(Items.DIRT), 5));
+        assertNotEquals(a, a.withCompressionForm(Items.IRON_INGOT));
         assertTrue(a.toString().contains("x5"));
+        assertTrue(a.withCompressionForm(Items.IRON_INGOT).toString().contains("form="));
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -7,6 +7,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -31,6 +32,7 @@ import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.capability.LoaderCapabilities;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 
@@ -190,6 +192,27 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testGrowFormedChest(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    getCore(helper, corePos).getStorage().insert(STONE, 100, false);
+                    buildWalls(helper, MIN_A, 4, ChestMaterial.IRON, corePos.subtract(MIN_A), Set.of());
+                    for (BlockPos pos : BlockPos.betweenClosed(MIN_A.offset(1, 1, 1), MIN_A.offset(2, 2, 2))) {
+                        helper.setBlock(pos, Blocks.AIR);
+                    }
+                })
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 4))
+                .thenExecute(() -> {
+                    helper.assertValueEqual(getCore(helper, corePos).getLastSize(), 4, "last size");
+                    helper.assertValueEqual(getCore(helper, corePos).getStorage().getSlot(0).getCount(), 100L, "kept count");
+                    helper.assertBlockProperty(MIN_A, BlockChestWall.FORMED, true);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testAdjacentChestsBothForm(GameTestHelper helper) {
         BlockPos coreA = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
         BlockPos minNext = MIN_A.offset(3, 0, 0);
@@ -267,6 +290,54 @@ public class GameTestsCommon {
                 .thenSucceed();
     }
 
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testViewersReceiveDirtySlots(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.addViewer(player);
+                    helper.assertTrue(core.getViewers().contains(player), "Expected the player to be a viewer");
+                    helper.assertTrue(core.getStorage().hasDirtySlots(), "Expected a new viewer to mark all slots dirty");
+                })
+                .thenWaitUntil(() -> helper.assertFalse(getCore(helper, corePos).getStorage().hasDirtySlots(), "Expected dirty slots to be sent"))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.addViewer(player);
+                    helper.assertFalse(core.getStorage().hasDirtySlots(), "Expected an existing viewer not to resend all slots");
+                    core.removeViewer(player);
+                    helper.assertTrue(core.getViewers().isEmpty(), "Expected no viewers");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCoreIndexFindsFormedCore(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    helper.assertTrue(ChestCoreIndex.findFormedCore(helper.getLevel(), helper.absolutePos(MIN_A)).orElse(null) == core,
+                            "Expected a wall to find its core");
+                    helper.assertTrue(ChestCoreIndex.findFormedCore(helper.getLevel(), helper.absolutePos(MIN_A.offset(1, 1, 1))).isEmpty(),
+                            "Expected the interior to have no core");
+                    helper.assertTrue(ChestCoreIndex.findFormedCore(helper.getLevel(), helper.absolutePos(MIN_A).offset(GeneralConfig.HARD_MAX_SIZE, 0, 0)).isEmpty(),
+                            "Expected a far position to have no core");
+                    core.getStorage().insert(STONE, 10, false);
+                    helper.setBlock(MIN_A.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    helper.assertTrue(ChestCoreIndex.findFormedCore(helper.getLevel(), helper.absolutePos(MIN_A)).isEmpty(),
+                            "Expected a dormant core not to be found");
+                    helper.assertValueEqual(getCore(helper, corePos).getComparatorSignal(), 0, "comparator signal of a dormant core");
+                })
+                .thenSucceed();
+    }
+
     // Persistence
 
     @GameTest(template = TEMPLATE_EMPTY)
@@ -293,6 +364,24 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testBrokenDormantCoreKeepsContents(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    getCore(helper, corePos).getStorage().insert(STONE, 100, false);
+                    helper.setBlock(MIN_A.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    ItemStack dropped = breakCoreAndPickUp(helper, corePos);
+                    ChestStorage.Contents contents = dropped.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value());
+                    helper.assertTrue(contents != null && contents.entries().size() == 1, "Expected the dropped dormant core to carry its contents");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testEmptyCoreDropsWithoutContents(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
         helper.startSequence()
@@ -301,6 +390,92 @@ public class GameTestsCommon {
                     ItemStack dropped = breakCoreAndPickUp(helper, corePos);
                     helper.assertTrue(dropped.is(core(ChestMaterial.WOOD).asItem()), "Expected a wooden core");
                     helper.assertTrue(dropped.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value()) == null, "Expected no contents on an empty core");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCreativeBreakDropsCoreWithContentsOnPlayerSide(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    getCore(helper, corePos).getStorage().insert(STONE, 100, false);
+                    ItemStack dropped = breakCoreAsPlayer(helper, corePos, false);
+                    ChestStorage.Contents contents = dropped.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value());
+                    helper.assertTrue(contents != null && contents.entries().size() == 1, "Expected the dropped core to carry its contents");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCreativeBreakEmptyCoreDropsNothing(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makePlayerNorthOf(helper, corePos);
+                    player.gameMode.destroyBlock(helper.absolutePos(corePos));
+                    helper.assertBlockNotPresent(core(ChestMaterial.WOOD), corePos);
+                    helper.assertItemEntityNotPresent(core(ChestMaterial.WOOD).asItem(), corePos, 3);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testSurvivalBreakDropsCoreOnPlayerSide(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ItemStack dropped = breakCoreAsPlayer(helper, corePos, true);
+                    helper.assertTrue(dropped.is(core(ChestMaterial.WOOD).asItem()), "Expected a wooden core");
+                    helper.assertBlockProperty(MIN_A, BlockChestWall.FORMED, false);
+                    placeCore(helper, dropped, corePos);
+                })
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> helper.assertTrue(getCore(helper, corePos).getStorage().getSlot(0).isEmpty(), "Expected an empty core"))
+                .thenSucceed();
+    }
+
+    private static ServerPlayer makePlayerNorthOf(GameTestHelper helper, BlockPos corePos) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos absolute = helper.absolutePos(corePos);
+        player.moveTo(absolute.getX() + 0.5, absolute.getY(), absolute.getZ() - 2.5, 0, 0);
+        return player;
+    }
+
+    private static ItemStack breakCoreAsPlayer(GameTestHelper helper, BlockPos corePos, boolean survival) {
+        ServerPlayer player = makePlayerNorthOf(helper, corePos);
+        if (survival) {
+            player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+        }
+        BlockPos absolute = helper.absolutePos(corePos);
+        helper.assertTrue(player.gameMode.destroyBlock(absolute), "Expected the player to break the core");
+        List<ItemEntity> items = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(absolute).inflate(2));
+        helper.assertValueEqual(items.size(), 1, "dropped item entities");
+        // The core is on the north face, so its drop must not land inside the chest.
+        helper.assertTrue(items.get(0).getZ() < absolute.getZ(), "Expected the drop on the player's side");
+        ItemStack stack = items.get(0).getItem().copy();
+        items.get(0).discard();
+        return stack;
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testRemoveComponentsFromTagDropsStorage(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.getStorage().insert(STONE, 10, false);
+                    CompoundTag tag = core.saveWithoutMetadata(helper.getLevel().registryAccess());
+                    helper.assertTrue(tag.contains("storage"), "Expected storage in the saved tag");
+                    core.removeComponentsFromTag(tag);
+                    helper.assertFalse(tag.contains("storage"), "Expected storage to be stripped, as it is a component");
+                    BlockEntityChestCore loaded = new BlockEntityChestCore(core.getBlockPos(), core.getBlockState());
+                    loaded.loadWithComponents(tag, helper.getLevel().registryAccess());
+                    helper.assertTrue(loaded.getStorage().getSlot(0).isEmpty(), "Expected a core without stored contents to load empty");
                 })
                 .thenSucceed();
     }

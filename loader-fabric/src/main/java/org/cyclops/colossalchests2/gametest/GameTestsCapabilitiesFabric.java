@@ -133,6 +133,29 @@ public class GameTestsCapabilitiesFabric {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testRejectedTransfersLeaveStorageUntouched(GameTestHelper helper) {
+        ChestStorage storage = new ChestStorage(1, CapacityProfile.ofDepth(1));
+        ChestStorageFabric fabricStorage = new ChestStorageFabric(storage);
+        SingleSlotStorage<ItemVariant> slot = fabricStorage.getSlot(0);
+        helper.assertTrue(fabricStorage.getStorage() == storage, "Expected the wrapped storage");
+        helper.assertValueEqual(fabricStorage.getSlotCount(), 1, "slot count");
+        helper.assertTrue(slot.isResourceBlank() && slot.getResource().isBlank(), "Expected a blank slot");
+
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(fabricStorage.extract(STONE, 5, transaction), 0L, "extracted from empty storage");
+            helper.assertValueEqual(slot.extract(STONE, 5, transaction), 0L, "extracted from empty slot");
+            helper.assertValueEqual(slot.insert(STONE, 100, transaction), 64L, "inserted into slot");
+            helper.assertValueEqual(slot.insert(STONE, 1, transaction), 0L, "inserted into full slot");
+            helper.assertValueEqual(fabricStorage.insert(STONE, 1, transaction), 0L, "inserted into full storage");
+            transaction.commit();
+        }
+
+        helper.assertValueEqual(storage.getSlot(0).getCount(), 64L, "slot count");
+        helper.assertTrue(!slot.isResourceBlank() && slot.getResource().equals(STONE), "Expected stone in the slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testStorageOnFormedChest(GameTestHelper helper) {
         BlockPos min = new BlockPos(1, 1, 1);
         BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);

@@ -1,0 +1,26 @@
+# Continues from phase3-2-hopper. Breaking a wall makes the chest dormant, the hopper stops; rebuilding resumes.
+break 4 5 5
+wait --ticks 5
+block 3 5 4
+block 2 4 4
+command "item replace block 3 7 5 container.0 with minecraft:cobblestone 3"
+wait --ticks 60
+command "data get block 3 7 5 Items"
+command "data get block 3 5 4 storage"
+teleport 3 5 1 --yaw 0 --pitch 0
+look --at 3,5,4
+eval "mc.getDebugOverlay().toggleOverlay()"
+screenshot --name phase3-dormant-f3 --after-ticks 5
+eval "mc.getDebugOverlay().toggleOverlay()"
+command "item replace entity @s hotbar.0 with minecraft:air"
+give colossalchests2:chest_wall_wood
+use 4 5 4 --face south
+wait --ticks 60
+block 3 5 4
+command "data get block 3 7 5 Items"
+command "data get block 3 5 4 storage"
+teleport 3 5 1 --yaw 0 --pitch 0
+look --at 3,5,4
+eval "mc.getDebugOverlay().toggleOverlay()"
+screenshot --name phase3-reformed-f3 --after-ticks 5
+eval "mc.getDebugOverlay().toggleOverlay()"

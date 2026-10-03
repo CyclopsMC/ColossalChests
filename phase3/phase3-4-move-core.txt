@@ -1,0 +1,16 @@
+# Continues from phase3-3b-resume. The player breaks the core (creative), picks it up and builds a new chest with it.
+command "item replace entity @s hotbar.0 with minecraft:air"
+break 3 5 4
+block 2 4 4
+walk-to 3.5 2
+wait --ticks 20
+inventory --json
+command "fill 8 4 4 10 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 9 5 4 minecraft:air"
+hold 0
+use 8 5 4 --face east
+wait --ticks 5
+block 9 5 4
+command "data get block 9 5 4 storage"
+teleport 9 5 0 --yaw 0 --pitch 10
+screenshot --name phase3-moved-core

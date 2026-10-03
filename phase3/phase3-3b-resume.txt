@@ -1,0 +1,13 @@
+# Continues from phase3-3-dormant: the player puts the wall back, the chest re-forms and the hopper resumes.
+command "item replace entity @s hotbar.0 with minecraft:air"
+give colossalchests2:chest_wall_wood
+use 4 5 4 --face south
+wait --ticks 60
+block 3 5 4
+command "data get block 3 7 5 Items"
+command "data get block 3 5 4 storage"
+teleport 3 5 1 --yaw 0 --pitch 0
+look --at 3,5,4
+eval "mc.getDebugOverlay().toggleOverlay()"
+screenshot --name phase3-reformed-f3 --after-ticks 5
+eval "mc.getDebugOverlay().toggleOverlay()"

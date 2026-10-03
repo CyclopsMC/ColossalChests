@@ -1,0 +1,12 @@
+# Starts in a fresh world (world-reset). Builds a wooden 3x3x3 chest: walls by command, core placed by the player.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+break 3 5 4
+command "item replace entity @s hotbar.0 with minecraft:air"
+give colossalchests2:chest_core_wood
+use 2 5 4 --face east
+wait --ticks 5
+block 3 5 4
+block 2 4 4
+command "data get block 3 5 4 structure"
+teleport 3 5 0 --yaw 0 --pitch 10
+screenshot --name phase3-formed

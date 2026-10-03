@@ -1,0 +1,7 @@
+# Continues from phase3-1-form. A hopper on the top wall feeds the chest.
+block 3 5 4
+setblock 3 7 5 minecraft:hopper[facing=down]
+command "item replace block 3 7 5 container.0 with minecraft:cobblestone 5"
+wait --ticks 60
+command "data get block 3 7 5 Items"
+command "data get block 3 5 4 storage"

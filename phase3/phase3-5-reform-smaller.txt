@@ -1,0 +1,21 @@
+# Continues from phase3-4-move-core. Fill the 3x3 chest to 1000 items, move its core into a 2x2 chest (256 per slot).
+eval "server.execute({ server.overworld().getBlockEntity(dev.pos(9, 5, 4)).getStorage().insert(dev.item('minecraft:cobblestone'), 992, false) } as Runnable); 'queued'"
+wait --ticks 5
+command "data get block 9 5 4 storage"
+command "item replace entity @s hotbar.0 with minecraft:air"
+break 9 5 4
+walk-to 9.5 2
+wait --ticks 20
+command "fill 13 4 4 14 5 5 colossalchests2:chest_wall_wood hollow"
+command "setblock 13 4 4 minecraft:air"
+hold 0
+use 14 4 4 --face west
+wait --ticks 5
+block 13 4 4
+command "data get block 13 4 4 storage"
+command "data get block 13 4 4 last_size"
+setblock 13 6 4 minecraft:hopper[facing=down]
+command "item replace block 13 6 4 container.0 with minecraft:cobblestone 4"
+wait --ticks 60
+command "data get block 13 6 4 Items"
+command "data get block 13 4 4 storage"

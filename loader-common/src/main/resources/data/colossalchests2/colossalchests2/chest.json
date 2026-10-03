@@ -1,4 +1,6 @@
 {
+  "base_slots": 27,
+  "max_slots": 81,
   "depth_by_size": {
     "2": 4,
     "3": 16,

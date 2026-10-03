@@ -1,7 +1,0 @@
-{
-  "base_slots": 27,
-  "slots_per_expansion": 27,
-  "max_slots": 81,
-  "depth_multiplier": 2,
-  "max_bundling_level": 4
-}

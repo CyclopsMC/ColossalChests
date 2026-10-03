@@ -2,6 +2,7 @@ package org.cyclops.colossalchests2.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import org.cyclops.colossalchests2.GeneralConfig;
 
 /**
  * Tunable properties of a chest material, loaded from data/[namespace]/colossalchests2/material/[name].json.
@@ -18,7 +19,7 @@ public record MaterialProperties(int upgradeSlots, int maxSize, boolean blastRes
 
     public static final Codec<MaterialProperties> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.intRange(0, 64).optionalFieldOf("upgrade_slots", DEFAULT.upgradeSlots()).forGetter(MaterialProperties::upgradeSlots),
-            Codec.intRange(2, ChestProperties.HARD_MAX_SIZE).optionalFieldOf("max_size", DEFAULT.maxSize()).forGetter(MaterialProperties::maxSize),
+            Codec.intRange(GeneralConfig.MIN_SIZE, GeneralConfig.HARD_MAX_SIZE).optionalFieldOf("max_size", DEFAULT.maxSize()).forGetter(MaterialProperties::maxSize),
             Codec.BOOL.optionalFieldOf("blast_resistant", DEFAULT.blastResistant()).forGetter(MaterialProperties::blastResistant)
     ).apply(i, MaterialProperties::new));
 

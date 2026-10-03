@@ -3,7 +3,6 @@ package org.cyclops.colossalchests2;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.common.Mod;
-import org.cyclops.colossalchests2.capability.CapabilitiesForge;
 import org.cyclops.colossalchests2.proxy.ClientProxyForge;
 import org.cyclops.colossalchests2.proxy.CommonProxyForge;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
@@ -29,7 +28,6 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
             _instance = instance;
             ColossalChestsInstance.MOD = instance;
         });
-        getModEventBus().addListener(CapabilitiesForge::register);
     }
 
     @Override

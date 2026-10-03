@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Item handler semantics on top of a {@link ChestStorage}, shared by the loaders that use item handlers.
  * Counts and limits above {@link Integer#MAX_VALUE} are clamped, the real values are available through
- * {@link org.cyclops.colossalchests2.api.IDeepItemStorage}.
+ * {@link IDeepItemStorage}.
  * @author rubensworks
  */
 public class ItemHandlerLogic {

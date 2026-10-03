@@ -1,7 +1,6 @@
 package org.cyclops.colossalchests2.capability;
 
 import net.minecraft.world.item.ItemStack;
-import org.cyclops.colossalchests2.api.IDeepItemStorage;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 
 /**

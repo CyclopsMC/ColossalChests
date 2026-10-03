@@ -64,7 +64,7 @@ public class TestChestStorage extends BootstrapTest {
 
     @Test
     public void testNonStackableCapacityWithUpgrades() {
-        storage.forceProfile(storage.getProfile().withBundlingLevel(2).withDepthUpgrades(1));
+        storage.forceProfile(TestCapacityProfile.upgraded(4, 1, 2).build());
         assertEquals(8, storage.insert(0, PICKAXE, 100, false));
         assertEquals(8, storage.getSlot(0).getCount());
     }
@@ -436,7 +436,7 @@ public class TestChestStorage extends BootstrapTest {
 
     @Test
     public void testSerializationRoundTrip() {
-        ChestStorage big = new ChestStorage(81, CapacityProfile.ofDepth(262144).withDepthUpgrades(8).withMaxItemsPerSlot(Long.MAX_VALUE));
+        ChestStorage big = new ChestStorage(81, TestCapacityProfile.upgraded(262144, 8, 0).maxItemsPerSlot(Long.MAX_VALUE).build());
         ItemStack named = STONE.copy();
         named.set(DataComponents.CUSTOM_NAME, Component.literal("Named"));
         ItemStack damaged = PICKAXE.copy();

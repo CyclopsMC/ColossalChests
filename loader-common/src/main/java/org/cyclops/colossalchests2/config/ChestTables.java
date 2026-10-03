@@ -7,19 +7,18 @@ import org.cyclops.colossalchests2.Reference;
 import java.util.Map;
 
 /**
- * Data-driven values for materials and chest capacity.
+ * Data-driven values for materials.
  * Each material and (later) each upgrade is its own file in its owner's namespace,
  * so mods and datapacks can add entries without overwriting each other:
  * <ul>
  *     <li>data/[namespace]/colossalchests2/material/[name].json</li>
  *     <li>data/[namespace]/colossalchests2/upgrade/[name].json for upgrade values and per-material limits (not loaded yet)</li>
- *     <li>data/colossalchests2/colossalchests2/chest.json for chest-wide values</li>
  * </ul>
+ * Chest-wide values such as slot counts and depth by size are in {@link org.cyclops.colossalchests2.GeneralConfig}.
  * @param materials Material properties by material id.
- * @param chest Chest-wide values.
  * @author rubensworks
  */
-public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, ChestProperties chest) {
+public record ChestTables(Map<ResourceLocation, MaterialProperties> materials) {
 
     public static final ChestTables DEFAULT = new ChestTables(
             ImmutableMap.<ResourceLocation, MaterialProperties>builder()
@@ -30,8 +29,7 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, C
                     .put(id("diamond"), new MaterialProperties(5, 7, false))
                     .put(id("obsidian"), new MaterialProperties(6, 8, true))
                     .put(id("netherite"), new MaterialProperties(7, 10, true))
-                    .build(),
-            ChestProperties.DEFAULT
+                    .build()
     );
 
     /**

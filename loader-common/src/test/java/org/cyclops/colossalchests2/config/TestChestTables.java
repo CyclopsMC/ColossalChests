@@ -11,7 +11,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,6 +19,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestChestTables {
 
+    private static final ResourceLocation TIN = ResourceLocation.fromNamespaceAndPath("othermod", "tin");
+
     private static JsonElement read(String path) throws Exception {
         try (Reader reader = new InputStreamReader(Objects.requireNonNull(
                 TestChestTables.class.getResourceAsStream("/data/colossalchests2/" + path), path), StandardCharsets.UTF_8)) {
@@ -27,54 +28,35 @@ public class TestChestTables {
         }
     }
 
-    private static ChestTables readShipped() throws Exception {
+    @Test
+    public void testShippedFilesMatchDefaults() throws Exception {
         Map<ResourceLocation, JsonElement> materials = Maps.newHashMap();
         for (ResourceLocation id : ChestTables.DEFAULT.materials().keySet()) {
             materials.put(id, read(ChestTablesLoader.DIRECTORY_MATERIAL + "/" + id.getPath() + ".json"));
         }
-        return ChestTablesLoader.fromJson(materials, Optional.of(read(ChestTablesLoader.PATH_CHEST)));
-    }
-
-    @Test
-    public void testShippedFilesMatchDefaults() throws Exception {
-        assertEquals(ChestTables.DEFAULT, readShipped());
-    }
-
-    @Test
-    public void testMissingChestFileUsesDefaults() {
-        assertEquals(ChestProperties.DEFAULT, ChestTablesLoader.fromJson(Map.of(), Optional.empty()).chest());
+        assertEquals(ChestTables.DEFAULT, ChestTablesLoader.fromJson(materials));
     }
 
     @Test
     public void testMissingFieldsUseDefaults() {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("othermod", "tin");
-        ChestTables tables = ChestTablesLoader.fromJson(Map.of(id, JsonParser.parseString("{\"max_size\": 4}")),
-                Optional.of(JsonParser.parseString("{\"base_slots\": 9}")));
-        assertEquals(new MaterialProperties(MaterialProperties.DEFAULT.upgradeSlots(), 4, false), tables.getMaterial(id));
-        assertEquals(9, tables.chest().baseSlots());
-        assertEquals(ChestProperties.DEFAULT.depthBySize(), tables.chest().depthBySize());
+        ChestTables tables = ChestTablesLoader.fromJson(Map.of(TIN, JsonParser.parseString("{\"max_size\": 4}")));
+        assertEquals(new MaterialProperties(MaterialProperties.DEFAULT.upgradeSlots(), 4, false), tables.getMaterial(TIN));
     }
 
     @Test
     public void testUnknownFieldsIgnored() {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath("othermod", "tin");
-        ChestTables tables = ChestTablesLoader.fromJson(Map.of(id, JsonParser.parseString("{\"max_size\": 4, \"future_field\": 1}")), Optional.empty());
-        assertEquals(4, tables.getMaterial(id).maxSize());
+        ChestTables tables = ChestTablesLoader.fromJson(Map.of(TIN, JsonParser.parseString("{\"max_size\": 4, \"future_field\": 1}")));
+        assertEquals(4, tables.getMaterial(TIN).maxSize());
     }
 
     @Test
     public void testUnknownMaterialUsesDefaults() {
-        assertEquals(MaterialProperties.DEFAULT, ChestTables.DEFAULT.getMaterial(ResourceLocation.fromNamespaceAndPath("othermod", "tin")));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testSizeOutOfRangeRejected() {
-        ChestTablesLoader.fromJson(Map.of(), Optional.of(JsonParser.parseString("{\"depth_by_size\": {\"11\": 4}}")));
+        assertEquals(MaterialProperties.DEFAULT, ChestTables.DEFAULT.getMaterial(TIN));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMaterialOutOfRangeRejected() {
-        ChestTablesLoader.fromJson(Map.of(ResourceLocation.fromNamespaceAndPath("othermod", "tin"), JsonParser.parseString("{\"max_size\": 11}")), Optional.empty());
+        ChestTablesLoader.fromJson(Map.of(TIN, JsonParser.parseString("{\"max_size\": 11}")));
     }
 
 }

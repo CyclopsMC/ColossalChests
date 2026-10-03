@@ -371,6 +371,26 @@ public class ChestStorage {
         dirty.set(0, slots.length);
     }
 
+    /**
+     * @return A copy of all slots, to roll back to with {@link #restoreSlots(DeepSlot[])}.
+     */
+    public DeepSlot[] snapshotSlots() {
+        return slots.clone();
+    }
+
+    /**
+     * Roll back to a snapshot of the same slot count. Restored slots count as changes.
+     * @param snapshot A result of {@link #snapshotSlots()}.
+     */
+    public void restoreSlots(DeepSlot[] snapshot) {
+        if (snapshot.length != slots.length) {
+            throw new IllegalArgumentException("Snapshot has " + snapshot.length + " slots, storage has " + slots.length);
+        }
+        for (int slot = 0; slot < snapshot.length; slot++) {
+            setSlot(slot, snapshot[slot]);
+        }
+    }
+
     protected void setSlot(int slot, DeepSlot deepSlot) {
         if (!slots[slot].equals(deepSlot)) {
             slots[slot] = deepSlot;

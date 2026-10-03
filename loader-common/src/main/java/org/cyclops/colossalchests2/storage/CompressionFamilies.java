@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * Lookup of {@link CompressionFamily}s by item. Families come from tags in a later phase.
+ * Lookup of {@link CompressionFamily}s by item.
  * @author rubensworks
  */
 public class CompressionFamilies {

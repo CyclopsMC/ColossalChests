@@ -10,7 +10,8 @@ import static org.junit.Assert.assertEquals;
 public class TestCapacityProfile {
 
     /**
-     * The D-2 rules, expressed as the modifiers the Depth and Bundling upgrades will apply.
+     * Capacity rules for Depth and Bundling upgrades: Depth doubles depth and adds 1 to the
+     * non-stackable factor, each Bundling level doubles non-stackable capacity.
      */
     static CapacityProfile.Builder upgraded(long baseDepth, int depthUpgrades, int bundlingLevel) {
         CapacityProfile.Builder builder = CapacityProfile.builder(baseDepth);

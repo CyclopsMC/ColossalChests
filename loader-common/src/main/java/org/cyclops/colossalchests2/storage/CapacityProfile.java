@@ -2,7 +2,7 @@ package org.cyclops.colossalchests2.storage;
 
 /**
  * Determines how many items fit in a single slot of a {@link ChestStorage}.
- * Depth is uniform across all slots (D-2).
+ * Depth is uniform across all slots.
  * Profiles are built with a {@link Builder}: the structure sets the base depth,
  * and each installed upgrade applies its own modifiers, so the profile knows nothing about upgrade types.
  * @param depth Stacks per slot for stackable items.
@@ -84,7 +84,7 @@ public record CapacityProfile(long depth, long nonStackableCapacity, long maxIte
     /**
      * Collects modifiers from the structure and installed upgrades.
      * Non-stackable capacity is (product of multipliers) * (1 + sum of factors), so for example
-     * Bundling multiplies by 2 per level and Depth adds 1 per upgrade (D-2).
+     * Bundling multiplies by 2 per level and Depth adds 1 per upgrade.
      * All math saturates instead of overflowing.
      */
     public static final class Builder {

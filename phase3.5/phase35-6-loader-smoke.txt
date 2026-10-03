@@ -1,0 +1,13 @@
+# Smoke test for the Fabric and Forge clients: wood 3x3 forms into a giant chest, the core marker shows while sneaking, and a viewer opens the lid.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "setblock 3 6 -1 minecraft:barrier"
+command "tp @s 3.5 7 -0.5 0 25"
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 20
+eval "[level.getBlockEntity(dev.pos(3,5,4)).getStructure(), player.isCrouching()]"
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(3, 5, 4)).addViewer(server.getPlayerList().getPlayers().get(0)) }"
+wait --ticks 30
+screenshot --name phase35-loader-smoke
+eval "mc.options.keyShift.setDown(false)"
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(3, 5, 4)).removeViewer(server.getPlayerList().getPlayers().get(0)) }"

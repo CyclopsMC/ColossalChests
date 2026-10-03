@@ -1,0 +1,12 @@
+# Continues after phase35-4. A sword overlay on the iron core (east face), close up, to check the item is not mirrored.
+# A stone column next to the copper chest's lid checks that neighbour faces still render while the lid is open.
+eval "def cl = level.getBlockEntity(dev.pos(8,5,11)).getClass().getClassLoader(); def helpers = cl.loadClass('org.cyclops.colossalchests2.client.render.ChestOverlayHelpers'); def stack = dev.item('minecraft:diamond_sword'); cl.loadClass('org.cyclops.colossalchests2.client.render.ChestOverlays').register(level.getBlockState(dev.pos(8,5,11)).getBlock(), ({ core, pos, face, pt, ps, buf, light, ov -> helpers.renderItem(ps, buf, level, stack, 0.5f, 0.5f, 0.8f, light) }).asType(cl.loadClass('org.cyclops.colossalchests2.client.render.IChestOverlay')))"
+command "tp @s 11 5.5 11.5 90 0"
+wait --ticks 10
+screenshot --name phase35-item-overlay-orientation
+command "fill 2 4 10 2 5 10 minecraft:stone"
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(0, 5, 11)).addViewer(server.getPlayerList().getPlayers().get(0)) }"
+command "tp @s -1.5 7 7 -35 30"
+wait --ticks 20
+screenshot --name phase35-neighbour-faces-lid-open
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(0, 5, 11)).removeViewer(server.getPlayerList().getPlayers().get(0)) }"

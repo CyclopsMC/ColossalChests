@@ -1,0 +1,11 @@
+# Starts in a fresh world (world-reset). Builds a wooden 3x3x3 chest with the core on its north face.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+break 3 5 4
+command "item replace entity @s hotbar.0 with minecraft:air"
+give colossalchests2:chest_core_wood
+use 2 5 4 --face east
+wait --ticks 5
+block 3 5 4
+command "item replace entity @s hotbar.0 with minecraft:air"
+teleport 6 6 0 --yaw 30 --pitch 15
+screenshot --name phase35-wood3-front

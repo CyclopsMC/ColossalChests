@@ -1,0 +1,18 @@
+# Continues after phase35-1. Sneaking shows the core marker, in front of the lock; a viewer opens the lid.
+teleport 3.5 4 1 --yaw 0 --pitch -10
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 10
+eval "player.isCrouching()"
+screenshot --name phase35-core-marker-sneaking
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 10
+teleport 7 7 0 --yaw 35 --pitch 20
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(3, 5, 4)).addViewer(server.getPlayerList().getPlayers().get(0)) }"
+wait --ticks 20
+eval "level.getBlockEntity(dev.pos(3, 5, 4)).getOpenness(1f)"
+screenshot --name phase35-lid-open
+teleport 3.5 9 -3 --yaw 0 --pitch 50
+screenshot --name phase35-lid-open-inside
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(3, 5, 4)).removeViewer(server.getPlayerList().getPlayers().get(0)) }"
+wait --ticks 20
+eval "level.getBlockEntity(dev.pos(3, 5, 4)).getOpenness(1f)"

@@ -1,0 +1,28 @@
+# Fresh world. One chest per material and size, cores placed by command on different faces, to check textures, scaling and facing.
+# Copper 2x2, core in the top (lid) layer on the south face: chest faces south.
+command "fill 0 4 10 1 5 11 colossalchests2:chest_wall_copper hollow"
+command "setblock 0 5 11 colossalchests2:chest_core_copper"
+# Iron 5x5, core on the east face, off-center: chest faces east.
+command "fill 4 4 8 8 8 12 colossalchests2:chest_wall_iron hollow"
+command "setblock 8 5 11 colossalchests2:chest_core_iron"
+# Gold 4x4, core on the west face.
+command "fill 11 4 8 14 7 11 colossalchests2:chest_wall_gold hollow"
+command "setblock 11 5 9 colossalchests2:chest_core_gold"
+# Diamond 3x3, core on the north face.
+command "fill 17 4 9 19 6 11 colossalchests2:chest_wall_diamond hollow"
+command "setblock 18 5 9 colossalchests2:chest_core_diamond"
+# Obsidian 3x3, core centered on the top face: chest faces south.
+command "fill 22 4 9 24 6 11 colossalchests2:chest_wall_obsidian hollow"
+command "setblock 23 6 10 colossalchests2:chest_core_obsidian"
+# Netherite 3x3, core on the south face.
+command "fill 27 4 9 29 6 11 colossalchests2:chest_wall_netherite hollow"
+command "setblock 28 5 11 colossalchests2:chest_core_netherite"
+wait --ticks 10
+eval "[dev.pos(0,5,11), dev.pos(8,5,11), dev.pos(11,5,9), dev.pos(18,5,9), dev.pos(23,6,10), dev.pos(28,5,11)].collect { level.getBlockEntity(it).getFacing() }"
+eval "player.getAbilities().flying = true; player.onUpdateAbilities()"
+command "tp @s 15 12 24 180 25"
+wait --ticks 10
+screenshot --name phase35-materials-south
+command "tp @s 15 12 -6 0 25"
+wait --ticks 10
+screenshot --name phase35-materials-north

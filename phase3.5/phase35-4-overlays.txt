@@ -1,0 +1,14 @@
+# Continues after phase35-3. Uses a dev-only overlay registered at runtime: a diamond drawn on the copper core's faces.
+# The copper core is in the 2x2's top layer, so its overlay must move with the lid.
+eval "def cl = level.getBlockEntity(dev.pos(0,5,11)).getClass().getClassLoader(); def helpers = cl.loadClass('org.cyclops.colossalchests2.client.render.ChestOverlayHelpers'); def stack = dev.item('minecraft:diamond'); cl.loadClass('org.cyclops.colossalchests2.client.render.ChestOverlays').register(level.getBlockState(dev.pos(0,5,11)).getBlock(), ({ core, pos, face, pt, ps, buf, light, ov -> helpers.renderItem(ps, buf, level, stack, 0.5f, 0.5f, 0.8f, light) }).asType(cl.loadClass('org.cyclops.colossalchests2.client.render.IChestOverlay')))"
+command "setblock 2 4 12 minecraft:stone"
+command "tp @s 3.5 7.5 15 135 30"
+wait --ticks 10
+screenshot --name phase35-item-overlay-closed
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(0, 5, 11)).addViewer(server.getPlayerList().getPlayers().get(0)) }"
+wait --ticks 20
+screenshot --name phase35-item-overlay-lid-open
+command "tp @s -2.5 7.5 6 -30 35"
+wait --ticks 10
+screenshot --name phase35-lid-open-back
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(0, 5, 11)).removeViewer(server.getPlayerList().getPlayers().get(0)) }"

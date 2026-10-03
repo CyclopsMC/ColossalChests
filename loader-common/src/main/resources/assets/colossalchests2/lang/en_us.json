@@ -1,4 +1,18 @@
 {
-    "itemGroup.colossalchests2": "Colossal Chests 2",
-    "general.colossalchests2.description": "Chests that are quite colossal, and can be upgraded."
+  "itemGroup.colossalchests2": "Colossal Chests 2",
+  "general.colossalchests2.description": "Chests that are quite colossal, and can be upgraded.",
+  "block.colossalchests2.chest_wall_wood": "Wooden Chest Wall",
+  "block.colossalchests2.chest_core_wood": "Wooden Chest Core",
+  "block.colossalchests2.chest_wall_copper": "Copper Chest Wall",
+  "block.colossalchests2.chest_core_copper": "Copper Chest Core",
+  "block.colossalchests2.chest_wall_iron": "Iron Chest Wall",
+  "block.colossalchests2.chest_core_iron": "Iron Chest Core",
+  "block.colossalchests2.chest_wall_gold": "Golden Chest Wall",
+  "block.colossalchests2.chest_core_gold": "Golden Chest Core",
+  "block.colossalchests2.chest_wall_diamond": "Diamond Chest Wall",
+  "block.colossalchests2.chest_core_diamond": "Diamond Chest Core",
+  "block.colossalchests2.chest_wall_obsidian": "Obsidian Chest Wall",
+  "block.colossalchests2.chest_core_obsidian": "Obsidian Chest Core",
+  "block.colossalchests2.chest_wall_netherite": "Netherite Chest Wall",
+  "block.colossalchests2.chest_core_netherite": "Netherite Chest Core"
 }

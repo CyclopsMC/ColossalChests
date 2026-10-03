@@ -1,0 +1,16 @@
+{
+  "values": [
+    "colossalchests2:chest_wall_copper",
+    "colossalchests2:chest_core_copper",
+    "colossalchests2:chest_wall_iron",
+    "colossalchests2:chest_core_iron",
+    "colossalchests2:chest_wall_gold",
+    "colossalchests2:chest_core_gold",
+    "colossalchests2:chest_wall_diamond",
+    "colossalchests2:chest_core_diamond",
+    "colossalchests2:chest_wall_obsidian",
+    "colossalchests2:chest_core_obsidian",
+    "colossalchests2:chest_wall_netherite",
+    "colossalchests2:chest_core_netherite"
+  ]
+}

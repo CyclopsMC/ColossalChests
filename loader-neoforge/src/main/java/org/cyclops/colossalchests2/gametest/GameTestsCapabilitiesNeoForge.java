@@ -1,6 +1,11 @@
 package org.cyclops.colossalchests2.gametest;
 
 import net.minecraft.gametest.framework.GameTest;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -109,6 +114,34 @@ public class GameTestsCapabilitiesNeoForge {
         handler.extractItem(0, 1, false);
         helper.assertTrue(state.getState() != afterInsert, "Expected the state to change after an extract");
         helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCapabilitiesOnFormedChest(GameTestHelper helper) {
+        BlockPos min = new BlockPos(1, 1, 1);
+        BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = min.offset(1, 2, 1);
+        BlockPos brokenWall = min.offset(0, 1, 1);
+        helper.startSequence()
+                .thenWaitUntil(() -> GameTestsCommon.assertFormed(helper, corePos, min, 3))
+                .thenExecute(() -> {
+                    IItemHandler coreHandler = helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(corePos), Direction.NORTH);
+                    IItemHandler wallHandler = helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(wallPos), Direction.UP);
+                    IInventoryState state = helper.getLevel().getCapability(org.cyclops.commoncapabilities.api.capability.Capabilities.InventoryState.BLOCK, helper.absolutePos(wallPos), Direction.UP);
+                    helper.assertTrue(coreHandler != null && wallHandler != null && state != null, "Expected capabilities on a formed chest");
+                    int initialState = state.getState();
+                    helper.assertTrue(wallHandler.insertItem(0, new ItemStack(Items.STONE, 10), false).isEmpty(), "Expected the wall to accept items");
+                    helper.assertValueEqual(coreHandler.getStackInSlot(0).getCount(), 10, "count through the core");
+                    helper.assertTrue(state.getState() != initialState, "Expected the inventory state to change");
+                    helper.setBlock(brokenWall, Blocks.AIR);
+                })
+                .thenWaitUntil(() -> GameTestsCommon.assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    helper.assertTrue(helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(corePos), Direction.NORTH) == null, "Expected no item handler on a dormant core");
+                    helper.assertTrue(helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(wallPos), Direction.UP) == null, "Expected no item handler on a dormant wall");
+                    helper.assertTrue(helper.getLevel().getCapability(org.cyclops.commoncapabilities.api.capability.Capabilities.InventoryState.BLOCK, helper.absolutePos(corePos), Direction.NORTH) == null, "Expected no inventory state on a dormant core");
+                })
+                .thenSucceed();
     }
 
 }

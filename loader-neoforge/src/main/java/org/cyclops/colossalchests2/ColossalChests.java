@@ -7,10 +7,20 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.apache.logging.log4j.Level;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
+import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigNeoForge;
+import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
+import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
+import org.cyclops.colossalchests2.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests2.proxy.ClientProxy;
 import org.cyclops.colossalchests2.proxy.CommonProxy;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
 import org.cyclops.cyclopscore.init.ModBaseVersionable;
+import org.cyclops.cyclopscore.modcompat.ModCompatLoader;
 import org.cyclops.cyclopscore.proxy.IClientProxy;
 import org.cyclops.cyclopscore.proxy.ICommonProxy;
 
@@ -32,6 +42,12 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
             ColossalChestsInstance.MOD = instance;
             _instance = instance;
         }, modEventBus);
+        NeoForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> event.addListener(new ChestTablesReloadListener()));
+    }
+
+    @Override
+    protected void loadModCompats(ModCompatLoader modCompatLoader) {
+        modCompatLoader.addModCompat(new CommonCapabilitiesModCompat());
     }
 
     @Override
@@ -56,6 +72,13 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig<>(this));
+
+        configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
+        for (ChestMaterial material : ChestMaterial.VALUES) {
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
+        }
+        configHandler.addConfigurable(new BlockEntityChestCoreConfigNeoForge<>(this));
     }
 
     /**

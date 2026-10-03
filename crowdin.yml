@@ -5,8 +5,8 @@ base_path: .
 preserve_hierarchy: true
 
 files:
-  - source: loader-common/src/main/resources/assets/colossalchests/lang/en_us.json
-    translation: loader-common/src/main/resources/assets/colossalchests/lang/%locale_with_underscore%.json
+  - source: loader-common/src/main/resources/assets/colossalchests2/lang/en_us.json
+    translation: loader-common/src/main/resources/assets/colossalchests2/lang/%locale_with_underscore%.json
     excluded_target_languages:
       - en
     skip_untranslated_strings: true

@@ -19,14 +19,13 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "org.cyclops.colossalchests.ColossalChestsFabric"
+      "org.cyclops.colossalchests2.ColossalChestsFabric"
     ],
     "fabric-gametest": [
-      "org.cyclops.colossalchests.gametest.GameTestsCommon",
-      "org.cyclops.colossalchests.gametest.GameTestsFabric"
+      "org.cyclops.colossalchests2.gametest.GameTestsCommon"
     ]
   },
-  "accessWidener" : "colossalchests.accesswidener",
+  "accessWidener" : "colossalchests2.accesswidener",
 
   "depends": {
     "cyclopscore": ">=${cyclopscore_version_semver}",

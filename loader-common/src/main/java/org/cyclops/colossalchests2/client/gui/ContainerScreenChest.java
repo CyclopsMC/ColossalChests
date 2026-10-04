@@ -249,8 +249,16 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         return Component.translatable("gui.colossalchests2.slots_used", formatCount(getUsedSlots()), formatCount(menu.getChestSlotCount()));
     }
 
+    private Component getCapacityLine(String key, int maxStackSize) {
+        long capacity = menu.getProfile().capacityFor(maxStackSize);
+        return Component.translatable("gui.colossalchests2.capacity." + key, capacity > 0 ? Component.literal(formatCount(capacity))
+                : Component.translatable("gui.colossalchests2.capacity.none")).withStyle(ChatFormatting.GRAY);
+    }
+
     private Component getCapacityInfo() {
-        return Component.translatable("gui.colossalchests2.per_slot", formatCount(menu.getDepth() * 64));
+        long depth = menu.getProfile().depth();
+        return depth == 1 ? Component.translatable("gui.colossalchests2.stacks_per_slot.one")
+                : Component.translatable("gui.colossalchests2.stacks_per_slot", formatCount(depth));
     }
 
     /**
@@ -313,9 +321,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
         } else if (x >= right - font.width(getCapacityInfo()) && x < right) {
             guiGraphics.renderTooltip(font, List.of(
-                    Component.translatable("gui.colossalchests2.per_slot.info", formatCount(menu.getDepth())),
-                    Component.translatable("gui.colossalchests2.capacity.stack_64", formatCount(menu.getDepth() * 64)).withStyle(ChatFormatting.GRAY),
-                    Component.translatable("gui.colossalchests2.capacity.stack_16", formatCount(menu.getDepth() * 16)).withStyle(ChatFormatting.GRAY)),
+                    Component.translatable("gui.colossalchests2.stacks_per_slot.info"),
+                    getCapacityLine("stack_64", 64), getCapacityLine("stack_16", 16), getCapacityLine("stack_1", 1)),
                     Optional.empty(), mouseX, mouseY);
         }
     }

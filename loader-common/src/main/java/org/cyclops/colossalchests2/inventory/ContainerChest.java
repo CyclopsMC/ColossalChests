@@ -15,6 +15,7 @@ import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
+import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +48,7 @@ public class ContainerChest extends AbstractContainerMenu {
     // On the client what the server sent, on the server what it last sent.
     private final DeepSlot[] chestSlots;
     private final long[] capacities;
-    private long depth;
+    private CapacityProfile profile = CapacityProfile.ofDepth(0);
     private ChestSettings settings = ChestSettings.DEFAULT;
 
     // Server only.
@@ -159,16 +160,15 @@ public class ContainerChest extends AbstractContainerMenu {
             return 0;
         }
         DeepSlot deepSlot = chestSlots[slot];
-        // An empty slot's synced capacity is for full stacks, so scale it down for smaller stacks.
-        long capacity = deepSlot.isEmpty() ? Math.min(depth * type.getMaxStackSize(), capacities[slot]) : capacities[slot];
+        long capacity = deepSlot.isEmpty() ? profile.capacityFor(type.getMaxStackSize()) : capacities[slot];
         return Math.max(0, capacity - deepSlot.getCount());
     }
 
     /**
-     * @return Stacks per slot.
+     * @return The capacity rules of the slots.
      */
-    public long getDepth() {
-        return depth;
+    public CapacityProfile getProfile() {
+        return profile;
     }
 
     public ChestSettings getSettings() {
@@ -259,13 +259,13 @@ public class ContainerChest extends AbstractContainerMenu {
             ChestNetwork.sendToPlayer(
                     new ClientboundChestSlotsPacket(containerId, changed, contents, changedCapacities), serverPlayer);
         }
-        long newDepth = storage.getProfile().depth();
-        if (stateDirty || newDepth != depth) {
+        CapacityProfile newProfile = storage.getProfile();
+        if (stateDirty || !newProfile.equals(profile)) {
             stateDirty = false;
-            if (newDepth != depth || !Objects.equals(sentSettings, settings)) {
-                depth = newDepth;
+            if (!newProfile.equals(profile) || !Objects.equals(sentSettings, settings)) {
+                profile = newProfile;
                 sentSettings = settings;
-                ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, depth, settings), serverPlayer);
+                ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, profile, settings), serverPlayer);
             }
         }
     }
@@ -281,8 +281,8 @@ public class ContainerChest extends AbstractContainerMenu {
         }
     }
 
-    public void applyState(long depth, ChestSettings settings) {
-        this.depth = depth;
+    public void applyState(CapacityProfile profile, ChestSettings settings) {
+        this.profile = profile;
         this.settings = settings;
     }
 

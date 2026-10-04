@@ -56,6 +56,7 @@ import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
+import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.cyclopscore.network.PacketBase;
@@ -764,9 +765,14 @@ public class GameTestsCommon {
                     helper.assertTrue(client.getChestSlot(3).isLocked() && client.getChestSlot(3).matches(STONE), "Expected a synced locked slot");
                     helper.assertTrue(client.isChestSlotOverCapacity(0), "Expected 5000 of 1024 to be over capacity");
                     helper.assertValueEqual(client.getChestSlotCapacity(3), 64L, "synced capacity");
-                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, 7, settings), ClientboundChestStatePacket.CODEC)
+                    CapacityProfile profile = new CapacityProfile(7, 300, true, 3);
+                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, profile, settings), ClientboundChestStatePacket.CODEC)
                             .actionClient(helper.getLevel(), player);
-                    helper.assertValueEqual(client.getDepth(), 7L, "synced depth");
+                    helper.assertValueEqual(client.getProfile(), profile, "synced capacity profile");
+                    // An empty slot takes what the profile allows for the type.
+                    helper.assertValueEqual(client.getChestSlotSpace(5, new ItemStack(Items.DIAMOND_SWORD)), 3L, "space for unstackables");
+                    helper.assertValueEqual(client.getChestSlotSpace(5, new ItemStack(Items.ENDER_PEARL)), 7L * 16, "space for 16-stacks");
+                    helper.assertValueEqual(client.getChestSlotSpace(5, STONE), 300L, "space capped per slot");
                     helper.assertValueEqual(client.getSettings(), settings, "synced settings");
                     player.containerMenu = menu;
                     player.closeContainer();

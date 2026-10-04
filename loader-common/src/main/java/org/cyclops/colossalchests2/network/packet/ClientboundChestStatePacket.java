@@ -9,10 +9,11 @@ import net.minecraft.world.level.Level;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
+import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 /**
- * The chest state a viewer needs besides slots: depth and settings.
+ * The chest state a viewer needs besides slots: capacity rules and settings.
  * @author rubensworks
  */
 public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStatePacket> {
@@ -21,17 +22,17 @@ public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStat
     public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundChestStatePacket> CODEC = getCodec(ClientboundChestStatePacket::new);
 
     private int containerId;
-    private long depth;
+    private CapacityProfile profile;
     private ChestSettings settings;
 
     public ClientboundChestStatePacket() {
         super(TYPE);
     }
 
-    public ClientboundChestStatePacket(int containerId, long depth, ChestSettings settings) {
+    public ClientboundChestStatePacket(int containerId, CapacityProfile profile, ChestSettings settings) {
         super(TYPE);
         this.containerId = containerId;
-        this.depth = depth;
+        this.profile = profile;
         this.settings = settings;
     }
 
@@ -43,21 +44,24 @@ public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStat
     @Override
     public void encode(RegistryFriendlyByteBuf buf) {
         buf.writeVarInt(containerId);
-        buf.writeVarLong(depth);
+        buf.writeVarLong(profile.depth());
+        buf.writeVarLong(profile.maxItemsPerSlot());
+        buf.writeBoolean(profile.acceptNonStackables());
+        buf.writeVarLong(profile.nonStackableCapacity());
         ChestSettings.STREAM_CODEC.encode(buf, settings);
     }
 
     @Override
     public void decode(RegistryFriendlyByteBuf buf) {
         containerId = buf.readVarInt();
-        depth = buf.readVarLong();
+        profile = new CapacityProfile(buf.readVarLong(), buf.readVarLong(), buf.readBoolean(), buf.readVarLong());
         settings = ChestSettings.STREAM_CODEC.decode(buf);
     }
 
     @Override
     public void actionClient(Level level, Player player) {
         if (player.containerMenu instanceof ContainerChest menu && menu.containerId == containerId) {
-            menu.applyState(depth, settings);
+            menu.applyState(profile, settings);
         }
     }
 

@@ -48,8 +48,11 @@
   "gui.colossalchests2.slots_used": "%s/%s slots",
   "gui.colossalchests2.slots_used.info": "%s of %s slots hold items",
   "gui.colossalchests2.slots_full": "%s of them are full",
-  "gui.colossalchests2.per_slot": "%s per slot",
-  "gui.colossalchests2.per_slot.info": "Each slot holds %s stacks",
-  "gui.colossalchests2.capacity.stack_64": "%s items that stack to 64",
-  "gui.colossalchests2.capacity.stack_16": "%s items that stack to 16"
+  "gui.colossalchests2.stacks_per_slot": "%s stacks per slot",
+  "gui.colossalchests2.stacks_per_slot.one": "1 stack per slot",
+  "gui.colossalchests2.stacks_per_slot.info": "Items per slot",
+  "gui.colossalchests2.capacity.stack_64": "Stacking to 64: %s",
+  "gui.colossalchests2.capacity.stack_16": "Stacking to 16: %s",
+  "gui.colossalchests2.capacity.stack_1": "Unstackable: %s",
+  "gui.colossalchests2.capacity.none": "none"
 }

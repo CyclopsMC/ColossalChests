@@ -1105,6 +1105,21 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
+    public void testCreativeBreakKeepsUpgradesOfEmptyCore(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    getCore(helper, corePos).getUpgrades().setItem(0, upgradeItem(ChestUpgrades.LOCK));
+                    ServerPlayer player = makePlayerNorthOf(helper, corePos);
+                    player.gameMode.destroyBlock(helper.absolutePos(corePos));
+                    helper.assertBlockNotPresent(core(ChestMaterial.WOOD), corePos);
+                    helper.assertItemEntityPresent(core(ChestMaterial.WOOD).asItem(), corePos, 3);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
     public void testCreativeBreakEmptyCoreDropsNothing(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
         helper.startSequence()

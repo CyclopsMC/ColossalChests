@@ -1,9 +1,11 @@
 package org.cyclops.colossalchests2.upgrade;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.config.UpgradeProperties;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A core upgrade type. Its limits and strength come from its data file, see {@link UpgradeProperties}.
@@ -50,10 +52,11 @@ public class ChestUpgrade {
     }
 
     /**
-     * @return The arguments of the item's info tooltip.
+     * @return A short line with the strength of the upgrade for its item tooltip, if any.
      */
-    public Object[] getInfoArguments() {
-        return new Object[0];
+    @Nullable
+    public Component getEffect() {
+        return null;
     }
 
     @Override

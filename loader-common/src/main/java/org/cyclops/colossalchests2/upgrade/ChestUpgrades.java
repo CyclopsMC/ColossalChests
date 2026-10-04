@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.upgrade;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
@@ -29,8 +30,8 @@ public final class ChestUpgrades {
         }
 
         @Override
-        public Object[] getInfoArguments() {
-            return new Object[]{getProperties().value()};
+        public Component getEffect() {
+            return Component.translatable("item.colossalchests2.upgrade_depth.effect", getProperties().value());
         }
     };
 
@@ -44,8 +45,8 @@ public final class ChestUpgrades {
         }
 
         @Override
-        public Object[] getInfoArguments() {
-            return new Object[]{getProperties().value(), GeneralConfig.getMaxSlots()};
+        public Component getEffect() {
+            return Component.translatable("item.colossalchests2.upgrade_slot_expansion.effect", getProperties().value(), GeneralConfig.getMaxSlots());
         }
     };
 

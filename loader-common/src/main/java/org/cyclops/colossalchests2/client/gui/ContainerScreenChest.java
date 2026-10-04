@@ -390,7 +390,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             int problems = menu.getUpgradeRemovalProblems(slot.getContainerSlot());
             if (problems > 0) {
                 lines = Lists.newArrayList(lines);
-                lines.add(Component.translatable("gui.colossalchests2.upgrade.removal_refused", formatCount(problems)).withStyle(ChatFormatting.RED));
+                lines.add((problems == 1 ? Component.translatable("gui.colossalchests2.upgrade.removal_refused.one")
+                        : Component.translatable("gui.colossalchests2.upgrade.removal_refused", formatCount(problems))).withStyle(ChatFormatting.RED));
             }
         }
         return lines;

@@ -31,10 +31,16 @@ public class ItemChestUpgrade extends Item {
         return stack.getItem() instanceof ItemChestUpgrade item ? item.getUpgrade() : null;
     }
 
+    /**
+     * The explanation is shown on shift by Cyclops Core, from the info lang key.
+     */
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        tooltip.add(Component.translatable(getDescriptionId() + ".info", upgrade.getInfoArguments()).withStyle(ChatFormatting.GRAY));
+        Component effect = upgrade.getEffect();
+        if (effect != null) {
+            tooltip.add(effect.copy().withStyle(ChatFormatting.GRAY));
+        }
     }
 
 }

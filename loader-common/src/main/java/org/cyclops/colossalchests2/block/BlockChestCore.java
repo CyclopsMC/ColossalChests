@@ -174,9 +174,9 @@ public class BlockChestCore extends BaseEntityBlock {
 
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        // Creative mode skips drops, but a core with contents must never vanish.
+        // Creative mode skips drops, but a core with contents or upgrades must never vanish.
         if (!level.isClientSide && player.isCreative() && level.getBlockEntity(pos) instanceof BlockEntityChestCore core
-                && !core.getStorage().toContents().entries().isEmpty()) {
+                && (!core.getStorage().toContents().entries().isEmpty() || !core.getUpgrades().isEmpty())) {
             ItemStack stack = new ItemStack(this);
             stack.applyComponents(core.collectComponents());
             popResourceFromFace(level, pos, getFaceTowards(pos, player), stack);

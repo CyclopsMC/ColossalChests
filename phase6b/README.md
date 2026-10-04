@@ -33,9 +33,9 @@ Extraction read back from the player inventory after each shift-click:
 
 ## Slot badges (phase6b-2-slot-badge.txt)
 
-Compressed slots show the form that clicks take in a small framed badge in the bottom left corner, and a "+" after the count when smaller forms are left over.
+Compressed slots show the form that clicks take in a small purple badge in the bottom left corner, and a "+" after the count when smaller forms are left over.
 
 | Screenshot | Shows |
 |---|---|
-| `phase6b-badges-default.png` (`-zoom`) | Iron 10 blocks and 5 ingots ("10+"), gold 18 ingots ("2", whole), copper 4 ingots ("<1"), and uncompressed cobblestone without a badge |
+| `phase6b-badges-default.png` (`-zoom`) | Iron 10 blocks and 5 ingots ("10+"), gold 18 ingots ("2", whole), copper 4 ingots ("<1"), uncompressed cobblestone without a badge, and 1,000 redstone blocks and 1 redstone ("1K+") |
 | `phase6b-badges-ingots.png` (`-zoom`) | After scrolling on the iron slot, its badge shows an ingot |

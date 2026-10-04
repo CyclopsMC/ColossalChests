@@ -333,12 +333,12 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     }
 
     /**
-     * The form that clicks take, small in the bottom left corner of a compressed slot, framed like in the picker.
+     * The form that clicks take, small in the bottom left corner of a compressed slot, on the picker's purple.
      */
     private static void drawFormBadge(GuiGraphics guiGraphics, Item form, int x, int y) {
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, 0, 200);
-        guiGraphics.fill(x, y + 6, x + 10, y + 16, COLOR_FORM_CHOSEN);
+        guiGraphics.fill(x, y + 6, x + 10, y + 16, COLOR_OUTLINE);
         guiGraphics.fill(x + 1, y + 7, x + 9, y + 15, COLOR_FORM_CHOSEN_INSIDE);
         guiGraphics.pose().popPose();
         guiGraphics.pose().pushPose();

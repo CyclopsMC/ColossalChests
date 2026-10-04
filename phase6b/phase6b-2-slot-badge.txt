@@ -1,0 +1,16 @@
+# Fresh world. Compressed slots show the chosen form in a badge and a "+" when smaller forms are left over.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 10
+eval "server.execute { def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.getUpgrades().setItem(0, dev.item('colossalchests2:upgrade_compression')); def s = be.getStorage(); s.insert(dev.item('minecraft:iron_block'), 10, false); s.insert(dev.item('minecraft:iron_ingot'), 5, false); s.insert(dev.item('minecraft:gold_ingot'), 18, false); s.insert(dev.item('minecraft:copper_ingot'), 4, false); s.insert(dev.item('minecraft:cobblestone'), 100, false) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 400,10
+screenshot --name phase6b-badges-default
+# Iron: pick ingots.
+scroll --at 141,69 --dy -1
+wait --ticks 5
+mouse-move 400,10
+wait --ticks 3
+screenshot --name phase6b-badges-ingots

@@ -6,6 +6,8 @@ Run from the repository root on the Phase 6b branch, on NeoForge, in a fresh wor
 clientdevbridge start --loader neoforge
 clientdevbridge world-reset
 clientdevbridge batch <path-to>/phase6b/phase6b-1-compression.txt
+clientdevbridge world-reset
+clientdevbridge batch <path-to>/phase6b/phase6b-2-slot-badge.txt
 ```
 
 The iron 3x3 with Compression starts with 10 iron blocks, 5 ingots and 3 nuggets (858 nuggets worth) in one slot.
@@ -28,3 +30,12 @@ Extraction read back from the player inventory after each shift-click:
 | Nuggets | + 39 iron nuggets |
 
 64 x 9 + 3 x 81 + 39 = 858, so nothing was lost or created. Shift can't be faked by clientdevbridge, so the shift-clicks are sent as their click packets. Hopper extraction is covered by game tests.
+
+## Slot badges (phase6b-2-slot-badge.txt)
+
+Compressed slots show the form that clicks take in a small framed badge in the bottom left corner, and a "+" after the count when smaller forms are left over.
+
+| Screenshot | Shows |
+|---|---|
+| `phase6b-badges-default.png` (`-zoom`) | Iron 10 blocks and 5 ingots ("10+"), gold 18 ingots ("2", whole), copper 4 ingots ("<1"), and uncompressed cobblestone without a badge |
+| `phase6b-badges-ingots.png` (`-zoom`) | After scrolling on the iron slot, its badge shows an ingot |

@@ -57,6 +57,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private final ChestLayout layout;
     private final List<Button> settingsButtons = Lists.newArrayList();
     private EditBox searchField;
+    private final Tooltip searchHelp = Tooltip.create(Component.translatable("gui.colossalchests2.search.info"));
     private boolean settingsOpen;
 
     // Dragging the cursor stack over chest slots spreads it, like over vanilla slots.
@@ -132,6 +133,11 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     @Override
     protected void containerTick() {
         super.containerTick();
+        // Help on hover, hidden while typing so it does not cover the slots.
+        Tooltip searchTooltip = searchField.isFocused() ? null : searchHelp;
+        if (searchField.getTooltip() != searchTooltip) {
+            searchField.setTooltip(searchTooltip);
+        }
         ChestSettings settings = menu.getSettings();
         settingsButtons.get(0).setMessage(toggleLabel("show_fill_levels", settings.showFillLevels()));
         settingsButtons.get(1).setMessage(toggleLabel("show_counts", settings.showCounts()));
@@ -177,7 +183,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             if (menu.isChestSlotOverCapacity(slot)) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_OVER_CAPACITY);
             }
-            if (!ChestSearch.matches(deepSlot, query, stack -> stack.getHoverName().getString())) {
+            if (!ChestSearch.matches(deepSlot, query, stack -> stack.getHoverName().getString(),
+                    stack -> getTooltipFromItem(minecraft, stack).stream().map(Component::getString).toList())) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_SEARCH_MISS);
             } else if (!query.isBlank()) {
                 drawSearchHit(guiGraphics, x, y);

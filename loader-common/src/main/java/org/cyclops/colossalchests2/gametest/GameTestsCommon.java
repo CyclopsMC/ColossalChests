@@ -44,6 +44,7 @@ import org.cyclops.colossalchests2.capability.LoaderCapabilities;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
+import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
@@ -941,6 +942,21 @@ public class GameTestsCommon {
                 .thenWaitUntil(() -> assertDormant(helper, corePos))
                 .thenExecute(() -> assertRoundTrip(helper, getCore(helper, corePos)))
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testSearchTagPrefix(GameTestHelper helper) {
+        // Tags are only bound with data packs loaded, so not in unit tests.
+        DeepSlot bricks = DeepSlot.of(new ItemStack(Items.STONE_BRICKS), 1);
+        helper.assertTrue(search(bricks, "$stone_bricks"), "tag path should match");
+        helper.assertTrue(search(bricks, "$minecraft:stone_bricks"), "tag id should match");
+        helper.assertTrue(search(bricks, "$logs|$stone_bricks"), "tag alternative should match");
+        helper.assertFalse(search(bricks, "$logs"), "other tag should not match");
+        helper.succeed();
+    }
+
+    private static boolean search(DeepSlot slot, String query) {
+        return ChestSearch.matches(slot, query, stack -> stack.getHoverName().getString(), stack -> List.of());
     }
 
     @GameTest(template = TEMPLATE_EMPTY)

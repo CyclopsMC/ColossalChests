@@ -24,6 +24,7 @@
   "material.colossalchests2.netherite": "Netherite",
   "container.colossalchests2.chest": "%s Chest",
   "gui.colossalchests2.search": "Search",
+  "gui.colossalchests2.search.info": "Search by name or id. Prefix with @ for mod, # for tooltip, $ for tag. Spaces combine terms, | separates alternatives.",
   "gui.colossalchests2.settings": "Settings",
   "gui.colossalchests2.show_fill_levels": "Fill: %s",
   "gui.colossalchests2.show_counts": "Counts: %s",

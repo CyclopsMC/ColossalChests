@@ -1,0 +1,17 @@
+# Continues phase7a-1-walls.txt with the Interface settings open.
+# Stone on the cursor, clicked into the first filter slot: a copy goes in, the cursor keeps all 16.
+slot-click 36 --type pickup
+slot-click 0 --type pickup
+slot-click 36 --type pickup
+# Shift-clicking the nuggets adds them to the filter too, which also makes iron come out as nuggets.
+slot-click 37 --type quick_move
+click --widget "In and out"
+wait --ticks 5
+mouse-move 170,90
+wait --ticks 3
+screenshot --name phase7a-settings-set
+mouse-move 220,61
+wait --ticks 3
+screenshot --name phase7a-filter-tooltip
+inventory
+eval "server.submit({ server.overworld().getBlockEntity(dev.pos(4, 5, 4)).getAccess().toString() } as java.util.function.Supplier).get()"

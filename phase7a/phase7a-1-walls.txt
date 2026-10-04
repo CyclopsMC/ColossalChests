@@ -1,7 +1,7 @@
-# Fresh world. A wood 3x3 with an Interface, a Filtered Interface and a Void interface on its front.
+# Fresh world. A wood 3x3 with two Interfaces and a Void interface on its front.
 command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
 command "setblock 2 5 4 colossalchests2:chest_wall_interface"
-command "setblock 4 5 4 colossalchests2:chest_wall_filtered_interface"
+command "setblock 4 5 4 colossalchests2:chest_wall_interface"
 command "setblock 3 6 4 colossalchests2:chest_wall_void"
 teleport 3.5 4 1 --yaw 0 --pitch -10
 wait --ticks 5
@@ -9,9 +9,18 @@ screenshot --name phase7a-unformed
 command "setblock 3 5 4 colossalchests2:chest_core_wood"
 wait --ticks 20
 screenshot --name phase7a-formed
-# The Filtered Interface opens its own settings.
 command "give @p minecraft:stone 16"
 command "give @p minecraft:iron_nugget 4"
+hold 2
+# A click on an Interface opens the chest, like any wall.
 use 4 5 4 --face north
 wait --ticks 10
-screenshot --name phase7a-filter-empty
+snapshot
+close-screen
+# Sneaking opens its settings. Sneak is set on the server player, as clientdevbridge cannot hold sneak during a click.
+eval "server.submit({ server.playerList.players[0].setShiftKeyDown(true) } as Runnable).get()"
+use 4 5 4 --face north
+wait --ticks 10
+eval "server.submit({ server.playerList.players[0].setShiftKeyDown(false) } as Runnable).get()"
+snapshot
+screenshot --name phase7a-settings-empty

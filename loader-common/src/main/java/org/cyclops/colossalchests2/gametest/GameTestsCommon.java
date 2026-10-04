@@ -56,6 +56,7 @@ import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
@@ -1122,7 +1123,9 @@ public class GameTestsCommon {
                     helper.assertValueEqual(storage.getSlot(0).getCount(), 7L, "blocks after installing Compression");
                     ServerPlayer player = makeViewer(helper);
                     ContainerChest menu = openChest(helper, player, corePos);
-                    menu.handleForm(0, new ItemStack(Items.IRON_NUGGET));
+                    // Picked through the packet the screen sends.
+                    roundTrip(helper, new ServerboundChestFormPacket(menu.containerId, 0, new ItemStack(Items.IRON_NUGGET)), ServerboundChestFormPacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
                     menu.handleChestClick(player, 0, ChestClickAction.TAKE_STACK);
                     helper.assertTrue(menu.getCarried().is(Items.IRON_NUGGET) && menu.getCarried().getCount() == 64, "Expected a stack of nuggets");
                     // Putting them back goes into the same slot.
@@ -1130,7 +1133,8 @@ public class GameTestsCommon {
                     helper.assertTrue(menu.getCarried().isEmpty(), "Expected the nuggets to go back");
                     helper.assertValueEqual(storage.getAvailable(0, new ItemStack(Items.IRON_INGOT)), 64L, "ingots after putting nuggets back");
                     // A form outside the family is ignored.
-                    menu.handleForm(0, new ItemStack(Items.GOLD_INGOT));
+                    roundTrip(helper, new ServerboundChestFormPacket(menu.containerId, 0, new ItemStack(Items.GOLD_INGOT)), ServerboundChestFormPacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
                     helper.assertTrue(storage.getExtractionType(0).is(Items.IRON_NUGGET), "Expected the chosen form to stay");
                     player.closeContainer();
                 })

@@ -1,0 +1,28 @@
+# Fresh world. An iron 3x3 with Compression, Lock and Void, and a Display wall left of the core.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 2 5 4 colossalchests2:chest_wall_display"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.getUpgrades().setItem(0, dev.item('colossalchests2:upgrade_compression')); be.getUpgrades().setItem(1, dev.item('colossalchests2:upgrade_lock')); be.getUpgrades().setItem(2, dev.item('colossalchests2:upgrade_void')); def s = be.getStorage(); s.insert(dev.item('minecraft:iron_block'), 300, false); s.setLocked(0, true); s.setVoiding(0, true) } as Runnable).get()"
+teleport 2.5 4 0 --yaw 0 --pitch 0
+look --at 2.5,5.5,4
+command "give @p minecraft:iron_ingot 10"
+hold 0
+# Right-clicking with an ingot shows iron ingots and inserts them.
+use 2 5 4 --face north
+wait --ticks 20
+inventory
+# use moves the player within reach, so step back for the screenshots.
+teleport 2.5 4 0 --yaw 0 --pitch 0
+look --at 2.5,5.5,4
+screenshot --name display-all-toggles
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowCounts(false)) } as Runnable).get()"
+wait --ticks 5
+screenshot --name display-no-counts
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowCounts(true).withShowFillLevels(false)) } as Runnable).get()"
+wait --ticks 5
+screenshot --name display-no-fill
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowFillLevels(true).withShowUpgradeIndicators(false)) } as Runnable).get()"
+wait --ticks 5
+screenshot --name display-no-indicators
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowUpgradeIndicators(true)) } as Runnable).get()"

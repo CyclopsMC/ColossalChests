@@ -1,0 +1,28 @@
+# Continues display-1-face.txt. Left-clicks with an empty hand take ingots and never break the wall.
+# hold-key does not register a click like a mouse press does, so in creative it is held past vanilla's 5 tick repeat
+# delay; that also checks that a held click takes once.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+hold 1
+look --at 2.5,5.5,4
+hold-key ATTACK --ticks 8
+wait --ticks 10
+inventory
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 10
+eval "player.isShiftKeyDown()"
+hold-key ATTACK --ticks 8
+wait --ticks 10
+eval "mc.options.keyShift.setDown(false)"
+inventory
+# Holding attack with an empty hand does not break it, and takes one stack, not one per repeat.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+break 2 5 4 --face north --no-approach --timeout-ticks 60
+inventory
+block 2 5 4
+# A pickaxe mines it, which leaves the chest dormant.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+command "give @p minecraft:iron_pickaxe"
+hold 0
+break 2 5 4 --face north --no-approach --timeout-ticks 200
+block 2 5 4

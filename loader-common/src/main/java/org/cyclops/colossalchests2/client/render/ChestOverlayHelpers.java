@@ -98,7 +98,7 @@ public final class ChestOverlayHelpers {
     }
 
     /**
-     * Draw a line of text on the face, centered horizontally.
+     * Draw a line of text with a shadow on the face, centered horizontally.
      * @param poseStack The pose stack.
      * @param buffers The buffers.
      * @param text The text.
@@ -116,7 +116,7 @@ public final class ChestOverlayHelpers {
         // Font y grows downwards, face y upwards.
         poseStack.translate(centerX, y0 + height, 0);
         poseStack.scale(scale, -scale, scale);
-        font.drawInBatch(text, -font.width(text) / 2F, 0, color, false, poseStack.last().pose(), buffers,
+        font.drawInBatch(text, -font.width(text) / 2F, 0, color, true, poseStack.last().pose(), buffers,
                 Font.DisplayMode.POLYGON_OFFSET, 0, light);
         poseStack.popPose();
     }

@@ -1,0 +1,16 @@
+# Fresh world. A formed wooden 3x3 and an iron 5x5 show the vanilla breaking crack on walls and the core.
+# Break progress is set from the server, like it is for other players mining.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "fill 7 4 4 11 8 8 colossalchests2:chest_wall_iron hollow"
+command "setblock 9 5 4 colossalchests2:chest_core_iron"
+command "setblock 6 5 -1 minecraft:barrier"
+wait --ticks 10
+eval "server.execute { def l = server.overworld(); l.destroyBlockProgress(9001, dev.pos(2, 5, 4), 3); l.destroyBlockProgress(9002, dev.pos(3, 5, 4), 6); l.destroyBlockProgress(9003, dev.pos(4, 6, 4), 9); l.destroyBlockProgress(9004, dev.pos(10, 7, 4), 7); l.destroyBlockProgress(9005, dev.pos(11, 5, 5), 5) }"
+command "tp @s 6.5 6 -1.5 20 15"
+wait --ticks 10
+screenshot --name phase35-crack
+command "setblock 13 7 -4 minecraft:barrier"
+command "tp @s 13.5 8 -3.5 45 25"
+wait --ticks 10
+screenshot --name phase35-crack-iron

@@ -12,6 +12,8 @@ clientdevbridge batch <path-to>/phase3.5/phase35-4-overlays.txt
 clientdevbridge batch <path-to>/phase3.5/phase35-5-orientation.txt
 ```
 
+`phase35-7-crack.txt` (fresh world) checks the breaking crack, on NeoForge and Fabric.
+
 `phase35-6-loader-smoke.txt` runs the same basic checks on Fabric (`clientdevbridge start --loader fabric`). clientdevbridge has no Forge support.
 
 | Screenshot | Shows |
@@ -26,3 +28,5 @@ clientdevbridge batch <path-to>/phase3.5/phase35-5-orientation.txt
 | `phase35-neighbour-faces-lid-open.png` | A stone column next to the open lid: its faces still render and are lit |
 | `phase35-iron-dormant.png` | Breaking a wall turns the iron chest back into separate blocks |
 | `phase35-fabric-marker.png`, `phase35-fabric-lid-open.png` | The same on Fabric |
+| `phase35-crack-neoforge.png`, `phase35-crack-iron-neoforge.png` | Breaking cracks at different stages on walls and the core of formed wood and iron chests, set from the server like for other players mining |
+| `phase35-crack-fabric.png`, `phase35-crack-iron-fabric.png` | The same on Fabric, which sets the cutout layer for the invisible formed model in code |

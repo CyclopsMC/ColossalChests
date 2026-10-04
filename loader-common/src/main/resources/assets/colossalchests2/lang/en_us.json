@@ -26,7 +26,7 @@
   "block.colossalchests2.chest_core.upgrade": " %sx %s",
   "item.colossalchests2.upgrade_depth": "Depth Upgrade",
   "item.colossalchests2.upgrade_depth.effect": "%sx stacks per slot",
-  "item.colossalchests2.upgrade_depth.info": "Multiplies the stacks per slot. How many a chest takes depends on its material.",
+  "item.colossalchests2.upgrade_depth.info": "Multiplies the stacks per slot. Chest material determines limit.",
   "item.colossalchests2.upgrade_slot_expansion": "Slot Expansion Upgrade",
   "item.colossalchests2.upgrade_slot_expansion.effect": "+%s slots, up to %s",
   "item.colossalchests2.upgrade_slot_expansion.info": "Adds slots to the chest.",

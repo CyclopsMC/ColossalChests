@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests2.gametest;
 
+import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -7,6 +8,9 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -45,7 +49,13 @@ import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
+import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
+import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.cyclopscore.network.PacketBase;
 
 import java.util.Arrays;
 import java.util.List;
@@ -627,6 +637,96 @@ public class GameTestsCommon {
                 })
                 .thenWaitUntil(() -> assertFormed(helper, newCorePos, MIN_B, 3))
                 .thenExecute(() -> helper.assertValueEqual(getCore(helper, newCorePos).getSettings(), settings, "restored settings"))
+                .thenSucceed();
+    }
+
+    private static <T extends PacketBase<T>> T roundTrip(GameTestHelper helper, T packet, StreamCodec<RegistryFriendlyByteBuf, T> codec) {
+        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
+        codec.encode(buf, packet);
+        T decoded = codec.decode(buf);
+        helper.assertValueEqual(buf.readableBytes(), 0, "unread bytes of " + packet.type().id());
+        return decoded;
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuPacketsRoundTrip(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    ServerPlayer player = makeViewer(helper);
+                    player.getInventory().clearContent();
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    storage.insert(0, STONE, 1000, false);
+
+                    // The server handles clicks and settings from the client.
+                    roundTrip(helper, new ServerboundChestClickPacket(menu.containerId, 0, ChestClickAction.TAKE_STACK), ServerboundChestClickPacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 64, "cursor after a click packet");
+                    ChestSettings settings = ChestSettings.DEFAULT.withSortMode(ChestSortMode.NAME).withShowFillLevels(false);
+                    roundTrip(helper, new ServerboundChestSettingsPacket(menu.containerId, "stone", settings), ServerboundChestSettingsPacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(getCore(helper, corePos).getSettings(), settings, "settings after a settings packet");
+                    // Packets for another menu are ignored.
+                    roundTrip(helper, new ServerboundChestClickPacket(menu.containerId + 1, 0, ChestClickAction.TAKE_STACK), ServerboundChestClickPacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 64, "cursor after a click for another menu");
+
+                    // A client menu takes what the server sends.
+                    ContainerChest client = new ContainerChest(menu.containerId, player.getInventory(), getCore(helper, corePos));
+                    player.containerMenu = client;
+                    DeepSlot locked = DeepSlot.of(STONE, 0, true, null);
+                    roundTrip(helper, new ClientboundChestSlotsPacket(menu.containerId, new int[]{0, 3},
+                            new DeepSlot[]{DeepSlot.of(STONE, 5000), locked}, new long[]{1024, 64}), ClientboundChestSlotsPacket.CODEC)
+                            .actionClient(helper.getLevel(), player);
+                    helper.assertValueEqual(client.getChestSlot(0).getCount(), 5000L, "synced count");
+                    helper.assertTrue(client.getChestSlot(3).isLocked() && client.getChestSlot(3).matches(STONE), "Expected a synced locked slot");
+                    helper.assertTrue(client.isChestSlotOverCapacity(0), "Expected 5000 of 1024 to be over capacity");
+                    helper.assertValueEqual(client.getChestSlotCapacity(3), 64L, "synced capacity");
+                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, 7, settings, new int[]{3, 0, 99}), ClientboundChestStatePacket.CODEC)
+                            .actionClient(helper.getLevel(), player);
+                    helper.assertValueEqual(client.getDepth(), 7L, "synced depth");
+                    helper.assertValueEqual(client.getSettings(), settings, "synced settings");
+                    // Slots the menu does not have are dropped.
+                    helper.assertTrue(Arrays.equals(client.getView(), new int[]{3, 0}), "Expected the synced view, got " + Arrays.toString(client.getView()));
+                    player.containerMenu = menu;
+                    player.closeContainer();
+                    client.removed(player);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCoreMenuProviderAndOverCapacityWarning(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ServerPlayer player = makeViewer(helper);
+                    helper.assertValueEqual(core.getDisplayName(), Component.translatable("container.colossalchests2.chest",
+                            Component.translatable("material.colossalchests2.wood")), "title");
+                    if (!(core.createMenu(5, player.getInventory(), player) instanceof ContainerChest menu)) {
+                        throw new GameTestAssertException("Expected a chest menu from the core");
+                    }
+                    helper.assertValueEqual(menu.getChestSlotCount(), core.getStorage().getSlotCount(), "menu slots");
+                    menu.removed(player);
+
+                    // Lowering the depth makes the slot over capacity, which players are told about on opening.
+                    core.getStorage().insert(0, STONE, 1000, false);
+                    int oldDepth = GeneralConfig.depthSize3;
+                    try {
+                        GeneralConfig.depthSize3 = 1;
+                        // Loading applies the capacity for the current config.
+                        core.loadWithComponents(core.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+                        helper.assertTrue(core.getStorage().isExtractOnly(0), "Expected an over capacity slot");
+                        core.warnIfOverCapacity(player);
+                    } finally {
+                        GeneralConfig.depthSize3 = oldDepth;
+                        core.loadWithComponents(core.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+                    }
+                })
                 .thenSucceed();
     }
 

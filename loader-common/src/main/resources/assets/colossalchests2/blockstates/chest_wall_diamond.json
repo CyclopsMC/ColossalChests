@@ -4,7 +4,7 @@
       "model": "colossalchests2:block/chest_wall_diamond"
     },
     "formed=true": {
-      "model": "colossalchests2:block/chest_wall_diamond"
+      "model": "colossalchests2:block/chest_wall_diamond_formed"
     }
   }
 }

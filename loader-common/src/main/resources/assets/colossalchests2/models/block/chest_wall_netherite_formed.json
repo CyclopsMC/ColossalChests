@@ -1,0 +1,6 @@
+{
+  "parent": "colossalchests2:block/formed_member",
+  "textures": {
+    "particle": "colossalchests2:block/chest_wall_netherite"
+  }
+}

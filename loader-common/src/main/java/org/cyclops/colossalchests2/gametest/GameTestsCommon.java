@@ -18,9 +18,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComparatorBlock;
 import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
@@ -336,6 +338,83 @@ public class GameTestsCommon {
                     helper.assertValueEqual(getCore(helper, corePos).getComparatorSignal(), 0, "comparator signal of a dormant core");
                 })
                 .thenSucceed();
+    }
+
+    // Rendering
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testFormedMembersRenderAsGiantChest(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    assertRenderedAsGiantChest(helper, MIN_A, true);
+                    assertRenderedAsGiantChest(helper, corePos, true);
+                    helper.setBlock(MIN_A.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    assertRenderedAsGiantChest(helper, MIN_A, false);
+                    assertRenderedAsGiantChest(helper, corePos, false);
+                })
+                .thenSucceed();
+    }
+
+    private static void assertRenderedAsGiantChest(GameTestHelper helper, BlockPos pos, boolean formed) {
+        BlockPos absolute = helper.absolutePos(pos);
+        BlockState state = helper.getLevel().getBlockState(absolute);
+        // Formed members have an invisible model, which vanilla still draws the breaking crack on.
+        helper.assertValueEqual(state.getRenderShape(), RenderShape.MODEL, "render shape at " + pos);
+        helper.assertValueEqual(state.getOcclusionShape(helper.getLevel(), absolute).isEmpty(), formed, "empty occlusion at " + pos);
+        helper.assertValueEqual(state.getLightBlock(helper.getLevel(), absolute), formed ? 0 : helper.getLevel().getMaxLightLevel(), "light block at " + pos);
+        helper.assertValueEqual(state.propagatesSkylightDown(helper.getLevel(), absolute), formed, "skylight through " + pos);
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUpdateTagCarriesStructureButNoContents(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.getStorage().insert(STONE, 10, false);
+                    helper.assertValueEqual(core.getDecoratedPositions(), List.of(helper.absolutePos(corePos)), "decorated positions");
+                    CompoundTag tag = core.getUpdateTag(helper.getLevel().registryAccess());
+                    helper.assertFalse(tag.contains("storage"), "Expected no contents in the update tag");
+
+                    BlockEntityChestCore client = new BlockEntityChestCore(core.getBlockPos(), core.getBlockState());
+                    client.loadWithComponents(tag, helper.getLevel().registryAccess());
+                    helper.assertValueEqual(client.getStructure(), core.getStructure(), "synced structure");
+                    helper.assertValueEqual(client.getDecoratedPositions(), core.getDecoratedPositions(), "synced decorated positions");
+                    helper.assertValueEqual(client.getFacing(), Direction.NORTH, "synced facing");
+                    helper.assertTrue(client.getStorage().getSlot(0).isEmpty(), "Expected no synced contents");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testViewersOpenAndCloseLid(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> getCore(helper, corePos).addViewer(player))
+                // The lid only animates on clients, so tick it here as a client would after the block event.
+                .thenWaitUntil(() -> {
+                    tickLid(helper, corePos);
+                    helper.assertTrue(getCore(helper, corePos).getOpenness(1) == 1, "Expected an open lid");
+                })
+                .thenExecute(() -> getCore(helper, corePos).removeViewer(player))
+                .thenWaitUntil(() -> {
+                    tickLid(helper, corePos);
+                    helper.assertTrue(getCore(helper, corePos).getOpenness(1) == 0, "Expected a closed lid");
+                })
+                .thenSucceed();
+    }
+
+    private static void tickLid(GameTestHelper helper, BlockPos corePos) {
+        BlockEntityChestCore core = getCore(helper, corePos);
+        BlockEntityChestCore.clientTick(helper.getLevel(), core.getBlockPos(), core.getBlockState(), core);
     }
 
     // Persistence

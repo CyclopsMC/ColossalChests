@@ -4,7 +4,7 @@
       "model": "colossalchests2:block/chest_wall_obsidian"
     },
     "formed=true": {
-      "model": "colossalchests2:block/chest_wall_obsidian"
+      "model": "colossalchests2:block/chest_wall_obsidian_formed"
     }
   }
 }

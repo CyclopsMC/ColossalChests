@@ -3,6 +3,7 @@ package org.cyclops.colossalchests2.blockentity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -30,6 +31,11 @@ public class BlockEntityChestCoreForge extends BlockEntityChestCore {
         super.onCapabilitiesChanged();
         itemHandler.invalidate();
         itemHandler = LazyOptional.empty();
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return getRenderBounds();
     }
 
     @NotNull

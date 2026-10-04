@@ -2,11 +2,13 @@ package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 
 import java.util.Collections;
@@ -47,6 +49,21 @@ public class BlockChestWall extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FORMED);
+    }
+
+    @Override
+    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        return BlockChestCore.getFormedOcclusionShape(state, super.getOcclusionShape(state, level, pos));
+    }
+
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return BlockChestCore.getFormedLightBlock(state, super.getLightBlock(state, level, pos));
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return BlockChestCore.getFormedPropagatesSkylightDown(state, super.propagatesSkylightDown(state, level, pos));
     }
 
     @Override

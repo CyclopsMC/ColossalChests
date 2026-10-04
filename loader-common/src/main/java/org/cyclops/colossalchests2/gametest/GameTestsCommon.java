@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests2.gametest;
 
+import com.google.common.collect.Sets;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,6 +20,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -41,8 +43,11 @@ import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestInteractions;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
-import org.cyclops.colossalchests2.capability.LoaderCapabilities;
+import org.cyclops.colossalchests2.inventory.ContainerFilteredInterface;
+import org.cyclops.colossalchests2.capability.WallAccess;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
@@ -154,10 +159,16 @@ public class GameTestsCommon {
     }
 
     /**
-     * @return Where a hopper must point into: a wall where the loader supports it, the core otherwise.
+     * Replace a wall by a functional wall.
+     * @return The position.
      */
-    public static BlockPos getHopperTarget(BlockPos corePos, BlockPos wallPos) {
-        return LoaderCapabilities.blockCapabilitiesSupported ? wallPos : corePos;
+    public static BlockPos placeWall(GameTestHelper helper, BlockPos pos, WallType type) {
+        helper.setBlock(pos, functionalWall(type));
+        return pos;
+    }
+
+    public static Block functionalWall(WallType type) {
+        return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, type.getRegistryName()));
     }
 
     private static ItemStack breakCoreAndPickUp(GameTestHelper helper, BlockPos corePos) {
@@ -275,10 +286,8 @@ public class GameTestsCommon {
     @GameTest(template = TEMPLATE_EMPTY)
     public void testHopperInsertsIntoChest(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos target = getHopperTarget(corePos, MIN_A.offset(1, 2, 1));
-        BlockPos hopperPos = LoaderCapabilities.blockCapabilitiesSupported ? target.above() : target.north();
-        helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING,
-                LoaderCapabilities.blockCapabilitiesSupported ? Direction.DOWN : Direction.SOUTH));
+        BlockPos hopperPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.INTERFACE).above();
+        helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
         ((HopperBlockEntity) helper.getBlockEntity(hopperPos)).setItem(0, new ItemStack(Items.STONE, 3));
         helper.succeedWhen(() -> helper.assertValueEqual(getCore(helper, corePos).getStorage().getSlot(0).getCount(), 3L, "stored count"));
     }
@@ -286,11 +295,9 @@ public class GameTestsCommon {
     @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
     public void testBreakWallStopsHopperAndRestoreResumes(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos target = getHopperTarget(corePos, MIN_A.offset(1, 2, 1));
-        BlockPos hopperPos = LoaderCapabilities.blockCapabilitiesSupported ? target.above() : target.north();
+        BlockPos hopperPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.INTERFACE).above();
         BlockPos brokenWall = MIN_A.offset(0, 1, 1);
-        helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING,
-                LoaderCapabilities.blockCapabilitiesSupported ? Direction.DOWN : Direction.SOUTH));
+        helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
         HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
@@ -885,8 +892,7 @@ public class GameTestsCommon {
     @GameTest(template = TEMPLATE_EMPTY)
     public void testLockedSlotsRejectOtherTypesFromHopper(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos target = getHopperTarget(corePos, MIN_A.offset(1, 2, 1));
-        BlockPos hopperPos = LoaderCapabilities.blockCapabilitiesSupported ? target.above() : target.north();
+        BlockPos hopperPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.INTERFACE).above();
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
@@ -896,8 +902,7 @@ public class GameTestsCommon {
                     for (int slot = 0; slot < core.getStorage().getSlotCount(); slot++) {
                         core.getStorage().lockTo(slot, STONE);
                     }
-                    helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING,
-                            LoaderCapabilities.blockCapabilitiesSupported ? Direction.DOWN : Direction.SOUTH));
+                    helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
                     HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
                     hopper.setItem(0, new ItemStack(Items.DIRT, 2));
                     hopper.setItem(1, new ItemStack(Items.STONE, 2));
@@ -949,8 +954,7 @@ public class GameTestsCommon {
     @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
     public void testVoidDestroysHopperOverflowButNotPlayerInserts(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos target = getHopperTarget(corePos, MIN_A.offset(1, 2, 1));
-        BlockPos hopperPos = LoaderCapabilities.blockCapabilitiesSupported ? target.above() : target.north();
+        BlockPos hopperPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.INTERFACE).above();
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
@@ -963,8 +967,7 @@ public class GameTestsCommon {
                     menu.handleChestClick(player, 0, ChestClickAction.TOGGLE_VOID);
                     helper.assertTrue(storage.getSlot(0).isVoiding(), "Expected the slot to be voiding");
                     player.closeContainer();
-                    helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING,
-                            LoaderCapabilities.blockCapabilitiesSupported ? Direction.DOWN : Direction.SOUTH));
+                    helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
                     HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
                     hopper.setItem(0, STONE.copyWithCount(3));
                     hopper.setItem(1, new ItemStack(Items.DIRT, 2));
@@ -1503,6 +1506,230 @@ public class GameTestsCommon {
         for (int slot = 0; slot < core.getStorage().getSlotCount(); slot++) {
             helper.assertValueEqual(loaded.getStorage().getSlot(slot), core.getStorage().getSlot(slot), "slot " + slot);
         }
+    }
+
+
+    // Functional walls
+
+    private static HopperBlockEntity placeHopper(GameTestHelper helper, BlockPos pos, ItemStack... contents) {
+        helper.setBlock(pos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+        HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(pos);
+        for (int i = 0; i < contents.length; i++) {
+            hopper.setItem(i, contents[i].copy());
+        }
+        return hopper;
+    }
+
+    private static int countInHopper(HopperBlockEntity hopper, Item item) {
+        int count = 0;
+        for (int slot = 0; slot < hopper.getContainerSize(); slot++) {
+            if (hopper.getItem(slot).is(item)) {
+                count += hopper.getItem(slot).getCount();
+            }
+        }
+        return count;
+    }
+
+    private static BlockEntityChestWall getWall(GameTestHelper helper, BlockPos pos) {
+        if (!(helper.getBlockEntity(pos) instanceof BlockEntityChestWall wall)) {
+            throw new GameTestAssertException("No functional wall at " + pos);
+        }
+        return wall;
+    }
+
+    /**
+     * Open a Filtered Interface's menu like a click does. Created directly, like {@link #openChest}.
+     */
+    private static ContainerFilteredInterface openFilteredInterface(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
+        ContainerFilteredInterface menu = new ContainerFilteredInterface(101, player.getInventory(), getWall(helper, pos));
+        player.containerMenu = menu;
+        return menu;
+    }
+
+    /**
+     * Click a settings slot with a stack on the cursor, like a player does.
+     */
+    private static void clickSetting(GameTestHelper helper, ContainerFilteredInterface menu, ServerPlayer player, int slot, ItemStack cursor) {
+        menu.setCarried(cursor.copy());
+        menu.clicked(slot, 0, ClickType.PICKUP, player);
+        helper.assertTrue(ItemStack.matches(menu.getCarried(), cursor), "Expected the cursor to stay untouched");
+        menu.setCarried(ItemStack.EMPTY);
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
+    public void testPlainWallsExposeNothingButInterfacesDo(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = MIN_A.offset(1, 2, 1);
+        HopperBlockEntity hopper = placeHopper(helper, wallPos.above(), STONE.copyWithCount(2));
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    helper.assertValueEqual(countInHopper(hopper, Items.STONE), 2, "stone left above a plain wall");
+                    helper.assertTrue(getCore(helper, corePos).getStorage().getSlot(0).isEmpty(), "Expected nothing to go through a plain wall");
+                    placeWall(helper, wallPos, WallType.INTERFACE);
+                })
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenWaitUntil(() -> helper.assertValueEqual(getCore(helper, corePos).getStorage().getSlot(0).getCount(), 2L, "stone through the interface"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testFunctionalWallsFitAnyMaterial(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
+        List<BlockPos> walls = List.of(MIN_A, MIN_A.offset(1, 2, 1), MIN_A.offset(2, 1, 2));
+        for (int i = 0; i < walls.size(); i++) {
+            placeWall(helper, walls.get(i), WallType.VALUES[i]);
+        }
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    // Functional walls draw their icon on the giant chest, plain walls do not.
+                    Set<BlockPos> expected = Sets.newHashSet(helper.absolutePos(corePos));
+                    walls.forEach(pos -> expected.add(helper.absolutePos(pos)));
+                    helper.assertValueEqual(Set.copyOf(getCore(helper, corePos).getDecoratedPositions()), expected, "decorated positions");
+                    for (BlockPos pos : walls) {
+                        helper.assertBlockProperty(pos, BlockChestWall.FORMED, true);
+                        helper.assertTrue(getWall(helper, pos).getCore().isPresent(), "Expected the wall to find its chest at " + pos);
+                    }
+                    helper.destroyBlock(walls.get(1));
+                })
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
+                .thenExecute(() -> helper.assertTrue(getWall(helper, walls.get(0)).getItemHandlerLogic().isEmpty(),
+                        "Expected no item access through a dormant chest"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
+    public void testFilteredInterfaceInputOnly(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos top = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.FILTERED_INTERFACE);
+        BlockPos bottom = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.FILTERED_INTERFACE);
+        ContainerFilteredInterface[] bottomMenu = new ContainerFilteredInterface[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    for (BlockPos pos : List.of(top, bottom)) {
+                        ContainerFilteredInterface menu = openFilteredInterface(helper, player, pos);
+                        clickSetting(helper, menu, player, 0, STONE.copyWithCount(5));
+                        helper.assertTrue(getWall(helper, pos).getSettings().getItem(0).is(Items.STONE), "Expected stone in the filter");
+                        helper.assertValueEqual(getWall(helper, pos).getSettings().getItem(0).getCount(), 1, "filter entry count");
+                        menu.clickMenuButton(player, ContainerFilteredInterface.BUTTON_MODE);
+                        helper.assertValueEqual(getWall(helper, pos).getMode(), WallAccess.Mode.INPUT, "mode after one click");
+                        bottomMenu[0] = menu;
+                    }
+                    placeHopper(helper, top.above(), STONE.copyWithCount(2), new ItemStack(Items.DIRT, 2));
+                    placeHopper(helper, bottom.below());
+                })
+                .thenWaitUntil(() -> helper.assertValueEqual(getCore(helper, corePos).getStorage().getSlot(0).getCount(), 2L, "stone let in"))
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    HopperBlockEntity above = (HopperBlockEntity) helper.getBlockEntity(top.above());
+                    HopperBlockEntity below = (HopperBlockEntity) helper.getBlockEntity(bottom.below());
+                    helper.assertValueEqual(countInHopper(above, Items.DIRT), 2, "dirt kept out by the filter");
+                    helper.assertTrue(below.isEmpty(), "Expected nothing to come out of an input-only interface");
+                    // Output only: the hopper below pulls the stone out.
+                    bottomMenu[0].clickMenuButton(makeViewer(helper), ContainerFilteredInterface.BUTTON_MODE);
+                    helper.assertValueEqual(getWall(helper, bottom).getMode(), WallAccess.Mode.OUTPUT, "mode after two clicks");
+                })
+                .thenWaitUntil(() -> helper.assertValueEqual(countInHopper((HopperBlockEntity) helper.getBlockEntity(bottom.below()), Items.STONE), 2,
+                        "stone pulled from the output-only interface"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
+    public void testFilteredInterfaceExtractsInItsForm(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
+        BlockPos bottom = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.FILTERED_INTERFACE);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.COMPRESSION));
+                    core.getStorage().insert(new ItemStack(Items.IRON_BLOCK), 2, false);
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerFilteredInterface menu = openFilteredInterface(helper, player, bottom);
+                    clickSetting(helper, menu, player, BlockEntityChestWall.FORM_SLOT, new ItemStack(Items.IRON_NUGGET));
+                    helper.assertTrue(getWall(helper, bottom).getAccess().extractionForm() == Items.IRON_NUGGET, "Expected nuggets as the form");
+                    player.closeContainer();
+                    placeHopper(helper, bottom.below());
+                })
+                .thenWaitUntil(() -> helper.assertTrue(countInHopper((HopperBlockEntity) helper.getBlockEntity(bottom.below()), Items.IRON_NUGGET) >= 2,
+                        "Expected the hopper to pull nuggets"))
+                .thenExecute(() -> {
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(bottom.below());
+                    helper.assertValueEqual(countInHopper(hopper, Items.IRON_BLOCK) + countInHopper(hopper, Items.IRON_INGOT), 0, "other forms pulled");
+                    long nuggets = getCore(helper, corePos).getStorage().getAvailable(0, new ItemStack(Items.IRON_NUGGET));
+                    helper.assertValueEqual(nuggets + countInHopper(hopper, Items.IRON_NUGGET), 162L, "nuggets in total");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testFilteredInterfaceSettings(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos pos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.FILTERED_INTERFACE);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    player.getInventory().setItem(0, new ItemStack(Items.DIRT, 7));
+                    ContainerFilteredInterface menu = openFilteredInterface(helper, player, pos);
+                    clickSetting(helper, menu, player, 3, STONE);
+                    // Shift-clicking adds to the filter once and leaves the item in the inventory.
+                    int hotbarSlot = menu.slots.size() - 9;
+                    menu.quickMoveStack(player, hotbarSlot);
+                    menu.quickMoveStack(player, hotbarSlot);
+                    helper.assertValueEqual(player.getInventory().getItem(0).getCount(), 7, "dirt left in the inventory");
+                    BlockEntityChestWall wall = getWall(helper, pos);
+                    helper.assertTrue(wall.getSettings().getItem(0).is(Items.DIRT), "Expected dirt in the first free filter slot");
+                    helper.assertTrue(wall.getSettings().getItem(1).isEmpty(), "Expected dirt in the filter once");
+                    menu.clickMenuButton(player, ContainerFilteredInterface.BUTTON_MODE);
+                    menu.clickMenuButton(player, ContainerFilteredInterface.BUTTON_MODE);
+                    // Clicking with an empty cursor clears an entry.
+                    clickSetting(helper, menu, player, 0, ItemStack.EMPTY);
+                    helper.assertTrue(wall.getSettings().getItem(0).isEmpty(), "Expected the cleared entry");
+                    clickSetting(helper, menu, player, 0, new ItemStack(Items.DIRT));
+                    WallAccess access = wall.getAccess();
+                    helper.assertValueEqual(access.mode(), WallAccess.Mode.OUTPUT, "mode");
+                    helper.assertValueEqual(access.filter().size(), 2, "filter entries");
+
+                    // The settings survive saving and loading.
+                    CompoundTag tag = wall.saveWithoutMetadata(helper.getLevel().registryAccess());
+                    BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
+                    loaded.loadWithComponents(tag, helper.getLevel().registryAccess());
+                    helper.assertValueEqual(loaded.getMode(), WallAccess.Mode.OUTPUT, "loaded mode");
+                    for (int slot = 0; slot < loaded.getSettings().getContainerSize(); slot++) {
+                        helper.assertTrue(ItemStack.matches(loaded.getSettings().getItem(slot), wall.getSettings().getItem(slot)), "loaded setting " + slot);
+                    }
+                    helper.assertTrue(menu.stillValid(player), "Expected the menu to be valid nearby");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
+    public void testVoidWallDestroysHeldOverflow(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos top = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.VOID);
+        long[] capacity = new long[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    capacity[0] = storage.getCapacity(STONE);
+                    storage.insert(0, STONE, capacity[0], false);
+                    placeHopper(helper, top.above(), STONE.copyWithCount(3), new ItemStack(Items.DIRT, 2));
+                })
+                .thenWaitUntil(() -> helper.assertTrue(((HopperBlockEntity) helper.getBlockEntity(top.above())).isEmpty(), "Expected the hopper to empty"))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    helper.assertValueEqual(storage.getSlot(0).getCount(), capacity[0], "stone in its full slot");
+                    helper.assertValueEqual(storage.getSlot(1).getCount(), 2L, "dirt stored");
+                    helper.assertTrue(storage.getSlot(1).matches(new ItemStack(Items.DIRT)), "Expected dirt in the next slot");
+                    helper.assertTrue(storage.getSlot(2).isEmpty(), "Expected the voided stone to take no slot");
+                })
+                .thenSucceed();
     }
 
 }

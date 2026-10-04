@@ -2,6 +2,8 @@ package org.cyclops.colossalchests2.gametest;
 
 import net.minecraft.gametest.framework.GameTest;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.Direction;
@@ -109,6 +111,32 @@ public class GameTestsCapabilitiesForge {
                 })
                 .thenWaitUntil(() -> GameTestsCommon.assertDormant(helper, corePos))
                 .thenExecute(() -> helper.assertFalse(helper.getBlockEntity(corePos).getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH).isPresent(), "Expected no item handler on a dormant core"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCapabilityOnInterfaceWall(GameTestHelper helper) {
+        BlockPos min = new BlockPos(1, 1, 1);
+        BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = GameTestsCommon.placeWall(helper, min.offset(1, 2, 1), WallType.INTERFACE);
+        LazyOptional<IItemHandler>[] first = new LazyOptional[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> GameTestsCommon.assertFormed(helper, corePos, min, 3))
+                .thenExecute(() -> {
+                    first[0] = helper.getBlockEntity(wallPos).getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP);
+                    IItemHandler handler = first[0].orElse(null);
+                    helper.assertTrue(handler != null, "Expected an item handler on a formed interface");
+                    helper.assertTrue(handler.insertItem(0, new ItemStack(Items.STONE, 10), false).isEmpty(), "Expected the interface to accept items");
+                    helper.assertValueEqual(GameTestsCommon.getCore(helper, corePos).getStorage().getSlot(0).getCount(), 10L, "stored count");
+                    helper.setBlock(min.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> GameTestsCommon.assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    // Holders of the old handler learn that it is gone.
+                    helper.assertFalse(first[0].isPresent(), "Expected the cached handler to be invalidated");
+                    helper.assertFalse(helper.getBlockEntity(wallPos).getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP).isPresent(),
+                            "Expected no item handler on a dormant interface");
+                })
                 .thenSucceed();
     }
 

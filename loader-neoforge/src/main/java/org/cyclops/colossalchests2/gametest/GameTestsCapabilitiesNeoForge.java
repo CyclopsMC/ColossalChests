@@ -2,6 +2,7 @@ package org.cyclops.colossalchests2.gametest;
 
 import net.minecraft.gametest.framework.GameTest;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.Direction;
@@ -120,7 +121,8 @@ public class GameTestsCapabilitiesNeoForge {
     public void testCapabilitiesOnFormedChest(GameTestHelper helper) {
         BlockPos min = new BlockPos(1, 1, 1);
         BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);
-        BlockPos wallPos = min.offset(1, 2, 1);
+        BlockPos wallPos = GameTestsCommon.placeWall(helper, min.offset(1, 2, 1), WallType.INTERFACE);
+        BlockPos plainWallPos = min.offset(2, 1, 1);
         BlockPos brokenWall = min.offset(0, 1, 1);
         helper.startSequence()
                 .thenWaitUntil(() -> GameTestsCommon.assertFormed(helper, corePos, min, 3))
@@ -129,6 +131,8 @@ public class GameTestsCapabilitiesNeoForge {
                     IItemHandler wallHandler = helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(wallPos), Direction.UP);
                     IInventoryState state = helper.getLevel().getCapability(org.cyclops.commoncapabilities.api.capability.Capabilities.InventoryState.BLOCK, helper.absolutePos(wallPos), Direction.UP);
                     helper.assertTrue(coreHandler != null && wallHandler != null && state != null, "Expected capabilities on a formed chest");
+                    helper.assertTrue(helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(plainWallPos), Direction.EAST) == null,
+                            "Expected no item handler on a plain wall");
                     int initialState = state.getState();
                     helper.assertTrue(wallHandler.insertItem(0, new ItemStack(Items.STONE, 10), false).isEmpty(), "Expected the wall to accept items");
                     helper.assertValueEqual(coreHandler.getStackInSlot(0).getCount(), 10, "count through the core");

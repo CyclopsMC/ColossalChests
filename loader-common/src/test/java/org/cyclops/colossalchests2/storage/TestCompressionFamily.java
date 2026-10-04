@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
  */
 public class TestCompressionFamily extends BootstrapTest {
 
-    static CompressionFamily iron() {
+    public static CompressionFamily iron() {
         return CompressionFamily.of(Items.IRON_BLOCK, 9, Items.IRON_INGOT, 9, Items.IRON_NUGGET);
     }
 

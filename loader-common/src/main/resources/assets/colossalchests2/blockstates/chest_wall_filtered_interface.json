@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "colossalchests2:block/chest_wall_filtered_interface"
+    },
+    "formed=true": {
+      "model": "colossalchests2:block/chest_wall_filtered_interface_formed"
+    }
+  }
+}

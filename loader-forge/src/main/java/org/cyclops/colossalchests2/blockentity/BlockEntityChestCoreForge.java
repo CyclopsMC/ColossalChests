@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Forge chest core, exposing its item handler while formed.
- * Forge only attaches capabilities to block entities, so walls do not expose item handlers on Forge.
+ * Interface walls expose their own handlers through their block entities.
  * @author rubensworks
  */
 public class BlockEntityChestCoreForge extends BlockEntityChestCore {

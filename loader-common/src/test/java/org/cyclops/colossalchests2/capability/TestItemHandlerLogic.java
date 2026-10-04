@@ -8,6 +8,8 @@ import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 /**
@@ -170,8 +172,57 @@ public class TestItemHandlerLogic extends BootstrapTest {
     public void testAccessors() {
         assertSame(storage, handler.getStorage());
         assertNull(handler.getExtractionForm());
-        assertSame(Items.IRON_INGOT, new ItemHandlerLogic(storage, Items.IRON_INGOT).getExtractionForm());
+        assertSame(Items.IRON_INGOT, new ItemHandlerLogic(storage, new WallAccess(WallAccess.Mode.BOTH, List.of(), Items.IRON_INGOT, false)).getExtractionForm());
         assertEquals(3, handler.getSlots());
+    }
+
+    private ItemHandlerLogic handler(WallAccess.Mode mode, boolean voidFull, ItemStack... filter) {
+        return new ItemHandlerLogic(storage, new WallAccess(mode, List.of(filter), null, voidFull));
+    }
+
+    @Test
+    public void testOutputOnlyRejectsInserts() {
+        ItemHandlerLogic output = handler(WallAccess.Mode.OUTPUT, false);
+        ItemStack stone = new ItemStack(Items.STONE, 3);
+        assertSame(stone, output.insertItem(0, stone, false));
+        assertFalse(output.isItemValid(0, stone));
+        assertTrue(storage.getSlot(0).isEmpty());
+        storage.insert(0, stone, 3, false);
+        assertEquals(3, output.extractItem(0, 64, false).getCount());
+    }
+
+    @Test
+    public void testInputOnlyRejectsExtracts() {
+        ItemHandlerLogic input = handler(WallAccess.Mode.INPUT, false);
+        assertTrue(input.insertItem(0, new ItemStack(Items.STONE, 3), false).isEmpty());
+        assertTrue(input.extractItem(0, 64, false).isEmpty());
+        // Still visible, so consumers can see what is inside.
+        assertEquals(3, input.getStackInSlot(0).getCount());
+        assertEquals(3, storage.getSlot(0).getCount());
+    }
+
+    @Test
+    public void testFilterLimitsBothDirections() {
+        ItemHandlerLogic filtered = handler(WallAccess.Mode.BOTH, false, new ItemStack(Items.STONE));
+        assertTrue(hopperInsertOne(filtered, new ItemStack(Items.STONE)));
+        assertFalse(hopperInsertOne(filtered, new ItemStack(Items.DIRT)));
+        storage.insert(1, new ItemStack(Items.DIRT), 2, false);
+        assertTrue(filtered.extractItem(1, 64, false).isEmpty());
+        assertEquals(1, filtered.extractItem(0, 64, false).getCount());
+    }
+
+    @Test
+    public void testVoidFullThroughHandler() {
+        ItemHandlerLogic voiding = handler(WallAccess.Mode.BOTH, true);
+        ItemStack stone = new ItemStack(Items.STONE);
+        storage.insert(0, stone, storage.getCapacity(stone), false);
+        storage.insert(1, new ItemStack(Items.DIRT), 1, false);
+        storage.insert(2, new ItemStack(Items.GRAVEL), 1, false);
+        // A hopper finds a slot that takes the stone, which is destroyed.
+        assertTrue(hopperInsertOne(voiding, stone));
+        assertEquals(storage.getCapacity(stone), storage.getSlot(0).getCount());
+        // A type the chest does not hold is not destroyed when there is no room for it.
+        assertFalse(hopperInsertOne(voiding, new ItemStack(Items.SAND)));
     }
 
 }

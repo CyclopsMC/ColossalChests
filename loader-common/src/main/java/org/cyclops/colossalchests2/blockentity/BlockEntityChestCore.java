@@ -431,6 +431,16 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         boolean formedState = getBlockState().getValue(BlockChestCore.FORMED);
         List<BlockPos> newDecorated = findDecoratedPositions(newStructure);
         if (Objects.equals(structure, newStructure) && formedState == (newStructure != null)) {
+            // A wall can be swapped without the chest dissolving, such as by commands.
+            if (newStructure != null) {
+                boolean wallsChanged = false;
+                for (BlockPos pos : newStructure.shell()) {
+                    wallsChanged |= setWallFormed(pos, true);
+                }
+                if (wallsChanged) {
+                    invalidateCapabilities(newStructure);
+                }
+            }
             if (!newDecorated.equals(decoratedPositions)) {
                 decoratedPositions = newDecorated;
                 syncToClients();
@@ -468,7 +478,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         }
         List<BlockPos> positions = Lists.newArrayList();
         for (BlockPos pos : structure.shell()) {
-            if (!(level.getBlockState(pos).getBlock() instanceof BlockChestWall)) {
+            if (!(level.getBlockState(pos).getBlock() instanceof BlockChestWall wall && wall.isPlain())) {
                 positions.add(pos);
             }
         }
@@ -495,11 +505,16 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         }
     }
 
-    private void setWallFormed(BlockPos pos, boolean formed) {
+    /**
+     * @return If the wall changed.
+     */
+    private boolean setWallFormed(BlockPos pos, boolean formed) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() instanceof BlockChestWall && state.getValue(BlockChestWall.FORMED) != formed) {
             level.setBlock(pos, state.setValue(BlockChestWall.FORMED, formed), Block.UPDATE_CLIENTS);
+            return true;
         }
+        return false;
     }
 
     private void invalidateCapabilities(@Nullable ChestStructure structure) {

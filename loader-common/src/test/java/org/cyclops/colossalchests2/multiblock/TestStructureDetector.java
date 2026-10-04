@@ -189,6 +189,35 @@ public class TestStructureDetector {
     }
 
     @Test
+    public void testFunctionalWallsFitAnyMaterial() {
+        for (String material : new String[]{"wood", "iron"}) {
+            BlockPos core = MIN.offset(1, 1, 0);
+            // On the core's own lines too, which detection walks to find the size.
+            GridView view = new GridView().cube(MIN, 3, material).core(core, material)
+                    .functionalWall(MIN.offset(0, 1, 0)).functionalWall(MIN.offset(1, 2, 0)).functionalWall(MIN.offset(1, 1, 2));
+            assertValid(detect(view, core), MIN, 3);
+        }
+    }
+
+    @Test
+    public void testOnlyFunctionalWalls() {
+        BlockPos core = MIN.offset(1, 1, 0);
+        GridView view = new GridView();
+        for (BlockPos pos : new ChestStructure(MIN, 3).shell()) {
+            view.functionalWall(pos);
+        }
+        assertValid(detect(view.core(core, "wood"), core), MIN, 3);
+    }
+
+    @Test
+    public void testFunctionalWallsDoNotHideOtherMaterials() {
+        BlockPos core = MIN.offset(1, 1, 0);
+        GridView view = new GridView().cube(MIN, 3, "wood").core(core, "wood")
+                .functionalWall(MIN.offset(0, 1, 0)).wall(MIN.offset(2, 2, 2), "iron");
+        assertEquals(StructureDetector.Result.State.INVALID, detect(view, core).state());
+    }
+
+    @Test
     public void testStructureGeometry() {
         ChestStructure structure = new ChestStructure(MIN, 3);
         assertEquals(MIN.offset(2, 2, 2), structure.max());

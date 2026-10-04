@@ -117,4 +117,48 @@ public class TestChestStorageVoid extends BootstrapTest {
         assertEquals(3, loaded.getSlot(0).getCount());
     }
 
+    @Test
+    public void testVoidFullDestroysOverflowOfHeldTypes() {
+        storage.insert(0, STONE, 250, false);
+        assertEquals(20, storage.insertAutomated(STONE, 20, false, true));
+        assertEquals(256, storage.getSlot(0).getCount());
+        // Overflow never takes new slots.
+        assertTrue(storage.getSlot(1).isEmpty());
+        assertTrue(storage.getSlot(2).isEmpty());
+    }
+
+    @Test
+    public void testVoidFullStoresNewTypes() {
+        assertEquals(10, storage.insertAutomated(DIRT, 10, false, true));
+        assertEquals(10, storage.getSlot(0).getCount());
+    }
+
+    @Test
+    public void testVoidFullRejectsNewTypesWithoutRoom() {
+        storage.insert(0, STONE, 1, false);
+        storage.insert(1, new ItemStack(Items.GRAVEL), 1, false);
+        storage.insert(2, new ItemStack(Items.SAND), 1, false);
+        assertEquals(0, storage.insertAutomated(DIRT, 5, false, true));
+    }
+
+    @Test
+    public void testVoidFullIntoSlotOnlyWhenNoHoldingSlotHasRoom() {
+        storage.insert(0, STONE, 256, false);
+        storage.insert(1, STONE, 10, false);
+        // Slot 1 still has room, so a hopper walking the slots gets there.
+        assertEquals(0, storage.insertAutomated(0, STONE, 5, false, true));
+        storage.insert(1, STONE, 246, false);
+        assertEquals(5, storage.insertAutomated(0, STONE, 5, false, true));
+        assertEquals(256, storage.getSlot(1).getCount());
+    }
+
+    @Test
+    public void testWithoutVoidFullNothingIsVoided() {
+        storage.insert(0, STONE, 256, false);
+        storage.insert(1, STONE, 256, false);
+        storage.insert(2, STONE, 256, false);
+        assertEquals(0, storage.insertAutomated(STONE, 5, false, false));
+        assertEquals(0, storage.insertAutomated(0, STONE, 5, false, false));
+    }
+
 }

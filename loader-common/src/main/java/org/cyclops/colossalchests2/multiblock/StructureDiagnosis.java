@@ -63,12 +63,13 @@ public final class StructureDiagnosis {
             }
         }
 
-        Object material = cores.size() == 1 ? view.getMember(cores.get(0)).material() : startMember.material();
+        Object material = cores.size() == 1 ? view.getMember(cores.get(0)).material() : getMaterial(view, members, startMember);
         int sizeX = max.getX() - min.getX() + 1;
         int sizeY = max.getY() - min.getY() + 1;
         int sizeZ = max.getZ() - min.getZ() + 1;
         int size = Math.max(sizeX, Math.max(sizeY, sizeZ));
-        int maxSize = Math.min(maxSizeForMaterial.get(material), GeneralConfig.HARD_MAX_SIZE);
+        int maxSize = material == StructureView.Member.ANY_MATERIAL ? GeneralConfig.HARD_MAX_SIZE
+                : Math.min(maxSizeForMaterial.get(material), GeneralConfig.HARD_MAX_SIZE);
 
         List<BlockPos> missing = Lists.newArrayList();
         List<BlockPos> wrongMaterial = Lists.newArrayList();
@@ -84,7 +85,7 @@ public final class StructureDiagnosis {
                     StructureView.Member member = view.getMember(pos);
                     if (member == null) {
                         missing.add(pos.immutable());
-                    } else if (!member.material().equals(material)) {
+                    } else if (!member.fits(material)) {
                         wrongMaterial.add(pos.immutable());
                     }
                 } else if (!view.isEmpty(pos)) {
@@ -94,6 +95,22 @@ public final class StructureDiagnosis {
         }
         return new Result(sizeX, sizeY, sizeZ, maxSize, ImmutableList.copyOf(cores),
                 ImmutableList.copyOf(missing), ImmutableList.copyOf(wrongMaterial), ImmutableList.copyOf(obstructions));
+    }
+
+    /**
+     * @return The material of the first member that has one, as functional walls fit any material.
+     */
+    private static Object getMaterial(StructureView view, Set<BlockPos> members, StructureView.Member startMember) {
+        if (startMember.material() != StructureView.Member.ANY_MATERIAL) {
+            return startMember.material();
+        }
+        for (BlockPos pos : members) {
+            Object material = view.getMember(pos).material();
+            if (material != StructureView.Member.ANY_MATERIAL) {
+                return material;
+            }
+        }
+        return StructureView.Member.ANY_MATERIAL;
     }
 
     /**

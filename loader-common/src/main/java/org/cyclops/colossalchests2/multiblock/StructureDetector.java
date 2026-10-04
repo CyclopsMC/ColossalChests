@@ -81,7 +81,7 @@ public final class StructureDetector {
                 break;
             }
             StructureView.Member member = view.getMember(current);
-            if (member == null || !member.material().equals(material)) {
+            if (member == null || !member.fits(material)) {
                 break;
             }
             count++;
@@ -118,7 +118,7 @@ public final class StructureDetector {
                     boolean shell = dx == 0 || dx == last || dy == 0 || dy == last || dz == 0 || dz == last;
                     if (shell) {
                         StructureView.Member member = view.getMember(current);
-                        if (member == null || !member.material().equals(material) || (member.core() && !current.equals(core))) {
+                        if (member == null || !member.fits(material) || (member.core() && !current.equals(core))) {
                             return Validity.INVALID;
                         }
                     } else if (!view.isEmpty(current)) {

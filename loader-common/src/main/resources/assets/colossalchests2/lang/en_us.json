@@ -53,7 +53,7 @@
   "gui.colossalchests2.lock_all": "Lock all",
   "gui.colossalchests2.clear_locks": "Clear locks",
   "gui.colossalchests2.slot_locked": "Locked: only takes this item. Alt-click to unlock.",
-  "gui.colossalchests2.lock_all.info": "Lock every slot that holds items, so each only takes its own item.",
+  "gui.colossalchests2.lock_all.info": "Lock every slot that holds items.",
   "gui.colossalchests2.clear_locks.info": "Unlock all slots. Contents are not modified.",
   "gui.colossalchests2.requires_lock_upgrade": "Requires the Lock upgrade.",
   "gui.colossalchests2.over_capacity": "%s slots are over capacity: take items out until they fit",

@@ -1,0 +1,71 @@
+package org.cyclops.colossalchests2.network.packet;
+
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.inventory.ChestSettings;
+import org.cyclops.colossalchests2.inventory.ContainerChest;
+import org.cyclops.colossalchests2.storage.CapacityProfile;
+import org.cyclops.cyclopscore.network.PacketBase;
+
+/**
+ * The chest state a viewer needs besides slots: capacity rules and settings.
+ * @author rubensworks
+ */
+public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStatePacket> {
+
+    public static final Type<ClientboundChestStatePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "chest_state"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundChestStatePacket> CODEC = getCodec(ClientboundChestStatePacket::new);
+
+    private int containerId;
+    private CapacityProfile profile;
+    private ChestSettings settings;
+
+    public ClientboundChestStatePacket() {
+        super(TYPE);
+    }
+
+    public ClientboundChestStatePacket(int containerId, CapacityProfile profile, ChestSettings settings) {
+        super(TYPE);
+        this.containerId = containerId;
+        this.profile = profile;
+        this.settings = settings;
+    }
+
+    @Override
+    public boolean isAsync() {
+        return false;
+    }
+
+    @Override
+    public void encode(RegistryFriendlyByteBuf buf) {
+        buf.writeVarInt(containerId);
+        buf.writeVarLong(profile.depth());
+        buf.writeVarLong(profile.maxItemsPerSlot());
+        buf.writeBoolean(profile.acceptNonStackables());
+        buf.writeVarLong(profile.nonStackableCapacity());
+        ChestSettings.STREAM_CODEC.encode(buf, settings);
+    }
+
+    @Override
+    public void decode(RegistryFriendlyByteBuf buf) {
+        containerId = buf.readVarInt();
+        profile = new CapacityProfile(buf.readVarLong(), buf.readVarLong(), buf.readBoolean(), buf.readVarLong());
+        settings = ChestSettings.STREAM_CODEC.decode(buf);
+    }
+
+    @Override
+    public void actionClient(Level level, Player player) {
+        if (player.containerMenu instanceof ContainerChest menu && menu.containerId == containerId) {
+            menu.applyState(profile, settings);
+        }
+    }
+
+    @Override
+    public void actionServer(Level level, ServerPlayer player) {
+    }
+}

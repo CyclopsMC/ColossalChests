@@ -11,6 +11,8 @@ import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigForge;
 import org.cyclops.colossalchests2.capability.LoaderCapabilities;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
+import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
+import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
 import org.cyclops.colossalchests2.proxy.ClientProxyForge;
 import org.cyclops.colossalchests2.proxy.CommonProxyForge;
@@ -69,6 +71,8 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         configHandler.addConfigurable(new GeneralConfig<>(this));
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
+        configHandler.addConfigurable(new DataComponentChestSettingsConfig<>(this));
+        configHandler.addConfigurable(new ContainerChestConfig<>(this));
         for (ChestMaterial material : ChestMaterial.VALUES) {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));

@@ -46,6 +46,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_SLOT_SHADOW = 0xFF373737;
     private static final int COLOR_OVER_CAPACITY = 0x80FF2020;
     private static final int COLOR_SEARCH_MISS = 0xC0303030;
+    private static final int COLOR_SEARCH_HIT = 0xFFFFD83D;
     private static final int COLOR_TEXT = 0xFF404040;
     private static final int COLOR_WARNING = 0xFFAA0000;
     private static final int SETTINGS_WIDTH = 16;
@@ -178,6 +179,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             }
             if (!ChestSearch.matches(deepSlot, query, stack -> stack.getHoverName().getString())) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_SEARCH_MISS);
+            } else if (!query.isBlank()) {
+                drawSearchHit(guiGraphics, x, y);
             }
             if (slot == hovered || draggedSlots.contains(slot)) {
                 renderSlotHighlight(guiGraphics, x, y, 0);
@@ -288,6 +291,22 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         guiGraphics.fill(x, y, x + 16, y + 16, COLOR_SLOT);
     }
 
+    private boolean isOverSearchField(double mouseX, double mouseY) {
+        int x = leftPos + getGridLeft();
+        int y = topPos + SEARCH_Y;
+        return mouseX >= x && mouseX < x + getGridWidth() && mouseY >= y && mouseY < y + SEARCH_HEIGHT;
+    }
+
+    /**
+     * A border along the inside of a slot that matches the search.
+     */
+    private static void drawSearchHit(GuiGraphics guiGraphics, int x, int y) {
+        guiGraphics.fill(x, y, x + 16, y + 1, 400, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x, y + 15, x + 16, y + 16, 400, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x, y + 1, x + 1, y + 15, 400, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x + 15, y + 1, x + 16, y + 15, 400, COLOR_SEARCH_HIT);
+    }
+
     /**
      * The sunken search field of the creative inventory.
      */
@@ -343,6 +362,14 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT && searchField.visible && isOverSearchField(mouseX, mouseY)) {
+            // Select all, so typing replaces the query.
+            setFocused(searchField);
+            searchField.setFocused(true);
+            searchField.moveCursorToEnd(false);
+            searchField.setHighlightPos(0);
+            return true;
+        }
         int slot = getHoveredSlot(mouseX, mouseY);
         if (slot < 0) {
             return super.mouseClicked(mouseX, mouseY, button);

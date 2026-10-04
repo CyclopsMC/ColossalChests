@@ -14,13 +14,14 @@ public class TestChestLayout {
         assertEquals(new ChestLayout(27, 9, 3), ChestLayout.of(27));
         assertEquals(new ChestLayout(54, 9, 6), ChestLayout.of(54));
         assertEquals(new ChestLayout(81, 18, 5), ChestLayout.of(81));
+        assertEquals(new ChestLayout(108, 18, 6), ChestLayout.of(108));
         assertEquals(new ChestLayout(28, 9, 4), ChestLayout.of(28));
     }
 
     @Test
     public void testFitsSmallestGuiScale() {
         // The scaled GUI is at least 240 pixels high.
-        for (int slots : new int[]{27, 54, 81}) {
+        for (int slots : new int[]{27, 54, 81, 108}) {
             assertTrue("height for " + slots, ChestLayout.of(slots).getHeight() <= 240);
         }
         assertEquals(176, ChestLayout.of(27).getWidth());
@@ -40,10 +41,25 @@ public class TestChestLayout {
         assertEquals(10, layout.getPositionAt(layout.getSlotX(10) + 15, layout.getSlotY(10) + 15));
         assertEquals(-1, layout.getPositionAt(layout.getSlotX(0) - 3, layout.getSlotY(0)));
         assertEquals(-1, layout.getPositionAt(layout.getSlotX(26), layout.getSlotY(26) + 18));
-        // The last row of an 81-slot grid is half full.
+        // The last row of an 81-slot grid is half full, and centered.
         ChestLayout large = ChestLayout.of(81);
         assertEquals(80, large.getPositionAt(large.getSlotX(80), large.getSlotY(80)));
+        assertEquals(72, large.getPositionAt(large.getSlotX(72), large.getSlotY(72)));
         assertEquals(-1, large.getPositionAt(large.getSlotX(80) + 18, large.getSlotY(80)));
+        assertEquals(-1, large.getPositionAt(large.getSlotX(72) - 3, large.getSlotY(72)));
+    }
+
+    @Test
+    public void testLastRowCentered() {
+        ChestLayout large = ChestLayout.of(81);
+        assertEquals(9, large.getSlotsInRow(4));
+        // Half a grid shifted, in line with the player inventory below.
+        assertEquals(large.getGridX() + 81, large.getSlotX(72));
+        assertEquals(large.getPlayerInventoryX(), large.getSlotX(72));
+        assertEquals(large.getSlotX(72) + 8 * 18, large.getSlotX(80));
+        // Full rows are not shifted.
+        assertEquals(large.getGridX(), large.getSlotX(0));
+        assertEquals(large.getGridX(), ChestLayout.of(108).getSlotX(90));
     }
 
 }

@@ -63,6 +63,7 @@ import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
+import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.cyclopscore.network.PacketBase;
 
@@ -975,7 +976,9 @@ public class GameTestsCommon {
                     ContainerChest client = new ContainerChest(menu.containerId, player.getInventory(), openData);
                     helper.assertValueEqual(client.getUpgradeSlotCount(), 1, "upgrade slots of a wooden chest");
                     helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.DEPTH), 0, "depth upgrades a wooden chest takes");
-                    helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.SLOT_EXPANSION), 2, "slot expansions a chest takes");
+                    // Depends on the max slots config, which a run directory may have saved.
+                    helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.SLOT_EXPANSION),
+                            ChestUpgradeRules.getMaxCount(ChestUpgrades.SLOT_EXPANSION, ChestMaterial.WOOD.id()), "slot expansions a chest takes");
                     // The client explains why an upgrade does not go in.
                     Component noDepth = client.getUpgradeInsertProblem(upgradeItem(ChestUpgrades.DEPTH));
                     helper.assertTrue(noDepth != null && client.doesBetterMaterialTakeMore(upgradeItem(ChestUpgrades.DEPTH)),

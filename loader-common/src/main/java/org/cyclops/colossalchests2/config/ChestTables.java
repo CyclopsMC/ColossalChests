@@ -41,7 +41,7 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
                             .put(id("obsidian"), 5)
                             .put(id("netherite"), 6)
                             .build(), 2))
-                    .put(id("slot_expansion"), new UpgradeProperties(2, Map.of(), 27))
+                    .put(id("slot_expansion"), new UpgradeProperties(3, Map.of(), 27))
                     .put(id("lock"), new UpgradeProperties(1, Map.of(), 1))
                     .build()
     );

@@ -12,6 +12,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
+import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -48,7 +49,7 @@ public class ContainerChest extends AbstractContainerMenu {
      */
     public static final double MAX_DISTANCE = 8;
     public static final int MAX_QUERY_LENGTH = 64;
-    public static final int MAX_DRAG_SLOTS = 81;
+    public static final int MAX_DRAG_SLOTS = GeneralConfig.HARD_MAX_SLOTS;
     public static final int UPGRADE_SLOT_X = -19;
     public static final int UPGRADE_SLOT_Y = 8;
 

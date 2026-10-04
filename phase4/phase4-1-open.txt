@@ -1,0 +1,9 @@
+# Fresh world. A wooden 3x3 with mixed contents; the player opens it from a wall.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+wait --ticks 10
+eval "server.execute { def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(dev.item('minecraft:stone'), 1234, false); s.insert(dev.item('minecraft:dirt'), 64, false); s.insert(dev.item('minecraft:diamond'), 3, false); s.insert(dev.item('minecraft:ender_pearl'), 100, false); s.insert(dev.item('minecraft:oak_log'), 2048, false); s.insert(dev.item('minecraft:diamond_sword'), 1, false) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+screenshot --name phase4-gui-27

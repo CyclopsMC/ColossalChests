@@ -1,0 +1,33 @@
+# Continues after phase4-1 with the GUI open (GUI scale 2: the grid starts at 133,61, slots are 18 apart).
+command "item replace entity @s hotbar.0 with minecraft:air"
+mouse-move 141,69
+wait --ticks 3
+screenshot --name phase4-tooltip
+# Left click: one max stack (64 of 1024) on the cursor.
+click --at 141,69 --button 0
+wait --ticks 3
+eval "[player.containerMenu.getCarried().getCount(), player.containerMenu.getChestSlot(0).getCount()]"
+screenshot --name phase4-cursor
+# Left click with the cursor: everything goes back in.
+click --at 141,69 --button 0
+wait --ticks 3
+eval "[player.containerMenu.getCarried().getCount(), player.containerMenu.getChestSlot(0).getCount()]"
+# Right click: half a max stack.
+click --at 141,69 --button 1
+wait --ticks 3
+eval "[player.containerMenu.getCarried().getCount(), player.containerMenu.getChestSlot(0).getCount()]"
+# Right click with the cursor: one item goes back in.
+click --at 141,69 --button 1
+wait --ticks 3
+eval "[player.containerMenu.getCarried().getCount(), player.containerMenu.getChestSlot(0).getCount()]"
+click --at 141,69 --button 0
+wait --ticks 3
+# Shift and ctrl click on the ender pearls (slot 4). The screen reads modifiers from the real keyboard, so this sends
+# the same click packet the screen sends for them.
+eval "def cl = screen.getClass().getClassLoader(); def P = cl.loadClass('org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket'); def A = cl.loadClass('org.cyclops.colossalchests2.inventory.ChestClickAction'); cl.loadClass('org.cyclops.colossalchests2.ColossalChestsInstance').MOD.getPacketHandlerCommon().sendToServer(P.newInstance(player.containerMenu.containerId, 4, A.MOVE_STACK))"
+wait --ticks 3
+eval "[player.getInventory().countItem(dev.item('minecraft:ender_pearl').getItem()), player.containerMenu.getChestSlot(4).getCount()]"
+eval "def cl = screen.getClass().getClassLoader(); def P = cl.loadClass('org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket'); def A = cl.loadClass('org.cyclops.colossalchests2.inventory.ChestClickAction'); cl.loadClass('org.cyclops.colossalchests2.ColossalChestsInstance').MOD.getPacketHandlerCommon().sendToServer(P.newInstance(player.containerMenu.containerId, 4, A.MOVE_ALL))"
+wait --ticks 3
+eval "[player.getInventory().countItem(dev.item('minecraft:ender_pearl').getItem()), player.containerMenu.getChestSlot(4).getCount()]"
+screenshot --name phase4-moved

@@ -1,0 +1,22 @@
+# Fresh world. Unformed builds: right-clicking a wall explains why, and highlights the blocks at fault.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "setblock 4 6 4 minecraft:air"
+command "setblock 3 5 5 minecraft:stone"
+command "setblock 2 6 5 colossalchests2:chest_wall_iron"
+command "fill 8 4 4 10 6 6 colossalchests2:chest_wall_wood hollow"
+command "fill 13 4 4 16 7 7 colossalchests2:chest_wall_wood hollow"
+command "setblock 14 5 4 colossalchests2:chest_core_wood"
+teleport 2.5 4 -2 --yaw -20 --pitch -15
+wait --ticks 10
+use 2 5 4 --face north
+wait --ticks 4
+screenshot --name phase4-feedback-blocks
+teleport 9.5 4 0 --yaw 0 --pitch 0
+use 9 5 4 --face north
+wait --ticks 4
+screenshot --name phase4-feedback-no-core
+teleport 14.5 4 -1 --yaw 0 --pitch 0
+use 14 5 4 --face north
+wait --ticks 4
+screenshot --name phase4-feedback-too-large

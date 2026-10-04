@@ -1,0 +1,27 @@
+# Continues after phase4-1 with the GUI open. Search and sort run on the server.
+set-text Search "log"
+wait --ticks 5
+screenshot --name phase4-search
+eval "player.containerMenu.getView()"
+set-text Search ""
+wait --ticks 5
+click --widget "#" --button 0
+wait --ticks 5
+screenshot --name phase4-sort-count
+eval "player.containerMenu.getView()"
+click --widget "A" --button 0
+wait --ticks 5
+screenshot --name phase4-sort-name
+click --widget "@" --button 0
+wait --ticks 5
+screenshot --name phase4-sort-mod
+eval "[player.containerMenu.getSettings().sortMode(), player.containerMenu.getView()]"
+click --widget "@" --button 0
+wait --ticks 5
+eval "player.containerMenu.getSettings().sortMode()"
+click --widget "⚙" --button 0
+wait --ticks 5
+screenshot --name phase4-settings
+mouse-move 160,128
+wait --ticks 3
+screenshot --name phase4-settings-lock-tooltip

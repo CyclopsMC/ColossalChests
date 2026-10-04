@@ -1,0 +1,13 @@
+# Continues after phase4-4. Lowers the depth of 3x3 chests to 1 stack per slot, so the 1,024 stone and logs no longer fit.
+eval "def cl = level.getBlockEntity(dev.pos(3,5,4)).getClass().getClassLoader(); def c = cl.loadClass('org.cyclops.colossalchests2.GeneralConfig'); c.baseSlots = 27; c.depthSize3 = 1"
+command "setblock 4 5 5 minecraft:air"
+wait --ticks 5
+command "setblock 4 5 5 colossalchests2:chest_wall_wood"
+wait --ticks 5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 141,69
+wait --ticks 3
+screenshot --name phase4-over-capacity
+close-screen
+eval "def cl = level.getBlockEntity(dev.pos(3,5,4)).getClass().getClassLoader(); cl.loadClass('org.cyclops.colossalchests2.GeneralConfig').depthSize3 = 16"

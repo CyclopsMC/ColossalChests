@@ -1,0 +1,23 @@
+# Continues after phase4-1 (GUI open). Raises the base slot count in the config, re-forms the chest, and shows the 54 and 81 slot layouts.
+close-screen
+eval "def cl = level.getBlockEntity(dev.pos(3,5,4)).getClass().getClassLoader(); cl.loadClass('org.cyclops.colossalchests2.GeneralConfig').baseSlots = 54"
+command "setblock 4 5 5 minecraft:air"
+wait --ticks 5
+command "setblock 4 5 5 colossalchests2:chest_wall_wood"
+wait --ticks 5
+use 2 5 4 --face north
+wait --ticks 10
+screenshot --name phase4-gui-54
+close-screen
+eval "def cl = level.getBlockEntity(dev.pos(3,5,4)).getClass().getClassLoader(); cl.loadClass('org.cyclops.colossalchests2.GeneralConfig').baseSlots = 81"
+command "setblock 4 5 5 minecraft:air"
+wait --ticks 5
+command "setblock 4 5 5 colossalchests2:chest_wall_wood"
+wait --ticks 5
+use 2 5 4 --face north
+wait --ticks 10
+screenshot --name phase4-gui-81
+click --widget "⚙" --button 0
+wait --ticks 5
+screenshot --name phase4-gui-81-settings
+close-screen

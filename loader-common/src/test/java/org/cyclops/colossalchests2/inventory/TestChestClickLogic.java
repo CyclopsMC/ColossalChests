@@ -161,6 +161,49 @@ public class TestChestClickLogic extends BootstrapTest {
         assertEquals(40, cursor.getCount());
     }
 
+    // Dragging
+
+    @Test
+    public void testDragEvenly() {
+        ItemStack cursor = ChestClickLogic.drag(storage, new int[]{0, 1, 2}, false, STONE.copyWithCount(10));
+        assertEquals(1, cursor.getCount());
+        assertEquals(3, storage.getSlot(0).getCount());
+        assertEquals(3, storage.getSlot(1).getCount());
+        assertEquals(3, storage.getSlot(2).getCount());
+    }
+
+    @Test
+    public void testDragOneEach() {
+        ItemStack cursor = ChestClickLogic.drag(storage, new int[]{2, 0}, true, STONE.copyWithCount(10));
+        assertEquals(8, cursor.getCount());
+        assertEquals(1, storage.getSlot(0).getCount());
+        assertEquals(1, storage.getSlot(2).getCount());
+    }
+
+    @Test
+    public void testDragSkipsSlotsOfOtherTypes() {
+        storage.insert(1, PEARL, 1, false);
+        ItemStack cursor = ChestClickLogic.drag(storage, new int[]{0, 1, 2}, false, STONE.copyWithCount(9));
+        assertEquals(3, cursor.getCount());
+        assertEquals(1, storage.getSlot(1).getCount());
+        assertEquals(3, storage.getSlot(2).getCount());
+    }
+
+    @Test
+    public void testDragWithFewItemsGivesOneEachUntilEmpty() {
+        ItemStack cursor = ChestClickLogic.drag(storage, new int[]{0, 1, 2}, false, STONE.copyWithCount(2));
+        assertTrue(cursor.isEmpty());
+        assertEquals(1, storage.getSlot(1).getCount());
+        assertTrue(storage.getSlot(2).isEmpty());
+    }
+
+    @Test
+    public void testDragNothing() {
+        ItemStack cursor = STONE.copyWithCount(5);
+        assertSame(cursor, ChestClickLogic.drag(storage, new int[0], false, cursor));
+        assertTrue(ChestClickLogic.drag(storage, new int[]{0}, false, ItemStack.EMPTY).isEmpty());
+    }
+
     /**
      * An inventory of a number of stone-only slots.
      */

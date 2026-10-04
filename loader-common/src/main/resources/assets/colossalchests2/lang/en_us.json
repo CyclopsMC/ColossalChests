@@ -24,12 +24,6 @@
   "material.colossalchests2.netherite": "Netherite",
   "container.colossalchests2.chest": "%s Chest",
   "gui.colossalchests2.search": "Search",
-  "gui.colossalchests2.sort.name": "Sort by name",
-  "gui.colossalchests2.sort.name.short": "A",
-  "gui.colossalchests2.sort.count": "Sort by count",
-  "gui.colossalchests2.sort.count.short": "#",
-  "gui.colossalchests2.sort.mod": "Sort by mod",
-  "gui.colossalchests2.sort.mod.short": "@",
   "gui.colossalchests2.settings": "Settings",
   "gui.colossalchests2.show_fill_levels": "Fill: %s",
   "gui.colossalchests2.show_counts": "Counts: %s",
@@ -37,7 +31,6 @@
   "gui.colossalchests2.lock_all": "Lock all",
   "gui.colossalchests2.clear_locks": "Clear locks",
   "gui.colossalchests2.requires_lock_upgrade": "Requires the Lock upgrade.",
-  "gui.colossalchests2.info": "%s slots × %s stacks",
   "gui.colossalchests2.over_capacity": "%s over capacity",
   "gui.colossalchests2.count": "%s of %s",
   "gui.colossalchests2.slot_over_capacity": "Over capacity: take items out until it fits again.",
@@ -51,5 +44,9 @@
   "chest.colossalchests2.diagnosis.blocks": "Not formed. Missing walls: %s, other material: %s, blocks inside: %s (highlighted).",
   "gui.colossalchests2.show_fill_levels.info": "If Display walls show how full their slot is.",
   "gui.colossalchests2.show_counts.info": "If Display walls show item counts.",
-  "gui.colossalchests2.show_upgrade_indicators.info": "If Display walls show the applied upgrades."
+  "gui.colossalchests2.show_upgrade_indicators.info": "If Display walls show the applied upgrades.",
+  "gui.colossalchests2.slots": "%s slots",
+  "gui.colossalchests2.capacity": "%s items per slot",
+  "gui.colossalchests2.capacity.stacks": "%s stacks of 64",
+  "gui.colossalchests2.capacity.small_stacks": "%s for items that stack to 16"
 }

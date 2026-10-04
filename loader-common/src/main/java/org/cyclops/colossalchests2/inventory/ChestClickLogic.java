@@ -40,6 +40,30 @@ public final class ChestClickLogic {
         };
     }
 
+    /**
+     * Spread the cursor over slots, like dragging a stack over vanilla slots: evenly with the left button,
+     * one item per slot with the right button. Slots that cannot take the item are skipped.
+     * @param storage The storage.
+     * @param slots The dragged slots, in drag order.
+     * @param oneEach If each slot gets one item, otherwise the cursor is split evenly.
+     * @param cursor The stack on the cursor, not modified.
+     * @return The new cursor stack.
+     */
+    public static ItemStack drag(ChestStorage storage, int[] slots, boolean oneEach, ItemStack cursor) {
+        if (cursor.isEmpty() || slots.length == 0) {
+            return cursor;
+        }
+        int remaining = cursor.getCount();
+        int perSlot = oneEach ? 1 : Math.max(1, remaining / slots.length);
+        for (int slot : slots) {
+            if (remaining <= 0) {
+                break;
+            }
+            remaining -= (int) storage.insert(slot, cursor, Math.min(perSlot, remaining), false);
+        }
+        return cursor.copyWithCount(remaining);
+    }
+
     private static int maxStack(DeepSlot deepSlot) {
         return (int) Math.min(deepSlot.getPrototype().getMaxStackSize(), deepSlot.getCount());
     }

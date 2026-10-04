@@ -4,6 +4,7 @@ import org.cyclops.colossalchests2.ColossalChestsFabric;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.cyclopscore.init.ModBaseFabric;
 import org.cyclops.cyclopscore.network.IPacketHandler;
@@ -27,6 +28,7 @@ public class CommonProxyFabric extends CommonProxyComponentFabric {
         packetHandler.register(ClientboundChestSlotsPacket.class, ClientboundChestSlotsPacket.TYPE, ClientboundChestSlotsPacket.CODEC);
         packetHandler.register(ClientboundChestStatePacket.class, ClientboundChestStatePacket.TYPE, ClientboundChestStatePacket.CODEC);
         packetHandler.register(ServerboundChestClickPacket.class, ServerboundChestClickPacket.TYPE, ServerboundChestClickPacket.CODEC);
+        packetHandler.register(ServerboundChestDragPacket.class, ServerboundChestDragPacket.TYPE, ServerboundChestDragPacket.CODEC);
         packetHandler.register(ServerboundChestSettingsPacket.class, ServerboundChestSettingsPacket.TYPE, ServerboundChestSettingsPacket.CODEC);
     }
 }

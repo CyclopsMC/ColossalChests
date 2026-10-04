@@ -7,32 +7,31 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.cyclops.colossalchests2.Reference;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 /**
- * The chest state a viewer needs besides slots: depth and settings.
+ * Dragging the cursor stack over chest slots in the GUI.
  * @author rubensworks
  */
-public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStatePacket> {
+public class ServerboundChestDragPacket extends PacketBase<ServerboundChestDragPacket> {
 
-    public static final Type<ClientboundChestStatePacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "chest_state"));
-    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundChestStatePacket> CODEC = getCodec(ClientboundChestStatePacket::new);
+    public static final Type<ServerboundChestDragPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "chest_drag"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundChestDragPacket> CODEC = getCodec(ServerboundChestDragPacket::new);
 
     private int containerId;
-    private long depth;
-    private ChestSettings settings;
+    private int[] slots;
+    private boolean oneEach;
 
-    public ClientboundChestStatePacket() {
+    public ServerboundChestDragPacket() {
         super(TYPE);
     }
 
-    public ClientboundChestStatePacket(int containerId, long depth, ChestSettings settings) {
+    public ServerboundChestDragPacket(int containerId, int[] slots, boolean oneEach) {
         super(TYPE);
         this.containerId = containerId;
-        this.depth = depth;
-        this.settings = settings;
+        this.slots = slots;
+        this.oneEach = oneEach;
     }
 
     @Override
@@ -43,25 +42,25 @@ public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStat
     @Override
     public void encode(RegistryFriendlyByteBuf buf) {
         buf.writeVarInt(containerId);
-        buf.writeVarLong(depth);
-        ChestSettings.STREAM_CODEC.encode(buf, settings);
+        buf.writeVarIntArray(slots);
+        buf.writeBoolean(oneEach);
     }
 
     @Override
     public void decode(RegistryFriendlyByteBuf buf) {
         containerId = buf.readVarInt();
-        depth = buf.readVarLong();
-        settings = ChestSettings.STREAM_CODEC.decode(buf);
+        slots = buf.readVarIntArray(ContainerChest.MAX_DRAG_SLOTS);
+        oneEach = buf.readBoolean();
     }
 
     @Override
     public void actionClient(Level level, Player player) {
-        if (player.containerMenu instanceof ContainerChest menu && menu.containerId == containerId) {
-            menu.applyState(depth, settings);
-        }
     }
 
     @Override
     public void actionServer(Level level, ServerPlayer player) {
+        if (player.containerMenu instanceof ContainerChest menu && menu.containerId == containerId && menu.stillValid(player)) {
+            menu.handleChestDrag(slots, oneEach);
+        }
     }
 }

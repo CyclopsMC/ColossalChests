@@ -37,8 +37,17 @@ public class TestChestShape {
     public void testFacingTiesPreferZ() {
         assertEquals(Direction.SOUTH, ChestShape.getFacing(SIZE_3, MIN.offset(2, 0, 2)));
         assertEquals(Direction.NORTH, ChestShape.getFacing(SIZE_3, MIN.offset(0, 2, 0)));
-        assertEquals(Direction.NORTH, ChestShape.getFacing(SIZE_2, MIN.offset(1, 1, 0)));
-        assertEquals(Direction.SOUTH, ChestShape.getFacing(SIZE_2, MIN.offset(0, 0, 1)));
+        assertEquals(Direction.NORTH, ChestShape.getFacing(SIZE_3, MIN.offset(2, 1, 0)));
+    }
+
+    @Test
+    public void testFacingSize2LikeColossalChests1() {
+        // Off the diagonal, the x axis wins.
+        assertEquals(Direction.EAST, ChestShape.getFacing(SIZE_2, MIN.offset(1, 1, 0)));
+        assertEquals(Direction.WEST, ChestShape.getFacing(SIZE_2, MIN.offset(0, 0, 1)));
+        // On the diagonal, the z axis wins.
+        assertEquals(Direction.NORTH, ChestShape.getFacing(SIZE_2, MIN.offset(0, 1, 0)));
+        assertEquals(Direction.SOUTH, ChestShape.getFacing(SIZE_2, MIN.offset(1, 0, 1)));
     }
 
     @Test

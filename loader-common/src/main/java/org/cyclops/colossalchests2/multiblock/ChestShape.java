@@ -67,23 +67,26 @@ public final class ChestShape {
     }
 
     /**
-     * The side the chest's lock faces: the horizontal side of the structure the core is closest to.
-     * Ties prefer the z axis, and a core centered on the top or bottom faces south.
+     * The side the chest's lock faces, with the same rules as Colossal Chests 1: towards the side of the
+     * structure the core is furthest out on, horizontally. Ties go to the z axis, except for 2x2 chests,
+     * where every core is on a corner, which use the x axis unless the core is on the diagonal.
+     * A core centered on the top or bottom faces south.
      * @param structure The structure.
      * @param core The core position.
      * @return A horizontal direction.
      */
     public static Direction getFacing(ChestStructure structure, BlockPos core) {
         double center = (structure.size() - 1) / 2D;
-        double dx = core.getX() - structure.min().getX() - center;
-        double dz = core.getZ() - structure.min().getZ() - center;
-        if (Math.abs(dx) > Math.abs(dz)) {
-            return dx > 0 ? Direction.EAST : Direction.WEST;
+        // From the core to the structure center.
+        double dx = structure.min().getX() + center - core.getX();
+        double dz = structure.min().getZ() + center - core.getZ();
+        Direction towardsCenter;
+        if (Math.abs(dx) > Math.abs(dz) || (dx != dz && structure.size() == 2)) {
+            towardsCenter = Math.round(dx) > 0 ? Direction.EAST : Direction.WEST;
+        } else {
+            towardsCenter = Math.round(dz) > 0 ? Direction.SOUTH : Direction.NORTH;
         }
-        if (dz == 0) {
-            return Direction.SOUTH;
-        }
-        return dz > 0 ? Direction.SOUTH : Direction.NORTH;
+        return towardsCenter.getOpposite();
     }
 
     /**

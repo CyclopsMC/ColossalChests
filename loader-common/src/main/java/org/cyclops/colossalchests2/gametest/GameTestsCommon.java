@@ -45,7 +45,6 @@ import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
-import org.cyclops.colossalchests2.inventory.ChestSortMode;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -53,12 +52,12 @@ import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.cyclopscore.network.PacketBase;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -608,21 +607,23 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
-    public void testMenuSearchAndSortOnServer(GameTestHelper helper) {
+    public void testMenuDragSpreadsCursor(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
                     ChestStorage storage = getCore(helper, corePos).getStorage();
-                    storage.insert(0, STONE, 5, false);
-                    storage.insert(1, new ItemStack(Items.DIRT), 50, false);
-                    storage.insert(2, new ItemStack(Items.STONE_BRICKS), 500, false);
                     ServerPlayer player = makeViewer(helper);
                     ContainerChest menu = openChest(helper, player, corePos);
-                    menu.handleSettings("stone", ChestSettings.DEFAULT.withSortMode(ChestSortMode.COUNT));
-                    menu.broadcastChanges();
-                    helper.assertTrue(Arrays.equals(menu.getView(), new int[]{2, 0}), "Expected stone slots by count, got " + Arrays.toString(menu.getView()));
-                    helper.assertValueEqual(getCore(helper, corePos).getSettings().sortMode(), ChestSortMode.COUNT, "sticky sort mode");
+                    menu.setCarried(STONE.copyWithCount(10));
+                    menu.handleChestDrag(new int[]{0, 1, 2}, false);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 1, "cursor after an even drag");
+                    helper.assertValueEqual(storage.getSlot(2).getCount(), 3L, "count after an even drag");
+                    menu.setCarried(STONE.copyWithCount(10));
+                    // Invalid and repeated slots are ignored.
+                    menu.handleChestDrag(new int[]{3, 3, 4, -1, 999}, true);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 8, "cursor after a one-each drag");
+                    helper.assertValueEqual(storage.getSlot(4).getCount(), 1L, "count after a one-each drag");
                     player.closeContainer();
                 })
                 .thenSucceed();
@@ -653,7 +654,7 @@ public class GameTestsCommon {
     public void testSettingsTravelWithCore(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
         BlockPos newCorePos = buildWalls(helper, MIN_B, 3, ChestMaterial.WOOD, new BlockPos(1, 1, 0), Set.of());
-        ChestSettings settings = ChestSettings.DEFAULT.withSortMode(ChestSortMode.MOD).withShowCounts(false);
+        ChestSettings settings = ChestSettings.DEFAULT.withShowFillLevels(false).withShowCounts(false);
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
@@ -691,10 +692,15 @@ public class GameTestsCommon {
                     roundTrip(helper, new ServerboundChestClickPacket(menu.containerId, 0, ChestClickAction.TAKE_STACK), ServerboundChestClickPacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(menu.getCarried().getCount(), 64, "cursor after a click packet");
-                    ChestSettings settings = ChestSettings.DEFAULT.withSortMode(ChestSortMode.NAME).withShowFillLevels(false);
-                    roundTrip(helper, new ServerboundChestSettingsPacket(menu.containerId, "stone", settings), ServerboundChestSettingsPacket.CODEC)
+                    ChestSettings settings = ChestSettings.DEFAULT.withShowFillLevels(false);
+                    roundTrip(helper, new ServerboundChestSettingsPacket(menu.containerId, settings), ServerboundChestSettingsPacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(getCore(helper, corePos).getSettings(), settings, "settings after a settings packet");
+                    player.containerMenu.setCarried(STONE.copyWithCount(6));
+                    roundTrip(helper, new ServerboundChestDragPacket(menu.containerId, new int[]{5, 6}, false), ServerboundChestDragPacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(storage.getSlot(6).getCount(), 3L, "count after a drag packet");
+                    menu.setCarried(STONE.copyWithCount(64));
                     // Packets for another menu are ignored.
                     roundTrip(helper, new ServerboundChestClickPacket(menu.containerId + 1, 0, ChestClickAction.TAKE_STACK), ServerboundChestClickPacket.CODEC)
                             .actionServer(helper.getLevel(), player);
@@ -711,12 +717,10 @@ public class GameTestsCommon {
                     helper.assertTrue(client.getChestSlot(3).isLocked() && client.getChestSlot(3).matches(STONE), "Expected a synced locked slot");
                     helper.assertTrue(client.isChestSlotOverCapacity(0), "Expected 5000 of 1024 to be over capacity");
                     helper.assertValueEqual(client.getChestSlotCapacity(3), 64L, "synced capacity");
-                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, 7, settings, new int[]{3, 0, 99}), ClientboundChestStatePacket.CODEC)
+                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, 7, settings), ClientboundChestStatePacket.CODEC)
                             .actionClient(helper.getLevel(), player);
                     helper.assertValueEqual(client.getDepth(), 7L, "synced depth");
                     helper.assertValueEqual(client.getSettings(), settings, "synced settings");
-                    // Slots the menu does not have are dropped.
-                    helper.assertTrue(Arrays.equals(client.getView(), new int[]{3, 0}), "Expected the synced view, got " + Arrays.toString(client.getView()));
                     player.containerMenu = menu;
                     player.closeContainer();
                     client.removed(player);

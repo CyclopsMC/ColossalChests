@@ -22,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 /**
  * The chest GUI. Chest slots are not vanilla slots, as their counts do not fit in item stacks: the screen draws
@@ -37,6 +36,7 @@ public class ContainerChest extends AbstractContainerMenu {
      */
     public static final double MAX_DISTANCE = 8;
     public static final int MAX_QUERY_LENGTH = 64;
+    public static final int MAX_DRAG_SLOTS = 81;
 
     private final Player player;
     private final BlockPos corePos;
@@ -47,12 +47,10 @@ public class ContainerChest extends AbstractContainerMenu {
     // On the client what the server sent, on the server what it last sent.
     private final DeepSlot[] chestSlots;
     private final long[] capacities;
-    private int[] view;
     private long depth;
     private ChestSettings settings = ChestSettings.DEFAULT;
 
     // Server only.
-    private String query = "";
     private final BitSet dirtySlots = new BitSet();
     private boolean stateDirty = true;
     @Nullable
@@ -81,7 +79,6 @@ public class ContainerChest extends AbstractContainerMenu {
         this.chestSlots = new DeepSlot[slotCount];
         Arrays.fill(this.chestSlots, DeepSlot.EMPTY);
         this.capacities = new long[slotCount];
-        this.view = IntStream.range(0, slotCount).toArray();
         addPlayerSlots(inventory);
         if (core != null && player instanceof ServerPlayer serverPlayer) {
             this.settings = core.getSettings();
@@ -143,13 +140,6 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     /**
-     * @return Chest slot indexes in display order.
-     */
-    public int[] getView() {
-        return view;
-    }
-
-    /**
      * @return Stacks per slot.
      */
     public long getDepth() {
@@ -199,17 +189,24 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     /**
-     * Apply a new search query and settings from the GUI.
+     * Apply new settings from the GUI.
      */
-    public void handleSettings(String query, ChestSettings settings) {
-        if (core == null) {
-            return;
-        }
-        this.query = query.length() > MAX_QUERY_LENGTH ? query.substring(0, MAX_QUERY_LENGTH) : query;
-        this.stateDirty = true;
-        if (!settings.equals(core.getSettings())) {
+    public void handleSettings(ChestSettings settings) {
+        if (core != null && !settings.equals(core.getSettings())) {
             core.setSettings(settings);
         }
+    }
+
+    /**
+     * Spread the cursor stack over chest slots, like dragging over vanilla slots.
+     */
+    public void handleChestDrag(int[] dragged, boolean oneEach) {
+        if (core == null || !core.isFormed()) {
+            return;
+        }
+        int[] valid = Arrays.stream(dragged).filter(slot -> slot >= 0 && slot < Math.min(chestSlots.length, core.getStorage().getSlotCount()))
+                .distinct().toArray();
+        setCarried(ChestClickLogic.drag(core.getStorage(), valid, oneEach, getCarried()));
     }
 
     @Override
@@ -236,20 +233,14 @@ public class ContainerChest extends AbstractContainerMenu {
             }
             ChestNetwork.sendToPlayer(
                     new ClientboundChestSlotsPacket(containerId, changed, contents, changedCapacities), serverPlayer);
-            // Contents decide the order while searching or sorting.
-            stateDirty |= !query.isEmpty() || settings.sortMode() != ChestSortMode.NONE;
         }
         long newDepth = storage.getProfile().depth();
         if (stateDirty || newDepth != depth) {
             stateDirty = false;
-            int[] newView = ChestView.compute(storage, query, settings.sortMode(), stack -> stack.getHoverName().getString());
-            newView = Arrays.stream(newView).filter(slot -> slot < chestSlots.length).toArray();
-            if (!Arrays.equals(newView, view) || newDepth != depth || !Objects.equals(sentSettings, settings)) {
-                view = newView;
+            if (newDepth != depth || !Objects.equals(sentSettings, settings)) {
                 depth = newDepth;
                 sentSettings = settings;
-                ChestNetwork.sendToPlayer(
-                        new ClientboundChestStatePacket(containerId, depth, settings, view), serverPlayer);
+                ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, depth, settings), serverPlayer);
             }
         }
     }
@@ -265,10 +256,9 @@ public class ContainerChest extends AbstractContainerMenu {
         }
     }
 
-    public void applyState(long depth, ChestSettings settings, int[] view) {
+    public void applyState(long depth, ChestSettings settings) {
         this.depth = depth;
         this.settings = settings;
-        this.view = Arrays.stream(view).filter(slot -> slot >= 0 && slot < chestSlots.length).toArray();
     }
 
     // Vanilla

@@ -12,7 +12,7 @@ import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 /**
- * The search query and settings from the chest GUI.
+ * New settings from the chest GUI.
  * @author rubensworks
  */
 public class ServerboundChestSettingsPacket extends PacketBase<ServerboundChestSettingsPacket> {
@@ -21,17 +21,15 @@ public class ServerboundChestSettingsPacket extends PacketBase<ServerboundChestS
     public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundChestSettingsPacket> CODEC = getCodec(ServerboundChestSettingsPacket::new);
 
     private int containerId;
-    private String query;
     private ChestSettings settings;
 
     public ServerboundChestSettingsPacket() {
         super(TYPE);
     }
 
-    public ServerboundChestSettingsPacket(int containerId, String query, ChestSettings settings) {
+    public ServerboundChestSettingsPacket(int containerId, ChestSettings settings) {
         super(TYPE);
         this.containerId = containerId;
-        this.query = query;
         this.settings = settings;
     }
 
@@ -43,14 +41,12 @@ public class ServerboundChestSettingsPacket extends PacketBase<ServerboundChestS
     @Override
     public void encode(RegistryFriendlyByteBuf buf) {
         buf.writeVarInt(containerId);
-        buf.writeUtf(query, ContainerChest.MAX_QUERY_LENGTH);
         ChestSettings.STREAM_CODEC.encode(buf, settings);
     }
 
     @Override
     public void decode(RegistryFriendlyByteBuf buf) {
         containerId = buf.readVarInt();
-        query = buf.readUtf(ContainerChest.MAX_QUERY_LENGTH);
         settings = ChestSettings.STREAM_CODEC.decode(buf);
     }
 
@@ -61,7 +57,7 @@ public class ServerboundChestSettingsPacket extends PacketBase<ServerboundChestS
     @Override
     public void actionServer(Level level, ServerPlayer player) {
         if (player.containerMenu instanceof ContainerChest menu && menu.containerId == containerId && menu.stillValid(player)) {
-            menu.handleSettings(query, settings);
+            menu.handleSettings(settings);
         }
     }
 }

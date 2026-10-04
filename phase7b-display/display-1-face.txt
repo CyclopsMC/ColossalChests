@@ -1,4 +1,5 @@
 # Fresh world. An iron 3x3 with Compression, Lock and Void, and a Display wall left of the core.
+resize --width 1600 --height 900 --gui-scale 2
 command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
 command "setblock 2 5 4 colossalchests2:chest_wall_display"
 command "setblock 3 5 4 colossalchests2:chest_core_iron"
@@ -15,14 +16,15 @@ inventory
 # use moves the player within reach, so step back for the screenshots.
 teleport 2.5 4 0 --yaw 0 --pitch 0
 look --at 2.5,5.5,4
+wait --ticks 40
 screenshot --name display-all-toggles
 eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowCounts(false)) } as Runnable).get()"
-wait --ticks 5
+wait --ticks 40
 screenshot --name display-no-counts
 eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowCounts(true).withShowFillLevels(false)) } as Runnable).get()"
-wait --ticks 5
+wait --ticks 40
 screenshot --name display-no-fill
 eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowFillLevels(true).withShowUpgradeIndicators(false)) } as Runnable).get()"
-wait --ticks 5
+wait --ticks 40
 screenshot --name display-no-indicators
 eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowUpgradeIndicators(true)) } as Runnable).get()"

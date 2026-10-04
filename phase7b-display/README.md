@@ -1,25 +1,44 @@
 # Phase 7b Display wall in-game checks
 
-Run from the repository root on the Display wall branch, on NeoForge, in a fresh world, in this order:
+Run from the repository root on the Display wall branch, on NeoForge, each script in a fresh world (`clientdevbridge world-reset`):
 
 ```bash
 clientdevbridge start --loader neoforge
 clientdevbridge world-reset
 clientdevbridge batch <path-to>/phase7b-display/display-1-face.txt
 clientdevbridge batch --continue-on-error <path-to>/phase7b-display/display-2-clicks.txt
+clientdevbridge world-reset
+clientdevbridge batch <path-to>/phase7b-display/display-3-look.txt
 ```
 
-`display-1-face.txt` builds an iron 3x3 with Compression, Lock and Void, holding 300 iron blocks in a locked, voiding slot. Right-clicking the Display wall with 10 iron ingots makes it show iron ingots and inserts them.
+## Look (display-3-look.txt)
+
+A wood and an iron 3x3, each with Display walls for cobblestone, iron ingots, oak logs and torches. Display walls are a recessed panel in a frame of the chest's material.
 
 | Screenshot | Shows |
 |---|---|
-| `display-all-toggles.png` | The Display wall with all visual settings on: iron ingot, 2.71K (300 blocks and 10 ingots counted as ingots), fill bar, and the Compression, Void and Lock indicators |
-| `display-no-counts.png` | Counts turned off |
-| `display-no-fill.png` | Fill levels turned off |
-| `display-no-indicators.png` | Upgrade indicators turned off |
-| `display-toggles-strip.png` | The four states side by side, zoomed |
+| `display-overview.png` | Both chests |
+| `display-wood.png`, `display-iron.png` | Close-ups. Blocks show like an inventory icon (drawer style), flat items like in the inventory |
+| `display-iron-item-frame-style.png` | With the client config `displayItemFrameStyle` on: blocks show front-on like an item frame, flat items are unchanged |
+| `display-iron-night.png` | At night, items darken with the chest instead of glowing |
 
-`display-2-clicks.txt` checks clicks with real input, read back from the inventory:
+A Display wall at the top centre sits under the chest's latch, which hides part of it (kept as is).
+
+## Visual settings (display-1-face.txt)
+
+An iron 3x3 with Compression, Lock and Void, holding 300 iron blocks in a locked, voiding slot. Right-clicking the Display wall with 10 iron ingots makes it show iron ingots and inserts them.
+
+| Screenshot | Shows |
+|---|---|
+| `display-all-toggles.png` | All visual settings on: 2.71K (300 blocks and 10 ingots counted as ingots), fill bar, and the Compression, Void and Lock indicators |
+| `display-no-counts.png` | Counts off |
+| `display-no-fill.png` | Fill levels off |
+| `display-no-indicators.png` | Upgrade indicators off |
+| `display-toggles.png` | The four states side by side |
+
+## Clicks (display-2-clicks.txt)
+
+Real input, read back from the inventory:
 
 | Action | Result |
 |---|---|

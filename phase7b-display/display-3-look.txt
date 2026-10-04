@@ -1,0 +1,36 @@
+# Fresh world. A wood and an iron 3x3, each with Display walls for cobblestone, iron ingots, oak logs and torches.
+# Shows the default look, and the item frame look for blocks from the client config.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "fill 6 4 4 8 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 2 5 4 colossalchests2:chest_wall_display"
+command "setblock 4 5 4 colossalchests2:chest_wall_display"
+command "setblock 3 6 4 colossalchests2:chest_wall_display"
+command "setblock 3 4 4 colossalchests2:chest_wall_display"
+command "setblock 6 5 4 colossalchests2:chest_wall_display"
+command "setblock 8 5 4 colossalchests2:chest_wall_display"
+command "setblock 7 6 4 colossalchests2:chest_wall_display"
+command "setblock 7 4 4 colossalchests2:chest_wall_display"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "setblock 7 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+eval "server.submit({ def lvl = server.overworld(); [[3, 2, 4], [7, 6, 8]].each { c -> def s = lvl.getBlockEntity(dev.pos(c[0], 5, 4)).getStorage(); [['minecraft:cobblestone', 1500], ['minecraft:iron_ingot', 200], ['minecraft:oak_log', 64], ['minecraft:torch', 900]].each { e -> s.insert(dev.item(e[0]), e[1], false) }; lvl.getBlockEntity(dev.pos(c[1], 5, 4)).setDisplayed(dev.item('minecraft:cobblestone')); lvl.getBlockEntity(dev.pos(c[2], 5, 4)).setDisplayed(dev.item('minecraft:iron_ingot')); lvl.getBlockEntity(dev.pos(c[0], 6, 4)).setDisplayed(dev.item('minecraft:oak_log')); lvl.getBlockEntity(dev.pos(c[0], 4, 4)).setDisplayed(dev.item('minecraft:torch')) } } as Runnable).get()"
+resize --width 1600 --height 900 --gui-scale 2
+teleport 5.5 5 -1 --yaw 0 --pitch 0
+wait --ticks 20
+screenshot --name display-overview
+teleport 3.5 5 1.2 --yaw 0 --pitch 0
+look --at 3.5,5.5,4
+wait --ticks 5
+screenshot --name display-wood
+teleport 7.5 5 1.2 --yaw 0 --pitch 0
+look --at 7.5,5.5,4
+wait --ticks 5
+screenshot --name display-iron
+eval "player.getClass().getClassLoader().loadClass('org.cyclops.colossalchests2.GeneralConfig').displayItemFrameStyle = true"
+wait --ticks 3
+screenshot --name display-iron-item-frame-style
+eval "player.getClass().getClassLoader().loadClass('org.cyclops.colossalchests2.GeneralConfig').displayItemFrameStyle = false"
+command "time set 18000"
+wait --ticks 20
+screenshot --name display-iron-night
+command "time set 6000"

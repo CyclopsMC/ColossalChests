@@ -66,3 +66,15 @@ Search and seam checks (`phase4-10-search-v4.txt` opens the chest, then the sear
 | `phase4-v4-search-selected.png` | Right-clicking the search field selects its text |
 | `phase4-v4-search-replaced.png` | Typing "dia" then replaces it: two matches |
 | `phase4-seam-closed.png`, `phase4-seam-netherite-front.png` | Closed obsidian and netherite chests without z-fighting at the lid seam |
+
+Search syntax and drag preview (`phase4-12-search-syntax.txt` and `phase4-13-drag-preview.txt`, each in a fresh world):
+
+| Screenshot | Shows |
+|---|---|
+| `phase4-search-help.png` | Syntax help on hovering the unfocused search field |
+| `phase4-search-mod.png` | `@colossal`: only the chest walls |
+| `phase4-search-tags.png` | `$logs\|$stone`: stone and logs by tag |
+| `phase4-search-tooltip.png` | `#attack`: the sword, by its tooltip |
+| `phase4-search-and.png` | `dia @minecraft`: both terms must match |
+| `phase4-drag-preview-left.png` | Mid-drag of 37 stone over a full stone slot and 5 empty slots: 6 each, yellow count on the full slot, 7 left on the cursor |
+| `phase4-drag-released.png` | After release: the same result |

@@ -1,0 +1,24 @@
+# Fresh world. Drag preview: 37 stone dragged over a full stone slot and four empty slots, screenshot before release.
+# slot and capacity info as text with tooltips.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+wait --ticks 10
+eval "server.execute { def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(dev.item('minecraft:stone'), 1234, false); s.insert(dev.item('minecraft:dirt'), 64, false); s.insert(dev.item('minecraft:diamond'), 3, false); s.insert(dev.item('minecraft:ender_pearl'), 100, false); s.insert(dev.item('minecraft:oak_log'), 2048, false); s.insert(dev.item('minecraft:diamond_sword'), 1, false); s.insert(dev.item('colossalchests2:chest_wall_wood'), 20, false) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 140,10
+close-screen
+command "give @p minecraft:stone 37"
+wait --ticks 5
+use 2 5 4 --face north
+wait --ticks 10
+click --at 141,194 --button 0
+wait --ticks 3
+eval "screen.mouseClicked(142, 69, 0); [160, 178, 196, 214].each { x -> screen.mouseDragged(x, 87, 0, 0, 0) }; screen.mouseDragged(142, 87, 0, 0, 0)"
+wait --ticks 3
+screenshot --name phase4-drag-preview-left
+eval "screen.mouseReleased(142, 87, 0)"
+wait --ticks 5
+mouse-move 300,10
+screenshot --name phase4-drag-released

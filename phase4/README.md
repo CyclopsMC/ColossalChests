@@ -25,7 +25,7 @@ Note: `clientdevbridge batch` keeps `--button` from the previous line, so every 
 | `phase4-sort-count.png` | Sorting by count, the active sort button in yellow |
 | `phase4-gui-54.png`, `phase4-gui-81.png` | The 54 slot layout, and 81 slots in 18 columns so the GUI fits a 240 pixel high screen |
 | `phase4-gui-81-settings.png` | The settings tab: display wall toggles, and Lock all / Clear locks disabled until the Lock upgrade |
-| `phase4-settings-lock-tooltip.png` | The settings tab on the 27 slot chest |
+| `phase4-settings-27.png` | The settings tab fits the grid area of the smallest chest |
 | `phase4-over-capacity.png` | After lowering the depth: red over-capacity slots, their tooltip, the warning next to the inventory label, and the chat message on opening |
 | `phase4-feedback-blocks.png` | Right-clicking a wall of a broken build: the action bar explains it, red particles mark the missing and wrong walls |
 

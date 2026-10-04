@@ -43,6 +43,8 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
                             .build(), 2))
                     .put(id("slot_expansion"), new UpgradeProperties(3, Map.of(), 27))
                     .put(id("lock"), new UpgradeProperties(1, Map.of(), 1))
+                    .put(id("bundling"), new UpgradeProperties(4, Map.of(), 2))
+                    .put(id("void"), new UpgradeProperties(1, Map.of(), 1))
                     .build()
     );
 

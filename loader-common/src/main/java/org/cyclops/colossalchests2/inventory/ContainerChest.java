@@ -377,8 +377,8 @@ public class ContainerChest extends AbstractContainerMenu {
         if (core == null || !core.isFormed()) {
             return;
         }
-        if (action.isLockAction()) {
-            handleLock(slot, action);
+        if (action.isMarkAction()) {
+            handleMark(slot, action);
             return;
         }
         if (slot < 0 || slot >= Math.min(chestSlots.length, core.getStorage().getSlotCount())) {
@@ -390,13 +390,21 @@ public class ContainerChest extends AbstractContainerMenu {
         }));
     }
 
-    private void handleLock(int slot, ChestClickAction action) {
+    private void handleMark(int slot, ChestClickAction action) {
         ChestStorage storage = core.getStorage();
-        if (!core.getUpgradeSet().has(ChestUpgrades.LOCK)) {
+        boolean voidAction = action == ChestClickAction.TOGGLE_VOID || action == ChestClickAction.VOID_ALL || action == ChestClickAction.CLEAR_VOIDS;
+        if (!core.getUpgradeSet().has(voidAction ? ChestUpgrades.VOID : ChestUpgrades.LOCK)) {
             return;
         }
         boolean validSlot = slot >= 0 && slot < Math.min(chestSlots.length, storage.getSlotCount());
         switch (action) {
+            case TOGGLE_VOID -> {
+                if (validSlot) {
+                    storage.setVoiding(slot, !storage.getSlot(slot).isVoiding());
+                }
+            }
+            case VOID_ALL -> storage.voidAllFilled();
+            case CLEAR_VOIDS -> storage.clearVoids();
             case TOGGLE_LOCK -> {
                 if (validSlot) {
                     storage.setLocked(slot, !storage.getSlot(slot).isLocked());

@@ -36,12 +36,24 @@ public enum ChestClickAction {
     /**
      * Unlock all slots, the slot index is ignored. Needs the Lock upgrade.
      */
-    CLEAR_LOCKS;
+    CLEAR_LOCKS,
+    /**
+     * Alt right click: mark or unmark the slot as voiding. Needs the Void upgrade.
+     */
+    TOGGLE_VOID,
+    /**
+     * Mark all filled slots as voiding, the slot index is ignored. Needs the Void upgrade.
+     */
+    VOID_ALL,
+    /**
+     * Unmark all voiding slots, the slot index is ignored. Needs the Void upgrade.
+     */
+    CLEAR_VOIDS;
 
     /**
-     * @return If this action changes locks instead of moving items.
+     * @return If this action changes locks or void marks instead of moving items.
      */
-    public boolean isLockAction() {
+    public boolean isMarkAction() {
         return ordinal() >= TOGGLE_LOCK.ordinal();
     }
 }

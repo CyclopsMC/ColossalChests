@@ -145,6 +145,43 @@ public class TestChestUpgradeRules extends BootstrapTest {
     }
 
     @Test
+    public void testBundlingWithDepth() {
+        // Unstackables hold 2^Bundling * (1 + Depth upgrades) per slot.
+        for (int bundling = 0; bundling <= 4; bundling++) {
+            for (int depth = 0; depth <= 3; depth++) {
+                UpgradeSet set = UpgradeSet.EMPTY.with(ChestUpgrades.BUNDLING, bundling).with(ChestUpgrades.DEPTH, depth);
+                assertEquals("bundling " + bundling + ", depth " + depth, (1L << bundling) * (1 + depth),
+                        ChestUpgradeRules.createProfile(4, set).capacityFor(1));
+            }
+        }
+    }
+
+    @Test
+    public void testBundlingAndVoidLimits() {
+        assertEquals(4, ChestUpgradeRules.getMaxCount(ChestUpgrades.BUNDLING, ChestMaterial.WOOD.id()));
+        assertEquals(1, ChestUpgradeRules.getMaxCount(ChestUpgrades.VOID, ChestMaterial.NETHERITE.id()));
+    }
+
+    @Test
+    public void testBundlingRemovalRefusedWhileUnstackablesWouldNotFit() {
+        UpgradeSet upgrades = upgrades(ChestUpgrades.BUNDLING, 1);
+        ChestStorage storage = storage(3, upgrades);
+        storage.insert(0, SWORD, 2, false);
+        assertEquals(List.of(0), ChestUpgradeRules.getRemovalProblems(storage, 3, upgrades, ChestUpgrades.BUNDLING).offendingSlots());
+        storage.extract(0, 1, false);
+        assertTrue(ChestUpgradeRules.getRemovalProblems(storage, 3, upgrades, ChestUpgrades.BUNDLING).isOk());
+    }
+
+    @Test
+    public void testVoidRemovalNeverRefused() {
+        UpgradeSet upgrades = upgrades(ChestUpgrades.VOID, 1);
+        ChestStorage storage = storage(3, upgrades);
+        storage.insert(0, STONE, 10, false);
+        storage.setVoiding(0, true);
+        assertTrue(ChestUpgradeRules.getRemovalProblems(storage, 3, upgrades, ChestUpgrades.VOID).isOk());
+    }
+
+    @Test
     public void testUpgradeSetCounts() {
         UpgradeSet set = UpgradeSet.EMPTY.with(ChestUpgrades.DEPTH, 2).with(ChestUpgrades.LOCK, 1).with(ChestUpgrades.DEPTH, -2);
         assertFalse(set.has(ChestUpgrades.DEPTH));

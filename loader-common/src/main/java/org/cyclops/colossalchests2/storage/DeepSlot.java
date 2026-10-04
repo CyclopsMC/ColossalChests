@@ -15,18 +15,20 @@ import java.util.Optional;
  */
 public final class DeepSlot {
 
-    public static final DeepSlot EMPTY = new DeepSlot(ItemStack.EMPTY, 0, false, null);
+    public static final DeepSlot EMPTY = new DeepSlot(ItemStack.EMPTY, 0, false, false, null);
 
     private final ItemStack prototype;
     private final long count;
     private final boolean locked;
+    private final boolean voiding;
     @Nullable
     private final Item compressionForm;
 
-    private DeepSlot(ItemStack prototype, long count, boolean locked, @Nullable Item compressionForm) {
+    private DeepSlot(ItemStack prototype, long count, boolean locked, boolean voiding, @Nullable Item compressionForm) {
         this.prototype = prototype;
         this.count = count;
         this.locked = locked;
+        this.voiding = voiding;
         this.compressionForm = compressionForm;
     }
 
@@ -35,17 +37,22 @@ public final class DeepSlot {
      * @param prototype The item type, its count is ignored.
      * @param count The amount of items.
      * @param locked If the slot is locked to its type.
+     * @param voiding If automated inserts of its type that do not fit are destroyed.
      * @param compressionForm The item of the compression form to extract in, or null (or air) for the default.
      * @return The slot, {@link #EMPTY} if nothing is stored and nothing is reserved.
      */
-    public static DeepSlot of(ItemStack prototype, long count, boolean locked, @Nullable Item compressionForm) {
+    public static DeepSlot of(ItemStack prototype, long count, boolean locked, boolean voiding, @Nullable Item compressionForm) {
         if (count < 0) {
             throw new IllegalArgumentException("Negative count: " + count);
         }
         if (prototype.isEmpty() || (count == 0 && !locked)) {
             return EMPTY;
         }
-        return new DeepSlot(prototype.copyWithCount(1), count, locked, compressionForm == Items.AIR ? null : compressionForm);
+        return new DeepSlot(prototype.copyWithCount(1), count, locked, voiding, compressionForm == Items.AIR ? null : compressionForm);
+    }
+
+    public static DeepSlot of(ItemStack prototype, long count, boolean locked, @Nullable Item compressionForm) {
+        return of(prototype, count, locked, false, compressionForm);
     }
 
     public static DeepSlot of(ItemStack prototype, long count) {
@@ -65,6 +72,13 @@ public final class DeepSlot {
 
     public boolean isLocked() {
         return locked;
+    }
+
+    /**
+     * @return If automated inserts of this slot's type that do not fit are destroyed.
+     */
+    public boolean isVoiding() {
+        return voiding;
     }
 
     /**
@@ -93,15 +107,19 @@ public final class DeepSlot {
     }
 
     public DeepSlot withCount(long count) {
-        return of(prototype, count, locked, compressionForm);
+        return of(prototype, count, locked, voiding, compressionForm);
+    }
+
+    public DeepSlot withVoiding(boolean voiding) {
+        return of(prototype, count, locked, voiding, compressionForm);
     }
 
     public DeepSlot withLocked(boolean locked) {
-        return of(prototype, count, locked, compressionForm);
+        return of(prototype, count, locked, voiding, compressionForm);
     }
 
     public DeepSlot withCompressionForm(@Nullable Item compressionForm) {
-        return of(prototype, count, locked, compressionForm);
+        return of(prototype, count, locked, voiding, compressionForm);
     }
 
     @Override
@@ -109,18 +127,19 @@ public final class DeepSlot {
         return obj instanceof DeepSlot that
                 && this.count == that.count
                 && this.locked == that.locked
+                && this.voiding == that.voiding
                 && Objects.equals(this.compressionForm, that.compressionForm)
                 && ItemStack.isSameItemSameComponents(this.prototype, that.prototype);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ItemStack.hashItemAndComponents(prototype), count, locked, compressionForm);
+        return Objects.hash(ItemStack.hashItemAndComponents(prototype), count, locked, voiding, compressionForm);
     }
 
     @Override
     public String toString() {
         return "DeepSlot{" + (isEmpty() ? "empty" : prototype.getItem() + " x" + count)
-                + (locked ? ", locked" : "") + (compressionForm != null ? ", form=" + compressionForm : "") + "}";
+                + (locked ? ", locked" : "") + (voiding ? ", voiding" : "") + (compressionForm != null ? ", form=" + compressionForm : "") + "}";
     }
 }

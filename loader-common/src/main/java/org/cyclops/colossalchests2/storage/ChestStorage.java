@@ -251,6 +251,107 @@ public class ChestStorage {
     }
 
     /**
+     * Mark or unmark a slot as voiding. Empty slots without a type cannot be marked.
+     * @param slot A slot index.
+     * @param voiding The new state.
+     * @return If the slot now has the requested state.
+     */
+    public boolean setVoiding(int slot, boolean voiding) {
+        DeepSlot deepSlot = slots[slot];
+        if (deepSlot.isEmpty()) {
+            return !voiding;
+        }
+        if (deepSlot.isVoiding() != voiding) {
+            setSlot(slot, deepSlot.withVoiding(voiding));
+        }
+        return true;
+    }
+
+    /**
+     * Mark all slots that hold items as voiding.
+     * @return The number of newly marked slots.
+     */
+    public int voidAllFilled() {
+        int count = 0;
+        for (int slot = 0; slot < slots.length; slot++) {
+            if (!slots[slot].isEmpty() && !slots[slot].isVoiding()) {
+                setVoiding(slot, true);
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Unmark all voiding slots.
+     */
+    public void clearVoids() {
+        for (int slot = 0; slot < slots.length; slot++) {
+            if (slots[slot].isVoiding()) {
+                setVoiding(slot, false);
+            }
+        }
+    }
+
+    /**
+     * @param type An item type.
+     * @return If a voiding slot holds the type.
+     */
+    public boolean isVoided(ItemStack type) {
+        for (DeepSlot deepSlot : slots) {
+            if (deepSlot.isVoiding() && deepSlot.matches(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Insert from automation. A type held by a voiding slot only fills the slots that already hold it, and what does
+     * not fit is destroyed, so voided overflow never takes new slots. Player inserts never void.
+     * @param type The item type, its count is ignored.
+     * @param amount The amount to insert.
+     * @param simulate If the storage must not change.
+     * @return The amount accepted, including what is destroyed.
+     */
+    public long insertAutomated(ItemStack type, long amount, boolean simulate) {
+        if (!isVoided(type)) {
+            return insert(type, amount, simulate);
+        }
+        insertIntoSlotsHolding(type, amount, simulate);
+        return amount;
+    }
+
+    /**
+     * Insert from automation into a specific slot. What does not fit is destroyed if the slot is voiding for the type
+     * and no other slot holding the type has room, so automation walking the slots does not void what fits elsewhere.
+     * @param slot A slot index.
+     * @param type The item type, its count is ignored.
+     * @param amount The amount to insert.
+     * @param simulate If the storage must not change.
+     * @return The amount accepted, including what is destroyed.
+     */
+    public long insertAutomated(int slot, ItemStack type, long amount, boolean simulate) {
+        long inserted = insert(slot, type, amount, simulate);
+        DeepSlot deepSlot = slots[slot];
+        if (inserted < amount && deepSlot.isVoiding() && deepSlot.matches(type)
+                && insertIntoSlotsHolding(type, amount - inserted, true) == 0) {
+            return amount;
+        }
+        return inserted;
+    }
+
+    private long insertIntoSlotsHolding(ItemStack type, long amount, boolean simulate) {
+        long inserted = 0;
+        for (int slot = 0; slot < slots.length && inserted < amount; slot++) {
+            if (slots[slot].matches(type)) {
+                inserted += insert(slot, type, amount - inserted, simulate);
+            }
+        }
+        return inserted;
+    }
+
+    /**
      * @param slot A slot index.
      * @param form The item of the compression form to extract in, or null for the default.
      */
@@ -415,7 +516,7 @@ public class ChestStorage {
             DeepSlot deepSlot = slots[slot];
             if (!deepSlot.isEmpty()) {
                 entries.add(new Contents.Entry(slot, deepSlot.getPrototype(), deepSlot.getCount(),
-                        deepSlot.isLocked(), deepSlot.getCompressionForm()));
+                        deepSlot.isLocked(), deepSlot.isVoiding(), deepSlot.getCompressionForm()));
             }
         }
         return new Contents(slots.length, entries);
@@ -433,7 +534,7 @@ public class ChestStorage {
         slots = new DeepSlot[slotCount];
         Arrays.fill(slots, DeepSlot.EMPTY);
         for (Contents.Entry entry : contents.entries()) {
-            slots[entry.slot()] = DeepSlot.of(entry.item(), entry.count(), entry.locked(), entry.form().orElse(null));
+            slots[entry.slot()] = DeepSlot.of(entry.item(), entry.count(), entry.locked(), entry.voiding(), entry.form().orElse(null));
         }
         dirty.clear();
         markAllDirty();
@@ -470,7 +571,7 @@ public class ChestStorage {
                 CODEC_ENTRIES.optionalFieldOf("slots", List.of()).forGetter(Contents::entries)
         ).apply(i, Contents::new));
 
-        public record Entry(int slot, ItemStack item, long count, boolean locked, Optional<Item> form) {
+        public record Entry(int slot, ItemStack item, long count, boolean locked, boolean voiding, Optional<Item> form) {
             // Unknown form items decode as no form, which falls back to the default form.
             private static final Codec<Optional<Item>> CODEC_FORM = ResourceLocation.CODEC.xmap(
                     BuiltInRegistries.ITEM::getOptional,
@@ -481,6 +582,7 @@ public class ChestStorage {
                     ItemStack.SINGLE_ITEM_CODEC.fieldOf("item").forGetter(Entry::item),
                     Codec.LONG.fieldOf("count").forGetter(Entry::count),
                     Codec.BOOL.optionalFieldOf("locked", false).forGetter(Entry::locked),
+                    Codec.BOOL.optionalFieldOf("voiding", false).forGetter(Entry::voiding),
                     CODEC_FORM.optionalFieldOf("form", Optional.empty()).forGetter(Entry::form)
             ).apply(i, Entry::new));
         }

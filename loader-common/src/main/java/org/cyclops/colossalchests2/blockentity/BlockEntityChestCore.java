@@ -177,6 +177,9 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         if (!getUpgradeSet().has(ChestUpgrades.LOCK)) {
             storage.clearLocks();
         }
+        if (!getUpgradeSet().has(ChestUpgrades.VOID)) {
+            storage.clearVoids();
+        }
         applyProfile(false);
         setChanged();
         if (storage.getSlotCount() != oldSlotCount) {

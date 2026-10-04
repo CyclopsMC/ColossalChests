@@ -1,0 +1,23 @@
+# Fresh world. An iron 3x3 with Void and two Bundling upgrades: a voiding slot, the settings view, and unstackable capacity.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 10
+eval "server.execute { def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.getUpgrades().setItem(0, dev.item('colossalchests2:upgrade_void')); be.getUpgrades().setItem(1, dev.item('colossalchests2:upgrade_bundling')); be.getUpgrades().setItem(2, dev.item('colossalchests2:upgrade_bundling')); def s = be.getStorage(); s.insert(dev.item('minecraft:cobblestone'), 1024, false); s.insert(dev.item('minecraft:iron_sword'), 4, false); s.lockTo(2, dev.item('minecraft:gravel')) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+# Alt can't be faked, so the alt-right-clicks are sent as click packets.
+eval "def cl = screen.getClass().getClassLoader(); def P = cl.loadClass('org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket'); def A = cl.loadClass('org.cyclops.colossalchests2.inventory.ChestClickAction'); def h = cl.loadClass('org.cyclops.colossalchests2.ColossalChestsInstance').MOD.getPacketHandlerCommon(); h.sendToServer(P.newInstance(screen.menu.containerId, 0, A.TOGGLE_VOID)); h.sendToServer(P.newInstance(screen.menu.containerId, 2, A.TOGGLE_VOID))"
+wait --ticks 5
+mouse-move 400,10
+screenshot --name phase6a-void-marks
+mouse-move 141,69
+wait --ticks 3
+screenshot --name phase6a-voiding-tooltip
+mouse-move 280,122
+wait --ticks 3
+screenshot --name phase6a-bundling-capacity
+click --widget "Settings"
+wait --ticks 3
+mouse-move 400,10
+screenshot --name phase6a-settings

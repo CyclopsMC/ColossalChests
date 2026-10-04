@@ -196,6 +196,11 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             int y = topPos + layout.getSlotY(slot);
             drawSlot(guiGraphics, x, y);
             DeepSlot deepSlot = menu.getChestSlot(slot);
+            boolean match = ChestSearch.matches(deepSlot, query, stack -> stack.getHoverName().getString(),
+                    stack -> getTooltipFromItem(minecraft, stack).stream().map(Component::getString).toList());
+            if (match && !query.isBlank()) {
+                drawSearchHit(guiGraphics, x, y);
+            }
             if (dragPreview != null && dragPreview.added().containsKey(slot)) {
                 // What the slot would hold when releasing the drag now, yellow when full.
                 guiGraphics.fill(x, y, x + 16, y + 16, COLOR_DRAG_PREVIEW);
@@ -211,11 +216,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             if (menu.isChestSlotOverCapacity(slot)) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_OVER_CAPACITY);
             }
-            if (!ChestSearch.matches(deepSlot, query, stack -> stack.getHoverName().getString(),
-                    stack -> getTooltipFromItem(minecraft, stack).stream().map(Component::getString).toList())) {
+            if (!match) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_SEARCH_MISS);
-            } else if (!query.isBlank()) {
-                drawSearchHit(guiGraphics, x, y);
             }
             if (slot == hovered) {
                 renderSlotHighlight(guiGraphics, x, y, 0);
@@ -333,13 +335,13 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     }
 
     /**
-     * A border along the inside of a slot that matches the search.
+     * A border along the inside of a slot that matches the search, behind its item.
      */
     private static void drawSearchHit(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.fill(x, y, x + 16, y + 1, 400, COLOR_SEARCH_HIT);
-        guiGraphics.fill(x, y + 15, x + 16, y + 16, 400, COLOR_SEARCH_HIT);
-        guiGraphics.fill(x, y + 1, x + 1, y + 15, 400, COLOR_SEARCH_HIT);
-        guiGraphics.fill(x + 15, y + 1, x + 16, y + 15, 400, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x, y, x + 16, y + 1, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x, y + 15, x + 16, y + 16, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x, y + 1, x + 1, y + 15, COLOR_SEARCH_HIT);
+        guiGraphics.fill(x + 15, y + 1, x + 16, y + 15, COLOR_SEARCH_HIT);
     }
 
     /**

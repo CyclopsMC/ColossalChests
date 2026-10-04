@@ -3,6 +3,7 @@ package org.cyclops.colossalchests2.blockentity;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.world.level.block.Block;
 import org.cyclops.colossalchests2.block.BlockChestWall;
+import org.cyclops.colossalchests2.client.render.ChestRenderLayersFabric;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.cyclopscore.init.ModBaseFabric;
 
@@ -19,6 +20,9 @@ public class BlockEntityChestCoreConfigFabric<M extends ModBaseFabric<?>> extend
     @Override
     public void onForgeRegistered() {
         super.onForgeRegistered();
+        if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
+            ChestRenderLayersFabric.register();
+        }
         ItemStorage.SIDED.registerForBlockEntity((core, side) -> core.isFormed() ? ((BlockEntityChestCoreFabric) core).getFabricStorage() : null, getInstance());
         if (BlockChestWall.EXPOSES_CAPABILITIES) {
             ItemStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, side) -> {

@@ -4,7 +4,7 @@
       "model": "colossalchests2:block/chest_wall_wood"
     },
     "formed=true": {
-      "model": "colossalchests2:block/chest_wall_wood"
+      "model": "colossalchests2:block/chest_wall_wood_formed"
     }
   }
 }

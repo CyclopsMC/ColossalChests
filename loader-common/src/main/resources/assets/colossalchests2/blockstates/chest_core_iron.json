@@ -4,7 +4,7 @@
       "model": "colossalchests2:block/chest_core_iron"
     },
     "formed=true": {
-      "model": "colossalchests2:block/chest_core_iron"
+      "model": "colossalchests2:block/chest_core_iron_formed"
     }
   }
 }

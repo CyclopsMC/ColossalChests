@@ -70,13 +70,6 @@ public class BlockChestCore extends BaseEntityBlock {
     }
 
     /**
-     * Formed members are drawn by the core's giant chest instead of as blocks.
-     */
-    public static RenderShape getFormedRenderShape(BlockState state) {
-        return state.getValue(FORMED) ? RenderShape.INVISIBLE : RenderShape.MODEL;
-    }
-
-    /**
      * Formed members must not hide the faces of neighbouring blocks, as the giant chest does not cover them while its lid is open.
      */
     public static VoxelShape getFormedOcclusionShape(BlockState state, VoxelShape unformedShape) {
@@ -94,9 +87,13 @@ public class BlockChestCore extends BaseEntityBlock {
         return state.getValue(FORMED) || unformedPropagates;
     }
 
+    /**
+     * Formed members are drawn by the core's giant chest. Their formed model is invisible,
+     * but it is still a model so vanilla draws the breaking crack on it.
+     */
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-        return getFormedRenderShape(state);
+        return RenderShape.MODEL;
     }
 
     @Override

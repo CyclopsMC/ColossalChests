@@ -4,7 +4,7 @@
       "model": "colossalchests2:block/chest_wall_netherite"
     },
     "formed=true": {
-      "model": "colossalchests2:block/chest_wall_netherite"
+      "model": "colossalchests2:block/chest_wall_netherite_formed"
     }
   }
 }

@@ -363,7 +363,8 @@ public class GameTestsCommon {
     private static void assertRenderedAsGiantChest(GameTestHelper helper, BlockPos pos, boolean formed) {
         BlockPos absolute = helper.absolutePos(pos);
         BlockState state = helper.getLevel().getBlockState(absolute);
-        helper.assertValueEqual(state.getRenderShape(), formed ? RenderShape.INVISIBLE : RenderShape.MODEL, "render shape at " + pos);
+        // Formed members have an invisible model, which vanilla still draws the breaking crack on.
+        helper.assertValueEqual(state.getRenderShape(), RenderShape.MODEL, "render shape at " + pos);
         helper.assertValueEqual(state.getOcclusionShape(helper.getLevel(), absolute).isEmpty(), formed, "empty occlusion at " + pos);
         helper.assertValueEqual(state.getLightBlock(helper.getLevel(), absolute), formed ? 0 : helper.getLevel().getMaxLightLevel(), "light block at " + pos);
         helper.assertValueEqual(state.propagatesSkylightDown(helper.getLevel(), absolute), formed, "skylight through " + pos);

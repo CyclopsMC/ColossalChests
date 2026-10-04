@@ -31,6 +31,7 @@ import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -270,8 +271,11 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                         dragPreview.capped().contains(slot) ? COLOR_COUNT_CAPPED : COLOR_COUNT);
             } else if (!deepSlot.isEmpty()) {
                 guiGraphics.renderItem(deepSlot.getPrototype(), x, y);
+                getCompressedFamily(deepSlot).ifPresent(family -> drawFormBadge(guiGraphics, family.get(getChosenForm(deepSlot, family)).item(), x, y));
                 if (deepSlot.getCount() > 0) {
-                    drawCount(guiGraphics, deepSlot.getCount(), x, y, COLOR_COUNT);
+                    // A "+" when smaller forms are left over.
+                    String count = IModHelpers.get().getGuiHelpers().quantityToScaledString(deepSlot.getCount());
+                    drawCount(guiGraphics, deepSlot.getRemainder() > 0 ? count + "+" : count, x, y, COLOR_COUNT);
                 } else if (deepSlot.getRemainder() > 0) {
                     // Less than one item of the largest form.
                     drawCount(guiGraphics, "<1", x, y, COLOR_COUNT);
@@ -325,6 +329,23 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         guiGraphics.fill(left + 1, y + 1, left + 6, y + 6, COLOR_VOID);
         guiGraphics.fill(left + 2, y + 2, left + 5, y + 5, COLOR_VOID_RING);
         guiGraphics.fill(left + 3, y + 3, left + 4, y + 4, COLOR_OUTLINE);
+        guiGraphics.pose().popPose();
+    }
+
+    /**
+     * The form that clicks take, small in the bottom left corner of a compressed slot, framed like in the picker.
+     */
+    private static void drawFormBadge(GuiGraphics guiGraphics, Item form, int x, int y) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0, 0, 200);
+        guiGraphics.fill(x, y + 6, x + 10, y + 16, COLOR_FORM_CHOSEN);
+        guiGraphics.fill(x + 1, y + 7, x + 9, y + 15, COLOR_FORM_CHOSEN_INSIDE);
+        guiGraphics.pose().popPose();
+        guiGraphics.pose().pushPose();
+        // Above the slot's item, below the count.
+        guiGraphics.pose().translate(x + 1, y + 7, 100);
+        guiGraphics.pose().scale(0.5F, 0.5F, 1F);
+        guiGraphics.renderItem(new ItemStack(form), 0, 0);
         guiGraphics.pose().popPose();
     }
 

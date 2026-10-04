@@ -1,0 +1,20 @@
+# Fresh world. Closed 3x3 chests of each material in a row, seen from an angle and a distance, to show z-fighting at the lid seam.
+command "fill 0 4 4 2 6 6 colossalchests2:chest_wall_netherite hollow"
+command "setblock 1 5 4 colossalchests2:chest_core_netherite"
+command "fill 4 4 4 6 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 5 5 4 colossalchests2:chest_core_iron"
+command "fill 8 4 4 10 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 9 5 4 colossalchests2:chest_core_wood"
+command "fill 12 4 4 14 6 6 colossalchests2:chest_wall_copper hollow"
+command "setblock 13 5 4 colossalchests2:chest_core_copper"
+command "time set noon"
+wait --ticks 20
+teleport -6 7 -6 --yaw -50 --pitch 10
+wait --ticks 10
+screenshot --name seam-repro-angle
+teleport 1.5 6 1.2 --yaw 0 --pitch 0
+wait --ticks 10
+screenshot --name seam-repro-netherite-front
+teleport -2.5 6.4 2 --yaw -70 --pitch 5
+wait --ticks 10
+screenshot --name seam-repro-netherite-side

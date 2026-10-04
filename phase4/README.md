@@ -58,20 +58,18 @@ Header and info rework (`phase4-9-gui-v3.txt`, fresh world). Replaces the tab an
 | `phase4-v3-settings.png` | The settings view |
 | `phase4-v3-over-capacity.png` | Over capacity: the slot info turns red and its tooltip explains why |
 
-Search and seam checks (`phase4-10-search-v4.txt` opens the chest, then the search field is clicked at its `find search` position; `phase4-11-seam.txt` in a fresh world):
+Search and seam checks (`phase4-10-search-v4.txt` opens the chest, then the search field is clicked at its `find search` position;):
 
 | Screenshot | Shows |
 |---|---|
 | `phase4-v4-search-hit.png` | Search for "pearl": the match gets a yellow inner border, the rest is dimmed |
 | `phase4-v4-search-selected.png` | Right-clicking the search field selects its text |
 | `phase4-v4-search-replaced.png` | Typing "dia" then replaces it: two matches |
-| `phase4-seam-closed.png`, `phase4-seam-netherite-front.png` | Closed obsidian and netherite chests without z-fighting at the lid seam |
 
 Search syntax and drag preview (`phase4-12-search-syntax.txt` and `phase4-13-drag-preview.txt`, each in a fresh world):
 
 | Screenshot | Shows |
 |---|---|
-| `phase4-search-help.png` | Syntax help on hovering the unfocused search field |
 | `phase4-search-mod.png` | `@colossal`: only the chest walls |
 | `phase4-search-tags.png` | `$logs\|$stone`: stone and logs by tag |
 | `phase4-search-tooltip.png` | `#attack`: the sword, by its tooltip |
@@ -79,3 +77,12 @@ Search syntax and drag preview (`phase4-12-search-syntax.txt` and `phase4-13-dra
 | `phase4-drag-preview-left.png` | Mid-drag of 37 stone over a full stone slot and 5 empty slots: 6 each, yellow count on the full slot, 7 left on the cursor |
 | `phase4-drag-released.png` | After release: the same result |
 | `phase4-search-border-behind.png` | `@minecraft`: the match border drawn behind items and counts |
+
+Lid seam and slot info (`phase4-15-seam-repro.txt` and `phase4-14-full-slots.txt`, each in a fresh world):
+
+| Screenshot | Shows |
+|---|---|
+| `seam-rows-front.png` | Diagnosis: texture rows painted red (14), green (18), blue (33) and yellow (42). The seam shows yellow over the hidden red, so rows 14 and 42 overlap |
+| `seam-fixed-netherite-front.png`, `seam-fixed-angle.png`, `seam-fixed-iron-wood.png` | After copying row 42 into row 14 for every material |
+| `phase4-slots-full-tooltip.png` | The slots tooltip with the number of full slots |
+| `phase4-search-no-tooltip.png` | No tooltip on the search field |

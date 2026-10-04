@@ -15,18 +15,20 @@ import java.util.Optional;
  */
 public final class DeepSlot {
 
-    public static final DeepSlot EMPTY = new DeepSlot(ItemStack.EMPTY, 0, false, false, null);
+    public static final DeepSlot EMPTY = new DeepSlot(ItemStack.EMPTY, 0, 0, false, false, null);
 
     private final ItemStack prototype;
     private final long count;
+    private final long remainder;
     private final boolean locked;
     private final boolean voiding;
     @Nullable
     private final Item compressionForm;
 
-    private DeepSlot(ItemStack prototype, long count, boolean locked, boolean voiding, @Nullable Item compressionForm) {
+    private DeepSlot(ItemStack prototype, long count, long remainder, boolean locked, boolean voiding, @Nullable Item compressionForm) {
         this.prototype = prototype;
         this.count = count;
+        this.remainder = remainder;
         this.locked = locked;
         this.voiding = voiding;
         this.compressionForm = compressionForm;
@@ -36,19 +38,24 @@ public final class DeepSlot {
      * Create a normalized slot.
      * @param prototype The item type, its count is ignored.
      * @param count The amount of items.
+     * @param remainder For a compressed slot, the base units that do not make a whole item of the prototype.
      * @param locked If the slot is locked to its type.
      * @param voiding If automated inserts of its type that do not fit are destroyed.
      * @param compressionForm The item of the compression form to extract in, or null (or air) for the default.
      * @return The slot, {@link #EMPTY} if nothing is stored and nothing is reserved.
      */
-    public static DeepSlot of(ItemStack prototype, long count, boolean locked, boolean voiding, @Nullable Item compressionForm) {
-        if (count < 0) {
-            throw new IllegalArgumentException("Negative count: " + count);
+    public static DeepSlot of(ItemStack prototype, long count, long remainder, boolean locked, boolean voiding, @Nullable Item compressionForm) {
+        if (count < 0 || remainder < 0) {
+            throw new IllegalArgumentException("Negative count: " + count + ", remainder: " + remainder);
         }
-        if (prototype.isEmpty() || (count == 0 && !locked)) {
+        if (prototype.isEmpty() || (count == 0 && remainder == 0 && !locked)) {
             return EMPTY;
         }
-        return new DeepSlot(prototype.copyWithCount(1), count, locked, voiding, compressionForm == Items.AIR ? null : compressionForm);
+        return new DeepSlot(prototype.copyWithCount(1), count, remainder, locked, voiding, compressionForm == Items.AIR ? null : compressionForm);
+    }
+
+    public static DeepSlot of(ItemStack prototype, long count, boolean locked, boolean voiding, @Nullable Item compressionForm) {
+        return of(prototype, count, 0, locked, voiding, compressionForm);
     }
 
     public static DeepSlot of(ItemStack prototype, long count, boolean locked, @Nullable Item compressionForm) {
@@ -68,6 +75,14 @@ public final class DeepSlot {
 
     public long getCount() {
         return count;
+    }
+
+    /**
+     * @return For a compressed slot, the base units that do not make a whole item of the prototype, such as
+     * nuggets in a slot of blocks.
+     */
+    public long getRemainder() {
+        return remainder;
     }
 
     public boolean isLocked() {
@@ -107,25 +122,45 @@ public final class DeepSlot {
     }
 
     public DeepSlot withCount(long count) {
-        return of(prototype, count, locked, voiding, compressionForm);
+        return of(prototype, count, remainder, locked, voiding, compressionForm);
+    }
+
+    /**
+     * @param count The amount of whole items of the prototype.
+     * @param remainder The base units left over.
+     * @return A copy with the amounts changed.
+     */
+    public DeepSlot withAmount(long count, long remainder) {
+        return of(prototype, count, remainder, locked, voiding, compressionForm);
+    }
+
+    /**
+     * @param prototype A new type.
+     * @param count The amount of whole items of the type.
+     * @param remainder The base units left over.
+     * @return A copy with the type and amounts changed, keeping the slot's marks.
+     */
+    public DeepSlot withContents(ItemStack prototype, long count, long remainder) {
+        return of(prototype, count, remainder, locked, voiding, compressionForm);
     }
 
     public DeepSlot withVoiding(boolean voiding) {
-        return of(prototype, count, locked, voiding, compressionForm);
+        return of(prototype, count, remainder, locked, voiding, compressionForm);
     }
 
     public DeepSlot withLocked(boolean locked) {
-        return of(prototype, count, locked, voiding, compressionForm);
+        return of(prototype, count, remainder, locked, voiding, compressionForm);
     }
 
     public DeepSlot withCompressionForm(@Nullable Item compressionForm) {
-        return of(prototype, count, locked, voiding, compressionForm);
+        return of(prototype, count, remainder, locked, voiding, compressionForm);
     }
 
     @Override
     public boolean equals(Object obj) {
         return obj instanceof DeepSlot that
                 && this.count == that.count
+                && this.remainder == that.remainder
                 && this.locked == that.locked
                 && this.voiding == that.voiding
                 && Objects.equals(this.compressionForm, that.compressionForm)
@@ -134,12 +169,12 @@ public final class DeepSlot {
 
     @Override
     public int hashCode() {
-        return Objects.hash(ItemStack.hashItemAndComponents(prototype), count, locked, voiding, compressionForm);
+        return Objects.hash(ItemStack.hashItemAndComponents(prototype), count, remainder, locked, voiding, compressionForm);
     }
 
     @Override
     public String toString() {
-        return "DeepSlot{" + (isEmpty() ? "empty" : prototype.getItem() + " x" + count)
+        return "DeepSlot{" + (isEmpty() ? "empty" : prototype.getItem() + " x" + count + (remainder > 0 ? " +" + remainder : ""))
                 + (locked ? ", locked" : "") + (voiding ? ", voiding" : "") + (compressionForm != null ? ", form=" + compressionForm : "") + "}";
     }
 }

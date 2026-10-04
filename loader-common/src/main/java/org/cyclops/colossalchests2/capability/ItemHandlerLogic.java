@@ -50,11 +50,25 @@ public class ItemHandlerLogic {
      * @return A copy of the slot contents, with the count clamped to {@link Integer#MAX_VALUE}.
      */
     public ItemStack getStackInSlot(int slot) {
-        DeepSlot deepSlot = storage.getSlot(slot);
-        if (deepSlot.getCount() == 0) {
-            return ItemStack.EMPTY;
+        ItemStack type = getExtractionType(slot);
+        long available = type.isEmpty() ? 0 : storage.getAvailable(slot, type);
+        return available == 0 ? ItemStack.EMPTY : type.copyWithCount(clamp(available));
+    }
+
+    /**
+     * @param slot A slot index.
+     * @return The type the slot is seen and extracted as: this handler's extraction form for a compressed slot of its
+     * family, else the slot's own extraction type.
+     */
+    public ItemStack getExtractionType(int slot) {
+        if (extractionForm != null) {
+            DeepSlot deepSlot = storage.getSlot(slot);
+            boolean ofFamily = storage.getFamily(deepSlot.getPrototype()).map(family -> family.indexOf(extractionForm) >= 0).orElse(false);
+            if (ofFamily) {
+                return new ItemStack(extractionForm);
+            }
         }
-        return deepSlot.getPrototype().copyWithCount(clamp(deepSlot.getCount()));
+        return storage.getExtractionType(slot);
     }
 
     /**
@@ -82,13 +96,12 @@ public class ItemHandlerLogic {
      * @return The extracted stack.
      */
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        DeepSlot deepSlot = storage.getSlot(slot);
-        if (amount <= 0 || deepSlot.getCount() == 0) {
+        ItemStack type = getExtractionType(slot);
+        if (amount <= 0 || type.isEmpty()) {
             return ItemStack.EMPTY;
         }
-        ItemStack prototype = deepSlot.getPrototype();
-        long extracted = storage.extract(slot, Math.min(amount, prototype.getMaxStackSize()), simulate);
-        return extracted == 0 ? ItemStack.EMPTY : prototype.copyWithCount((int) extracted);
+        long extracted = storage.extract(slot, type, Math.min(amount, type.getMaxStackSize()), simulate);
+        return extracted == 0 ? ItemStack.EMPTY : type.copyWithCount((int) extracted);
     }
 
     /**
@@ -96,7 +109,8 @@ public class ItemHandlerLogic {
      * @return The slot capacity for its current type, clamped to {@link Integer#MAX_VALUE}.
      */
     public int getSlotLimit(int slot) {
-        return clamp(storage.getCapacity(slot));
+        ItemStack type = getExtractionType(slot);
+        return clamp(type.isEmpty() ? storage.getCapacity(slot) : storage.getCapacity(type));
     }
 
     /**

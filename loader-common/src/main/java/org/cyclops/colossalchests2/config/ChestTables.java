@@ -45,6 +45,7 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
                     .put(id("lock"), new UpgradeProperties(1, Map.of(), 1))
                     .put(id("bundling"), new UpgradeProperties(4, Map.of(), 2))
                     .put(id("void"), new UpgradeProperties(1, Map.of(), 1))
+                    .put(id("compression"), new UpgradeProperties(1, Map.of(id("wood"), 0), 1))
                     .build()
     );
 

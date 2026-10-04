@@ -17,6 +17,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 
 /**
  * Deep-slot storage engine: a fixed number of slots, each holding one item type with a long count.
@@ -34,6 +35,8 @@ public class ChestStorage {
     private final BitSet dirty = new BitSet();
     private final List<IntConsumer> listeners = Lists.newArrayList();
     private int state;
+    @Nullable
+    private Supplier<CompressionFamilies> compression;
 
     public ChestStorage(int slotCount, CapacityProfile profile) {
         if (slotCount < 0) {
@@ -64,11 +67,92 @@ public class ChestStorage {
     }
 
     /**
+     * Turn compression on or off. Turning it on converts slots holding a smaller form of a family into its largest
+     * form, keeping what does not make a whole item as remainder.
+     * @param compression The families to compress, or null to stop compressing.
+     */
+    public void setCompression(@Nullable Supplier<CompressionFamilies> compression) {
+        this.compression = compression;
+        if (compression != null) {
+            CompressionFamilies families = compression.get();
+            for (int slot = 0; slot < slots.length; slot++) {
+                DeepSlot deepSlot = slots[slot];
+                Optional<CompressionFamily> family = families.find(deepSlot.getPrototype());
+                if (family.isPresent() && family.get().indexOf(deepSlot.getPrototype()) > 0) {
+                    CompressionFamily f = family.get();
+                    long base = f.toBaseUnits(f.indexOf(deepSlot.getPrototype()), deepSlot.getCount());
+                    setSlot(slot, deepSlot.withContents(new ItemStack(f.largest().item()),
+                            f.fromBaseUnits(0, base), f.remainderBaseUnits(0, base)));
+                }
+            }
+        }
+    }
+
+    public boolean isCompressing() {
+        return compression != null;
+    }
+
+    /**
      * @param type An item type.
-     * @return The capacity of any slot for the given type.
+     * @return Its compression family, if compression is on.
+     */
+    public Optional<CompressionFamily> getFamily(ItemStack type) {
+        return compression == null ? Optional.empty() : compression.get().find(type);
+    }
+
+    /**
+     * @param type An item type.
+     * @return The type a slot holds it as: the largest form of its family while compressing, else the type itself.
+     */
+    public ItemStack getStoredType(ItemStack type) {
+        return getFamily(type).map(family -> new ItemStack(family.largest().item())).orElse(type);
+    }
+
+    /**
+     * @param type An item type.
+     * @return The capacity of any slot for the given type, in items of that type.
      */
     public long getCapacity(ItemStack type) {
+        Optional<CompressionFamily> family = getFamily(type);
+        if (family.isPresent()) {
+            CompressionFamily f = family.get();
+            long baseUnits = CapacityProfile.saturatedMultiply(profile.capacityFor(new ItemStack(f.largest().item()).getMaxStackSize()),
+                    f.largest().baseUnits());
+            return f.fromBaseUnits(f.indexOf(type), baseUnits);
+        }
         return profile.capacityFor(type.getMaxStackSize());
+    }
+
+    /**
+     * @param slot A slot index.
+     * @return The type extraction from the slot gives: for a compressed slot its chosen form, else its type.
+     */
+    public ItemStack getExtractionType(int slot) {
+        DeepSlot deepSlot = slots[slot];
+        Optional<CompressionFamily> family = getFamily(deepSlot.getPrototype());
+        if (family.isPresent() && deepSlot.getCompressionForm().map(form -> family.get().indexOf(form) >= 0).orElse(false)) {
+            return new ItemStack(deepSlot.getCompressionForm().get());
+        }
+        return deepSlot.getPrototype();
+    }
+
+    /**
+     * @param slot A slot index.
+     * @param type A type the slot's contents can be extracted in.
+     * @return How many whole items of the type the slot holds.
+     */
+    public long getAvailable(int slot, ItemStack type) {
+        DeepSlot deepSlot = slots[slot];
+        Optional<CompressionFamily> family = getFamily(deepSlot.getPrototype());
+        if (family.isPresent() && family.get().indexOf(type) >= 0) {
+            CompressionFamily f = family.get();
+            return f.fromBaseUnits(f.indexOf(type), getBaseUnits(deepSlot, f));
+        }
+        return deepSlot.matches(type) ? deepSlot.getCount() : 0;
+    }
+
+    private static long getBaseUnits(DeepSlot deepSlot, CompressionFamily family) {
+        return CapacityProfile.saturatedAdd(family.toBaseUnits(0, deepSlot.getCount()), deepSlot.getRemainder());
     }
 
     /**
@@ -99,7 +183,7 @@ public class ChestStorage {
             return false;
         }
         DeepSlot deepSlot = slots[slot];
-        return deepSlot.isEmpty() || deepSlot.matches(type);
+        return deepSlot.isEmpty() || deepSlot.matches(getStoredType(type));
     }
 
     /**
@@ -123,6 +207,24 @@ public class ChestStorage {
             return 0;
         }
         DeepSlot deepSlot = slots[slot];
+        Optional<CompressionFamily> family = getFamily(type);
+        if (family.isPresent()) {
+            // Counted in base units, stored as whole items of the largest form plus a remainder.
+            CompressionFamily f = family.get();
+            int form = f.indexOf(type);
+            long current = deepSlot.isEmpty() ? 0 : getBaseUnits(deepSlot, f);
+            long capacity = f.toBaseUnits(form, getCapacity(type));
+            long inserted = Math.min(amount, Math.max(0, capacity - current) / f.get(form).baseUnits());
+            if (!simulate && inserted > 0) {
+                long base = current + f.toBaseUnits(form, inserted);
+                ItemStack largest = new ItemStack(f.largest().item());
+                long count = f.fromBaseUnits(0, base);
+                long remainder = f.remainderBaseUnits(0, base);
+                setSlot(slot, deepSlot.isEmpty() ? DeepSlot.of(largest, count, remainder, false, false, null)
+                        : deepSlot.withContents(largest, count, remainder));
+            }
+            return inserted;
+        }
         long space = Math.max(0, getCapacity(type) - deepSlot.getCount());
         long inserted = Math.min(amount, space);
         if (!simulate && inserted > 0) {
@@ -140,8 +242,9 @@ public class ChestStorage {
      */
     public long insert(ItemStack type, long amount, boolean simulate) {
         long remaining = amount;
+        ItemStack stored = getStoredType(type);
         for (int slot = 0; slot < slots.length && remaining > 0; slot++) {
-            if (slots[slot].matches(type)) {
+            if (slots[slot].matches(stored)) {
                 remaining -= insert(slot, type, remaining, simulate);
             }
         }
@@ -154,17 +257,36 @@ public class ChestStorage {
     }
 
     /**
-     * Extract from a specific slot, also from extract-only slots.
+     * Extract from a specific slot in its {@link #getExtractionType(int)}, also from extract-only slots.
      * @param slot A slot index.
      * @param amount The maximum amount to extract.
      * @param simulate If the storage must not change.
      * @return The amount that was (or would be) extracted.
      */
     public long extract(int slot, long amount, boolean simulate) {
+        return extract(slot, getExtractionType(slot), amount, simulate);
+    }
+
+    /**
+     * Extract from a specific slot in a given type, which for a compressed slot can be any form of its family.
+     * @param slot A slot index.
+     * @param type The type to extract in.
+     * @param amount The maximum amount to extract.
+     * @param simulate If the storage must not change.
+     * @return The amount that was (or would be) extracted, in items of the type.
+     */
+    public long extract(int slot, ItemStack type, long amount, boolean simulate) {
         DeepSlot deepSlot = slots[slot];
-        long extracted = Math.min(Math.max(0, amount), deepSlot.getCount());
+        long extracted = Math.min(Math.max(0, amount), getAvailable(slot, type));
         if (!simulate && extracted > 0) {
-            setSlot(slot, deepSlot.withCount(deepSlot.getCount() - extracted));
+            Optional<CompressionFamily> family = getFamily(deepSlot.getPrototype());
+            if (family.isPresent() && family.get().indexOf(type) >= 0) {
+                CompressionFamily f = family.get();
+                long base = getBaseUnits(deepSlot, f) - f.toBaseUnits(f.indexOf(type), extracted);
+                setSlot(slot, deepSlot.withAmount(f.fromBaseUnits(0, base), f.remainderBaseUnits(0, base)));
+            } else {
+                setSlot(slot, deepSlot.withCount(deepSlot.getCount() - extracted));
+            }
         }
         return extracted;
     }
@@ -178,9 +300,10 @@ public class ChestStorage {
      */
     public long extract(ItemStack type, long amount, boolean simulate) {
         long remaining = amount;
+        ItemStack stored = getStoredType(type);
         for (int slot = 0; slot < slots.length && remaining > 0; slot++) {
-            if (slots[slot].matches(type)) {
-                remaining -= extract(slot, remaining, simulate);
+            if (slots[slot].matches(stored)) {
+                remaining -= extract(slot, type, remaining, simulate);
             }
         }
         return amount - remaining;
@@ -214,6 +337,7 @@ public class ChestStorage {
         if (type.isEmpty()) {
             return false;
         }
+        type = getStoredType(type);
         if (deepSlot.matches(type)) {
             return setLocked(slot, true);
         }
@@ -298,8 +422,9 @@ public class ChestStorage {
      * @return If a voiding slot holds the type.
      */
     public boolean isVoided(ItemStack type) {
+        ItemStack stored = getStoredType(type);
         for (DeepSlot deepSlot : slots) {
-            if (deepSlot.isVoiding() && deepSlot.matches(type)) {
+            if (deepSlot.isVoiding() && deepSlot.matches(stored)) {
                 return true;
             }
         }
@@ -334,7 +459,7 @@ public class ChestStorage {
     public long insertAutomated(int slot, ItemStack type, long amount, boolean simulate) {
         long inserted = insert(slot, type, amount, simulate);
         DeepSlot deepSlot = slots[slot];
-        if (inserted < amount && deepSlot.isVoiding() && deepSlot.matches(type)
+        if (inserted < amount && deepSlot.isVoiding() && deepSlot.matches(getStoredType(type))
                 && insertIntoSlotsHolding(type, amount - inserted, true) == 0) {
             return amount;
         }
@@ -343,8 +468,9 @@ public class ChestStorage {
 
     private long insertIntoSlotsHolding(ItemStack type, long amount, boolean simulate) {
         long inserted = 0;
+        ItemStack stored = getStoredType(type);
         for (int slot = 0; slot < slots.length && inserted < amount; slot++) {
-            if (slots[slot].matches(type)) {
+            if (slots[slot].matches(stored)) {
                 inserted += insert(slot, type, amount - inserted, simulate);
             }
         }
@@ -515,7 +641,7 @@ public class ChestStorage {
         for (int slot = 0; slot < slots.length; slot++) {
             DeepSlot deepSlot = slots[slot];
             if (!deepSlot.isEmpty()) {
-                entries.add(new Contents.Entry(slot, deepSlot.getPrototype(), deepSlot.getCount(),
+                entries.add(new Contents.Entry(slot, deepSlot.getPrototype(), deepSlot.getCount(), deepSlot.getRemainder(),
                         deepSlot.isLocked(), deepSlot.isVoiding(), deepSlot.getCompressionForm()));
             }
         }
@@ -534,7 +660,7 @@ public class ChestStorage {
         slots = new DeepSlot[slotCount];
         Arrays.fill(slots, DeepSlot.EMPTY);
         for (Contents.Entry entry : contents.entries()) {
-            slots[entry.slot()] = DeepSlot.of(entry.item(), entry.count(), entry.locked(), entry.voiding(), entry.form().orElse(null));
+            slots[entry.slot()] = DeepSlot.of(entry.item(), entry.count(), entry.remainder(), entry.locked(), entry.voiding(), entry.form().orElse(null));
         }
         dirty.clear();
         markAllDirty();
@@ -571,7 +697,7 @@ public class ChestStorage {
                 CODEC_ENTRIES.optionalFieldOf("slots", List.of()).forGetter(Contents::entries)
         ).apply(i, Contents::new));
 
-        public record Entry(int slot, ItemStack item, long count, boolean locked, boolean voiding, Optional<Item> form) {
+        public record Entry(int slot, ItemStack item, long count, long remainder, boolean locked, boolean voiding, Optional<Item> form) {
             // Unknown form items decode as no form, which falls back to the default form.
             private static final Codec<Optional<Item>> CODEC_FORM = ResourceLocation.CODEC.xmap(
                     BuiltInRegistries.ITEM::getOptional,
@@ -581,6 +707,7 @@ public class ChestStorage {
                     Codec.intRange(0, Integer.MAX_VALUE).fieldOf("slot").forGetter(Entry::slot),
                     ItemStack.SINGLE_ITEM_CODEC.fieldOf("item").forGetter(Entry::item),
                     Codec.LONG.fieldOf("count").forGetter(Entry::count),
+                    Codec.LONG.optionalFieldOf("remainder", 0L).forGetter(Entry::remainder),
                     Codec.BOOL.optionalFieldOf("locked", false).forGetter(Entry::locked),
                     Codec.BOOL.optionalFieldOf("voiding", false).forGetter(Entry::voiding),
                     CODEC_FORM.optionalFieldOf("form", Optional.empty()).forGetter(Entry::form)

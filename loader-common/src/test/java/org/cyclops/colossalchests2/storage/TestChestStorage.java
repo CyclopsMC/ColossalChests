@@ -533,7 +533,7 @@ public class TestChestStorage extends BootstrapTest {
     @Test
     public void testLoadContentsNeverDropsEntries() {
         ChestStorage.Contents contents = new ChestStorage.Contents(2, List.of(
-                new ChestStorage.Contents.Entry(4, STONE, 7, false, false, Optional.empty())));
+                new ChestStorage.Contents.Entry(4, STONE, 7, 0, false, false, Optional.empty())));
         storage.loadContents(contents);
         assertEquals(5, storage.getSlotCount());
         assertEquals(7, storage.getSlot(4).getCount());

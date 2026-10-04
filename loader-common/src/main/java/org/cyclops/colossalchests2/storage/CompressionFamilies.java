@@ -17,6 +17,8 @@ import java.util.Set;
  */
 public class CompressionFamilies {
 
+    public static final CompressionFamilies EMPTY = new CompressionFamilies();
+
     private final Map<Item, CompressionFamily> byItem = Maps.newIdentityHashMap();
     private final Set<CompressionFamily> families = new LinkedHashSet<>();
 

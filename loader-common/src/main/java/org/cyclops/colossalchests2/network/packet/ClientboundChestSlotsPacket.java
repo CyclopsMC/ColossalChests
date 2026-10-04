@@ -51,8 +51,10 @@ public class ClientboundChestSlotsPacket extends PacketBase<ClientboundChestSlot
             buf.writeVarInt(slots[i]);
             ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, contents[i].getPrototype());
             buf.writeVarLong(contents[i].getCount());
+            buf.writeVarLong(contents[i].getRemainder());
             buf.writeBoolean(contents[i].isLocked());
             buf.writeBoolean(contents[i].isVoiding());
+            ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, contents[i].getCompressionForm().map(ItemStack::new).orElse(ItemStack.EMPTY));
             buf.writeVarLong(capacities[i]);
         }
     }
@@ -68,9 +70,11 @@ public class ClientboundChestSlotsPacket extends PacketBase<ClientboundChestSlot
             slots[i] = buf.readVarInt();
             ItemStack prototype = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
             long count = buf.readVarLong();
+            long remainder = buf.readVarLong();
             boolean locked = buf.readBoolean();
             boolean voiding = buf.readBoolean();
-            contents[i] = DeepSlot.of(prototype, count, locked, voiding, null);
+            ItemStack form = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+            contents[i] = DeepSlot.of(prototype, count, remainder, locked, voiding, form.isEmpty() ? null : form.getItem());
             capacities[i] = buf.readVarLong();
         }
     }

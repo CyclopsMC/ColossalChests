@@ -1,6 +1,11 @@
 package org.cyclops.colossalchests2.gametest;
 
 import net.minecraft.gametest.framework.GameTest;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -88,6 +93,23 @@ public class GameTestsCapabilitiesForge {
         helper.assertValueEqual(handler.extractItem(0, 64, false).getCount(), 64, "extracted count");
         helper.assertValueEqual(storage.getSlot(0).getCount(), Integer.MAX_VALUE + 10L - 64, "remaining count");
         helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCapabilityOnFormedCore(GameTestHelper helper) {
+        BlockPos min = new BlockPos(1, 1, 1);
+        BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> GameTestsCommon.assertFormed(helper, corePos, min, 3))
+                .thenExecute(() -> {
+                    IItemHandler handler = helper.getBlockEntity(corePos).getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH).orElse(null);
+                    helper.assertTrue(handler != null, "Expected an item handler on a formed core");
+                    helper.assertTrue(handler.insertItem(0, new ItemStack(Items.STONE, 10), false).isEmpty(), "Expected the core to accept items");
+                    helper.setBlock(min.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> GameTestsCommon.assertDormant(helper, corePos))
+                .thenExecute(() -> helper.assertFalse(helper.getBlockEntity(corePos).getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH).isPresent(), "Expected no item handler on a dormant core"))
+                .thenSucceed();
     }
 
 }

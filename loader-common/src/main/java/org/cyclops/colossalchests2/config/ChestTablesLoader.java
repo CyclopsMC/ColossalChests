@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * Holds the active {@link ChestTables}.
- * Parsing works, but nothing loads these files from datapacks yet, so {@link #get()} returns the defaults.
+ * Filled from datapacks by {@link ChestTablesReloadListener}, defaults until the first load.
  * @author rubensworks
  */
 public class ChestTablesLoader {

@@ -3,6 +3,14 @@ package org.cyclops.colossalchests2;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.server.packs.PackType;
+import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
+import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
+import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
+import org.cyclops.colossalchests2.config.ChestTablesReloadListenerFabric;
 import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
 import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
@@ -26,6 +34,7 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
             ColossalChestsInstance.MOD = instance;
             _instance = instance;
         });
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ChestTablesReloadListenerFabric());
     }
 
     @Override
@@ -54,5 +63,12 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig<>(this));
+
+        configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
+        for (ChestMaterial material : ChestMaterial.VALUES) {
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
+        }
+        configHandler.addConfigurable(new BlockEntityChestCoreConfigFabric<>(this));
     }
 }

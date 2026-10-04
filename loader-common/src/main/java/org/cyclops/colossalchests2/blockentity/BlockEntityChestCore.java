@@ -1,0 +1,332 @@
+package org.cyclops.colossalchests2.blockentity;
+
+import com.google.common.collect.Sets;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import org.cyclops.colossalchests2.ColossalChestsInstance;
+import org.cyclops.colossalchests2.GeneralConfig;
+import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.block.BlockChestCore;
+import org.cyclops.colossalchests2.block.BlockChestWall;
+import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
+import org.cyclops.colossalchests2.capability.StorageSignals;
+import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
+import org.cyclops.colossalchests2.multiblock.ChestStructure;
+import org.cyclops.colossalchests2.multiblock.LevelStructureView;
+import org.cyclops.colossalchests2.multiblock.StructureDetector;
+import org.cyclops.colossalchests2.storage.CapacityProfile;
+import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.ResizeResult;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * Block entity of a chest core: owns the storage and the cached structure.
+ * While the structure is broken the core is dormant: contents stay, but its item storage is not exposed.
+ * @author rubensworks
+ */
+public class BlockEntityChestCore extends BlockEntity {
+
+    public static final int DATA_VERSION = 1;
+    private static final int UNLOADED_RETRY_TICKS = 20;
+
+    public static CapabilityInvalidator capabilityInvalidator = CapabilityInvalidator.NOOP;
+
+    private final ChestStorage storage;
+    private final ItemHandlerLogic itemHandlerLogic;
+    private final Set<ServerPlayer> viewers = Sets.newHashSet();
+
+    @Nullable
+    private ChestStructure structure;
+    private int lastSize;
+    private boolean registered;
+    private boolean validationRequested = true;
+    private int validationCooldown;
+    private boolean contentsChanged;
+
+    public BlockEntityChestCore(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+        this.storage = new ChestStorage(GeneralConfig.getBaseSlots(), createProfile(0));
+        this.storage.addListener(slot -> this.contentsChanged = true);
+        this.itemHandlerLogic = new ItemHandlerLogic(this.storage);
+    }
+
+    public BlockEntityChestCore(BlockPos pos, BlockState state) {
+        this(RegistryEntries.BLOCK_ENTITY_CHEST_CORE.value(), pos, state);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, BlockEntityChestCore core) {
+        core.tick();
+    }
+
+    public ChestStorage getStorage() {
+        return storage;
+    }
+
+    public ItemHandlerLogic getItemHandlerLogic() {
+        return itemHandlerLogic;
+    }
+
+    /**
+     * @return The structure this core forms, or null while dormant.
+     */
+    @Nullable
+    public ChestStructure getStructure() {
+        return structure;
+    }
+
+    /**
+     * @return The size of the last formed structure, or 0 if it never formed.
+     */
+    public int getLastSize() {
+        return lastSize;
+    }
+
+    /**
+     * @return If the structure is formed, so contents can be accessed.
+     */
+    public boolean isFormed() {
+        return structure != null;
+    }
+
+    public int getComparatorSignal() {
+        return isFormed() ? StorageSignals.getComparatorSignal(storage) : 0;
+    }
+
+    /**
+     * Revalidate the structure on the next tick. Cheap to call often, validation happens at most once per tick.
+     */
+    public void requestValidation() {
+        this.validationRequested = true;
+    }
+
+    /**
+     * Start sending slot changes to a player, used by the chest menu.
+     * @param player The player.
+     */
+    public void addViewer(ServerPlayer player) {
+        if (viewers.add(player)) {
+            storage.markAllDirty();
+        }
+    }
+
+    public void removeViewer(ServerPlayer player) {
+        viewers.remove(player);
+    }
+
+    public Set<ServerPlayer> getViewers() {
+        return Collections.unmodifiableSet(viewers);
+    }
+
+    protected void tick() {
+        if (!registered) {
+            ChestCoreIndex.register(level, worldPosition);
+            registered = true;
+            validationRequested = true;
+        }
+        if (validationCooldown > 0) {
+            validationCooldown--;
+        } else if (validationRequested) {
+            validationRequested = false;
+            validate();
+        }
+        if (contentsChanged) {
+            contentsChanged = false;
+            setChanged();
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+        }
+        if (!viewers.isEmpty() && storage.hasDirtySlots()) {
+            onDirtySlots(storage.drainDirtySlots());
+        }
+    }
+
+    /**
+     * Called with the slots that changed since the last call, while players view the chest.
+     * @param slots Changed slot indexes.
+     */
+    protected void onDirtySlots(int[] slots) {
+        // The chest menu sends these to its viewers.
+    }
+
+    protected void validate() {
+        if (!(getBlockState().getBlock() instanceof BlockChestCore coreBlock)) {
+            return;
+        }
+        int maxSize = coreBlock.getMaterial().getProperties().maxSize();
+        StructureDetector.Result result = StructureDetector.detect(new LevelStructureView(level, worldPosition), worldPosition, maxSize);
+        switch (result.state()) {
+            case VALID -> setStructure(result.structure());
+            case INVALID -> setStructure(null);
+            case UNLOADED -> {
+                validationRequested = true;
+                validationCooldown = UNLOADED_RETRY_TICKS;
+            }
+        }
+    }
+
+    protected void setStructure(@Nullable ChestStructure newStructure) {
+        boolean formedState = getBlockState().getValue(BlockChestCore.FORMED);
+        if (Objects.equals(structure, newStructure) && formedState == (newStructure != null)) {
+            return;
+        }
+        ChestStructure oldStructure = this.structure;
+        this.structure = newStructure;
+        if (oldStructure != null) {
+            for (BlockPos pos : oldStructure.shell()) {
+                if (newStructure == null || !newStructure.isOnShell(pos)) {
+                    setWallFormed(pos, false);
+                }
+            }
+        }
+        if (newStructure != null) {
+            for (BlockPos pos : newStructure.shell()) {
+                setWallFormed(pos, true);
+            }
+            lastSize = newStructure.size();
+            applyProfile(false);
+        }
+        level.setBlock(worldPosition, getBlockState().setValue(BlockChestCore.FORMED, newStructure != null), Block.UPDATE_CLIENTS);
+        invalidateCapabilities(oldStructure);
+        invalidateCapabilities(newStructure);
+        contentsChanged = true;
+        setChanged();
+    }
+
+    /**
+     * The core block is being removed: release the walls without touching the core's own block.
+     */
+    public void dissolve() {
+        ChestStructure oldStructure = this.structure;
+        this.structure = null;
+        if (oldStructure != null) {
+            for (BlockPos pos : oldStructure.shell()) {
+                setWallFormed(pos, false);
+            }
+            invalidateCapabilities(oldStructure);
+        }
+    }
+
+    private void setWallFormed(BlockPos pos, boolean formed) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof BlockChestWall && state.getValue(BlockChestWall.FORMED) != formed) {
+            level.setBlock(pos, state.setValue(BlockChestWall.FORMED, formed), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private void invalidateCapabilities(@Nullable ChestStructure structure) {
+        capabilityInvalidator.invalidate(level, worldPosition);
+        if (structure != null) {
+            for (BlockPos pos : structure.shell()) {
+                capabilityInvalidator.invalidate(level, pos);
+            }
+        }
+        onCapabilitiesChanged();
+    }
+
+    /**
+     * Called when the exposed capabilities may have changed.
+     */
+    protected void onCapabilitiesChanged() {
+    }
+
+    protected static CapacityProfile createProfile(int size) {
+        long depth = size < GeneralConfig.MIN_SIZE ? 0 : GeneralConfig.getDepthForSize(Math.min(size, GeneralConfig.HARD_MAX_SIZE));
+        return CapacityProfile.builder(depth)
+                .maxItemsPerSlot(GeneralConfig.getMaxItemsPerSlot())
+                .acceptNonStackables(GeneralConfig.acceptNonStackables)
+                .build();
+    }
+
+    /**
+     * Apply the capacity for the last formed size and the current config.
+     * Slots that no longer fit become extract-only, nothing is ever deleted.
+     * @param warnIfOverCapacity If over-capacity slots should be logged, for config changes between sessions.
+     */
+    protected void applyProfile(boolean warnIfOverCapacity) {
+        ResizeResult result = storage.forceProfile(createProfile(lastSize));
+        int highestFilled = -1;
+        for (int slot = 0; slot < storage.getSlotCount(); slot++) {
+            if (storage.getSlot(slot).getCount() > 0) {
+                highestFilled = slot;
+            }
+        }
+        storage.setSlotCount(Math.max(GeneralConfig.getBaseSlots(), highestFilled + 1));
+        if (warnIfOverCapacity && lastSize > 0 && !result.isOk()) {
+            ColossalChestsInstance.MOD.log(org.apache.logging.log4j.Level.WARN, String.format(
+                    "Chest core at %s holds more than its capacity in slots %s, possibly because config values were "
+                            + "lowered. Those slots are extract-only until they fit again.", worldPosition, result.offendingSlots()));
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && !level.isClientSide) {
+            ChestCoreIndex.unregister(level, worldPosition);
+        }
+        registered = false;
+        onCapabilitiesChanged();
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt("data_version", DATA_VERSION);
+        tag.put("storage", ChestStorage.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), storage.toContents()).getOrThrow());
+        if (structure != null) {
+            tag.put("structure", ChestStructure.CODEC.encodeStart(NbtOps.INSTANCE, structure).getOrThrow());
+        }
+        tag.putInt("last_size", lastSize);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("storage")) {
+            ChestStorage.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("storage"))
+                    .resultOrPartial(error -> ColossalChestsInstance.MOD.log(org.apache.logging.log4j.Level.ERROR,
+                            "Could not load chest core contents at " + worldPosition + ": " + error))
+                    .ifPresent(storage::loadContents);
+        }
+        structure = tag.contains("structure") ? ChestStructure.CODEC.parse(NbtOps.INSTANCE, tag.get("structure")).result().orElse(null) : null;
+        lastSize = tag.getInt("last_size");
+        applyProfile(true);
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        ChestStorage.Contents contents = storage.toContents();
+        if (!contents.entries().isEmpty()) {
+            components.set(RegistryEntries.COMPONENT_CHEST_CONTENTS.value(), contents);
+        }
+    }
+
+    @Override
+    protected void applyImplicitComponents(DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        ChestStorage.Contents contents = input.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value());
+        if (contents != null) {
+            storage.loadContents(contents);
+            applyProfile(false);
+        }
+    }
+
+    @Override
+    public void removeComponentsFromTag(CompoundTag tag) {
+        super.removeComponentsFromTag(tag);
+        tag.remove("storage");
+    }
+}

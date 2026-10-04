@@ -6,6 +6,12 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.gametest.framework.GameTest;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
@@ -124,6 +130,55 @@ public class GameTestsCapabilitiesFabric {
 
         helper.assertValueEqual(storage.getSlot(0).getCount(), 5L, "slot count");
         helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testRejectedTransfersLeaveStorageUntouched(GameTestHelper helper) {
+        ChestStorage storage = new ChestStorage(1, CapacityProfile.ofDepth(1));
+        ChestStorageFabric fabricStorage = new ChestStorageFabric(storage);
+        SingleSlotStorage<ItemVariant> slot = fabricStorage.getSlot(0);
+        helper.assertTrue(fabricStorage.getStorage() == storage, "Expected the wrapped storage");
+        helper.assertValueEqual(fabricStorage.getSlotCount(), 1, "slot count");
+        helper.assertTrue(slot.isResourceBlank() && slot.getResource().isBlank(), "Expected a blank slot");
+
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(fabricStorage.extract(STONE, 5, transaction), 0L, "extracted from empty storage");
+            helper.assertValueEqual(slot.extract(STONE, 5, transaction), 0L, "extracted from empty slot");
+            helper.assertValueEqual(slot.insert(STONE, 100, transaction), 64L, "inserted into slot");
+            helper.assertValueEqual(slot.insert(STONE, 1, transaction), 0L, "inserted into full slot");
+            helper.assertValueEqual(fabricStorage.insert(STONE, 1, transaction), 0L, "inserted into full storage");
+            transaction.commit();
+        }
+
+        helper.assertValueEqual(storage.getSlot(0).getCount(), 64L, "slot count");
+        helper.assertTrue(!slot.isResourceBlank() && slot.getResource().equals(STONE), "Expected stone in the slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testStorageOnFormedChest(GameTestHelper helper) {
+        BlockPos min = new BlockPos(1, 1, 1);
+        BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = min.offset(1, 2, 1);
+        helper.startSequence()
+                .thenWaitUntil(() -> GameTestsCommon.assertFormed(helper, corePos, min, 3))
+                .thenExecute(() -> {
+                    Storage<ItemVariant> coreStorage = ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(corePos), Direction.NORTH);
+                    Storage<ItemVariant> wallStorage = ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(wallPos), Direction.UP);
+                    helper.assertTrue(coreStorage != null && coreStorage == wallStorage, "Expected the core and walls to share one storage");
+                    try (Transaction transaction = Transaction.openOuter()) {
+                        helper.assertValueEqual(wallStorage.insert(STONE, 10, transaction), 10L, "inserted through the wall");
+                        transaction.commit();
+                    }
+                    helper.setBlock(min.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> GameTestsCommon.assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    helper.assertTrue(ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(corePos), Direction.NORTH) == null, "Expected no storage on a dormant core");
+                    helper.assertTrue(ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(wallPos), Direction.UP) == null, "Expected no storage on a dormant wall");
+                    helper.assertValueEqual(GameTestsCommon.getCore(helper, corePos).getStorage().getSlot(0).getCount(), 10L, "kept count");
+                })
+                .thenSucceed();
     }
 
 }

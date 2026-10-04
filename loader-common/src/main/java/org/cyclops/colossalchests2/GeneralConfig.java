@@ -40,6 +40,11 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     @ConfigurablePropertyCommon(category = "chest", comment = "Stacks per slot for a chest with an outer size of 10.", minimalValue = 1, isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static int depthSize10 = 262144;
 
+    @ConfigurablePropertyCommon(category = "chest", comment = "The maximum number of items in a single slot, for any item type.", minimalValue = 1, isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static int maxItemsPerSlot = Integer.MAX_VALUE;
+    @ConfigurablePropertyCommon(category = "chest", comment = "If items that do not stack, such as tools, can be stored.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static boolean acceptNonStackables = true;
+
     public GeneralConfig(M mod) {
         super(mod, "general");
     }
@@ -58,6 +63,13 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
      */
     public static int getMaxSlots() {
         return Math.clamp(maxSlots, 1, HARD_MAX_SLOTS);
+    }
+
+    /**
+     * @return The maximum number of items in a single slot, at least 1.
+     */
+    public static long getMaxItemsPerSlot() {
+        return Math.max(1, maxItemsPerSlot);
     }
 
     /**

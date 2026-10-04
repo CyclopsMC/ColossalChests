@@ -1,11 +1,13 @@
 package org.cyclops.colossalchests2.upgrade;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
+import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -78,7 +80,24 @@ public final class ChestUpgrades {
      */
     public static final ChestUpgrade VOID = new ChestUpgrade(id("void"));
 
-    public static final List<ChestUpgrade> VALUES = ImmutableList.of(DEPTH, SLOT_EXPANSION, LOCK, BUNDLING, VOID);
+    /**
+     * Stores the forms of a compression family, such as nuggets, ingots and blocks, as its largest form in one slot.
+     * Removal is refused while a slot holds a part that does not make a whole item of the largest form.
+     */
+    public static final ChestUpgrade COMPRESSION = new ChestUpgrade(id("compression")) {
+        @Override
+        public List<Integer> getRemovalProblems(ChestStorage storage) {
+            List<Integer> slots = Lists.newArrayList();
+            for (int slot = 0; slot < storage.getSlotCount(); slot++) {
+                if (storage.getSlot(slot).getRemainder() > 0) {
+                    slots.add(slot);
+                }
+            }
+            return slots;
+        }
+    };
+
+    public static final List<ChestUpgrade> VALUES = ImmutableList.of(DEPTH, SLOT_EXPANSION, LOCK, BUNDLING, VOID, COMPRESSION);
 
     private ChestUpgrades() {
     }

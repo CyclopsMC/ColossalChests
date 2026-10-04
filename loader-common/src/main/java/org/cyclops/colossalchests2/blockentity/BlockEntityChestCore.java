@@ -50,6 +50,8 @@ import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.LevelStructureView;
 import org.cyclops.colossalchests2.multiblock.StructureDetector;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.CompressionFamilies;
+import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
 import org.cyclops.colossalchests2.storage.ResizeResult;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
@@ -180,6 +182,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         if (!getUpgradeSet().has(ChestUpgrades.VOID)) {
             storage.clearVoids();
         }
+        updateCompression();
         applyProfile(false);
         setChanged();
         if (storage.getSlotCount() != oldSlotCount) {
@@ -648,5 +651,21 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         upgrades.load(contents.stream().toList());
         upgrades.resize(getMaterialProperties(getBlockState()).upgradeSlots());
         loadingUpgrades = false;
+        updateCompression();
+    }
+
+    /**
+     * Compress while the Compression upgrade is installed. The families come from the level's recipes, looked up
+     * when needed, as the level is not known yet while loading.
+     */
+    private void updateCompression() {
+        boolean compress = getUpgradeSet().has(ChestUpgrades.COMPRESSION);
+        if (compress != storage.isCompressing()) {
+            storage.setCompression(compress ? this::getCompressionFamilies : null);
+        }
+    }
+
+    private CompressionFamilies getCompressionFamilies() {
+        return level != null ? CompressionFamiliesCache.get(level) : CompressionFamilies.EMPTY;
     }
 }

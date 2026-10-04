@@ -79,6 +79,7 @@ public final class ChestUpgradeRules {
             offending.addAll(storage.validateProfile(newProfile).offendingSlots());
         }
         offending.addAll(storage.validateSlotCount(getSlotCount(remaining)).offendingSlots());
+        offending.addAll(upgrade.getRemovalProblems(storage));
         return ResizeResult.of(List.copyOf(offending));
     }
 

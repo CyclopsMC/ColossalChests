@@ -21,6 +21,8 @@ import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
+import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
@@ -35,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.BitSet;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The chest GUI. Chest slots are not vanilla slots, as their counts do not fit in item stacks: the screen draws
@@ -233,7 +236,30 @@ public class ContainerChest extends AbstractContainerMenu {
      */
     public boolean canChestSlotAccept(int slot, ItemStack type) {
         DeepSlot deepSlot = chestSlots[slot];
-        return !type.isEmpty() && (deepSlot.isEmpty() || deepSlot.matches(type));
+        return !type.isEmpty() && (deepSlot.isEmpty() || deepSlot.matches(getFamily(type).map(family -> new ItemStack(family.largest().item())).orElse(type)));
+    }
+
+    /**
+     * @param slot A chest slot.
+     * @param type A type the slot can hold, for a compressed slot any form of its family.
+     * @return How many whole items of the type the slot holds, as last synced.
+     */
+    public long getChestSlotAmount(int slot, ItemStack type) {
+        DeepSlot deepSlot = chestSlots[slot];
+        Optional<CompressionFamily> family = getFamily(type);
+        if (family.isPresent() && !deepSlot.isEmpty()) {
+            CompressionFamily f = family.get();
+            return f.fromBaseUnits(f.indexOf(type), f.toBaseUnits(0, deepSlot.getCount()) + deepSlot.getRemainder());
+        }
+        return deepSlot.matches(type) ? deepSlot.getCount() : 0;
+    }
+
+    /**
+     * @param type An item type.
+     * @return Its compression family, while the chest compresses.
+     */
+    private Optional<CompressionFamily> getFamily(ItemStack type) {
+        return getUpgradeSet().has(ChestUpgrades.COMPRESSION) ? CompressionFamiliesCache.get(player.level()).find(type) : Optional.empty();
     }
 
     /**
@@ -246,6 +272,14 @@ public class ContainerChest extends AbstractContainerMenu {
             return 0;
         }
         DeepSlot deepSlot = chestSlots[slot];
+        Optional<CompressionFamily> family = getFamily(type);
+        if (family.isPresent()) {
+            // Counted in base units, like the storage does.
+            CompressionFamily f = family.get();
+            long capacity = deepSlot.isEmpty() ? profile.capacityFor(new ItemStack(f.largest().item()).getMaxStackSize()) : capacities[slot];
+            long free = f.toBaseUnits(0, capacity) - f.toBaseUnits(0, deepSlot.getCount()) - deepSlot.getRemainder();
+            return Math.max(0, free) / f.get(f.indexOf(type)).baseUnits();
+        }
         long capacity = deepSlot.isEmpty() ? profile.capacityFor(type.getMaxStackSize()) : capacities[slot];
         return Math.max(0, capacity - deepSlot.getCount());
     }
@@ -419,6 +453,20 @@ public class ContainerChest extends AbstractContainerMenu {
             case CLEAR_LOCKS -> storage.clearLocks();
             default -> {
             }
+        }
+    }
+
+    /**
+     * Pick the form to take out of a compressed slot.
+     */
+    public void handleForm(int slot, ItemStack form) {
+        if (core == null || !core.isFormed() || slot < 0 || slot >= Math.min(chestSlots.length, core.getStorage().getSlotCount())) {
+            return;
+        }
+        ChestStorage storage = core.getStorage();
+        boolean ofFamily = storage.getFamily(storage.getSlot(slot).getPrototype()).map(family -> family.indexOf(form) >= 0).orElse(false);
+        if (ofFamily) {
+            storage.setCompressionForm(slot, form.getItem());
         }
     }
 

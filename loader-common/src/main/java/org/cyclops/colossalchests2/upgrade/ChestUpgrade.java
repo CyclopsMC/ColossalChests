@@ -5,7 +5,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.config.UpgradeProperties;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
+import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * A core upgrade type. Its limits and strength come from its data file, see {@link UpgradeProperties}.
@@ -49,6 +52,14 @@ public class ChestUpgrade {
      */
     public int getExtraSlots(int count) {
         return 0;
+    }
+
+    /**
+     * @param storage The chest storage.
+     * @return Slots that keep this upgrade from being removed, besides slots that would not fit the new capacity.
+     */
+    public List<Integer> getRemovalProblems(ChestStorage storage) {
+        return List.of();
     }
 
     /**

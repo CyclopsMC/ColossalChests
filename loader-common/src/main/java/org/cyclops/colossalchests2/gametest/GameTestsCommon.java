@@ -60,6 +60,9 @@ import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.CompressionFamilies;
+import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
+import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
@@ -1039,6 +1042,97 @@ public class GameTestsCommon {
                     helper.assertValueEqual(core.getStorage().getCapacity(sword), 8L, "swords per slot with Bundling and Depth");
                     helper.assertValueEqual(core.getStorage().insert(sword, 8, false), 8L, "swords inserted into one slot");
                     helper.assertValueEqual(core.getStorage().getSlot(0).getCount(), 8L, "swords in the first slot");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCompressionFamiliesFromVanillaRecipes(GameTestHelper helper) {
+        CompressionFamilies families = CompressionFamiliesCache.get(helper.getLevel());
+        CompressionFamily iron = families.find(Items.IRON_NUGGET).orElseThrow(() -> new GameTestAssertException("Expected an iron family"));
+        helper.assertValueEqual(iron.size(), 3, "iron forms");
+        helper.assertTrue(iron.largest().item() == Items.IRON_BLOCK, "Expected iron blocks as the largest form");
+        helper.assertValueEqual(iron.largest().baseUnits(), 81L, "nuggets per iron block");
+        helper.assertTrue(families.find(Items.HAY_BLOCK).isPresent(), "Expected wheat and hay bales to compress");
+        helper.assertTrue(families.find(Items.NETHERITE_BLOCK).isPresent(), "Expected netherite to compress");
+        // One-way recipes never compress.
+        helper.assertTrue(families.find(Items.QUARTZ_BLOCK).isEmpty(), "Expected quartz blocks not to compress");
+        helper.assertTrue(families.find(Items.COBBLESTONE).isEmpty(), "Expected cobblestone not to compress");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
+    public void testCompressionOnIron5x5(GameTestHelper helper) {
+        // The core sits in the bottom row, so a hopper below can pull from it on every loader.
+        BlockPos corePos = buildWalls(helper, MIN_A, 5, ChestMaterial.IRON, new BlockPos(2, 0, 0), Set.of());
+        helper.setBlock(corePos, core(ChestMaterial.IRON));
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 5))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.COMPRESSION));
+                    helper.assertTrue(storage.isCompressing(), "Expected the chest to compress");
+                    // Nuggets, ingots and blocks all go into one slot as blocks.
+                    helper.assertValueEqual(storage.insertAutomated(new ItemStack(Items.IRON_NUGGET), 5, false), 5L, "nuggets inserted");
+                    helper.assertValueEqual(storage.insertAutomated(new ItemStack(Items.IRON_INGOT), 10, false), 10L, "ingots inserted");
+                    helper.assertValueEqual(storage.insertAutomated(new ItemStack(Items.IRON_BLOCK), 2, false), 2L, "blocks inserted");
+                    helper.assertTrue(storage.getSlot(0).matches(new ItemStack(Items.IRON_BLOCK)), "Expected the slot to hold blocks");
+                    helper.assertValueEqual(storage.getSlot(0).getCount(), 3L, "whole blocks");
+                    helper.assertValueEqual(storage.getSlot(0).getRemainder(), 14L, "nuggets of remainder");
+                    helper.assertTrue(storage.getSlot(1).isEmpty(), "Expected one slot to hold all forms");
+                    // Removal is refused while a remainder is left.
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.broadcastChanges();
+                    helper.assertValueEqual(menu.getUpgradeRemovalProblems(0), 1, "slots keeping Compression in");
+                    // Pick ingots, then a hopper pulling from the chest gets ingots.
+                    menu.handleForm(0, new ItemStack(Items.IRON_INGOT));
+                    player.closeContainer();
+                    helper.setBlock(corePos.below(), Blocks.HOPPER.defaultBlockState());
+                })
+                .thenWaitUntil(() -> {
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(corePos.below());
+                    helper.assertTrue(hopper.getItem(0).is(Items.IRON_INGOT) && hopper.getItem(0).getCount() >= 2, "Expected the hopper to pull ingots");
+                })
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(corePos.below());
+                    int pulled = 0;
+                    for (int slot = 0; slot < hopper.getContainerSize(); slot++) {
+                        pulled += hopper.getItem(slot).getCount();
+                    }
+                    // 257 nuggets minus 9 per pulled ingot.
+                    helper.assertValueEqual(storage.getAvailable(0, new ItemStack(Items.IRON_NUGGET)), 257L - 9L * pulled, "nuggets left");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testCompressionClicksTakeTheChosenForm(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    storage.insert(0, new ItemStack(Items.IRON_INGOT), 64, false);
+                    // Installing Compression converts the ingots: 7 blocks and 1 ingot.
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.COMPRESSION));
+                    helper.assertValueEqual(storage.getSlot(0).getCount(), 7L, "blocks after installing Compression");
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.handleForm(0, new ItemStack(Items.IRON_NUGGET));
+                    menu.handleChestClick(player, 0, ChestClickAction.TAKE_STACK);
+                    helper.assertTrue(menu.getCarried().is(Items.IRON_NUGGET) && menu.getCarried().getCount() == 64, "Expected a stack of nuggets");
+                    // Putting them back goes into the same slot.
+                    menu.handleChestClick(player, 0, ChestClickAction.TAKE_STACK);
+                    helper.assertTrue(menu.getCarried().isEmpty(), "Expected the nuggets to go back");
+                    helper.assertValueEqual(storage.getAvailable(0, new ItemStack(Items.IRON_INGOT)), 64L, "ingots after putting nuggets back");
+                    // A form outside the family is ignored.
+                    menu.handleForm(0, new ItemStack(Items.GOLD_INGOT));
+                    helper.assertTrue(storage.getExtractionType(0).is(Items.IRON_NUGGET), "Expected the chosen form to stay");
+                    player.closeContainer();
                 })
                 .thenSucceed();
     }

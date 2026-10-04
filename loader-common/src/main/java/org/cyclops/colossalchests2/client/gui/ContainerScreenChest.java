@@ -33,6 +33,12 @@ import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
+import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
+import org.cyclops.colossalchests2.storage.CompressionFamily;
+import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 
 import java.text.NumberFormat;
@@ -65,6 +71,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_PADLOCK = 0xFFF0C030;
     private static final int COLOR_PADLOCK_SHACKLE = 0xFFC8C8D0;
     private static final int COLOR_VOID = 0xFF46145F;
+    private static final int COLOR_FORM_CHOSEN = 0xFFFFFFFF;
+    private static final int COLOR_FORM_CHOSEN_INSIDE = 0xFF3C2A55;
+    private static final int FORM_CELL_WIDTH = 24;
+    private static final int FORM_ROW_HEIGHT = 31;
     private static final int COLOR_VOID_RING = 0xFF9650C8;
     private static final int COLOR_COUNT = 0xFFFFFF;
     private static final int COLOR_COUNT_CAPPED = 0xFFFF55;
@@ -256,12 +266,15 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                 // What the slot would hold when releasing the drag now, yellow when full.
                 guiGraphics.fill(x, y, x + 16, y + 16, COLOR_DRAG_PREVIEW);
                 guiGraphics.renderItem(dragPreview.cursor(), x, y);
-                drawCount(guiGraphics, deepSlot.getCount() + dragPreview.added().get(slot), x, y,
+                drawCount(guiGraphics, menu.getChestSlotAmount(slot, dragPreview.cursor()) + dragPreview.added().get(slot), x, y,
                         dragPreview.capped().contains(slot) ? COLOR_COUNT_CAPPED : COLOR_COUNT);
             } else if (!deepSlot.isEmpty()) {
                 guiGraphics.renderItem(deepSlot.getPrototype(), x, y);
                 if (deepSlot.getCount() > 0) {
                     drawCount(guiGraphics, deepSlot.getCount(), x, y, COLOR_COUNT);
+                } else if (deepSlot.getRemainder() > 0) {
+                    // Less than one item of the largest form.
+                    drawCount(guiGraphics, "<1", x, y, COLOR_COUNT);
                 } else {
                     // A slot reserved by a lock shows a ghost of its item.
                     guiGraphics.fill(x, y, x + 16, y + 16, 300, COLOR_GHOST);
@@ -316,7 +329,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     }
 
     private void drawCount(GuiGraphics guiGraphics, long count, int x, int y, int color) {
-        String text = IModHelpers.get().getGuiHelpers().quantityToScaledString(count);
+        drawCount(guiGraphics, IModHelpers.get().getGuiHelpers().quantityToScaledString(count), x, y, color);
+    }
+
+    private void drawCount(GuiGraphics guiGraphics, String text, int x, int y, int color) {
         float scale = 0.5F;
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, 0, 300);
@@ -573,6 +589,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         if (deepSlot.isEmpty()) {
             return;
         }
+        Optional<CompressionFamily> family = getCompressedFamily(deepSlot);
         List<Component> lines = Lists.newArrayList(getTooltipFromContainerItem(deepSlot.getPrototype()));
         lines.add(Component.translatable("gui.colossalchests2.count", formatCount(deepSlot.getCount()),
                 formatCount(menu.getChestSlotCapacity(slot))).withStyle(ChatFormatting.GRAY));
@@ -585,7 +602,95 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         if (deepSlot.isVoiding()) {
             lines.add(Component.translatable("gui.colossalchests2.slot_voiding").withStyle(ChatFormatting.LIGHT_PURPLE));
         }
-        guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+        if (family.isPresent()) {
+            renderCompressedTooltip(guiGraphics, mouseX, mouseY, deepSlot, family.get(), lines);
+        } else {
+            guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+        }
+    }
+
+    /**
+     * @return The family of a compressed slot, while the chest compresses.
+     */
+    private Optional<CompressionFamily> getCompressedFamily(DeepSlot deepSlot) {
+        if (minecraft == null || minecraft.level == null || deepSlot.isEmpty() || !menu.getUpgradeSet().has(ChestUpgrades.COMPRESSION)) {
+            return Optional.empty();
+        }
+        return CompressionFamiliesCache.get(minecraft.level).find(deepSlot.getPrototype())
+                .filter(family -> family.indexOf(deepSlot.getPrototype()) == 0);
+    }
+
+    private static int getChosenForm(DeepSlot deepSlot, CompressionFamily family) {
+        return Math.max(0, deepSlot.getCompressionForm().map(family::indexOf).orElse(0));
+    }
+
+    /**
+     * A tooltip like the bundle's: the text lines, then a row with each form and how many of it the slot makes, with
+     * the form that clicks take framed.
+     */
+    private void renderCompressedTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY, DeepSlot deepSlot, CompressionFamily family,
+                                         List<Component> lines) {
+        Component hint = Component.translatable("gui.colossalchests2.compression.scroll").withStyle(ChatFormatting.GRAY);
+        long baseUnits = family.toBaseUnits(0, deepSlot.getCount()) + deepSlot.getRemainder();
+        int chosen = getChosenForm(deepSlot, family);
+        String[] amounts = new String[family.size()];
+        int[] cellWidths = new int[family.size()];
+        int rowWidth = 0;
+        for (int form = 0; form < family.size(); form++) {
+            amounts[form] = IModHelpers.get().getGuiHelpers().quantityToScaledString(family.fromBaseUnits(form, baseUnits));
+            cellWidths[form] = Math.max(FORM_CELL_WIDTH, font.width(amounts[form]) + 4);
+            rowWidth += cellWidths[form];
+        }
+        int width = Math.max(rowWidth, font.width(hint));
+        for (Component line : lines) {
+            width = Math.max(width, font.width(line));
+        }
+        int rowY = lines.size() * 10 + 2;
+        int height = rowY + FORM_ROW_HEIGHT + 10;
+        Vector2ic position = DefaultTooltipPositioner.INSTANCE.positionTooltip(this.width, this.height, mouseX, mouseY, width, height);
+        int x = position.x();
+        int y = position.y();
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0, 0, 400);
+        TooltipRenderUtil.renderTooltipBackground(guiGraphics, x, y, width, height, 0);
+        for (int i = 0; i < lines.size(); i++) {
+            guiGraphics.drawString(font, lines.get(i), x, y + i * 10 + (i > 0 ? 2 : 0), 0xFFFFFF, true);
+        }
+        int cellX = x;
+        for (int form = 0; form < family.size(); form++) {
+            int iconX = cellX + (cellWidths[form] - 16) / 2;
+            if (form == chosen) {
+                guiGraphics.fill(iconX - 2, y + rowY - 2, iconX + 18, y + rowY + 18, COLOR_FORM_CHOSEN);
+                guiGraphics.fill(iconX - 1, y + rowY - 1, iconX + 17, y + rowY + 17, COLOR_FORM_CHOSEN_INSIDE);
+            }
+            guiGraphics.renderItem(new ItemStack(family.get(form).item()), iconX, y + rowY);
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(0, 0, 200);
+            guiGraphics.drawString(font, amounts[form], cellX + (cellWidths[form] - font.width(amounts[form])) / 2, y + rowY + 19,
+                    form == chosen ? 0xFFFFFF : 0xAAAAAA, true);
+            guiGraphics.pose().popPose();
+            cellX += cellWidths[form];
+        }
+        guiGraphics.drawString(font, hint, x, y + rowY + FORM_ROW_HEIGHT, 0xFFFFFF, true);
+        guiGraphics.pose().popPose();
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        int slot = getHoveredSlot(mouseX, mouseY);
+        if (slot >= 0 && scrollY != 0) {
+            DeepSlot deepSlot = menu.getChestSlot(slot);
+            Optional<CompressionFamily> family = getCompressedFamily(deepSlot);
+            if (family.isPresent()) {
+                // Scrolling down picks the next smaller form, like the bundle.
+                int size = family.get().size();
+                int form = Math.floorMod(getChosenForm(deepSlot, family.get()) + (scrollY < 0 ? 1 : -1), size);
+                ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundChestFormPacket(menu.containerId, slot,
+                        new ItemStack(family.get().get(form).item())));
+                return true;
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private static String formatCount(long count) {

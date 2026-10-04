@@ -2,7 +2,6 @@ package org.cyclops.colossalchests2.inventory;
 
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.storage.ChestStorage;
-import org.cyclops.colossalchests2.storage.DeepSlot;
 
 /**
  * The click rules of chest slots in the GUI. Stacks handed to the cursor or player never exceed the
@@ -83,22 +82,25 @@ public final class ChestClickLogic {
         long insert(int slot, int amount);
     }
 
-    private static int maxStack(DeepSlot deepSlot) {
-        return (int) Math.min(deepSlot.getPrototype().getMaxStackSize(), deepSlot.getCount());
+    /**
+     * @return One max stack of the slot's extraction type, or what it holds if less. A compressed slot gives its
+     * chosen form.
+     */
+    private static int maxStack(ChestStorage storage, int slot, ItemStack type) {
+        return (int) Math.min(type.getMaxStackSize(), storage.getAvailable(slot, type));
     }
 
     private static ItemStack take(ChestStorage storage, int slot, boolean half) {
-        DeepSlot deepSlot = storage.getSlot(slot);
-        if (deepSlot.getCount() <= 0) {
+        ItemStack type = storage.getExtractionType(slot);
+        if (type.isEmpty() || storage.getAvailable(slot, type) <= 0) {
             return ItemStack.EMPTY;
         }
-        int amount = maxStack(deepSlot);
+        int amount = maxStack(storage, slot, type);
         if (half) {
             amount = (amount + 1) / 2;
         }
-        ItemStack prototype = deepSlot.getPrototype().copy();
-        long extracted = storage.extract(slot, amount, false);
-        return prototype.copyWithCount((int) extracted);
+        long extracted = storage.extract(slot, type, amount, false);
+        return type.copyWithCount((int) extracted);
     }
 
     private static ItemStack insert(ChestStorage storage, int slot, ItemStack cursor, int amount) {
@@ -114,17 +116,17 @@ public final class ChestClickLogic {
      * @return If anything moved.
      */
     private static boolean move(ChestStorage storage, int slot, IPlayerInventory inventory) {
-        DeepSlot deepSlot = storage.getSlot(slot);
-        if (deepSlot.getCount() <= 0) {
+        ItemStack type = storage.getExtractionType(slot);
+        if (type.isEmpty() || storage.getAvailable(slot, type) <= 0) {
             return false;
         }
-        int amount = maxStack(deepSlot);
-        ItemStack remainder = inventory.add(deepSlot.getPrototype().copyWithCount(amount));
+        int amount = maxStack(storage, slot, type);
+        ItemStack remainder = inventory.add(type.copyWithCount(amount));
         int moved = amount - remainder.getCount();
         if (moved <= 0) {
             return false;
         }
-        storage.extract(slot, moved, false);
+        storage.extract(slot, type, moved, false);
         return true;
     }
 

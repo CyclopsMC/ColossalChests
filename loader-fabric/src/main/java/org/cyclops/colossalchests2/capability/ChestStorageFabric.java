@@ -111,36 +111,36 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
         @Override
         public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
             StoragePreconditions.notBlankNotNegative(resource, maxAmount);
-            if (!storage.getSlot(slot).matches(resource.toStack())) {
-                return 0;
-            }
-            long extracted = storage.extract(slot, maxAmount, true);
+            // Any form of a compressed slot's family can be extracted.
+            ItemStack type = resource.toStack();
+            long extracted = storage.extract(slot, type, maxAmount, true);
             if (extracted > 0) {
                 updateSnapshots(transaction);
-                storage.extract(slot, maxAmount, false);
+                storage.extract(slot, type, maxAmount, false);
             }
             return extracted;
         }
 
         @Override
         public boolean isResourceBlank() {
-            return storage.getSlot(slot).getCount() == 0;
+            return getAmount() == 0;
         }
 
         @Override
         public ItemVariant getResource() {
-            DeepSlot deepSlot = storage.getSlot(slot);
-            return deepSlot.getCount() == 0 ? ItemVariant.blank() : ItemVariant.of(deepSlot.getPrototype());
+            return getAmount() == 0 ? ItemVariant.blank() : ItemVariant.of(storage.getExtractionType(slot));
         }
 
         @Override
         public long getAmount() {
-            return storage.getSlot(slot).getCount();
+            ItemStack type = storage.getExtractionType(slot);
+            return type.isEmpty() ? 0 : storage.getAvailable(slot, type);
         }
 
         @Override
         public long getCapacity() {
-            return storage.getCapacity(slot);
+            ItemStack type = storage.getExtractionType(slot);
+            return type.isEmpty() ? storage.getCapacity(slot) : storage.getCapacity(type);
         }
     }
 }

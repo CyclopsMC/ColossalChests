@@ -30,3 +30,12 @@ Note: `clientdevbridge batch` keeps `--button` from the previous line, so every 
 | `phase4-feedback-blocks.png` | Right-clicking a wall of a broken build: the action bar explains it, red particles mark the missing and wrong walls |
 
 Click rules read back from the client (cursor, slot 0) on NeoForge and Fabric: left `[64,960]`, left with cursor `[0,1024]`, right `[32,992]`, right with cursor `[31,993]`; shift `[16 pearls, 84 left]`, ctrl `[100 pearls, 0 left]`.
+
+Follow-up checks (`phase4-0-lid-compare.txt` in a fresh world, then `phase4-7-build.txt`):
+
+| Screenshot | Shows |
+|---|---|
+| `lid-compare-closed.png`, `lid-compare-open-profile.png` | The lock at vanilla proportions next to vanilla chests, closed and open |
+| `phase4-marker-on-lock.png` | The core marker drawn on the front of the closed lock while sneaking |
+
+`phase4-7-build.txt` places a wall against an unformed wall (it is placed instead of showing the diagnosis), and opens a formed chest with a block in hand.

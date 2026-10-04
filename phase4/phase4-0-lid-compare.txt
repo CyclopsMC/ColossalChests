@@ -1,0 +1,20 @@
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "setblock 6 4 4 minecraft:chest[facing=north]"
+command "setblock 8 4 4 minecraft:chest[facing=north]"
+wait --ticks 10
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(3, 5, 4)).addViewer(server.getPlayerList().getPlayers().get(0)); server.overworld().blockEvent(dev.pos(8,4,4), server.overworld().getBlockState(dev.pos(8,4,4)).getBlock(), 1, 1) }"
+wait --ticks 20
+command "setblock 5 6 -3 minecraft:barrier"
+command "tp @s 5.5 7 -2.5 30 25"
+wait --ticks 10
+screenshot --name lid-compare-open-side
+command "setblock 12 5 2 minecraft:barrier"
+command "tp @s 12.5 6 2.5 90 15"
+wait --ticks 10
+screenshot --name lid-compare-open-profile
+eval "server.execute { server.overworld().getBlockEntity(dev.pos(3, 5, 4)).removeViewer(server.getPlayerList().getPlayers().get(0)) }"
+wait --ticks 20
+command "tp @s 5.5 7 -2.5 30 25"
+wait --ticks 10
+screenshot --name lid-compare-closed

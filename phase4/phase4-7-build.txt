@@ -1,0 +1,22 @@
+# Continues in the lid comparison world. Placing walls against an unformed build places them, instead of showing the diagnosis.
+command "setblock 2 4 10 colossalchests2:chest_wall_wood"
+give colossalchests2:chest_wall_wood 4
+hold 0
+teleport 2.5 4 8 --yaw 0 --pitch 30
+use 2 4 10 --face up
+wait --ticks 5
+use 2 4 10 --face east
+wait --ticks 5
+block 2 5 10
+block 3 4 10
+# A formed chest still opens when right-clicked with a block in hand.
+use 2 5 4 --face north
+wait --ticks 5
+eval "mc.screen == null ? 'no screen' : mc.screen.getClass().getSimpleName()"
+close-screen
+# The core marker draws on the front of the lock while sneaking.
+teleport 3.5 4 1.5 --yaw 0 --pitch -10
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 10
+screenshot --name phase4-marker-on-lock
+eval "mc.options.keyShift.setDown(false)"

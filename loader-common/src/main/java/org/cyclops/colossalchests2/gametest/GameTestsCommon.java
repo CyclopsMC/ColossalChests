@@ -14,6 +14,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -500,6 +501,32 @@ public class GameTestsCommon {
                     helper.assertValueEqual(result.missing(), List.of(helper.absolutePos(MIN_A.offset(0, 1, 1))), "missing walls");
                 })
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testHeldItemPlacesAgainstUnformedChest(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos looseWall = MIN_B;
+        helper.setBlock(looseWall, wall(ChestMaterial.WOOD));
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    ItemStack held = new ItemStack(wall(ChestMaterial.WOOD));
+                    // An unformed wall lets the held item be used, so walls can be placed against it.
+                    helper.assertValueEqual(useWithItem(helper, player, held, looseWall), ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION, "unformed wall with an item");
+                    helper.assertValueEqual(useWithItem(helper, player, ItemStack.EMPTY, looseWall), ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION, "unformed wall without an item");
+                    // A formed chest still opens.
+                    helper.assertValueEqual(useWithItem(helper, player, held, MIN_A), ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION, "formed wall with an item");
+                    helper.assertValueEqual(useWithItem(helper, player, held, corePos), ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION, "formed core with an item");
+                })
+                .thenSucceed();
+    }
+
+    private static ItemInteractionResult useWithItem(GameTestHelper helper, ServerPlayer player, ItemStack stack, BlockPos pos) {
+        BlockPos absolute = helper.absolutePos(pos);
+        return helper.getLevel().getBlockState(absolute).useItemOn(stack, helper.getLevel(), player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false));
     }
 
     @GameTest(template = TEMPLATE_EMPTY)

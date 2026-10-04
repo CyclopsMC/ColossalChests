@@ -21,7 +21,49 @@ public final class ChestShape {
      */
     public static final double LID_SEAM = 9D / 14D;
 
+    /**
+     * The lock on the chest front, as fractions of the structure size, from the 14 pixel vanilla chest model:
+     * 2 pixels wide, from 6 to 10 pixels high, and 1 pixel deep.
+     */
+    public static final double LOCK_HALF_WIDTH = 1D / 14D;
+    public static final double LOCK_BOTTOM = 6D / 14D;
+    public static final double LOCK_TOP = 10D / 14D;
+    public static final double LOCK_DEPTH = 1D / 14D;
+
     private ChestShape() {
+    }
+
+    /**
+     * @param structure The structure.
+     * @return How far the lock sticks out of the chest front, in blocks.
+     */
+    public static double getLockDepth(ChestStructure structure) {
+        return structure.size() * LOCK_DEPTH;
+    }
+
+    /**
+     * @param structure The structure.
+     * @param facing The chest facing.
+     * @param pos A position on the shell.
+     * @return If the closed lock covers part of the block's front face, so things drawn on that face must go
+     *         on the front of the lock instead.
+     */
+    public static boolean isCoveredByLock(ChestStructure structure, Direction facing, BlockPos pos) {
+        int size = structure.size();
+        Direction.Axis frontAxis = facing.getAxis();
+        int front = facing.getAxisDirection() == Direction.AxisDirection.POSITIVE
+                ? structure.min().get(frontAxis) + size - 1
+                : structure.min().get(frontAxis);
+        if (!structure.isOnShell(pos) || pos.get(frontAxis) != front) {
+            return false;
+        }
+        Direction.Axis sideAxis = facing.getClockWise().getAxis();
+        double center = structure.min().get(sideAxis) + size / 2D;
+        double halfWidth = size * LOCK_HALF_WIDTH;
+        double bottom = structure.min().getY() + size * LOCK_BOTTOM;
+        double top = structure.min().getY() + size * LOCK_TOP;
+        int side = pos.get(sideAxis);
+        return side < center + halfWidth && side + 1 > center - halfWidth && pos.getY() < top && pos.getY() + 1 > bottom;
     }
 
     /**

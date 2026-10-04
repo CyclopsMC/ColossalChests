@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -34,18 +33,14 @@ import java.util.Calendar;
 public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore> {
 
     /**
-     * How far overlays float in front of the chest surface. In front of the lock, and far enough to avoid z-fighting.
+     * How far overlays float in front of the chest surface, far enough to avoid z-fighting.
+     * Faces behind the closed lock draw on the front of the lock instead.
      */
     public static final float OVERLAY_OFFSET = 1F / 32F;
-    /**
-     * How far the lock sticks out of the chest front, independent of the chest size.
-     */
-    public static final float LOCK_DEPTH = 1F / 64F;
 
     private static final float MODEL_HEIGHT = 14F / 16F;
     private static final float LID_PIVOT_Y = 9F / 16F;
     private static final float LID_PIVOT_Z = 1F / 16F;
-    private static final float LOCK_BACK_Z = 14F / 16F;
 
     private final ModelPart lid;
     private final ModelPart bottom;
@@ -81,7 +76,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
         lid.xRot = lidRotation;
         lid.render(poseStack, buffer, bodyLight, packedOverlay);
         bottom.render(poseStack, buffer, bodyLight, packedOverlay);
-        renderLock(poseStack, buffer, structure, lidRotation, bodyLight, packedOverlay);
+        renderLock(poseStack, buffer, lidRotation, bodyLight, packedOverlay);
         poseStack.popPose();
 
         renderOverlays(core, structure, facing, lidRotation, partialTick, poseStack, buffers, packedOverlay);
@@ -103,22 +98,11 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
     }
 
     /**
-     * Render the lock as a thin plate, so it does not stick out of large chests and never covers overlays.
+     * Render the lock, which moves along with the lid like on a vanilla chest.
      */
-    protected void renderLock(PoseStack poseStack, VertexConsumer buffer, ChestStructure structure, float lidRotation, int light, int overlay) {
-        float scale = structure.size() / MODEL_HEIGHT;
-        PartPose pose = lock.storePose();
-        poseStack.pushPose();
-        poseStack.translate(pose.x / 16F, pose.y / 16F, pose.z / 16F);
-        poseStack.mulPose(Axis.XP.rotation(lidRotation));
-        poseStack.translate(0, 0, LOCK_BACK_Z);
-        // The lock box is one pixel deep.
-        poseStack.scale(1, 1, LOCK_DEPTH * 16 / scale);
-        poseStack.translate(0, 0, -LOCK_BACK_Z);
-        lock.loadPose(PartPose.ZERO);
+    protected void renderLock(PoseStack poseStack, VertexConsumer buffer, float lidRotation, int light, int overlay) {
+        lock.xRot = lidRotation;
         lock.render(poseStack, buffer, light, overlay);
-        lock.loadPose(pose);
-        poseStack.popPose();
     }
 
     protected void renderOverlays(BlockEntityChestCore core, ChestStructure structure, Direction facing, float lidRotation,
@@ -136,7 +120,9 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
                     applyLidTransform(poseStack, origin, structure, facing, lidRotation);
                 }
                 poseStack.translate(pos.getX() - origin.getX(), pos.getY() - origin.getY(), pos.getZ() - origin.getZ());
-                applyFaceTransform(poseStack, face, facing);
+                // The lock leaves with the lid, so only the closed lock covers faces.
+                boolean onLock = face == facing && lidRotation == 0 && ChestShape.isCoveredByLock(structure, facing, pos);
+                applyFaceTransform(poseStack, face, facing, onLock ? (float) ChestShape.getLockDepth(structure) : 0);
                 int light = LevelRenderer.getLightColor(level, pos.relative(face));
                 chestOverlay.render(core, pos, face, partialTick, poseStack, buffers, light, overlay);
                 poseStack.popPose();
@@ -166,7 +152,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
     /**
      * Map a block's unit cube onto the face-local unit square of {@link IChestOverlay}.
      */
-    public static void applyFaceTransform(PoseStack poseStack, Direction face, Direction facing) {
+    public static void applyFaceTransform(PoseStack poseStack, Direction face, Direction facing, float extraOffset) {
         poseStack.translate(0.5F, 0.5F, 0.5F);
         if (face.getAxis().isHorizontal()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(-face.toYRot()));
@@ -174,7 +160,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
             poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
             poseStack.mulPose(Axis.XP.rotationDegrees(face == Direction.UP ? -90 : 90));
         }
-        poseStack.translate(-0.5F, -0.5F, 0.5F + OVERLAY_OFFSET);
+        poseStack.translate(-0.5F, -0.5F, 0.5F + OVERLAY_OFFSET + extraOffset);
     }
 
     protected Material getMaterial(ChestMaterial material) {

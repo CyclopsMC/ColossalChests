@@ -7,7 +7,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
@@ -33,6 +35,16 @@ public final class ChestInteractions {
     private static final DustParticleOptions HIGHLIGHT = new DustParticleOptions(new Vector3f(1.0F, 0.1F, 0.1F), 2.0F);
 
     private ChestInteractions() {
+    }
+
+    /**
+     * With an item in hand, an unformed chest lets the item be used, so walls can be placed against walls
+     * while building. A formed chest still opens, like a vanilla chest.
+     */
+    public static ItemInteractionResult useItemOn(ItemStack stack, BlockState state) {
+        return !stack.isEmpty() && !state.getValue(BlockChestCore.FORMED)
+                ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+                : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     public static InteractionResult use(BlockState state, Level level, BlockPos pos, Player player) {

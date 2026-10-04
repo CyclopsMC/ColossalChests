@@ -81,6 +81,28 @@ public class TestChestShape {
     }
 
     @Test
+    public void testLockDepth() {
+        assertEquals(3D / 14D, ChestShape.getLockDepth(SIZE_3), 1e-9);
+    }
+
+    @Test
+    public void testCoveredByLock() {
+        // Size 3: the lock spans x 1.29 to 1.71 and y 1.29 to 2.14, so only the middle column, rows 1 and 2.
+        assertTrue(ChestShape.isCoveredByLock(SIZE_3, Direction.NORTH, MIN.offset(1, 1, 0)));
+        assertTrue(ChestShape.isCoveredByLock(SIZE_3, Direction.NORTH, MIN.offset(1, 2, 0)));
+        assertFalse(ChestShape.isCoveredByLock(SIZE_3, Direction.NORTH, MIN.offset(1, 0, 0)));
+        assertFalse(ChestShape.isCoveredByLock(SIZE_3, Direction.NORTH, MIN.offset(0, 1, 0)));
+        // Only on the front face.
+        assertFalse(ChestShape.isCoveredByLock(SIZE_3, Direction.NORTH, MIN.offset(1, 1, 2)));
+        assertTrue(ChestShape.isCoveredByLock(SIZE_3, Direction.SOUTH, MIN.offset(1, 1, 2)));
+        assertTrue(ChestShape.isCoveredByLock(SIZE_3, Direction.EAST, MIN.offset(2, 1, 1)));
+        assertFalse(ChestShape.isCoveredByLock(SIZE_3, Direction.EAST, MIN.offset(2, 1, 0)));
+        // Size 2: the lock spans x 0.86 to 1.14, so both columns, and y 0.86 to 1.43, so both rows.
+        assertTrue(ChestShape.isCoveredByLock(SIZE_2, Direction.WEST, MIN.offset(0, 0, 0)));
+        assertTrue(ChestShape.isCoveredByLock(SIZE_2, Direction.WEST, MIN.offset(0, 1, 1)));
+    }
+
+    @Test
     public void testRenderBounds() {
         // Half the size around the structure, room for the opening lid.
         assertEquals(new AABB(8.5, 18.5, 28.5, 14.5, 24.5, 34.5), ChestShape.getRenderBounds(SIZE_3));

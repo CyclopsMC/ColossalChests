@@ -49,3 +49,12 @@ GUI rework (`phase4-8-gui-v2.txt`, fresh world). The earlier search, sort and se
 | `phase4-v2-capacity-tooltip.png` | The items per slot tooltip |
 | `phase4-v2-dragged.png` | Right-dragging 64 dirt over 5 slots puts 1 in each, left-dragging the remaining 59 over 3 slots puts 19 in each |
 | `phase4-v2-settings.png` | The open settings tab |
+
+Header and info rework (`phase4-9-gui-v3.txt`, fresh world). Replaces the tab and the icon info of the previous rework.
+
+| Screenshot | Shows |
+|---|---|
+| `phase4-v3-gui.png` | Settings button with the Cyclops config icon, search field aligned with the slot grid, "8/27 slots" and "1,024 per slot" |
+| `phase4-v3-slots-tooltip.png`, `phase4-v3-capacity-tooltip.png` | Their tooltips |
+| `phase4-v3-settings.png` | The settings view |
+| `phase4-v3-over-capacity.png` | Over capacity: the slot info turns red and its tooltip explains why |

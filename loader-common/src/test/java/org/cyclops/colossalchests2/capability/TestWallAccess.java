@@ -33,7 +33,7 @@ public class TestWallAccess extends BootstrapTest {
     }
 
     private static WallAccess access(WallAccess.Mode mode, ItemStack... filter) {
-        return new WallAccess(mode, List.of(filter), null, false);
+        return new WallAccess(mode, List.of(filter), false);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class TestWallAccess extends BootstrapTest {
     @Test
     public void testFilterIsACopy() {
         List<ItemStack> filter = new ArrayList<>(List.of(STONE.copy()));
-        WallAccess access = new WallAccess(WallAccess.Mode.BOTH, filter, null, false);
+        WallAccess access = new WallAccess(WallAccess.Mode.BOTH, filter, false);
         filter.set(0, DIRT.copy());
         assertTrue(access.allows(storage, STONE));
         assertFalse(access.allows(storage, DIRT));
@@ -102,4 +102,18 @@ public class TestWallAccess extends BootstrapTest {
         assertEquals(WallAccess.Mode.OUTPUT, WallAccess.Mode.INPUT.next());
         assertEquals(WallAccess.Mode.BOTH, WallAccess.Mode.OUTPUT.next());
     }
+    @Test
+    public void testExtractionFormFromFilter() {
+        CompressionFamilies families = new CompressionFamilies();
+        families.register(TestCompressionFamily.iron());
+        storage.setCompression(() -> families);
+        ItemStack block = new ItemStack(Items.IRON_BLOCK);
+        assertNull(access(WallAccess.Mode.BOTH).getExtractionForm(storage, block));
+        assertNull(access(WallAccess.Mode.BOTH, STONE).getExtractionForm(storage, block));
+        assertSame(Items.IRON_NUGGET, access(WallAccess.Mode.BOTH, STONE, new ItemStack(Items.IRON_NUGGET)).getExtractionForm(storage, block));
+        // Without compression there are no forms.
+        storage.setCompression(null);
+        assertNull(access(WallAccess.Mode.BOTH, new ItemStack(Items.IRON_NUGGET)).getExtractionForm(storage, block));
+    }
+
 }

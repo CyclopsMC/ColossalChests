@@ -16,7 +16,7 @@ import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
-import org.cyclops.colossalchests2.inventory.ContainerFilteredInterfaceConfig;
+import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgradeConfig;
@@ -90,6 +90,6 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         }
         configHandler.addConfigurable(new BlockEntityChestCoreConfigFabric<>(this));
         configHandler.addConfigurable(new BlockEntityChestWallConfigFabric<>(this));
-        configHandler.addConfigurable(new ContainerFilteredInterfaceConfig<>(this));
+        configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
     }
 }

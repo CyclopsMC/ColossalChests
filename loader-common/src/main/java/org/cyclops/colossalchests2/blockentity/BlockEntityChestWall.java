@@ -22,7 +22,7 @@ import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.WallAccess;
-import org.cyclops.colossalchests2.inventory.ContainerFilteredInterface;
+import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,18 +31,14 @@ import java.util.Optional;
 
 /**
  * A functional wall, giving automation access to its chest under the wall's rules.
- * Only a Filtered Interface has settings: its filter, mode and extraction form.
+ * Only an Interface has settings: its filter and direction.
  * @author rubensworks
  */
 public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
 
     public static final int FILTER_SLOTS = 9;
-    /**
-     * The settings slot after the filter, holding the extraction form.
-     */
-    public static final int FORM_SLOT = FILTER_SLOTS;
 
-    private final SimpleContainer settings = new SimpleContainer(FILTER_SLOTS + 1) {
+    private final SimpleContainer settings = new SimpleContainer(FILTER_SLOTS) {
         @Override
         public void setChanged() {
             super.setChanged();
@@ -69,7 +65,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     }
 
     /**
-     * @return The filter slots followed by the extraction form slot. Each holds at most one item.
+     * @return The filter slots. Each holds at most one item.
      */
     public Container getSettings() {
         return settings;
@@ -91,12 +87,8 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
      */
     public WallAccess getAccess() {
         return switch (getWallType()) {
-            case INTERFACE -> WallAccess.OPEN;
-            case VOID -> new WallAccess(WallAccess.Mode.BOTH, List.of(), null, true);
-            case FILTERED_INTERFACE -> {
-                ItemStack form = settings.getItem(FORM_SLOT);
-                yield new WallAccess(mode, settings.getItems().subList(0, FILTER_SLOTS), form.isEmpty() ? null : form.getItem(), false);
-            }
+            case INTERFACE -> new WallAccess(mode, settings.getItems(), false);
+            case VOID -> new WallAccess(WallAccess.Mode.BOTH, List.of(), true);
         };
     }
 
@@ -161,6 +153,6 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new ContainerFilteredInterface(id, inventory, this);
+        return new ContainerInterface(id, inventory, this);
     }
 }

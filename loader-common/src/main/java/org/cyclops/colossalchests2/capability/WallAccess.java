@@ -3,25 +3,27 @@ package org.cyclops.colossalchests2.capability;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * What automation may do with a chest through one wall.
  * @param mode The directions items may move in.
- * @param filter The types that may move, any type when empty.
- * @param extractionForm The compression form to extract in, or null for the slot's own form.
+ * @param filter The types that may move, any type when empty. For compressed items, an entry also sets the form they
+ *               are extracted in.
  * @param voidFull If inserts of a type the chest holds are destroyed when they do not fit.
  * @author rubensworks
  */
-public record WallAccess(Mode mode, List<ItemStack> filter, @Nullable Item extractionForm, boolean voidFull) {
+public record WallAccess(Mode mode, List<ItemStack> filter, boolean voidFull) {
 
     /**
      * Anything goes, like the core itself.
      */
-    public static final WallAccess OPEN = new WallAccess(Mode.BOTH, List.of(), null, false);
+    public static final WallAccess OPEN = new WallAccess(Mode.BOTH, List.of(), false);
 
     public WallAccess {
         filter = filter.stream().filter(stack -> !stack.isEmpty()).map(ItemStack::copy).toList();
@@ -43,6 +45,25 @@ public record WallAccess(Mode mode, List<ItemStack> filter, @Nullable Item extra
             }
         }
         return false;
+    }
+
+    /**
+     * @param storage The storage, for its compression families.
+     * @param type A stored type.
+     * @return The first filter entry of the type's compression family, which compressed items are extracted as, or
+     * null for the slot's own form.
+     */
+    @Nullable
+    public Item getExtractionForm(ChestStorage storage, ItemStack type) {
+        Optional<CompressionFamily> family = storage.getFamily(type);
+        if (family.isPresent()) {
+            for (ItemStack entry : filter) {
+                if (family.get().indexOf(entry) >= 0) {
+                    return entry.getItem();
+                }
+            }
+        }
+        return null;
     }
 
     public boolean canInsert(ChestStorage storage, ItemStack type) {

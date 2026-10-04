@@ -17,21 +17,20 @@ import org.cyclops.colossalchests2.capability.WallAccess;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The settings of a Filtered Interface: filter slots, mode and extraction form.
- * Settings slots hold copies of what is clicked into them, like ghost slots.
+ * The settings of an Interface: filter slots and direction.
+ * Filter slots hold copies of what is clicked into them, like ghost slots.
  * @author rubensworks
  */
-public class ContainerFilteredInterface extends AbstractContainerMenu {
+public class ContainerInterface extends AbstractContainerMenu {
 
     public static final int WIDTH = 176;
-    public static final int HEIGHT = 166;
+    public static final int HEIGHT = 154;
     public static final int FILTER_Y = 18;
-    public static final int FORM_X = 8;
-    public static final int FORM_Y = 44;
-    public static final int INVENTORY_Y = 84;
+    public static final int MODE_Y = 38;
+    public static final int INVENTORY_Y = 72;
     public static final int BUTTON_MODE = 0;
 
-    private static final int SETTINGS_SLOTS = BlockEntityChestWall.FILTER_SLOTS + 1;
+    private static final int SETTINGS_SLOTS = BlockEntityChestWall.FILTER_SLOTS;
 
     private final BlockPos pos;
     @Nullable
@@ -41,25 +40,24 @@ public class ContainerFilteredInterface extends AbstractContainerMenu {
     /**
      * Client-side constructor.
      */
-    public ContainerFilteredInterface(int id, Inventory inventory, FriendlyByteBuf data) {
+    public ContainerInterface(int id, Inventory inventory, FriendlyByteBuf data) {
         this(id, inventory, data.readBlockPos(), new SimpleContainer(SETTINGS_SLOTS), null);
     }
 
     /**
      * Server-side constructor.
      */
-    public ContainerFilteredInterface(int id, Inventory inventory, BlockEntityChestWall wall) {
+    public ContainerInterface(int id, Inventory inventory, BlockEntityChestWall wall) {
         this(id, inventory, wall.getBlockPos(), wall.getSettings(), wall);
     }
 
-    private ContainerFilteredInterface(int id, Inventory inventory, BlockPos pos, Container settings, @Nullable BlockEntityChestWall wall) {
-        super(RegistryEntries.MENU_FILTERED_INTERFACE.value(), id);
+    private ContainerInterface(int id, Inventory inventory, BlockPos pos, Container settings, @Nullable BlockEntityChestWall wall) {
+        super(RegistryEntries.MENU_INTERFACE.value(), id);
         this.pos = pos;
         this.wall = wall;
         for (int i = 0; i < BlockEntityChestWall.FILTER_SLOTS; i++) {
             addSlot(new GhostSlot(settings, i, 8 + i * 18, FILTER_Y));
         }
-        addSlot(new GhostSlot(settings, BlockEntityChestWall.FORM_SLOT, FORM_X, FORM_Y));
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, INVENTORY_Y + row * 18));
@@ -93,7 +91,7 @@ public class ContainerFilteredInterface extends AbstractContainerMenu {
 
     /**
      * @param slot A slot index.
-     * @return If it is one of the settings slots.
+     * @return If it is one of the filter slots.
      */
     public static boolean isSettingsSlot(int slot) {
         return slot >= 0 && slot < SETTINGS_SLOTS;
@@ -130,7 +128,7 @@ public class ContainerFilteredInterface extends AbstractContainerMenu {
         ItemStack stack = getSlot(index).getItem();
         if (!stack.isEmpty()) {
             int free = -1;
-            for (int i = 0; i < BlockEntityChestWall.FILTER_SLOTS; i++) {
+            for (int i = 0; i < SETTINGS_SLOTS; i++) {
                 ItemStack entry = getSlot(i).getItem();
                 if (ItemStack.isSameItemSameComponents(entry, stack)) {
                     return ItemStack.EMPTY;
@@ -157,7 +155,7 @@ public class ContainerFilteredInterface extends AbstractContainerMenu {
     }
 
     /**
-     * A settings slot, only changed through {@link #clicked(int, int, ClickType, Player)}.
+     * A filter slot, only changed through {@link #clicked(int, int, ClickType, Player)}.
      */
     public static class GhostSlot extends Slot {
 

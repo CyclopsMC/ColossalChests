@@ -45,7 +45,7 @@ import org.cyclops.colossalchests2.block.ChestInteractions;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
-import org.cyclops.colossalchests2.inventory.ContainerFilteredInterface;
+import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.config.ChestTables;
@@ -1538,10 +1538,10 @@ public class GameTestsCommon {
     }
 
     /**
-     * Open a Filtered Interface's menu like a click does. Created directly, like {@link #openChest}.
+     * Open an Interface's settings like a sneak-click does. Created directly, like {@link #openChest}.
      */
-    private static ContainerFilteredInterface openFilteredInterface(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
-        ContainerFilteredInterface menu = new ContainerFilteredInterface(101, player.getInventory(), getWall(helper, pos));
+    private static ContainerInterface openInterface(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
+        ContainerInterface menu = new ContainerInterface(101, player.getInventory(), getWall(helper, pos));
         player.containerMenu = menu;
         return menu;
     }
@@ -1549,7 +1549,7 @@ public class GameTestsCommon {
     /**
      * Click a settings slot with a stack on the cursor, like a player does.
      */
-    private static void clickSetting(GameTestHelper helper, ContainerFilteredInterface menu, ServerPlayer player, int slot, ItemStack cursor) {
+    private static void clickSetting(GameTestHelper helper, ContainerInterface menu, ServerPlayer player, int slot, ItemStack cursor) {
         menu.setCarried(cursor.copy());
         menu.clicked(slot, 0, ClickType.PICKUP, player);
         helper.assertTrue(ItemStack.matches(menu.getCarried(), cursor), "Expected the cursor to stay untouched");
@@ -1579,7 +1579,7 @@ public class GameTestsCommon {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
         List<BlockPos> walls = List.of(MIN_A, MIN_A.offset(1, 2, 1), MIN_A.offset(2, 1, 2));
         for (int i = 0; i < walls.size(); i++) {
-            placeWall(helper, walls.get(i), WallType.VALUES[i]);
+            placeWall(helper, walls.get(i), WallType.VALUES[i % WallType.VALUES.length]);
         }
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
@@ -1601,21 +1601,21 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
-    public void testFilteredInterfaceInputOnly(GameTestHelper helper) {
+    public void testInterfaceInputOnly(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos top = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.FILTERED_INTERFACE);
-        BlockPos bottom = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.FILTERED_INTERFACE);
-        ContainerFilteredInterface[] bottomMenu = new ContainerFilteredInterface[1];
+        BlockPos top = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.INTERFACE);
+        BlockPos bottom = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.INTERFACE);
+        ContainerInterface[] bottomMenu = new ContainerInterface[1];
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
                     ServerPlayer player = makeViewer(helper);
                     for (BlockPos pos : List.of(top, bottom)) {
-                        ContainerFilteredInterface menu = openFilteredInterface(helper, player, pos);
+                        ContainerInterface menu = openInterface(helper, player, pos);
                         clickSetting(helper, menu, player, 0, STONE.copyWithCount(5));
                         helper.assertTrue(getWall(helper, pos).getSettings().getItem(0).is(Items.STONE), "Expected stone in the filter");
                         helper.assertValueEqual(getWall(helper, pos).getSettings().getItem(0).getCount(), 1, "filter entry count");
-                        menu.clickMenuButton(player, ContainerFilteredInterface.BUTTON_MODE);
+                        menu.clickMenuButton(player, ContainerInterface.BUTTON_MODE);
                         helper.assertValueEqual(getWall(helper, pos).getMode(), WallAccess.Mode.INPUT, "mode after one click");
                         bottomMenu[0] = menu;
                     }
@@ -1630,7 +1630,7 @@ public class GameTestsCommon {
                     helper.assertValueEqual(countInHopper(above, Items.DIRT), 2, "dirt kept out by the filter");
                     helper.assertTrue(below.isEmpty(), "Expected nothing to come out of an input-only interface");
                     // Output only: the hopper below pulls the stone out.
-                    bottomMenu[0].clickMenuButton(makeViewer(helper), ContainerFilteredInterface.BUTTON_MODE);
+                    bottomMenu[0].clickMenuButton(makeViewer(helper), ContainerInterface.BUTTON_MODE);
                     helper.assertValueEqual(getWall(helper, bottom).getMode(), WallAccess.Mode.OUTPUT, "mode after two clicks");
                 })
                 .thenWaitUntil(() -> helper.assertValueEqual(countInHopper((HopperBlockEntity) helper.getBlockEntity(bottom.below()), Items.STONE), 2,
@@ -1639,9 +1639,9 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
-    public void testFilteredInterfaceExtractsInItsForm(GameTestHelper helper) {
+    public void testInterfaceExtractsInTheFilterForm(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
-        BlockPos bottom = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.FILTERED_INTERFACE);
+        BlockPos bottom = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.INTERFACE);
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
@@ -1649,9 +1649,11 @@ public class GameTestsCommon {
                     core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.COMPRESSION));
                     core.getStorage().insert(new ItemStack(Items.IRON_BLOCK), 2, false);
                     ServerPlayer player = makeViewer(helper);
-                    ContainerFilteredInterface menu = openFilteredInterface(helper, player, bottom);
-                    clickSetting(helper, menu, player, BlockEntityChestWall.FORM_SLOT, new ItemStack(Items.IRON_NUGGET));
-                    helper.assertTrue(getWall(helper, bottom).getAccess().extractionForm() == Items.IRON_NUGGET, "Expected nuggets as the form");
+                    ContainerInterface menu = openInterface(helper, player, bottom);
+                    // Nuggets in the filter: only iron passes, taken out as nuggets.
+                    clickSetting(helper, menu, player, 0, new ItemStack(Items.IRON_NUGGET));
+                    helper.assertTrue(getWall(helper, bottom).getAccess().getExtractionForm(core.getStorage(), new ItemStack(Items.IRON_BLOCK)) == Items.IRON_NUGGET,
+                            "Expected nuggets as the form");
                     player.closeContainer();
                     placeHopper(helper, bottom.below());
                 })
@@ -1667,15 +1669,15 @@ public class GameTestsCommon {
     }
 
     @GameTest(template = TEMPLATE_EMPTY)
-    public void testFilteredInterfaceSettings(GameTestHelper helper) {
+    public void testInterfaceSettings(GameTestHelper helper) {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos pos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.FILTERED_INTERFACE);
+        BlockPos pos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.INTERFACE);
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
                     ServerPlayer player = makeViewer(helper);
                     player.getInventory().setItem(0, new ItemStack(Items.DIRT, 7));
-                    ContainerFilteredInterface menu = openFilteredInterface(helper, player, pos);
+                    ContainerInterface menu = openInterface(helper, player, pos);
                     clickSetting(helper, menu, player, 3, STONE);
                     // Shift-clicking adds to the filter once and leaves the item in the inventory.
                     int hotbarSlot = menu.slots.size() - 9;
@@ -1685,8 +1687,8 @@ public class GameTestsCommon {
                     BlockEntityChestWall wall = getWall(helper, pos);
                     helper.assertTrue(wall.getSettings().getItem(0).is(Items.DIRT), "Expected dirt in the first free filter slot");
                     helper.assertTrue(wall.getSettings().getItem(1).isEmpty(), "Expected dirt in the filter once");
-                    menu.clickMenuButton(player, ContainerFilteredInterface.BUTTON_MODE);
-                    menu.clickMenuButton(player, ContainerFilteredInterface.BUTTON_MODE);
+                    menu.clickMenuButton(player, ContainerInterface.BUTTON_MODE);
+                    menu.clickMenuButton(player, ContainerInterface.BUTTON_MODE);
                     // Clicking with an empty cursor clears an entry.
                     clickSetting(helper, menu, player, 0, ItemStack.EMPTY);
                     helper.assertTrue(wall.getSettings().getItem(0).isEmpty(), "Expected the cleared entry");

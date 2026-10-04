@@ -4,7 +4,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Item handler semantics on top of a {@link ChestStorage}, shared by the loaders that use item handlers.
@@ -38,14 +37,6 @@ public class ItemHandlerLogic {
         return access;
     }
 
-    /**
-     * @return The compression form to extract in, or null for the slot's own form. Only affects compressed slots.
-     */
-    @Nullable
-    public Item getExtractionForm() {
-        return access.extractionForm();
-    }
-
     public int getSlots() {
         return storage.getSlotCount();
     }
@@ -62,19 +53,13 @@ public class ItemHandlerLogic {
 
     /**
      * @param slot A slot index.
-     * @return The type the slot is seen and extracted as: this handler's extraction form for a compressed slot of its
-     * family, else the slot's own extraction type.
+     * @return The type the slot is seen and extracted as: for a compressed slot the form of its family in this
+     * handler's filter, else the slot's own extraction type.
      */
     public ItemStack getExtractionType(int slot) {
-        Item extractionForm = getExtractionForm();
-        if (extractionForm != null) {
-            DeepSlot deepSlot = storage.getSlot(slot);
-            boolean ofFamily = storage.getFamily(deepSlot.getPrototype()).map(family -> family.indexOf(extractionForm) >= 0).orElse(false);
-            if (ofFamily) {
-                return new ItemStack(extractionForm);
-            }
-        }
-        return storage.getExtractionType(slot);
+        DeepSlot deepSlot = storage.getSlot(slot);
+        Item form = deepSlot.isEmpty() ? null : access.getExtractionForm(storage, deepSlot.getPrototype());
+        return form != null ? new ItemStack(form) : storage.getExtractionType(slot);
     }
 
     /**

@@ -5,6 +5,8 @@ import net.minecraft.world.item.Items;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.storage.TestCompressionFamily;
+import org.cyclops.colossalchests2.storage.CompressionFamilies;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -171,13 +173,12 @@ public class TestItemHandlerLogic extends BootstrapTest {
     @Test
     public void testAccessors() {
         assertSame(storage, handler.getStorage());
-        assertNull(handler.getExtractionForm());
-        assertSame(Items.IRON_INGOT, new ItemHandlerLogic(storage, new WallAccess(WallAccess.Mode.BOTH, List.of(), Items.IRON_INGOT, false)).getExtractionForm());
+        assertSame(WallAccess.OPEN, handler.getAccess());
         assertEquals(3, handler.getSlots());
     }
 
     private ItemHandlerLogic handler(WallAccess.Mode mode, boolean voidFull, ItemStack... filter) {
-        return new ItemHandlerLogic(storage, new WallAccess(mode, List.of(filter), null, voidFull));
+        return new ItemHandlerLogic(storage, new WallAccess(mode, List.of(filter), voidFull));
     }
 
     @Test
@@ -223,6 +224,34 @@ public class TestItemHandlerLogic extends BootstrapTest {
         assertEquals(storage.getCapacity(stone), storage.getSlot(0).getCount());
         // A type the chest does not hold is not destroyed when there is no room for it.
         assertFalse(hopperInsertOne(voiding, new ItemStack(Items.SAND)));
+    }
+
+    @Test
+    public void testFilterSetsTheExtractionForm() {
+        CompressionFamilies families = new CompressionFamilies();
+        families.register(TestCompressionFamily.iron());
+        storage.setCompression(() -> families);
+        storage.insert(new ItemStack(Items.IRON_BLOCK), 2, false);
+        storage.insert(new ItemStack(Items.STONE), 5, false);
+        ItemHandlerLogic nuggets = handler(WallAccess.Mode.BOTH, false, new ItemStack(Items.STONE), new ItemStack(Items.IRON_NUGGET));
+        assertTrue(nuggets.getStackInSlot(0).is(Items.IRON_NUGGET));
+        assertEquals(162, nuggets.getStackInSlot(0).getCount());
+        ItemStack extracted = nuggets.extractItem(0, 64, false);
+        assertTrue(extracted.is(Items.IRON_NUGGET));
+        assertEquals(64, extracted.getCount());
+        // Other slots and handlers without a form of the family keep the slot's own form.
+        assertTrue(nuggets.getStackInSlot(1).is(Items.STONE));
+        assertTrue(handler.getStackInSlot(0).is(Items.IRON_BLOCK));
+    }
+
+    @Test
+    public void testFirstFormInTheFilterWins() {
+        CompressionFamilies families = new CompressionFamilies();
+        families.register(TestCompressionFamily.iron());
+        storage.setCompression(() -> families);
+        storage.insert(new ItemStack(Items.IRON_BLOCK), 1, false);
+        ItemHandlerLogic ingots = handler(WallAccess.Mode.BOTH, false, new ItemStack(Items.IRON_INGOT), new ItemStack(Items.IRON_NUGGET));
+        assertTrue(ingots.getStackInSlot(0).is(Items.IRON_INGOT));
     }
 
 }

@@ -8,13 +8,9 @@ import java.util.Locale;
  */
 public enum WallType {
     /**
-     * Item I/O on its faces.
+     * Item I/O on its faces, optionally limited by a filter and direction set in its own GUI.
      */
     INTERFACE,
-    /**
-     * Item I/O limited by its filter, mode and extraction form, configured in its own GUI.
-     */
-    FILTERED_INTERFACE,
     /**
      * Item I/O where inserts of held types that do not fit are destroyed.
      */

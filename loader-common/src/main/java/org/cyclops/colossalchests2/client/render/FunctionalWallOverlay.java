@@ -12,7 +12,7 @@ import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 
 /**
- * Shows a functional wall's icon on its outer faces, so it stays visible on the giant chest.
+ * Shows a functional wall's icon on its outer faces of the giant chest while the player sneaks, like the core marker.
  * @author rubensworks
  */
 public class FunctionalWallOverlay implements IChestOverlay {
@@ -29,6 +29,9 @@ public class FunctionalWallOverlay implements IChestOverlay {
     @Override
     public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
                        PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
+        if (!ChestOverlayHelpers.isRevealingMembers()) {
+            return;
+        }
         ChestOverlayHelpers.renderSprite(poseStack, buffers, Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture),
                 MIN, MIN, MAX, MAX, light, overlay);
     }

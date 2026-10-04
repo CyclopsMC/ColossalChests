@@ -34,7 +34,7 @@ public class CoreMarkerOverlay implements IChestOverlay {
     }
 
     protected boolean isVisible() {
-        return Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching();
+        return ChestOverlayHelpers.isRevealingMembers();
     }
 
 }

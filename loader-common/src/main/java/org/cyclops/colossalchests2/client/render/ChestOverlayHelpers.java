@@ -79,4 +79,11 @@ public final class ChestOverlayHelpers {
         poseStack.popPose();
     }
 
+    /**
+     * @return If the player sneaks, which reveals the hidden members of a chest.
+     */
+    public static boolean isRevealingMembers() {
+        return Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching();
+    }
+
 }

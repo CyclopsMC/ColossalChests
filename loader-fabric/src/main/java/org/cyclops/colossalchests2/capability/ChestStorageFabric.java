@@ -36,10 +36,10 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
     public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
         StoragePreconditions.notBlankNotNegative(resource, maxAmount);
         ItemStack type = resource.toStack();
-        long inserted = storage.insert(type, maxAmount, true);
+        long inserted = storage.insertAutomated(type, maxAmount, true);
         if (inserted > 0) {
             updateSnapshots(transaction);
-            storage.insert(type, maxAmount, false);
+            storage.insertAutomated(type, maxAmount, false);
         }
         return inserted;
     }
@@ -100,10 +100,10 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
         public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
             StoragePreconditions.notBlankNotNegative(resource, maxAmount);
             ItemStack type = resource.toStack();
-            long inserted = storage.insert(slot, type, maxAmount, true);
+            long inserted = storage.insertAutomated(slot, type, maxAmount, true);
             if (inserted > 0) {
                 updateSnapshots(transaction);
-                storage.insert(slot, type, maxAmount, false);
+                storage.insertAutomated(slot, type, maxAmount, false);
             }
             return inserted;
         }

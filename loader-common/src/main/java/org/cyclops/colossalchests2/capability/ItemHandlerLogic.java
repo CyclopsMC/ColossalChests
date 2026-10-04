@@ -67,7 +67,7 @@ public class ItemHandlerLogic {
         if (stack.isEmpty()) {
             return ItemStack.EMPTY;
         }
-        long inserted = storage.insert(slot, stack, stack.getCount(), simulate);
+        long inserted = storage.insertAutomated(slot, stack, stack.getCount(), simulate);
         if (inserted >= stack.getCount()) {
             return ItemStack.EMPTY;
         }

@@ -932,6 +932,117 @@ public class GameTestsCommon {
                 .thenSucceed();
     }
 
+    private static long countStored(ChestStorage storage, ItemStack type) {
+        long count = 0;
+        for (int slot = 0; slot < storage.getSlotCount(); slot++) {
+            if (storage.getSlot(slot).matches(type)) {
+                count += storage.getSlot(slot).getCount();
+            }
+        }
+        return count;
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 400)
+    public void testVoidDestroysHopperOverflowButNotPlayerInserts(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos target = getHopperTarget(corePos, MIN_A.offset(1, 2, 1));
+        BlockPos hopperPos = LoaderCapabilities.blockCapabilitiesSupported ? target.above() : target.north();
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.VOID));
+                    storage.insert(0, STONE, storage.getCapacity(STONE), false);
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.handleChestClick(player, 0, ChestClickAction.TOGGLE_VOID);
+                    helper.assertTrue(storage.getSlot(0).isVoiding(), "Expected the slot to be voiding");
+                    player.closeContainer();
+                    helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING,
+                            LoaderCapabilities.blockCapabilitiesSupported ? Direction.DOWN : Direction.SOUTH));
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
+                    hopper.setItem(0, STONE.copyWithCount(3));
+                    hopper.setItem(1, new ItemStack(Items.DIRT, 2));
+                })
+                .thenWaitUntil(() -> {
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
+                    helper.assertTrue(hopper.getItem(0).isEmpty(), "Expected the hopper's stone to be gone");
+                    helper.assertTrue(hopper.getItem(1).isEmpty(), "Expected the hopper's dirt to be inserted");
+                })
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    // The hopper's stone was destroyed instead of taking a new slot, the dirt was stored.
+                    helper.assertValueEqual(countStored(storage, STONE), storage.getCapacity(STONE), "stone after voiding");
+                    helper.assertValueEqual(countStored(storage, new ItemStack(Items.DIRT)), 2L, "dirt is not voided");
+                    // A player putting stone on the full voiding slot never loses it: it goes to a free slot.
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.setCarried(STONE.copyWithCount(5));
+                    menu.handleChestClick(player, 0, ChestClickAction.TAKE_STACK);
+                    helper.assertTrue(menu.getCarried().isEmpty(), "Expected the player's stone to be stored");
+                    helper.assertValueEqual(countStored(storage, STONE), storage.getCapacity(STONE) + 5, "stone after a player insert");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testVoidMarksNeedTheUpgrade(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    storage.insert(0, STONE, 10, false);
+                    storage.insert(1, new ItemStack(Items.DIRT), 10, false);
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.handleChestClick(player, 0, ChestClickAction.TOGGLE_VOID);
+                    menu.handleChestClick(player, 0, ChestClickAction.VOID_ALL);
+                    helper.assertFalse(storage.getSlot(0).isVoiding(), "Expected no void marks without the Void upgrade");
+
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.VOID));
+                    menu.handleChestClick(player, 0, ChestClickAction.VOID_ALL);
+                    helper.assertTrue(storage.getSlot(0).isVoiding() && storage.getSlot(1).isVoiding(), "Expected Void all to mark filled slots");
+                    menu.handleChestClick(player, 1, ChestClickAction.TOGGLE_VOID);
+                    helper.assertFalse(storage.getSlot(1).isVoiding(), "Expected the toggle to unmark");
+                    menu.handleChestClick(player, 0, ChestClickAction.CLEAR_VOIDS);
+                    helper.assertFalse(storage.getSlot(0).isVoiding(), "Expected Clear voids to unmark all");
+
+                    // Removing the Void upgrade clears the marks and is never refused.
+                    menu.handleChestClick(player, 0, ChestClickAction.VOID_ALL);
+                    menu.broadcastChanges();
+                    helper.assertValueEqual(menu.getUpgradeRemovalProblems(0), 0, "slots keeping the Void upgrade in");
+                    clickUpgradeSlot(menu, player, 0);
+                    helper.assertFalse(storage.getSlot(0).isVoiding(), "Expected marks to be cleared with the upgrade");
+                    helper.assertValueEqual(storage.getSlot(0).getCount(), 10L, "contents after clearing marks");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testBundlingRaisesUnstackableCapacity(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ItemStack sword = new ItemStack(Items.IRON_SWORD);
+                    helper.assertValueEqual(core.getStorage().getCapacity(sword), 1L, "swords per slot without upgrades");
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.BUNDLING));
+                    core.getUpgrades().setItem(1, upgradeItem(ChestUpgrades.BUNDLING));
+                    helper.assertValueEqual(core.getStorage().getCapacity(sword), 4L, "swords per slot with two Bundling upgrades");
+                    core.getUpgrades().setItem(2, upgradeItem(ChestUpgrades.DEPTH));
+                    helper.assertValueEqual(core.getStorage().getCapacity(sword), 8L, "swords per slot with Bundling and Depth");
+                    helper.assertValueEqual(core.getStorage().insert(sword, 8, false), 8L, "swords inserted into one slot");
+                    helper.assertValueEqual(core.getStorage().getSlot(0).getCount(), 8L, "swords in the first slot");
+                })
+                .thenSucceed();
+    }
+
     private static <T extends PacketBase<T>> T roundTrip(GameTestHelper helper, T packet, StreamCodec<RegistryFriendlyByteBuf, T> codec) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
         codec.encode(buf, packet);

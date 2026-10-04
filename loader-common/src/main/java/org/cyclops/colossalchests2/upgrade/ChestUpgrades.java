@@ -55,7 +55,30 @@ public final class ChestUpgrades {
      */
     public static final ChestUpgrade LOCK = new ChestUpgrade(id("lock"));
 
-    public static final List<ChestUpgrade> VALUES = ImmutableList.of(DEPTH, SLOT_EXPANSION, LOCK);
+    /**
+     * Multiplies the capacity for unstackable items per upgrade.
+     */
+    public static final ChestUpgrade BUNDLING = new ChestUpgrade(id("bundling")) {
+        @Override
+        public void applyProfile(CapacityProfile.Builder builder, int count) {
+            long multiplier = getProperties().value();
+            for (int i = 0; i < count; i++) {
+                builder.multiplyNonStackable(multiplier);
+            }
+        }
+
+        @Override
+        public Component getEffect() {
+            return Component.translatable("item.colossalchests2.upgrade_bundling.effect", getProperties().value());
+        }
+    };
+
+    /**
+     * Allows marking slots as voiding, so automation overflow of their type is destroyed.
+     */
+    public static final ChestUpgrade VOID = new ChestUpgrade(id("void"));
+
+    public static final List<ChestUpgrade> VALUES = ImmutableList.of(DEPTH, SLOT_EXPANSION, LOCK, BUNDLING, VOID);
 
     private ChestUpgrades() {
     }

@@ -64,6 +64,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_UPGRADE_REFUSED = 0x80FF3030;
     private static final int COLOR_PADLOCK = 0xFFF0C030;
     private static final int COLOR_PADLOCK_SHACKLE = 0xFFC8C8D0;
+    private static final int COLOR_VOID = 0xFF46145F;
+    private static final int COLOR_VOID_RING = 0xFF9650C8;
     private static final int COLOR_COUNT = 0xFFFFFF;
     private static final int COLOR_COUNT_CAPPED = 0xFFFF55;
     private static final int COLOR_WARNING = 0xFFAA0000;
@@ -117,7 +119,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
         // Two columns of three rows, which fits the grid area of the smallest chest.
         int settingsX = leftPos + layout.getGridX() - 1;
-        int settingsY = topPos + ChestLayout.GRID_Y - 1;
+        // From the search row, so four rows fit above the info row of the smallest chest.
+        int settingsY = topPos + SEARCH_Y - 1;
         int width = (layout.columns() * ChestLayout.SLOT_SIZE) / 2 - 1;
         int height = 16;
         settingsButtons.add(addRenderableWidget(Button.builder(Component.empty(),
@@ -138,6 +141,12 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.clear_locks"),
                         b -> sendClick(0, ChestClickAction.CLEAR_LOCKS))
                 .bounds(settingsX + width + 2, settingsY + 2 * (height + 2), width, height).build()));
+        settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.void_all"),
+                        b -> sendClick(0, ChestClickAction.VOID_ALL))
+                .bounds(settingsX, settingsY + 3 * (height + 2), width, height).build()));
+        settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.clear_voids"),
+                        b -> sendClick(0, ChestClickAction.CLEAR_VOIDS))
+                .bounds(settingsX + width + 2, settingsY + 3 * (height + 2), width, height).build()));
         setSettingsOpen(settingsOpen);
     }
 
@@ -160,17 +169,22 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         settingsButtons.get(0).setMessage(toggleLabel("show_fill_levels", settings.showFillLevels()));
         settingsButtons.get(1).setMessage(toggleLabel("show_counts", settings.showCounts()));
         settingsButtons.get(2).setMessage(toggleLabel("show_upgrade_indicators", settings.showUpgradeIndicators()));
-        // Locks come with the Lock upgrade.
-        boolean locks = hasLockUpgrade();
-        for (int i = 3; i < 5; i++) {
-            Button button = settingsButtons.get(i);
-            if (button.active != locks || button.getTooltip() == null) {
-                button.active = locks;
-                button.setTooltip(Tooltip.create(Component.translatable(locks
-                        ? "gui.colossalchests2." + (i == 3 ? "lock_all" : "clear_locks") + ".info"
-                        : "gui.colossalchests2.requires_lock_upgrade")));
-            }
+        // Locks and void marks come with their upgrades.
+        updateUpgradeButton(settingsButtons.get(3), hasLockUpgrade(), "lock_all", "requires_lock_upgrade");
+        updateUpgradeButton(settingsButtons.get(4), hasLockUpgrade(), "clear_locks", "requires_lock_upgrade");
+        updateUpgradeButton(settingsButtons.get(5), hasVoidUpgrade(), "void_all", "requires_void_upgrade");
+        updateUpgradeButton(settingsButtons.get(6), hasVoidUpgrade(), "clear_voids", "requires_void_upgrade");
+    }
+
+    private static void updateUpgradeButton(Button button, boolean enabled, String key, String disabledKey) {
+        if (button.active != enabled || button.getTooltip() == null) {
+            button.active = enabled;
+            button.setTooltip(Tooltip.create(Component.translatable("gui.colossalchests2." + (enabled ? key + ".info" : disabledKey))));
         }
+    }
+
+    private boolean hasVoidUpgrade() {
+        return menu.getUpgradeSet().has(ChestUpgrades.VOID);
     }
 
     private boolean hasLockUpgrade() {
@@ -256,6 +270,9 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             if (deepSlot.isLocked()) {
                 drawPadlock(guiGraphics, x, y);
             }
+            if (deepSlot.isVoiding()) {
+                drawVoidMark(guiGraphics, x, y);
+            }
             if (menu.isChestSlotOverCapacity(slot)) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_OVER_CAPACITY);
             }
@@ -280,6 +297,21 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         guiGraphics.fill(x + 3, y + 2, x + 4, y + 4, COLOR_OUTLINE);
         guiGraphics.fill(x + 1, y + 4, x + 6, y + 8, COLOR_PADLOCK);
         guiGraphics.fill(x + 3, y + 5, x + 4, y + 7, COLOR_OUTLINE);
+        guiGraphics.pose().popPose();
+    }
+
+    /**
+     * A small dark swirl in the top right corner of a slot.
+     */
+    private static void drawVoidMark(GuiGraphics guiGraphics, int x, int y) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0, 0, 350);
+        int left = x + 16 - 7;
+        guiGraphics.fill(left + 1, y, left + 6, y + 7, COLOR_OUTLINE);
+        guiGraphics.fill(left, y + 1, left + 7, y + 6, COLOR_OUTLINE);
+        guiGraphics.fill(left + 1, y + 1, left + 6, y + 6, COLOR_VOID);
+        guiGraphics.fill(left + 2, y + 2, left + 5, y + 5, COLOR_VOID_RING);
+        guiGraphics.fill(left + 3, y + 3, left + 4, y + 4, COLOR_OUTLINE);
         guiGraphics.pose().popPose();
     }
 
@@ -528,10 +560,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         drawInfo(guiGraphics);
-        guiGraphics.drawString(font, title, 8, 6, COLOR_TEXT, false);
-        if (settingsOpen) {
-            guiGraphics.drawString(font, Component.translatable("gui.colossalchests2.settings"), 8, SEARCH_Y + 2, COLOR_TEXT, false);
-        }
+        guiGraphics.drawString(font, settingsOpen ? Component.translatable("gui.colossalchests2.settings_title", title) : title,
+                8, 6, COLOR_TEXT, false);
     }
 
     private void renderChestTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
@@ -551,6 +581,9 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         }
         if (deepSlot.isLocked()) {
             lines.add(Component.translatable("gui.colossalchests2.slot_locked").withStyle(ChatFormatting.GOLD));
+        }
+        if (deepSlot.isVoiding()) {
+            lines.add(Component.translatable("gui.colossalchests2.slot_voiding").withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
     }
@@ -588,6 +621,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         boolean right = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
         if (left && hasAltDown() && hasLockUpgrade()) {
             sendClick(slot, ChestClickAction.TOGGLE_LOCK);
+            return true;
+        }
+        if (right && hasAltDown() && hasVoidUpgrade()) {
+            sendClick(slot, ChestClickAction.TOGGLE_VOID);
             return true;
         }
         if ((left || right) && !menu.getCarried().isEmpty() && !hasShiftDown() && !hasControlDown()) {

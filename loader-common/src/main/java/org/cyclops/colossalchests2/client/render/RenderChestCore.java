@@ -34,7 +34,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
 
     /**
      * How far overlays float in front of the chest surface, far enough to avoid z-fighting.
-     * Faces behind the closed lock draw on the front of the lock instead.
+     * The lock sticks out further, so it hides the part of an overlay right behind it, like any object in front.
      */
     public static final float OVERLAY_OFFSET = 1F / 32F;
 
@@ -120,9 +120,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
                     applyLidTransform(poseStack, origin, structure, facing, lidRotation);
                 }
                 poseStack.translate(pos.getX() - origin.getX(), pos.getY() - origin.getY(), pos.getZ() - origin.getZ());
-                // The lock leaves with the lid, so only the closed lock covers faces.
-                boolean onLock = face == facing && lidRotation == 0 && ChestShape.isCoveredByLock(structure, facing, pos);
-                applyFaceTransform(poseStack, face, facing, onLock ? (float) ChestShape.getLockDepth(structure) : 0);
+                applyFaceTransform(poseStack, face, facing);
                 int light = LevelRenderer.getLightColor(level, pos.relative(face));
                 chestOverlay.render(core, pos, face, partialTick, poseStack, buffers, light, overlay);
                 poseStack.popPose();
@@ -152,7 +150,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
     /**
      * Map a block's unit cube onto the face-local unit square of {@link IChestOverlay}.
      */
-    public static void applyFaceTransform(PoseStack poseStack, Direction face, Direction facing, float extraOffset) {
+    public static void applyFaceTransform(PoseStack poseStack, Direction face, Direction facing) {
         poseStack.translate(0.5F, 0.5F, 0.5F);
         if (face.getAxis().isHorizontal()) {
             poseStack.mulPose(Axis.YP.rotationDegrees(-face.toYRot()));
@@ -160,7 +158,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
             poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
             poseStack.mulPose(Axis.XP.rotationDegrees(face == Direction.UP ? -90 : 90));
         }
-        poseStack.translate(-0.5F, -0.5F, 0.5F + OVERLAY_OFFSET + extraOffset);
+        poseStack.translate(-0.5F, -0.5F, 0.5F + OVERLAY_OFFSET);
     }
 
     protected Material getMaterial(ChestMaterial material) {

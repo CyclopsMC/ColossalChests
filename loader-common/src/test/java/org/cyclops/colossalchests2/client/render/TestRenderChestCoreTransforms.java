@@ -31,7 +31,7 @@ public class TestRenderChestCoreTransforms {
 
     private static PoseStack face(Direction face, Direction facing) {
         PoseStack poseStack = new PoseStack();
-        RenderChestCore.applyFaceTransform(poseStack, face, facing, 0);
+        RenderChestCore.applyFaceTransform(poseStack, face, facing);
         return poseStack;
     }
 
@@ -75,13 +75,6 @@ public class TestRenderChestCoreTransforms {
         PoseStack poseStack = face(Direction.DOWN, Direction.SOUTH);
         assertPoint(0, -OUT, 0, transform(poseStack, 0, 0, 0));
         assertPoint(0, -OUT, 1, transform(poseStack, 0, 1, 0));
-    }
-
-    @Test
-    public void testFaceExtraOffset() {
-        PoseStack poseStack = new PoseStack();
-        RenderChestCore.applyFaceTransform(poseStack, Direction.NORTH, Direction.NORTH, 0.25F);
-        assertPoint(1, 0, -OUT - 0.25F, transform(poseStack, 0, 0, 0));
     }
 
     @Test

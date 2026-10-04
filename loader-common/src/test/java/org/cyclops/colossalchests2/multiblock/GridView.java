@@ -25,6 +25,14 @@ public class GridView implements StructureView {
         return this;
     }
 
+    /**
+     * A wall that fits any material, like a functional wall.
+     */
+    public GridView functionalWall(BlockPos pos) {
+        blocks.put(pos.immutable(), new Member(Member.ANY_MATERIAL, false));
+        return this;
+    }
+
     public GridView core(BlockPos pos, String material) {
         blocks.put(pos.immutable(), new Member(material, true));
         return this;

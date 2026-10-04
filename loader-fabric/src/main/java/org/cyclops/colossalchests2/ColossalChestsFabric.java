@@ -6,13 +6,17 @@ import net.minecraft.world.item.ItemStack;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.server.packs.PackType;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
+import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigFabric;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
+import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgradeConfig;
@@ -81,6 +85,11 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
         }
+        for (WallType type : WallType.VALUES) {
+            configHandler.addConfigurable(new BlockChestFunctionalWallConfig<>(this, type));
+        }
         configHandler.addConfigurable(new BlockEntityChestCoreConfigFabric<>(this));
+        configHandler.addConfigurable(new BlockEntityChestWallConfigFabric<>(this));
+        configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
     }
 }

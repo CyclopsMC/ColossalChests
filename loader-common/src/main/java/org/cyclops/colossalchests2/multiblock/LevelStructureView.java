@@ -37,7 +37,7 @@ public class LevelStructureView implements StructureView {
             boolean claimedByOther = state.getValue(BlockChestWall.FORMED) && ChestCoreIndex.findFormedCore(level, pos)
                     .filter(other -> !other.getBlockPos().equals(core))
                     .isPresent();
-            return claimedByOther ? null : new Member(wall.getMaterial().id(), false);
+            return claimedByOther ? null : new Member(wall.getMemberMaterial(), false);
         }
         return null;
     }

@@ -6,14 +6,17 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
+import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigForge;
-import org.cyclops.colossalchests2.capability.LoaderCapabilities;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigForge;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
+import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgradeConfig;
@@ -43,7 +46,6 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
             _instance = instance;
             ColossalChestsInstance.MOD = instance;
         });
-        LoaderCapabilities.blockCapabilitiesSupported = false;
         MinecraftForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> event.addListener(new ChestTablesReloadListener()));
     }
 
@@ -85,6 +87,11 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
         }
+        for (WallType type : WallType.VALUES) {
+            configHandler.addConfigurable(new BlockChestFunctionalWallConfig<>(this, type));
+        }
         configHandler.addConfigurable(new BlockEntityChestCoreConfigForge<>(this));
+        configHandler.addConfigurable(new BlockEntityChestWallConfigForge<>(this));
+        configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
     }
 }

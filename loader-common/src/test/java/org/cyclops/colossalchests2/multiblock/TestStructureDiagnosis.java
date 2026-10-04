@@ -36,6 +36,23 @@ public class TestStructureDiagnosis {
     }
 
     @Test
+    public void testFunctionalWallsAreNoWrongMaterial() {
+        GridView view = new GridView().cube(MIN, 3, "wood").core(CORE, "wood").functionalWall(MIN).functionalWall(MIN.offset(2, 2, 2));
+        StructureDiagnosis.Result result = diagnose(view, MIN);
+        assertEquals(StructureDiagnosis.Problem.NONE, result.getProblem());
+        assertEquals(CORE, result.getCore());
+    }
+
+    @Test
+    public void testNoCoreFromFunctionalWall() {
+        // The material comes from the plain walls, not the functional wall the diagnosis starts at.
+        GridView view = new GridView().cube(MIN, 3, "wood").functionalWall(MIN);
+        StructureDiagnosis.Result result = diagnose(view, MIN);
+        assertEquals(StructureDiagnosis.Problem.NO_CORE, result.getProblem());
+        assertEquals(3, result.maxSize());
+    }
+
+    @Test
     public void testNoCore() {
         GridView view = new GridView().cube(MIN, 3, "wood");
         assertEquals(StructureDiagnosis.Problem.NO_CORE, diagnose(view, MIN).getProblem());

@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.gametest.framework.GameTest;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
@@ -159,17 +160,31 @@ public class GameTestsCapabilitiesFabric {
     public void testStorageOnFormedChest(GameTestHelper helper) {
         BlockPos min = new BlockPos(1, 1, 1);
         BlockPos corePos = GameTestsCommon.buildChest(helper, min, 3, ChestMaterial.WOOD);
-        BlockPos wallPos = min.offset(1, 2, 1);
+        BlockPos wallPos = GameTestsCommon.placeWall(helper, min.offset(1, 2, 1), WallType.INTERFACE);
+        BlockPos otherWallPos = GameTestsCommon.placeWall(helper, min.offset(1, 0, 1), WallType.INTERFACE);
+        BlockPos plainWallPos = min.offset(2, 1, 1);
         helper.startSequence()
                 .thenWaitUntil(() -> GameTestsCommon.assertFormed(helper, corePos, min, 3))
                 .thenExecute(() -> {
                     Storage<ItemVariant> coreStorage = ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(corePos), Direction.NORTH);
                     Storage<ItemVariant> wallStorage = ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(wallPos), Direction.UP);
-                    helper.assertTrue(coreStorage != null && coreStorage == wallStorage, "Expected the core and walls to share one storage");
+                    Storage<ItemVariant> otherWallStorage = ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(otherWallPos), Direction.DOWN);
+                    helper.assertTrue(coreStorage != null && wallStorage != null && otherWallStorage != null, "Expected storage on the core and interfaces");
+                    helper.assertTrue(ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(plainWallPos), Direction.EAST) == null,
+                            "Expected no storage on a plain wall");
                     try (Transaction transaction = Transaction.openOuter()) {
                         helper.assertValueEqual(wallStorage.insert(STONE, 10, transaction), 10L, "inserted through the wall");
                         transaction.commit();
                     }
+                    helper.assertValueEqual(GameTestsCommon.getCore(helper, corePos).getStorage().getSlot(0).getCount(), 10L, "stored count");
+                    // One transaction through two walls rolls back as a whole.
+                    try (Transaction transaction = Transaction.openOuter()) {
+                        wallStorage.insert(STONE, 5, transaction);
+                        otherWallStorage.extract(STONE, 12, transaction);
+                        wallStorage.insert(STONE, 3, transaction);
+                        transaction.abort();
+                    }
+                    helper.assertValueEqual(GameTestsCommon.getCore(helper, corePos).getStorage().getSlot(0).getCount(), 10L, "count after abort");
                     helper.setBlock(min.offset(0, 1, 1), Blocks.AIR);
                 })
                 .thenWaitUntil(() -> GameTestsCommon.assertDormant(helper, corePos))

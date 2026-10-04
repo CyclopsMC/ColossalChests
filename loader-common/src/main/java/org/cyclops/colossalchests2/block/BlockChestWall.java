@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
+import org.cyclops.colossalchests2.multiblock.StructureView;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,28 +30,54 @@ public class BlockChestWall extends Block {
 
     public static final BooleanProperty FORMED = BlockChestCore.FORMED;
 
-    /**
-     * If plain walls expose the item storage of their chest, which interface walls will take over.
-     */
-    public static final boolean EXPOSES_CAPABILITIES = true;
-
     private static final List<BlockChestWall> INSTANCES = Lists.newArrayList();
 
+    @Nullable
     private final ChestMaterial material;
 
+    /**
+     * A plain wall of a material.
+     */
     public BlockChestWall(Properties properties, ChestMaterial material) {
+        this(properties, material, true);
+    }
+
+    protected BlockChestWall(Properties properties, @Nullable ChestMaterial material, boolean plain) {
         super(properties);
         this.material = material;
         this.registerDefaultState(this.stateDefinition.any().setValue(FORMED, false));
-        INSTANCES.add(this);
+        if (plain) {
+            INSTANCES.add(this);
+        }
     }
 
+    /**
+     * @return The plain walls.
+     */
     public static List<BlockChestWall> getInstances() {
         return Collections.unmodifiableList(INSTANCES);
     }
 
+    /**
+     * @return The material of a plain wall, null for functional walls.
+     */
+    @Nullable
     public ChestMaterial getMaterial() {
         return material;
+    }
+
+    /**
+     * @return If this is a plain wall, which has a material and no function.
+     */
+    public boolean isPlain() {
+        return material != null;
+    }
+
+    /**
+     * @return The material id for structure detection.
+     */
+    public Object getMemberMaterial() {
+        return material == null ? StructureView.Member.ANY_MATERIAL : material.id();
     }
 
     @Override

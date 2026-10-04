@@ -440,7 +440,19 @@ public class ChestStorage {
      * @return The amount accepted, including what is destroyed.
      */
     public long insertAutomated(ItemStack type, long amount, boolean simulate) {
-        if (!isVoided(type)) {
+        return insertAutomated(type, amount, simulate, false);
+    }
+
+    /**
+     * {@link #insertAutomated(ItemStack, long, boolean)}, optionally voiding like every slot is voiding.
+     * @param type The item type, its count is ignored.
+     * @param amount The amount to insert.
+     * @param simulate If the storage must not change.
+     * @param voidFull If any held type is voided, as through a Void wall.
+     * @return The amount accepted, including what is destroyed.
+     */
+    public long insertAutomated(ItemStack type, long amount, boolean simulate, boolean voidFull) {
+        if (!isVoided(type) && !(voidFull && holds(type))) {
             return insert(type, amount, simulate);
         }
         insertIntoSlotsHolding(type, amount, simulate);
@@ -457,13 +469,36 @@ public class ChestStorage {
      * @return The amount accepted, including what is destroyed.
      */
     public long insertAutomated(int slot, ItemStack type, long amount, boolean simulate) {
+        return insertAutomated(slot, type, amount, simulate, false);
+    }
+
+    /**
+     * {@link #insertAutomated(int, ItemStack, long, boolean)}, optionally voiding like every slot is voiding.
+     * @param slot A slot index.
+     * @param type The item type, its count is ignored.
+     * @param amount The amount to insert.
+     * @param simulate If the storage must not change.
+     * @param voidFull If any held type is voided, as through a Void wall.
+     * @return The amount accepted, including what is destroyed.
+     */
+    public long insertAutomated(int slot, ItemStack type, long amount, boolean simulate, boolean voidFull) {
         long inserted = insert(slot, type, amount, simulate);
         DeepSlot deepSlot = slots[slot];
-        if (inserted < amount && deepSlot.isVoiding() && deepSlot.matches(getStoredType(type))
+        if (inserted < amount && (deepSlot.isVoiding() || voidFull) && deepSlot.matches(getStoredType(type))
                 && insertIntoSlotsHolding(type, amount - inserted, true) == 0) {
             return amount;
         }
         return inserted;
+    }
+
+    private boolean holds(ItemStack type) {
+        ItemStack stored = getStoredType(type);
+        for (DeepSlot deepSlot : slots) {
+            if (deepSlot.matches(stored)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private long insertIntoSlotsHolding(ItemStack type, long amount, boolean simulate) {

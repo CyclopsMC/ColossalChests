@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
 import org.cyclops.colossalchests2.block.BlockChestCore;
+import org.cyclops.colossalchests2.block.BlockChestFunctionalWall;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 
 /**
@@ -18,5 +19,6 @@ public final class ChestRenderLayersFabric {
     public static void register() {
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(), BlockChestWall.getInstances().toArray(Block[]::new));
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(), BlockChestCore.getInstances().toArray(Block[]::new));
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(), BlockChestFunctionalWall.getFunctionalInstances().toArray(Block[]::new));
     }
 }

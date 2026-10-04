@@ -4,7 +4,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Item handler semantics on top of a {@link ChestStorage}, shared by the loaders that use item handlers.
@@ -15,30 +14,27 @@ import org.jetbrains.annotations.Nullable;
 public class ItemHandlerLogic {
 
     private final ChestStorage storage;
-    @Nullable
-    private final Item extractionForm;
+    private final WallAccess access;
 
     /**
      * @param storage The storage.
-     * @param extractionForm The compression form to extract in, or null for the largest form.
-     *                       Only has an effect on compressed slots.
+     * @param access What automation may do through this handler.
      */
-    public ItemHandlerLogic(ChestStorage storage, @Nullable Item extractionForm) {
+    public ItemHandlerLogic(ChestStorage storage, WallAccess access) {
         this.storage = storage;
-        this.extractionForm = extractionForm;
+        this.access = access;
     }
 
     public ItemHandlerLogic(ChestStorage storage) {
-        this(storage, null);
+        this(storage, WallAccess.OPEN);
     }
 
     public ChestStorage getStorage() {
         return storage;
     }
 
-    @Nullable
-    public Item getExtractionForm() {
-        return extractionForm;
+    public WallAccess getAccess() {
+        return access;
     }
 
     public int getSlots() {
@@ -57,18 +53,13 @@ public class ItemHandlerLogic {
 
     /**
      * @param slot A slot index.
-     * @return The type the slot is seen and extracted as: this handler's extraction form for a compressed slot of its
-     * family, else the slot's own extraction type.
+     * @return The type the slot is seen and extracted as: for a compressed slot the form of its family in this
+     * handler's filter, else the slot's own extraction type.
      */
     public ItemStack getExtractionType(int slot) {
-        if (extractionForm != null) {
-            DeepSlot deepSlot = storage.getSlot(slot);
-            boolean ofFamily = storage.getFamily(deepSlot.getPrototype()).map(family -> family.indexOf(extractionForm) >= 0).orElse(false);
-            if (ofFamily) {
-                return new ItemStack(extractionForm);
-            }
-        }
-        return storage.getExtractionType(slot);
+        DeepSlot deepSlot = storage.getSlot(slot);
+        Item form = deepSlot.isEmpty() ? null : access.getExtractionForm(storage, deepSlot.getPrototype());
+        return form != null ? new ItemStack(form) : storage.getExtractionType(slot);
     }
 
     /**
@@ -81,7 +72,10 @@ public class ItemHandlerLogic {
         if (stack.isEmpty()) {
             return ItemStack.EMPTY;
         }
-        long inserted = storage.insertAutomated(slot, stack, stack.getCount(), simulate);
+        if (!access.canInsert(storage, stack)) {
+            return stack;
+        }
+        long inserted = storage.insertAutomated(slot, stack, stack.getCount(), simulate, access.voidFull());
         if (inserted >= stack.getCount()) {
             return ItemStack.EMPTY;
         }
@@ -97,7 +91,7 @@ public class ItemHandlerLogic {
      */
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         ItemStack type = getExtractionType(slot);
-        if (amount <= 0 || type.isEmpty()) {
+        if (amount <= 0 || type.isEmpty() || !access.canExtract(storage, type)) {
             return ItemStack.EMPTY;
         }
         long extracted = storage.extract(slot, type, Math.min(amount, type.getMaxStackSize()), simulate);
@@ -119,7 +113,7 @@ public class ItemHandlerLogic {
      * @return If the stack's type may go into the slot, ignoring how full it is.
      */
     public boolean isItemValid(int slot, ItemStack stack) {
-        return storage.canAccept(slot, stack);
+        return access.canInsert(storage, stack) && storage.canAccept(slot, stack);
     }
 
     private static int clamp(long value) {

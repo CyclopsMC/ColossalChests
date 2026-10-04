@@ -18,28 +18,54 @@ import java.util.List;
 /**
  * Fabric item storage on a chest storage, with true long counts and transaction support.
  * A transaction snapshots all slots, so an aborted transaction leaves the storage untouched.
+ * Views for walls share the snapshots of the core's storage, so one transaction through several walls rolls back correctly.
  * @author rubensworks
  */
 public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implements SlottedStorage<ItemVariant> {
 
     private final ChestStorage storage;
+    private final ItemHandlerLogic logic;
+    private final SnapshotParticipant<DeepSlot[]> snapshots;
 
     public ChestStorageFabric(ChestStorage storage) {
         this.storage = storage;
+        this.logic = new ItemHandlerLogic(storage);
+        this.snapshots = this;
+    }
+
+    private ChestStorageFabric(ChestStorageFabric parent, WallAccess access) {
+        this.storage = parent.storage;
+        this.logic = new ItemHandlerLogic(storage, access);
+        this.snapshots = parent;
+    }
+
+    /**
+     * @param access What automation may do through the view.
+     * @return A view on the same storage, limited by the access rules.
+     */
+    public ChestStorageFabric withAccess(WallAccess access) {
+        return new ChestStorageFabric(this, access);
     }
 
     public ChestStorage getStorage() {
         return storage;
     }
 
+    private WallAccess access() {
+        return logic.getAccess();
+    }
+
     @Override
     public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
         StoragePreconditions.notBlankNotNegative(resource, maxAmount);
         ItemStack type = resource.toStack();
-        long inserted = storage.insertAutomated(type, maxAmount, true);
+        if (!access().canInsert(storage, type)) {
+            return 0;
+        }
+        long inserted = storage.insertAutomated(type, maxAmount, true, access().voidFull());
         if (inserted > 0) {
-            updateSnapshots(transaction);
-            storage.insertAutomated(type, maxAmount, false);
+            snapshots.updateSnapshots(transaction);
+            storage.insertAutomated(type, maxAmount, false, access().voidFull());
         }
         return inserted;
     }
@@ -48,9 +74,12 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
     public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
         StoragePreconditions.notBlankNotNegative(resource, maxAmount);
         ItemStack type = resource.toStack();
+        if (!access().canExtract(storage, type)) {
+            return 0;
+        }
         long extracted = storage.extract(type, maxAmount, true);
         if (extracted > 0) {
-            updateSnapshots(transaction);
+            snapshots.updateSnapshots(transaction);
             storage.extract(type, maxAmount, false);
         }
         return extracted;
@@ -100,10 +129,13 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
         public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
             StoragePreconditions.notBlankNotNegative(resource, maxAmount);
             ItemStack type = resource.toStack();
-            long inserted = storage.insertAutomated(slot, type, maxAmount, true);
+            if (!access().canInsert(storage, type)) {
+                return 0;
+            }
+            long inserted = storage.insertAutomated(slot, type, maxAmount, true, access().voidFull());
             if (inserted > 0) {
-                updateSnapshots(transaction);
-                storage.insertAutomated(slot, type, maxAmount, false);
+                snapshots.updateSnapshots(transaction);
+                storage.insertAutomated(slot, type, maxAmount, false, access().voidFull());
             }
             return inserted;
         }
@@ -113,9 +145,12 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
             StoragePreconditions.notBlankNotNegative(resource, maxAmount);
             // Any form of a compressed slot's family can be extracted.
             ItemStack type = resource.toStack();
+            if (!access().canExtract(storage, type)) {
+                return 0;
+            }
             long extracted = storage.extract(slot, type, maxAmount, true);
             if (extracted > 0) {
-                updateSnapshots(transaction);
+                snapshots.updateSnapshots(transaction);
                 storage.extract(slot, type, maxAmount, false);
             }
             return extracted;
@@ -128,18 +163,18 @@ public class ChestStorageFabric extends SnapshotParticipant<DeepSlot[]> implemen
 
         @Override
         public ItemVariant getResource() {
-            return getAmount() == 0 ? ItemVariant.blank() : ItemVariant.of(storage.getExtractionType(slot));
+            return getAmount() == 0 ? ItemVariant.blank() : ItemVariant.of(logic.getExtractionType(slot));
         }
 
         @Override
         public long getAmount() {
-            ItemStack type = storage.getExtractionType(slot);
+            ItemStack type = logic.getExtractionType(slot);
             return type.isEmpty() ? 0 : storage.getAvailable(slot, type);
         }
 
         @Override
         public long getCapacity() {
-            ItemStack type = storage.getExtractionType(slot);
+            ItemStack type = logic.getExtractionType(slot);
             return type.isEmpty() ? storage.getCapacity(slot) : storage.getCapacity(type);
         }
     }

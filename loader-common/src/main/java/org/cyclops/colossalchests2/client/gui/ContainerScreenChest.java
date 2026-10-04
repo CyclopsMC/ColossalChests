@@ -24,7 +24,10 @@ import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
+import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import net.minecraft.world.item.ItemStack;
@@ -57,6 +60,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_TEXT = 0xFF404040;
     private static final int COLOR_DRAG_PREVIEW = 0x80FFFFFF;
     private static final int COLOR_GHOST = 0x808B8B8B;
+    private static final int COLOR_UPGRADE_REFUSED = 0x80FF3030;
     private static final int COLOR_PADLOCK = 0xFFF0C030;
     private static final int COLOR_PADLOCK_SHACKLE = 0xFFC8C8D0;
     private static final int COLOR_COUNT = 0xFFFFFF;
@@ -202,6 +206,16 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         drawPanel(guiGraphics, leftPos, topPos, imageWidth, imageHeight);
         for (Slot slot : menu.slots) {
             drawSlot(guiGraphics, leftPos + slot.x, topPos + slot.y);
+        }
+        // Holding an upgrade that does not fit marks the free upgrade slots.
+        ItemStack carried = menu.getCarried();
+        if (ItemChestUpgrade.getUpgrade(carried) != null && menu.getUpgradeInsertProblem(carried) != null) {
+            for (int i = 0; i < menu.getUpgradeSlotCount(); i++) {
+                Slot slot = menu.slots.get(menu.getUpgradeSlotsStart() + i);
+                if (!slot.hasItem()) {
+                    guiGraphics.fill(leftPos + slot.x, topPos + slot.y, leftPos + slot.x + 16, topPos + slot.y + 16, COLOR_UPGRADE_REFUSED);
+                }
+            }
         }
         if (settingsOpen) {
             return;
@@ -386,6 +400,20 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     @Override
     protected List<Component> getTooltipFromContainerItem(ItemStack stack) {
         List<Component> lines = super.getTooltipFromContainerItem(stack);
+        ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(stack);
+        if (upgrade != null && !(hoveredSlot instanceof ContainerChest.UpgradeSlot)) {
+            // How this chest relates to an upgrade in the inventory.
+            lines = Lists.newArrayList(lines);
+            Component problem = menu.getUpgradeInsertProblem(stack);
+            if (problem != null) {
+                addUpgradeInsertProblem(lines, stack, problem);
+            } else if (!menu.hasFreeUpgradeSlot()) {
+                lines.add(Component.translatable("gui.colossalchests2.upgrade.no_free_slot").withStyle(ChatFormatting.GOLD));
+            } else {
+                lines.add(Component.translatable("gui.colossalchests2.upgrade.takes_more",
+                        menu.getMaxUpgradeCount(upgrade) - menu.getUpgradeSet().count(upgrade)).withStyle(ChatFormatting.GREEN));
+            }
+        }
         if (hoveredSlot instanceof ContainerChest.UpgradeSlot slot) {
             int problems = menu.getUpgradeRemovalProblems(slot.getContainerSlot());
             if (problems > 0) {
@@ -397,11 +425,39 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         return lines;
     }
 
-    private void renderUpgradeSlotTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        if (hoveredSlot instanceof ContainerChest.UpgradeSlot slot && !slot.hasItem() && menu.getCarried().isEmpty()) {
-            guiGraphics.renderTooltip(font, List.of(Component.translatable("gui.colossalchests2.upgrade.slot"),
-                    Component.translatable("gui.colossalchests2.upgrade.slot.info").withStyle(ChatFormatting.GRAY)), Optional.empty(), mouseX, mouseY);
+    private void addUpgradeInsertProblem(List<Component> lines, ItemStack stack, Component problem) {
+        lines.add(problem.copy().withStyle(ChatFormatting.RED));
+        if (menu.doesBetterMaterialTakeMore(stack)) {
+            lines.add(Component.translatable("gui.colossalchests2.upgrade.better_material").withStyle(ChatFormatting.GRAY));
         }
+    }
+
+    private void renderUpgradeSlotTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        if (!(hoveredSlot instanceof ContainerChest.UpgradeSlot slot) || slot.hasItem()) {
+            return;
+        }
+        ItemStack carried = menu.getCarried();
+        if (!carried.isEmpty()) {
+            Component problem = menu.getUpgradeInsertProblem(carried);
+            if (problem != null) {
+                List<Component> lines = Lists.newArrayList();
+                addUpgradeInsertProblem(lines, carried, problem);
+                guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+            }
+            return;
+        }
+        // An empty slot lists what this chest takes.
+        List<Component> lines = Lists.newArrayList(Component.translatable("gui.colossalchests2.upgrade.slot"),
+                Component.translatable("gui.colossalchests2.upgrade.slot.takes").withStyle(ChatFormatting.GRAY));
+        UpgradeSet installed = menu.getUpgradeSet();
+        for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
+            Component name = Component.translatable("item.colossalchests2.upgrade_" + upgrade.getId().getPath());
+            int max = menu.getMaxUpgradeCount(upgrade);
+            lines.add(max == 0
+                    ? Component.translatable("gui.colossalchests2.upgrade.slot.none", name).withStyle(ChatFormatting.DARK_GRAY)
+                    : Component.translatable("gui.colossalchests2.upgrade.slot.count", name, installed.count(upgrade), max).withStyle(ChatFormatting.GRAY));
+        }
+        guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
     }
 
     private static void drawPanel(GuiGraphics guiGraphics, int x, int y, int width, int height) {

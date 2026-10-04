@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -20,7 +21,9 @@ import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
@@ -56,6 +59,8 @@ public class ContainerChest extends AbstractContainerMenu {
     private final ChestLayout layout;
     private final Container upgradeContainer;
     private final int[] maxUpgradeCounts;
+    // Per upgrade, 1 if a chest of another material takes more of it.
+    private final int[] betterMaterialTakesMore;
     private final int upgradeSlotsStart;
 
     // On the client what the server sent, on the server what it last sent.
@@ -79,18 +84,20 @@ public class ContainerChest extends AbstractContainerMenu {
      * Client-side constructor.
      */
     public ContainerChest(int id, Inventory inventory, FriendlyByteBuf data) {
-        this(id, inventory, data.readBlockPos(), data.readVarInt(), new SimpleContainer(data.readVarInt()), readMaxUpgradeCounts(data), null);
+        this(id, inventory, data.readBlockPos(), data.readVarInt(), new SimpleContainer(data.readVarInt()), readUpgradeArray(data),
+                readUpgradeArray(data), null);
     }
 
     /**
      * Server-side constructor.
      */
     public ContainerChest(int id, Inventory inventory, BlockEntityChestCore core) {
-        this(id, inventory, core.getBlockPos(), core.getStorage().getSlotCount(), core.getUpgrades(), getMaxUpgradeCounts(core), core);
+        this(id, inventory, core.getBlockPos(), core.getStorage().getSlotCount(), core.getUpgrades(), getMaxUpgradeCounts(core),
+                getBetterMaterialTakesMore(core), core);
     }
 
     private ContainerChest(int id, Inventory inventory, BlockPos corePos, int slotCount, Container upgradeContainer,
-                           int[] maxUpgradeCounts, @Nullable BlockEntityChestCore core) {
+                           int[] maxUpgradeCounts, int[] betterMaterialTakesMore, @Nullable BlockEntityChestCore core) {
         super(RegistryEntries.MENU_CHEST.value(), id);
         this.player = inventory.player;
         this.corePos = corePos;
@@ -101,6 +108,7 @@ public class ContainerChest extends AbstractContainerMenu {
         this.capacities = new long[slotCount];
         this.upgradeContainer = upgradeContainer;
         this.maxUpgradeCounts = maxUpgradeCounts;
+        this.betterMaterialTakesMore = betterMaterialTakesMore;
         this.upgradeRemovalProblems = new int[upgradeContainer.getContainerSize()];
         addPlayerSlots(inventory);
         this.upgradeSlotsStart = slots.size();
@@ -122,15 +130,21 @@ public class ContainerChest extends AbstractContainerMenu {
         data.writeVarInt(core.getStorage().getSlotCount());
         data.writeVarInt(core.getUpgrades().getContainerSize());
         data.writeVarIntArray(getMaxUpgradeCounts(core));
+        data.writeVarIntArray(getBetterMaterialTakesMore(core));
     }
 
     private static int[] getMaxUpgradeCounts(BlockEntityChestCore core) {
         return ChestUpgrades.VALUES.stream().mapToInt(core::getMaxUpgradeCount).toArray();
     }
 
-    private static int[] readMaxUpgradeCounts(FriendlyByteBuf data) {
-        int[] counts = data.readVarIntArray();
-        return counts.length == ChestUpgrades.VALUES.size() ? counts : new int[ChestUpgrades.VALUES.size()];
+    private static int[] getBetterMaterialTakesMore(BlockEntityChestCore core) {
+        return ChestUpgrades.VALUES.stream().mapToInt(upgrade -> ChestMaterial.VALUES.stream()
+                .anyMatch(material -> ChestUpgradeRules.getMaxCount(upgrade, material.id()) > core.getMaxUpgradeCount(upgrade)) ? 1 : 0).toArray();
+    }
+
+    private static int[] readUpgradeArray(FriendlyByteBuf data) {
+        int[] values = data.readVarIntArray();
+        return values.length == ChestUpgrades.VALUES.size() ? values : new int[ChestUpgrades.VALUES.size()];
     }
 
     /**
@@ -272,6 +286,47 @@ public class ContainerChest extends AbstractContainerMenu {
     public int getMaxUpgradeCount(ChestUpgrade upgrade) {
         int index = ChestUpgrades.VALUES.indexOf(upgrade);
         return index >= 0 ? maxUpgradeCounts[index] : 0;
+    }
+
+    /**
+     * @param stack A stack to insert into an upgrade slot.
+     * @return Why the chest does not take it, or null if it does.
+     */
+    @Nullable
+    public Component getUpgradeInsertProblem(ItemStack stack) {
+        ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(stack);
+        if (upgrade == null) {
+            return Component.translatable("gui.colossalchests2.upgrade.not_an_upgrade");
+        }
+        int max = getMaxUpgradeCount(upgrade);
+        if (max == 0) {
+            return Component.translatable("gui.colossalchests2.upgrade.none_allowed", stack.getHoverName());
+        }
+        if (getUpgradeSet().count(upgrade) >= max) {
+            return Component.translatable("gui.colossalchests2.upgrade.max_reached", max, stack.getHoverName());
+        }
+        return null;
+    }
+
+    /**
+     * @param stack A stack refused by the upgrade slots.
+     * @return If a chest of another material takes more of it.
+     */
+    public boolean doesBetterMaterialTakeMore(ItemStack stack) {
+        ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(stack);
+        return upgrade != null && betterMaterialTakesMore[ChestUpgrades.VALUES.indexOf(upgrade)] == 1;
+    }
+
+    /**
+     * @return If an upgrade slot is free.
+     */
+    public boolean hasFreeUpgradeSlot() {
+        for (int slot = 0; slot < upgradeContainer.getContainerSize(); slot++) {
+            if (upgradeContainer.getItem(slot).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

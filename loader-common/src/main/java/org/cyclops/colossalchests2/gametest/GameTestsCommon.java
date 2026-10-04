@@ -758,6 +758,7 @@ public class GameTestsCommon {
                     menu.setCarried(upgradeItem(ChestUpgrades.DEPTH));
                     clickUpgradeSlot(menu, player, 1);
                     helper.assertValueEqual(menu.getCarried().getCount(), 1, "rejected second Depth upgrade on the cursor");
+                    helper.assertTrue(menu.getUpgradeInsertProblem(menu.getCarried()) != null, "Expected a reason for the rejected Depth upgrade");
                     menu.setCarried(ItemStack.EMPTY);
 
                     // Fill a slot past the capacity without it: removal is refused.
@@ -975,6 +976,13 @@ public class GameTestsCommon {
                     helper.assertValueEqual(client.getUpgradeSlotCount(), 1, "upgrade slots of a wooden chest");
                     helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.DEPTH), 0, "depth upgrades a wooden chest takes");
                     helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.SLOT_EXPANSION), 2, "slot expansions a chest takes");
+                    // The client explains why an upgrade does not go in.
+                    Component noDepth = client.getUpgradeInsertProblem(upgradeItem(ChestUpgrades.DEPTH));
+                    helper.assertTrue(noDepth != null && client.doesBetterMaterialTakeMore(upgradeItem(ChestUpgrades.DEPTH)),
+                            "Expected a reason and the better material hint for Depth");
+                    helper.assertFalse(client.doesBetterMaterialTakeMore(upgradeItem(ChestUpgrades.LOCK)), "Expected no better material hint for Lock");
+                    helper.assertTrue(client.getUpgradeInsertProblem(upgradeItem(ChestUpgrades.LOCK)) == null, "Expected a wooden chest to take Lock");
+                    helper.assertTrue(client.getUpgradeInsertProblem(STONE) != null, "Expected non-upgrades to be refused");
                     player.containerMenu = client;
                     DeepSlot locked = DeepSlot.of(STONE, 0, true, null);
                     roundTrip(helper, new ClientboundChestSlotsPacket(menu.containerId, new int[]{0, 3},

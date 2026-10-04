@@ -30,3 +30,12 @@ clientdevbridge batch <path-to>/phase5/phase5-4-fabric.txt
 Gaps:
 - Alt can't be faked by clientdevbridge (the screen reads the keyboard state), so the alt-click toggle is sent as its click packet through `eval` and read back from the server's block entity: slot 0 locked, contents kept. The same goes for the shift-for-info tooltip.
 - The hopper, Lock all and Clear locks behaviour is covered by game tests.
+
+Why an upgrade does not go in (`phase5-5-insert-reasons.txt` in a fresh world):
+
+| Screenshot | Shows |
+|---|---|
+| `phase5-empty-upgrade-slot.png` | An empty upgrade slot lists what this copper chest takes |
+| `phase5-upgrade-item-refused.png` | A second Depth upgrade in the inventory: why it does not fit, and that a better material takes more |
+| `phase5-upgrade-item-takes.png` | The Lock upgrade: this chest takes 1 more |
+| `phase5-carried-upgrade-refused.png` | Holding the refused Depth upgrade over the free slot |

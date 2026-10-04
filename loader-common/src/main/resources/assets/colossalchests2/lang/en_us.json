@@ -11,6 +11,8 @@
   "block.colossalchests2.chest_wall_interface.info": "A wall for chest external access. Sneak-right-click with empty hand to set filters.",
   "block.colossalchests2.chest_wall_void": "Void Chest Interface",
   "block.colossalchests2.chest_wall_void.info": "An interface that destroys overflowing items.",
+  "block.colossalchests2.chest_wall_display": "Chest Display",
+  "block.colossalchests2.chest_wall_display.info": "Shows an item and its count. Left-click takes, right-click inserts, double right-click inserts all. Sneak-right-click with empty hand to clear. Only a pickaxe breaks it.",
   "block.colossalchests2.chest_wall_gold": "Golden Chest Wall",
   "block.colossalchests2.chest_core_gold": "Golden Chest Core",
   "block.colossalchests2.chest_wall_diamond": "Diamond Chest Wall",

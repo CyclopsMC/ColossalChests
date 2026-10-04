@@ -14,7 +14,11 @@ public enum WallType {
     /**
      * Item I/O where inserts of held types that do not fit are destroyed.
      */
-    VOID;
+    VOID,
+    /**
+     * Shows one item type and its count on its faces, and lets players take and insert it by clicking.
+     */
+    DISPLAY;
 
     public static final WallType[] VALUES = values();
 
@@ -23,6 +27,13 @@ public enum WallType {
      */
     public String getName() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * @return If automation can move items through this wall.
+     */
+    public boolean exposesItems() {
+        return this != DISPLAY;
     }
 
     public String getRegistryName() {

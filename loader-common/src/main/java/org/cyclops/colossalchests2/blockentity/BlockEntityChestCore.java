@@ -261,11 +261,14 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     }
 
     /**
-     * Change the GUI settings, and show them to everyone viewing the chest.
+     * Change the GUI settings, and show them to everyone viewing the chest and to clients rendering Display walls.
      */
     public void setSettings(ChestSettings settings) {
         this.settings = settings;
         setChanged();
+        if (level != null && !level.isClientSide) {
+            syncToClients();
+        }
         for (ServerPlayer viewer : viewers) {
             if (viewer.containerMenu instanceof ContainerChest menu && menu.isFor(this)) {
                 menu.onSettingsChanged(settings);
@@ -586,12 +589,13 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     }
 
     /**
-     * Clients only receive what they render: the structure, not the contents.
+     * Clients only receive what they render: the structure and the visual settings, not the contents.
      */
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         saveStructure(tag);
+        tag.put("settings", ChestSettings.CODEC.encodeStart(NbtOps.INSTANCE, settings).getOrThrow());
         return tag;
     }
 

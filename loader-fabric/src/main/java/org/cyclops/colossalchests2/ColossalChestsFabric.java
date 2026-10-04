@@ -1,28 +1,31 @@
 package org.cyclops.colossalchests2;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
-import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.DisplayWallInteractions;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigFabric;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
+import org.cyclops.colossalchests2.config.ChestTablesReloadListenerFabric;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
+import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
+import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgradeConfig;
-import org.cyclops.colossalchests2.config.ChestTablesReloadListenerFabric;
-import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
-import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
 import org.cyclops.cyclopscore.init.ModBaseFabric;
 import org.cyclops.cyclopscore.proxy.IClientProxyCommon;
@@ -45,6 +48,8 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
             _instance = instance;
         });
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ChestTablesReloadListenerFabric());
+        AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
+                DisplayWallInteractions.onAttack(player, level, pos) ? InteractionResult.FAIL : InteractionResult.PASS);
     }
 
     @Override

@@ -5,7 +5,6 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -20,6 +19,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -43,11 +43,11 @@ import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestInteractions;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
-import org.cyclops.colossalchests2.inventory.ContainerInterface;
-import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
+import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
@@ -55,21 +55,24 @@ import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
+import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
-import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundDisplayTakePacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.CompressionFamilies;
 import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
 import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.colossalchests2.storage.DisplayStats;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
@@ -419,6 +422,8 @@ public class GameTestsCommon {
                     BlockEntityChestCore core = getCore(helper, corePos);
                     core.getStorage().insert(STONE, 10, false);
                     helper.assertValueEqual(core.getDecoratedPositions(), List.of(helper.absolutePos(corePos)), "decorated positions");
+                    // Display walls render with the chest's visual settings.
+                    core.setSettings(core.getSettings().withShowCounts(false));
                     CompoundTag tag = core.getUpdateTag(helper.getLevel().registryAccess());
                     helper.assertFalse(tag.contains("storage"), "Expected no contents in the update tag");
 
@@ -426,6 +431,7 @@ public class GameTestsCommon {
                     client.loadWithComponents(tag, helper.getLevel().registryAccess());
                     helper.assertValueEqual(client.getStructure(), core.getStructure(), "synced structure");
                     helper.assertValueEqual(client.getDecoratedPositions(), core.getDecoratedPositions(), "synced decorated positions");
+                    helper.assertValueEqual(client.getSettings(), core.getSettings(), "synced settings");
                     helper.assertValueEqual(client.getFacing(), Direction.NORTH, "synced facing");
                     helper.assertTrue(client.getStorage().getSlot(0).isEmpty(), "Expected no synced contents");
                 })
@@ -1730,6 +1736,126 @@ public class GameTestsCommon {
                     helper.assertValueEqual(storage.getSlot(1).getCount(), 2L, "dirt stored");
                     helper.assertTrue(storage.getSlot(1).matches(new ItemStack(Items.DIRT)), "Expected dirt in the next slot");
                     helper.assertTrue(storage.getSlot(2).isEmpty(), "Expected the voided stone to take no slot");
+                })
+                .thenSucceed();
+    }
+
+    // Display walls
+
+    private static ItemInteractionResult useWithItem(GameTestHelper helper, ServerPlayer player, BlockPos pos, ItemStack stack) {
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        BlockPos absolute = helper.absolutePos(pos);
+        return helper.getLevel().getBlockState(absolute).useItemOn(stack, helper.getLevel(), player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false));
+    }
+
+    private static int countInInventory(ServerPlayer player, Item item) {
+        int count = 0;
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.is(item)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testDisplayWallInsertsAndTakes(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos display = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.DISPLAY);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    BlockEntityChestWall wall = getWall(helper, display);
+                    ServerPlayer player = makeViewer(helper);
+                    // The first item clicked in becomes the shown item and is inserted.
+                    ItemStack held = STONE.copyWithCount(10);
+                    useWithItem(helper, player, display, held);
+                    helper.assertTrue(wall.getDisplayed().is(Items.STONE), "Expected stone to be shown");
+                    helper.assertTrue(held.isEmpty(), "Expected the held stone to be inserted");
+                    helper.assertValueEqual(DisplayStats.of(storage, STONE).count(), 10L, "stored stone");
+                    // Other items are not inserted.
+                    ItemStack dirt = new ItemStack(Items.DIRT, 5);
+                    useWithItem(helper, player, display, dirt);
+                    helper.assertValueEqual(dirt.getCount(), 5, "dirt kept");
+                    // A quick second right-click inserts all stone from the inventory.
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    player.getInventory().setItem(3, STONE.copyWithCount(20));
+                    player.getInventory().setItem(4, STONE.copyWithCount(30));
+                    useWithItem(helper, player, display, STONE.copyWithCount(1));
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    use(helper, player, display);
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 0, "stone left in the inventory");
+                    helper.assertValueEqual(DisplayStats.of(storage, STONE).count(), 61L, "stored stone after inserting all");
+                    // Left-clicks take a stack or one, through the packet the client sends.
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), false), ServerboundDisplayTakePacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 61, "stone taken as one stack");
+                    player.getInventory().clearContent();
+                    storage.insert(STONE, 100, false);
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 1, "single stone taken");
+                    // Sneaking with an empty hand clears the display.
+                    player.setShiftKeyDown(true);
+                    use(helper, player, display);
+                    helper.assertTrue(wall.getDisplayed().isEmpty(), "Expected the display to be cleared");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testDisplayWallSyncsAndHasNoItemAccess(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos display = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.DISPLAY);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, display);
+                    helper.assertTrue(wall.getItemHandlerLogic().isEmpty(), "Expected no item access through a Display wall");
+                    wall.setDisplayed(STONE);
+                    getCore(helper, corePos).getStorage().insert(STONE, 40, false);
+                })
+                // The stats follow the chest on their own.
+                .thenWaitUntil(() -> helper.assertValueEqual(getWall(helper, display).getDisplayStats().count(), 40L, "shown count"))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, display);
+                    // What clients get.
+                    CompoundTag tag = wall.getUpdateTag(helper.getLevel().registryAccess());
+                    BlockEntityChestWall client = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
+                    client.loadWithComponents(tag, helper.getLevel().registryAccess());
+                    helper.assertTrue(client.getDisplayed().is(Items.STONE), "Expected the shown item on the client");
+                    helper.assertValueEqual(client.getDisplayStats(), wall.getDisplayStats(), "stats on the client");
+                    // The shown item survives saving and loading.
+                    BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
+                    loaded.loadWithComponents(wall.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+                    helper.assertTrue(loaded.getDisplayed().is(Items.STONE), "Expected the shown item after loading");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testDisplayWallOnlyMinedWithAPickaxe(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos display = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.DISPLAY);
+        BlockPos interfacePos = placeWall(helper, MIN_A.offset(1, 0, 1), WallType.INTERFACE);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    BlockPos absolute = helper.absolutePos(display);
+                    for (ItemStack held : List.of(ItemStack.EMPTY, STONE.copy(), new ItemStack(Items.WOODEN_SWORD))) {
+                        player.setItemInHand(InteractionHand.MAIN_HAND, held);
+                        helper.assertTrue(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute),
+                                "Expected mining to be cancelled with " + held);
+                    }
+                    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
+                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute), "Expected a pickaxe to mine");
+                    // Only Display walls are protected.
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), helper.absolutePos(interfacePos)),
+                            "Expected an Interface to mine normally");
                 })
                 .thenSucceed();
     }

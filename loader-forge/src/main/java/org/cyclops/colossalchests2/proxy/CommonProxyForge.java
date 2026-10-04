@@ -5,6 +5,7 @@ import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundDisplayTakePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.cyclopscore.init.ModBaseForge;
@@ -30,6 +31,7 @@ public class CommonProxyForge extends CommonProxyComponentForge {
         packetHandler.register(ClientboundChestStatePacket.class, ClientboundChestStatePacket.TYPE, ClientboundChestStatePacket.CODEC);
         packetHandler.register(ServerboundChestClickPacket.class, ServerboundChestClickPacket.TYPE, ServerboundChestClickPacket.CODEC);
         packetHandler.register(ServerboundChestFormPacket.class, ServerboundChestFormPacket.TYPE, ServerboundChestFormPacket.CODEC);
+        packetHandler.register(ServerboundDisplayTakePacket.class, ServerboundDisplayTakePacket.TYPE, ServerboundDisplayTakePacket.CODEC);
         packetHandler.register(ServerboundChestDragPacket.class, ServerboundChestDragPacket.TYPE, ServerboundChestDragPacket.CODEC);
         packetHandler.register(ServerboundChestSettingsPacket.class, ServerboundChestSettingsPacket.TYPE, ServerboundChestSettingsPacket.CODEC);
     }

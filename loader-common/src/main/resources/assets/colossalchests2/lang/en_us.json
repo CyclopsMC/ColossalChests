@@ -38,7 +38,7 @@
   "item.colossalchests2.upgrade_void": "Void Upgrade",
   "item.colossalchests2.upgrade_void.info": "Lets slots be marked as voiding. Alt-right-click a slot to toggle. Automation inserting into a full voiding slot destroys the overflow.",
   "item.colossalchests2.upgrade_compression": "Compression Upgrade",
-  "item.colossalchests2.upgrade_compression.info": "Stores the forms of an item, such as nuggets, ingots and blocks, as its largest form in one slot. Scroll over a slot to pick the form to take. Forms come from two-way crafting recipes.",
+  "item.colossalchests2.upgrade_compression.info": "Combines the forms of an item, such as nuggets, ingots and blocks, in one slot.",
   "container.colossalchests2.chest": "%s Chest",
   "gui.colossalchests2.search": "Search",
   "gui.colossalchests2.settings": "Settings",

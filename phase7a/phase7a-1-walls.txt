@@ -8,7 +8,14 @@ wait --ticks 5
 screenshot --name phase7a-unformed
 command "setblock 3 5 4 colossalchests2:chest_core_wood"
 wait --ticks 20
+# Functional walls are hidden on the giant chest, like the core, until the player sneaks.
 screenshot --name phase7a-formed
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 10
+eval "player.isCrouching()"
+screenshot --name phase7a-formed-sneaking
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 10
 command "give @p minecraft:stone 16"
 command "give @p minecraft:iron_nugget 4"
 hold 2
@@ -17,10 +24,11 @@ use 4 5 4 --face north
 wait --ticks 10
 snapshot
 close-screen
-# Sneaking opens its settings. Sneak is set on the server player, as clientdevbridge cannot hold sneak during a click.
-eval "server.submit({ server.playerList.players[0].setShiftKeyDown(true) } as Runnable).get()"
+# Sneaking opens its settings.
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 5
 use 4 5 4 --face north
 wait --ticks 10
-eval "server.submit({ server.playerList.players[0].setShiftKeyDown(false) } as Runnable).get()"
+eval "mc.options.keyShift.setDown(false)"
 snapshot
 screenshot --name phase7a-settings-empty

@@ -2,7 +2,8 @@ package org.cyclops.colossalchests2.inventory;
 
 /**
  * Positions in the chest GUI, shared by the menu and the screen.
- * The grid has 9 columns up to 54 slots and 18 above that, so 81 slots still fit a 240 pixel high screen.
+ * The grid has 9 columns up to 54 slots and 18 above that, so 108 slots still fit a 240 pixel high screen.
+ * A last row that is not full is centered.
  * @author rubensworks
  */
 public record ChestLayout(int slotCount, int columns, int rows) {
@@ -36,7 +37,19 @@ public record ChestLayout(int slotCount, int columns, int rows) {
      * @return The x of the slot's item, relative to the screen.
      */
     public int getSlotX(int position) {
-        return getGridX() + (position % columns) * SLOT_SIZE;
+        return getGridX() + getRowOffset(position / columns) + (position % columns) * SLOT_SIZE;
+    }
+
+    /**
+     * @param row A row.
+     * @return The number of slots in it.
+     */
+    public int getSlotsInRow(int row) {
+        return Math.max(0, Math.min(columns, slotCount - row * columns));
+    }
+
+    private int getRowOffset(int row) {
+        return (columns - getSlotsInRow(row)) * SLOT_SIZE / 2;
     }
 
     public int getSlotY(int position) {
@@ -57,13 +70,15 @@ public record ChestLayout(int slotCount, int columns, int rows) {
      * @return The grid position at it, or -1.
      */
     public int getPositionAt(double x, double y) {
-        int column = (int) Math.floor((x - getGridX() + 1) / SLOT_SIZE);
         int row = (int) Math.floor((y - GRID_Y + 1) / SLOT_SIZE);
-        if (column < 0 || column >= columns || row < 0 || row >= rows) {
+        if (row < 0 || row >= rows) {
             return -1;
         }
-        int position = row * columns + column;
-        return position < slotCount ? position : -1;
+        int column = (int) Math.floor((x - getGridX() - getRowOffset(row) + 1) / SLOT_SIZE);
+        if (x - getGridX() - getRowOffset(row) + 1 < 0 || column >= getSlotsInRow(row)) {
+            return -1;
+        }
+        return row * columns + column;
     }
 
 }

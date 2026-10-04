@@ -13,7 +13,8 @@
               "source": "block_entity",
               "include": [
                 "colossalchests2:chest_contents",
-                "colossalchests2:chest_settings"
+                "colossalchests2:chest_settings",
+                "colossalchests2:chest_upgrades"
               ]
             }
           ]

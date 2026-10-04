@@ -14,6 +14,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -22,6 +23,8 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,18 +37,26 @@ import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
+import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
+import org.cyclops.colossalchests2.config.MaterialProperties;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
+import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.multiblock.ChestShape;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.LevelStructureView;
 import org.cyclops.colossalchests2.multiblock.StructureDetector;
-import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.ResizeResult;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
+import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
+import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,7 +70,7 @@ import java.util.Set;
  * While the structure is broken the core is dormant: contents stay, but its item storage is not exposed.
  * @author rubensworks
  */
-public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
+public class BlockEntityChestCore extends BlockEntity implements MenuProvider, ChestUpgradeInventory.Owner {
 
     public static final int DATA_VERSION = 1;
     /**
@@ -84,10 +95,14 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
     private boolean validationRequested = true;
     private int validationCooldown;
     private boolean contentsChanged;
+    private final ChestUpgradeInventory upgrades;
+    private boolean loadingUpgrades;
+    private boolean reopenMenus;
 
     public BlockEntityChestCore(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.storage = new ChestStorage(GeneralConfig.getBaseSlots(), createProfile(0));
+        this.upgrades = new ChestUpgradeInventory(this, getMaterialProperties(state).upgradeSlots());
+        this.storage = new ChestStorage(GeneralConfig.getBaseSlots(), ChestUpgradeRules.createProfile(0, UpgradeSet.EMPTY));
         this.storage.addListener(slot -> this.contentsChanged = true);
         this.itemHandlerLogic = new ItemHandlerLogic(this.storage);
     }
@@ -106,6 +121,72 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
 
     public ChestStorage getStorage() {
         return storage;
+    }
+
+    public ChestUpgradeInventory getUpgrades() {
+        return upgrades;
+    }
+
+    public UpgradeSet getUpgradeSet() {
+        return upgrades.getUpgradeSet();
+    }
+
+    /**
+     * @return The material id of this core, or wood if the block is not a core.
+     */
+    public ResourceLocation getMaterialId() {
+        return getMaterial(getBlockState()).id();
+    }
+
+    private static ChestMaterial getMaterial(BlockState state) {
+        return state.getBlock() instanceof BlockChestCore block ? block.getMaterial() : ChestMaterial.WOOD;
+    }
+
+    private static MaterialProperties getMaterialProperties(BlockState state) {
+        return getMaterial(state).getProperties();
+    }
+
+    /**
+     * @param upgrade An upgrade.
+     * @return How many of the upgrade this chest takes.
+     */
+    public int getMaxUpgradeCount(ChestUpgrade upgrade) {
+        return ChestUpgradeRules.getMaxCount(upgrade, getMaterialId());
+    }
+
+    @Override
+    public boolean canAddUpgrade(int slot, ChestUpgrade upgrade) {
+        return slot < getMaterialProperties(getBlockState()).upgradeSlots() && ChestUpgradeRules.canAdd(getUpgradeSet(), upgrade, getMaterialId());
+    }
+
+    /**
+     * @param slot An upgrade slot.
+     * @return The chest slots that keep the upgrade in that slot from being removed, empty if it can be removed.
+     */
+    public ResizeResult getUpgradeRemovalProblems(int slot) {
+        ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(upgrades.getItem(slot));
+        return upgrade == null ? ResizeResult.OK : ChestUpgradeRules.getRemovalProblems(storage, lastSize, getUpgradeSet(), upgrade);
+    }
+
+    @Override
+    public void onUpgradesChanged() {
+        if (loadingUpgrades) {
+            return;
+        }
+        int oldSlotCount = storage.getSlotCount();
+        if (!getUpgradeSet().has(ChestUpgrades.LOCK)) {
+            storage.clearLocks();
+        }
+        applyProfile(false);
+        setChanged();
+        if (storage.getSlotCount() != oldSlotCount) {
+            reopenMenus = true;
+        }
+        for (ServerPlayer viewer : viewers) {
+            if (viewer.containerMenu instanceof ContainerChest menu && menu.isFor(this)) {
+                menu.onUpgradesChanged();
+            }
+        }
     }
 
     public ItemHandlerLogic getItemHandlerLogic() {
@@ -290,6 +371,26 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
         if (!viewers.isEmpty() && storage.hasDirtySlots()) {
             onDirtySlots(storage.drainDirtySlots());
         }
+        if (reopenMenus) {
+            reopenMenus = false;
+            reopenMenus();
+        }
+    }
+
+    /**
+     * Reopen the GUI of all viewers, as the slot grid only changes size between openings.
+     * The item on their cursor stays there. Players without a client, such as fake players, keep their menu.
+     */
+    protected void reopenMenus() {
+        for (ServerPlayer viewer : List.copyOf(viewers)) {
+            if (viewer.containerMenu instanceof ContainerChest menu && menu.isFor(this) && ChestNetwork.hasClient(viewer)) {
+                ItemStack carried = menu.getCarried();
+                menu.setCarried(ItemStack.EMPTY);
+                openMenu(viewer);
+                viewer.containerMenu.setCarried(carried);
+                viewer.containerMenu.broadcastChanges();
+            }
+        }
     }
 
     /**
@@ -411,13 +512,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
     protected void onCapabilitiesChanged() {
     }
 
-    protected static CapacityProfile createProfile(int size) {
-        long depth = size < GeneralConfig.MIN_SIZE ? 0 : GeneralConfig.getDepthForSize(Math.min(size, GeneralConfig.HARD_MAX_SIZE));
-        return CapacityProfile.builder(depth)
-                .maxItemsPerSlot(GeneralConfig.getMaxItemsPerSlot())
-                .acceptNonStackables(GeneralConfig.acceptNonStackables)
-                .build();
-    }
 
     /**
      * Apply the capacity for the last formed size and the current config.
@@ -425,14 +519,15 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
      * @param warnIfOverCapacity If over-capacity slots should be logged, for config changes between sessions.
      */
     protected void applyProfile(boolean warnIfOverCapacity) {
-        ResizeResult result = storage.forceProfile(createProfile(lastSize));
+        UpgradeSet upgradeSet = getUpgradeSet();
+        ResizeResult result = storage.forceProfile(ChestUpgradeRules.createProfile(lastSize, upgradeSet));
         int highestFilled = -1;
         for (int slot = 0; slot < storage.getSlotCount(); slot++) {
             if (storage.getSlot(slot).getCount() > 0) {
                 highestFilled = slot;
             }
         }
-        storage.setSlotCount(Math.max(GeneralConfig.getBaseSlots(), highestFilled + 1));
+        storage.setSlotCount(Math.max(ChestUpgradeRules.getSlotCount(upgradeSet), highestFilled + 1));
         if (warnIfOverCapacity && lastSize > 0 && !result.isOk()) {
             ColossalChestsInstance.MOD.log(org.apache.logging.log4j.Level.WARN, String.format(
                     "Chest core at %s holds more than its capacity in slots %s, possibly because config values were "
@@ -457,6 +552,8 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
         tag.put("storage", ChestStorage.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), storage.toContents()).getOrThrow());
         saveStructure(tag);
         tag.put("settings", ChestSettings.CODEC.encodeStart(NbtOps.INSTANCE, settings).getOrThrow());
+        tag.put("upgrades", ItemContainerContents.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE),
+                ItemContainerContents.fromItems(upgrades.getItems())).getOrThrow());
     }
 
     private void saveStructure(CompoundTag tag) {
@@ -485,6 +582,12 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        if (tag.contains("upgrades")) {
+            ItemContainerContents.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("upgrades"))
+                    .resultOrPartial(error -> ColossalChestsInstance.MOD.log(org.apache.logging.log4j.Level.ERROR,
+                            "Could not load chest core upgrades at " + worldPosition + ": " + error))
+                    .ifPresent(this::loadUpgrades);
+        }
         if (tag.contains("storage")) {
             ChestStorage.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("storage"))
                     .resultOrPartial(error -> ColossalChestsInstance.MOD.log(org.apache.logging.log4j.Level.ERROR,
@@ -512,12 +615,16 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
         if (!settings.equals(ChestSettings.DEFAULT)) {
             components.set(RegistryEntries.COMPONENT_CHEST_SETTINGS.value(), settings);
         }
+        if (!upgrades.isEmpty()) {
+            components.set(RegistryEntries.COMPONENT_CHEST_UPGRADES.value(), ItemContainerContents.fromItems(upgrades.getItems()));
+        }
     }
 
     @Override
     protected void applyImplicitComponents(DataComponentInput input) {
         super.applyImplicitComponents(input);
         settings = input.getOrDefault(RegistryEntries.COMPONENT_CHEST_SETTINGS.value(), ChestSettings.DEFAULT);
+        loadUpgrades(input.getOrDefault(RegistryEntries.COMPONENT_CHEST_UPGRADES.value(), ItemContainerContents.EMPTY));
         ChestStorage.Contents contents = input.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value());
         if (contents != null) {
             storage.loadContents(contents);
@@ -530,5 +637,13 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
         super.removeComponentsFromTag(tag);
         tag.remove("storage");
         tag.remove("settings");
+        tag.remove("upgrades");
+    }
+
+    private void loadUpgrades(ItemContainerContents contents) {
+        loadingUpgrades = true;
+        upgrades.load(contents.stream().toList());
+        upgrades.resize(getMaterialProperties(getBlockState()).upgradeSlots());
+        loadingUpgrades = false;
     }
 }

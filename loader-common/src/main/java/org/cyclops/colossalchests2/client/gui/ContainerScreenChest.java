@@ -11,7 +11,9 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
 import org.cyclops.colossalchests2.inventory.ChestClickLogic;
@@ -23,6 +25,10 @@ import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
+import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import net.minecraft.world.item.ItemStack;
@@ -54,6 +60,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_SEARCH_HIT = 0xFFFFD83D;
     private static final int COLOR_TEXT = 0xFF404040;
     private static final int COLOR_DRAG_PREVIEW = 0x80FFFFFF;
+    private static final int COLOR_GHOST = 0x808B8B8B;
+    private static final int COLOR_UPGRADE_REFUSED = 0x80FF3030;
+    private static final int COLOR_PADLOCK = 0xFFF0C030;
+    private static final int COLOR_PADLOCK_SHACKLE = 0xFFC8C8D0;
     private static final int COLOR_COUNT = 0xFFFFFF;
     private static final int COLOR_COUNT_CAPPED = 0xFFFF55;
     private static final int COLOR_WARNING = 0xFFAA0000;
@@ -61,6 +71,12 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int SETTINGS_HEIGHT = 15;
     private static final int SEARCH_Y = 18;
     private static final int SEARCH_HEIGHT = 12;
+    private static final ResourceLocation PANEL_TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
+    private static final int PANEL_TEXTURE_WIDTH = 176;
+    private static final int PANEL_TEXTURE_HEIGHT = 222;
+    private static final int PANEL_CORNER = 4;
+    private static final int UPGRADE_PANEL_X = ContainerChest.UPGRADE_SLOT_X - 7;
+    private static final int UPGRADE_PANEL_Y = ContainerChest.UPGRADE_SLOT_Y - 4;
 
     private final ChestLayout layout;
     private final List<Button> settingsButtons = Lists.newArrayList();
@@ -116,15 +132,12 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                         b -> sendSettings(menu.getSettings().withShowUpgradeIndicators(!menu.getSettings().showUpgradeIndicators())))
                 .bounds(settingsX, settingsY + height + 2, width, height)
                 .tooltip(Tooltip.create(Component.translatable("gui.colossalchests2.show_upgrade_indicators.info"))).build()));
-        for (String action : new String[]{"lock_all", "clear_locks"}) {
-            Button button = Button.builder(Component.translatable("gui.colossalchests2." + action), b -> {})
-                    .bounds(settingsX + (action.equals("lock_all") ? 0 : width + 2), settingsY + 2 * (height + 2), width, height)
-                    .tooltip(Tooltip.create(Component.translatable("gui.colossalchests2.requires_lock_upgrade")))
-                    .build();
-            // Locks come with the Lock upgrade.
-            button.active = false;
-            settingsButtons.add(addRenderableWidget(button));
-        }
+        settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.lock_all"),
+                        b -> sendClick(0, ChestClickAction.LOCK_ALL))
+                .bounds(settingsX, settingsY + 2 * (height + 2), width, height).build()));
+        settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.clear_locks"),
+                        b -> sendClick(0, ChestClickAction.CLEAR_LOCKS))
+                .bounds(settingsX + width + 2, settingsY + 2 * (height + 2), width, height).build()));
         setSettingsOpen(settingsOpen);
     }
 
@@ -147,6 +160,21 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         settingsButtons.get(0).setMessage(toggleLabel("show_fill_levels", settings.showFillLevels()));
         settingsButtons.get(1).setMessage(toggleLabel("show_counts", settings.showCounts()));
         settingsButtons.get(2).setMessage(toggleLabel("show_upgrade_indicators", settings.showUpgradeIndicators()));
+        // Locks come with the Lock upgrade.
+        boolean locks = hasLockUpgrade();
+        for (int i = 3; i < 5; i++) {
+            Button button = settingsButtons.get(i);
+            if (button.active != locks || button.getTooltip() == null) {
+                button.active = locks;
+                button.setTooltip(Tooltip.create(Component.translatable(locks
+                        ? "gui.colossalchests2." + (i == 3 ? "lock_all" : "clear_locks") + ".info"
+                        : "gui.colossalchests2.requires_lock_upgrade")));
+            }
+        }
+    }
+
+    private boolean hasLockUpgrade() {
+        return menu.getUpgradeSet().has(ChestUpgrades.LOCK);
     }
 
     private static Component toggleLabel(String key, boolean value) {
@@ -170,14 +198,29 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         }
         renderChestTooltip(guiGraphics, mouseX, mouseY);
         renderInfoTooltip(guiGraphics, mouseX, mouseY);
+        renderUpgradeSlotTooltip(guiGraphics, mouseX, mouseY);
         renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+        // The upgrade column sticks out on the left, behind the main panel.
+        if (menu.getUpgradeSlotCount() > 0) {
+            drawPanel(guiGraphics, leftPos + UPGRADE_PANEL_X, topPos + UPGRADE_PANEL_Y, -UPGRADE_PANEL_X + 4, getUpgradePanelHeight());
+        }
         drawPanel(guiGraphics, leftPos, topPos, imageWidth, imageHeight);
-        for (int i = 0; i < 36; i++) {
-            drawSlot(guiGraphics, leftPos + menu.slots.get(i).x, topPos + menu.slots.get(i).y);
+        for (Slot slot : menu.slots) {
+            drawSlot(guiGraphics, leftPos + slot.x, topPos + slot.y);
+        }
+        // Holding an upgrade that does not fit marks the free upgrade slots.
+        ItemStack carried = menu.getCarried();
+        if (ItemChestUpgrade.getUpgrade(carried) != null && menu.getUpgradeInsertProblem(carried) != null) {
+            for (int i = 0; i < menu.getUpgradeSlotCount(); i++) {
+                Slot slot = menu.slots.get(menu.getUpgradeSlotsStart() + i);
+                if (!slot.hasItem()) {
+                    guiGraphics.fill(leftPos + slot.x, topPos + slot.y, leftPos + slot.x + 16, topPos + slot.y + 16, COLOR_UPGRADE_REFUSED);
+                }
+            }
         }
         if (settingsOpen) {
             return;
@@ -205,7 +248,13 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                 guiGraphics.renderItem(deepSlot.getPrototype(), x, y);
                 if (deepSlot.getCount() > 0) {
                     drawCount(guiGraphics, deepSlot.getCount(), x, y, COLOR_COUNT);
+                } else {
+                    // A slot reserved by a lock shows a ghost of its item.
+                    guiGraphics.fill(x, y, x + 16, y + 16, 300, COLOR_GHOST);
                 }
+            }
+            if (deepSlot.isLocked()) {
+                drawPadlock(guiGraphics, x, y);
             }
             if (menu.isChestSlotOverCapacity(slot)) {
                 guiGraphics.fill(x, y, x + 16, y + 16, 400, COLOR_OVER_CAPACITY);
@@ -217,6 +266,21 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                 renderSlotHighlight(guiGraphics, x, y, 0);
             }
         }
+    }
+
+    /**
+     * A small padlock in the top left corner of a slot.
+     */
+    private static void drawPadlock(GuiGraphics guiGraphics, int x, int y) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(0, 0, 350);
+        guiGraphics.fill(x, y + 3, x + 7, y + 9, COLOR_OUTLINE);
+        guiGraphics.fill(x + 1, y, x + 6, y + 4, COLOR_OUTLINE);
+        guiGraphics.fill(x + 2, y + 1, x + 5, y + 4, COLOR_PADLOCK_SHACKLE);
+        guiGraphics.fill(x + 3, y + 2, x + 4, y + 4, COLOR_OUTLINE);
+        guiGraphics.fill(x + 1, y + 4, x + 6, y + 8, COLOR_PADLOCK);
+        guiGraphics.fill(x + 3, y + 5, x + 4, y + 7, COLOR_OUTLINE);
+        guiGraphics.pose().popPose();
     }
 
     private void drawCount(GuiGraphics guiGraphics, long count, int x, int y, int color) {
@@ -327,12 +391,105 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         }
     }
 
+    private int getUpgradePanelHeight() {
+        return ContainerChest.UPGRADE_SLOT_Y - UPGRADE_PANEL_Y + menu.getUpgradeSlotCount() * 18 + 3;
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
+        boolean inUpgradePanel = mouseX >= left + UPGRADE_PANEL_X && mouseX < left && mouseY >= top + UPGRADE_PANEL_Y
+                && mouseY < top + UPGRADE_PANEL_Y + getUpgradePanelHeight();
+        return super.hasClickedOutside(mouseX, mouseY, left, top, button) && !inUpgradePanel;
+    }
+
+    @Override
+    protected List<Component> getTooltipFromContainerItem(ItemStack stack) {
+        List<Component> lines = super.getTooltipFromContainerItem(stack);
+        ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(stack);
+        if (upgrade != null && !(hoveredSlot instanceof ContainerChest.UpgradeSlot)) {
+            // How this chest relates to an upgrade in the inventory.
+            lines = Lists.newArrayList(lines);
+            Component problem = menu.getUpgradeInsertProblem(stack);
+            if (problem != null) {
+                addUpgradeInsertProblem(lines, stack, problem);
+            } else if (!menu.hasFreeUpgradeSlot()) {
+                lines.add(Component.translatable("gui.colossalchests2.upgrade.no_free_slot").withStyle(ChatFormatting.GOLD));
+            } else {
+                lines.add(Component.translatable("gui.colossalchests2.upgrade.takes_more",
+                        menu.getMaxUpgradeCount(upgrade) - menu.getUpgradeSet().count(upgrade)).withStyle(ChatFormatting.GREEN));
+            }
+        }
+        if (hoveredSlot instanceof ContainerChest.UpgradeSlot slot) {
+            int problems = menu.getUpgradeRemovalProblems(slot.getContainerSlot());
+            if (problems > 0) {
+                lines = Lists.newArrayList(lines);
+                lines.add((problems == 1 ? Component.translatable("gui.colossalchests2.upgrade.removal_refused.one")
+                        : Component.translatable("gui.colossalchests2.upgrade.removal_refused", formatCount(problems))).withStyle(ChatFormatting.RED));
+            }
+        }
+        return lines;
+    }
+
+    private void addUpgradeInsertProblem(List<Component> lines, ItemStack stack, Component problem) {
+        lines.add(problem.copy().withStyle(ChatFormatting.RED));
+        if (menu.doesBetterMaterialTakeMore(stack)) {
+            lines.add(Component.translatable("gui.colossalchests2.upgrade.better_material").withStyle(ChatFormatting.GRAY));
+        }
+    }
+
+    private void renderUpgradeSlotTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        if (!(hoveredSlot instanceof ContainerChest.UpgradeSlot slot) || slot.hasItem()) {
+            return;
+        }
+        ItemStack carried = menu.getCarried();
+        if (!carried.isEmpty()) {
+            Component problem = menu.getUpgradeInsertProblem(carried);
+            if (problem != null) {
+                List<Component> lines = Lists.newArrayList();
+                addUpgradeInsertProblem(lines, carried, problem);
+                guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+            }
+            return;
+        }
+        // An empty slot lists what this chest takes.
+        List<Component> lines = Lists.newArrayList(Component.translatable("gui.colossalchests2.upgrade.slot"),
+                Component.translatable("gui.colossalchests2.upgrade.slot.takes").withStyle(ChatFormatting.GRAY));
+        UpgradeSet installed = menu.getUpgradeSet();
+        for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
+            Component name = Component.translatable("item.colossalchests2.upgrade_" + upgrade.getId().getPath());
+            int max = menu.getMaxUpgradeCount(upgrade);
+            lines.add(max == 0
+                    ? Component.translatable("gui.colossalchests2.upgrade.slot.none", name).withStyle(ChatFormatting.DARK_GRAY)
+                    : Component.translatable("gui.colossalchests2.upgrade.slot.count", name, installed.count(upgrade), max).withStyle(ChatFormatting.GRAY));
+        }
+        guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+    }
+
+    /**
+     * A panel cut from the vanilla chest texture, so corners and colors match vanilla and resource packs.
+     */
     private static void drawPanel(GuiGraphics guiGraphics, int x, int y, int width, int height) {
-        guiGraphics.fill(x + 1, y, x + width - 1, y + height, COLOR_OUTLINE);
-        guiGraphics.fill(x, y + 1, x + width, y + height - 1, COLOR_OUTLINE);
-        guiGraphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, COLOR_LIGHT);
-        guiGraphics.fill(x + 3, y + 3, x + width - 1, y + height - 1, COLOR_SHADOW);
-        guiGraphics.fill(x + 3, y + 3, x + width - 3, y + height - 3, COLOR_BACKGROUND);
+        int c = PANEL_CORNER;
+        int right = PANEL_TEXTURE_WIDTH - c;
+        int bottom = PANEL_TEXTURE_HEIGHT - c;
+        // Corners.
+        blitPanel(guiGraphics, x, y, c, c, 0, 0, c, c);
+        blitPanel(guiGraphics, x + width - c, y, c, c, right, 0, c, c);
+        blitPanel(guiGraphics, x, y + height - c, c, c, 0, bottom, c, c);
+        blitPanel(guiGraphics, x + width - c, y + height - c, c, c, right, bottom, c, c);
+        // Edges, stretched from a plain strip.
+        blitPanel(guiGraphics, x + c, y, width - 2 * c, c, c, 0, 1, c);
+        blitPanel(guiGraphics, x + c, y + height - c, width - 2 * c, c, c, bottom, 1, c);
+        blitPanel(guiGraphics, x, y + c, c, height - 2 * c, 0, c, c, 1);
+        blitPanel(guiGraphics, x + width - c, y + c, c, height - 2 * c, right, c, c, 1);
+        // Background, from a plain pixel next to the title.
+        blitPanel(guiGraphics, x + c, y + c, width - 2 * c, height - 2 * c, c + 1, c + 1, 1, 1);
+    }
+
+    private static void blitPanel(GuiGraphics guiGraphics, int x, int y, int width, int height, int u, int v, int uWidth, int vHeight) {
+        if (width > 0 && height > 0) {
+            guiGraphics.blit(PANEL_TEXTURE, x, y, width, height, u, v, uWidth, vHeight, 256, 256);
+        }
     }
 
     private static void drawSlot(GuiGraphics guiGraphics, int x, int y) {
@@ -392,6 +549,9 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         if (menu.isChestSlotOverCapacity(slot)) {
             lines.add(Component.translatable("gui.colossalchests2.slot_over_capacity").withStyle(ChatFormatting.RED));
         }
+        if (deepSlot.isLocked()) {
+            lines.add(Component.translatable("gui.colossalchests2.slot_locked").withStyle(ChatFormatting.GOLD));
+        }
         guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
     }
 
@@ -426,6 +586,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         }
         boolean left = button == GLFW.GLFW_MOUSE_BUTTON_LEFT;
         boolean right = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+        if (left && hasAltDown() && hasLockUpgrade()) {
+            sendClick(slot, ChestClickAction.TOGGLE_LOCK);
+            return true;
+        }
         if ((left || right) && !menu.getCarried().isEmpty() && !hasShiftDown() && !hasControlDown()) {
             // With a stack on the cursor, the release decides between a click and a drag.
             dragButton = button;
@@ -494,7 +658,12 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             boolean oneEach = dragButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
             if (draggedSlots.size() < 2) {
                 int slot = draggedSlots.isEmpty() ? dragStartSlot : draggedSlots.iterator().next();
-                sendClick(slot, oneEach ? ChestClickAction.TAKE_HALF : ChestClickAction.TAKE_STACK);
+                if (oneEach && hasLockUpgrade() && menu.getChestSlot(slot).isEmpty()) {
+                    // With the Lock upgrade, a right click on an empty slot reserves it for the cursor item.
+                    sendClick(slot, ChestClickAction.LOCK_TO_CURSOR);
+                } else {
+                    sendClick(slot, oneEach ? ChestClickAction.TAKE_HALF : ChestClickAction.TAKE_STACK);
+                }
             } else {
                 ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundChestDragPacket(menu.containerId,
                         draggedSlots.stream().mapToInt(Integer::intValue).toArray(), oneEach));

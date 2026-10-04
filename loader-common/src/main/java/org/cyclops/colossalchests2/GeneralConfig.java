@@ -14,7 +14,7 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
 
     public static final int MIN_SIZE = 2;
     public static final int HARD_MAX_SIZE = 10;
-    public static final int HARD_MAX_SLOTS = 81;
+    public static final int HARD_MAX_SLOTS = 108;
 
     @ConfigurablePropertyCommon(category = "chest", comment = "The number of slots of a chest without upgrades.", minimalValue = 1, maximalValue = HARD_MAX_SLOTS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static int baseSlots = 27;

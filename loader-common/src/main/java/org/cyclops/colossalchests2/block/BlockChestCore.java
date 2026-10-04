@@ -3,14 +3,19 @@ package org.cyclops.colossalchests2.block;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -28,6 +33,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
+import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -57,6 +63,18 @@ public class BlockChestCore extends BaseEntityBlock {
 
     public static List<BlockChestCore> getInstances() {
         return Collections.unmodifiableList(INSTANCES);
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        UpgradeSet upgrades = UpgradeSet.of(stack.getOrDefault(RegistryEntries.COMPONENT_CHEST_UPGRADES.value(), ItemContainerContents.EMPTY)
+                .nonEmptyItems());
+        if (!upgrades.counts().isEmpty()) {
+            tooltip.add(Component.translatable("block.colossalchests2.chest_core.upgrades").withStyle(ChatFormatting.GRAY));
+            upgrades.counts().forEach((upgrade, count) -> tooltip.add(Component.translatable("block.colossalchests2.chest_core.upgrade",
+                    count, Component.translatable("item.colossalchests2.upgrade_" + upgrade.getId().getPath())).withStyle(ChatFormatting.GRAY)));
+        }
     }
 
     public ChestMaterial getMaterial() {
@@ -156,9 +174,9 @@ public class BlockChestCore extends BaseEntityBlock {
 
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        // Creative mode skips drops, but a core with contents must never vanish.
+        // Creative mode skips drops, but a core with contents or upgrades must never vanish.
         if (!level.isClientSide && player.isCreative() && level.getBlockEntity(pos) instanceof BlockEntityChestCore core
-                && !core.getStorage().toContents().entries().isEmpty()) {
+                && (!core.getStorage().toContents().entries().isEmpty() || !core.getUpgrades().isEmpty())) {
             ItemStack stack = new ItemStack(this);
             stack.applyComponents(core.collectComponents());
             popResourceFromFace(level, pos, getFaceTowards(pos, player), stack);

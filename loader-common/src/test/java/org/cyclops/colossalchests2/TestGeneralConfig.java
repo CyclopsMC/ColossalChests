@@ -42,7 +42,7 @@ public class TestGeneralConfig {
     @Test
     public void testSlotsDefaults() {
         assertEquals(27, GeneralConfig.getBaseSlots());
-        assertEquals(81, GeneralConfig.getMaxSlots());
+        assertEquals(108, GeneralConfig.getMaxSlots());
     }
 
     @Test

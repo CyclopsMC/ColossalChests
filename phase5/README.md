@@ -24,7 +24,6 @@ clientdevbridge batch <path-to>/phase5/phase5-4-fabric.txt
 | `phase5-slot-expansion.png` | After swapping Lock for Slot Expansion: the GUI reopened with 54 slots, locks cleared, the remaining upgrade still on the cursor |
 | `phase5-upgrade-item-tooltip.png` | The upgrade item tooltip: its effect, and shift for info |
 | `phase5-settings-locks.png` | Lock all and Clear locks enabled with the Lock upgrade |
-| `phase5-81-slots.png` | Two Slot Expansions: 81 slots in 18 columns |
 | `phase5-fabric-depth-installed.png` | The upgrade column and Depth on Fabric |
 
 Gaps:
@@ -39,3 +38,11 @@ Why an upgrade does not go in (`phase5-5-insert-reasons.txt` in a fresh world):
 | `phase5-upgrade-item-refused.png` | A second Depth upgrade in the inventory: why it does not fit, and that a better material takes more |
 | `phase5-upgrade-item-takes.png` | The Lock upgrade: this chest takes 1 more |
 | `phase5-carried-upgrade-refused.png` | Holding the refused Depth upgrade over the free slot |
+
+Layouts (`phase5-6-layouts.txt` in a fresh world, with `maxSlots = 108` in the run config):
+
+| Screenshot | Shows |
+|---|---|
+| `phase5-layout-27.png` | Panel and upgrade column corners cut from the vanilla chest texture |
+| `phase5-layout-81.png` | Two Slot Expansions: the half last row centered, in line with the player inventory |
+| `phase5-layout-108.png` | Three Slot Expansions on an iron chest: 108 slots in 18 by 6 |

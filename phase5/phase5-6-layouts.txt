@@ -1,0 +1,24 @@
+# Fresh world. An iron 3x3 with 0, 2 and 3 Slot Expansions: vanilla panel corners, the centered last row at 81, and 108 slots.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 10
+eval "server.execute { def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(dev.item('minecraft:stone'), 300, false); s.insert(dev.item('minecraft:diamond'), 3, false) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 400,10
+screenshot --name phase5-layout-27
+close-screen
+eval "server.execute { def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.getUpgrades().setItem(0, dev.item('colossalchests2:upgrade_slot_expansion')); be.getUpgrades().setItem(1, dev.item('colossalchests2:upgrade_slot_expansion')) }"
+wait --ticks 5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 400,10
+screenshot --name phase5-layout-81
+close-screen
+eval "server.execute { def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.getUpgrades().setItem(2, dev.item('colossalchests2:upgrade_slot_expansion')) }"
+wait --ticks 5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 400,10
+screenshot --name phase5-layout-108

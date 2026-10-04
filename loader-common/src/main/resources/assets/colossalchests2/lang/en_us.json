@@ -66,7 +66,7 @@
   "gui.colossalchests2.void_all.info": "Mark every slot that holds items as voiding.",
   "gui.colossalchests2.clear_voids.info": "Unmark all voiding slots.",
   "gui.colossalchests2.requires_void_upgrade": "Requires the Void upgrade.",
-  "gui.colossalchests2.compression.scroll": "Scroll to pick what to take",
+  "gui.colossalchests2.compression.scroll": "Scroll to select form",
   "gui.colossalchests2.slot_locked": "Locked: only takes this item. Alt-click to unlock.",
   "gui.colossalchests2.lock_all.info": "Lock every slot that holds items.",
   "gui.colossalchests2.clear_locks.info": "Unlock all slots. Contents are not modified.",

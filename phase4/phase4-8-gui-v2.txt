@@ -1,0 +1,31 @@
+# Fresh world. The reworked GUI: creative-style search that dims non-matching slots, the settings tab, the slot and
+# capacity info, and dragging a stack over chest slots.
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+wait --ticks 10
+eval "server.execute { def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(dev.item('minecraft:stone'), 1234, false); s.insert(dev.item('minecraft:dirt'), 64, false); s.insert(dev.item('minecraft:diamond'), 3, false); s.insert(dev.item('minecraft:ender_pearl'), 100, false); s.insert(dev.item('minecraft:oak_log'), 2048, false); s.insert(dev.item('minecraft:diamond_sword'), 1, false) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+screenshot --name phase4-v2-gui
+set-text Search "log"
+wait --ticks 3
+screenshot --name phase4-v2-search
+set-text Search ""
+# Hover the capacity info for its tooltip.
+mouse-move 160,193
+wait --ticks 3
+screenshot --name phase4-v2-capacity-tooltip
+# Right-drag 64 dirt over 5 empty slots, then left-drag over 3.
+click --at 177,69 --button 0
+wait --ticks 3
+drag --from 133,87 --to 205,87 --button 1 --steps 16
+wait --ticks 5
+eval "[player.containerMenu.getCarried().getCount(), (0..26).collect { player.containerMenu.getChestSlot(it).getCount() }]"
+drag --from 133,105 --to 169,105 --button 0 --steps 16
+wait --ticks 5
+eval "[player.containerMenu.getCarried().getCount(), (0..26).collect { player.containerMenu.getChestSlot(it).getCount() }]"
+screenshot --name phase4-v2-dragged
+click --at 310,45 --button 0
+wait --ticks 3
+screenshot --name phase4-v2-settings

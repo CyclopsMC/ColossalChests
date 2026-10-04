@@ -39,3 +39,13 @@ Follow-up checks (`phase4-0-lid-compare.txt` in a fresh world, then `phase4-7-bu
 | `phase4-marker-on-lock.png` | The core marker drawn on the front of the closed lock while sneaking |
 
 `phase4-7-build.txt` places a wall against an unformed wall (it is placed instead of showing the diagnosis), and opens a formed chest with a block in hand.
+
+GUI rework (`phase4-8-gui-v2.txt`, fresh world). The earlier search, sort and settings screenshots show the first version.
+
+| Screenshot | Shows |
+|---|---|
+| `phase4-v2-gui.png` | Creative-style search field, the settings tab on the right, and the slot count and items per slot instead of the inventory label |
+| `phase4-v2-search.png` | Searching "log" dims the other slots; nothing moves |
+| `phase4-v2-capacity-tooltip.png` | The items per slot tooltip |
+| `phase4-v2-dragged.png` | Right-dragging 64 dirt over 5 slots puts 1 in each, left-dragging the remaining 59 over 3 slots puts 19 in each |
+| `phase4-v2-settings.png` | The open settings tab |

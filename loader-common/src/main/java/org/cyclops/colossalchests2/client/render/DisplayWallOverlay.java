@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -12,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
@@ -21,7 +23,6 @@ import org.cyclops.colossalchests2.storage.DisplayStats;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.cyclopscore.helper.IModHelpers;
-import org.joml.Matrix3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +36,10 @@ public class DisplayWallOverlay implements IChestOverlay {
 
     private static final ResourceLocation PANEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/display_panel");
     private static final ResourceLocation BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/display_bar");
-    private static final ResourceLocation NEUTRAL_FRAME_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_wall_iron");
     private static final int COLOR_TEXT = 0xFFFFFF;
     private static final int COLOR_BAR_BACKGROUND = 0xFF101010;
     private static final int COLOR_BAR = 0xFF40C040;
     private static final int COLOR_BAR_FULL = 0xFFD04030;
-    private static final float PANEL_MIN = 1F / 16F;
     private static final float PANEL_MAX = 15F / 16F;
     private static final float BAR_X0 = 3F / 16F;
     private static final float BAR_X1 = 13F / 16F;
@@ -52,15 +51,6 @@ public class DisplayWallOverlay implements IChestOverlay {
     private static final float ITEM_SIZE = 7.5F / 16F;
     private static final float INDICATOR_SIZE = 2.5F / 16F;
     private static final float LAYER = 0.0005F;
-
-    /**
-     * Temporary switches to compare looks in-game. 0: material frame, 1: neutral frame, 2: no frame.
-     */
-    public static int frameStyle = 0;
-    /**
-     * 0: flat inventory icon, 1: inventory icon shaded by the world, 2: item frame style.
-     */
-    public static int itemStyle = 1;
 
     @Override
     public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
@@ -91,36 +81,30 @@ public class DisplayWallOverlay implements IChestOverlay {
 
     private void renderPanel(BlockEntityChestCore core, TextureAtlas atlas, PoseStack poseStack, MultiBufferSource buffers,
                              int light, int overlay) {
-        if (frameStyle != 2) {
-            ResourceLocation frame = frameStyle == 0 && core.getBlockState().getBlock() instanceof BlockChestCore block
-                    ? ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_wall_" + block.getMaterial().getName())
-                    : NEUTRAL_FRAME_TEXTURE;
+        // A frame of the chest's material, so the panel looks built into it.
+        if (core.getBlockState().getBlock() instanceof BlockChestCore block) {
+            ResourceLocation frame = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_wall_" + block.getMaterial().getName());
             ChestOverlayHelpers.renderSprite(poseStack, buffers, atlas.getSprite(frame), 0, 0, 1, 1, light, overlay);
             poseStack.translate(0, 0, LAYER);
         }
         // The panel texture has a transparent rim, so the frame shows around it.
-        float inset = frameStyle == 2 ? PANEL_MIN : 0;
-        ChestOverlayHelpers.renderSprite(poseStack, buffers, atlas.getSprite(PANEL_TEXTURE), inset, inset, 1 - inset, 1 - inset, light, overlay);
+        ChestOverlayHelpers.renderSprite(poseStack, buffers, atlas.getSprite(PANEL_TEXTURE), 0, 0, 1, 1, light, overlay);
     }
 
     private void renderDisplayedItem(PoseStack poseStack, MultiBufferSource buffers, Level level, ItemStack stack, int light) {
+        BakedModel model = Minecraft.getInstance().getItemRenderer().getModel(stack, level, null, 0);
         poseStack.pushPose();
         poseStack.translate(0.5F, ITEM_Y, 0);
-        if (itemStyle == 2) {
-            // Like an item frame: blocks show their front face with some depth.
+        if (GeneralConfig.displayItemFrameStyle && model.isGui3d()) {
+            // Like an item frame: blocks show their front face, with some depth.
             poseStack.scale(ITEM_SIZE * 1.6F, ITEM_SIZE * 1.6F, ITEM_SIZE * 0.4F);
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, light,
-                    OverlayTexture.NO_OVERLAY, poseStack, buffers, level, 0);
+            Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.FIXED, false, poseStack, buffers, light,
+                    OverlayTexture.NO_OVERLAY, model);
         } else {
-            Matrix3f normal = new Matrix3f(poseStack.last().normal());
-            // Flatten towards the face, so blocks look like their inventory icon without sticking out.
+            // Like drawers: the inventory icon, flattened towards the face so blocks do not stick out.
             poseStack.scale(ITEM_SIZE, ITEM_SIZE, 0.001F);
-            if (itemStyle == 1) {
-                // Keep the normals of the unflattened icon, so its faces are shaded like a block in the world.
-                poseStack.last().normal().set(normal);
-            }
-            Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.GUI, light,
-                    OverlayTexture.NO_OVERLAY, poseStack, buffers, level, 0);
+            Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.GUI, false, poseStack, buffers, light,
+                    OverlayTexture.NO_OVERLAY, model);
         }
         poseStack.popPose();
     }

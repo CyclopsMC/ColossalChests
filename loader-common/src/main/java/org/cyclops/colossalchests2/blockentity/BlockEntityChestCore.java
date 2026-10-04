@@ -13,10 +13,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,6 +36,8 @@ import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
+import org.cyclops.colossalchests2.inventory.ChestSettings;
+import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestShape;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -39,6 +46,7 @@ import org.cyclops.colossalchests2.multiblock.StructureDetector;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.ResizeResult;
+import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -51,7 +59,7 @@ import java.util.Set;
  * While the structure is broken the core is dormant: contents stay, but its item storage is not exposed.
  * @author rubensworks
  */
-public class BlockEntityChestCore extends BlockEntity {
+public class BlockEntityChestCore extends BlockEntity implements MenuProvider {
 
     public static final int DATA_VERSION = 1;
     /**
@@ -71,6 +79,7 @@ public class BlockEntityChestCore extends BlockEntity {
     private ChestStructure structure;
     private int lastSize;
     private List<BlockPos> decoratedPositions = List.of();
+    private ChestSettings settings = ChestSettings.DEFAULT;
     private boolean registered;
     private boolean validationRequested = true;
     private int validationCooldown;
@@ -160,6 +169,61 @@ public class BlockEntityChestCore extends BlockEntity {
         return isFormed() ? StorageSignals.getComparatorSignal(storage) : 0;
     }
 
+    public ChestSettings getSettings() {
+        return settings;
+    }
+
+    /**
+     * Change the GUI settings, and show them to everyone viewing the chest.
+     */
+    public void setSettings(ChestSettings settings) {
+        this.settings = settings;
+        setChanged();
+        for (ServerPlayer viewer : viewers) {
+            if (viewer.containerMenu instanceof ContainerChest menu && menu.isFor(this)) {
+                menu.onSettingsChanged(settings);
+            }
+        }
+    }
+
+    /**
+     * Open the chest GUI, which only works while formed.
+     */
+    public void openMenu(ServerPlayer player) {
+        if (isFormed()) {
+            IModHelpers.get().getMinecraftHelpers().openMenu(player, this, data -> ContainerChest.writeOpenData(data, this));
+        }
+    }
+
+    /**
+     * Tell a player opening the chest that some slots hold more than they can, so they only allow extraction.
+     * This happens after re-forming smaller or lowering config values.
+     */
+    public void warnIfOverCapacity(ServerPlayer player) {
+        int overCapacity = 0;
+        for (int slot = 0; slot < storage.getSlotCount(); slot++) {
+            if (storage.isExtractOnly(slot)) {
+                overCapacity++;
+            }
+        }
+        if (overCapacity > 0) {
+            player.sendSystemMessage(Component.translatable("chest.colossalchests2.over_capacity", overCapacity));
+        }
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return getBlockState().getBlock() instanceof BlockChestCore block
+                ? Component.translatable("container.colossalchests2.chest", Component.translatable("material.colossalchests2." + block.getMaterial().getName()))
+                : Component.translatable("container.colossalchests2.chest", "");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return isFormed() ? new ContainerChest(containerId, inventory, this) : null;
+    }
+
     /**
      * Revalidate the structure on the next tick. Cheap to call often, validation happens at most once per tick.
      */
@@ -233,7 +297,11 @@ public class BlockEntityChestCore extends BlockEntity {
      * @param slots Changed slot indexes.
      */
     protected void onDirtySlots(int[] slots) {
-        // The chest menu sends these to its viewers.
+        for (ServerPlayer viewer : viewers) {
+            if (viewer.containerMenu instanceof ContainerChest menu && menu.isFor(this)) {
+                menu.markSlotsDirty(slots);
+            }
+        }
     }
 
     protected void validate() {
@@ -388,6 +456,7 @@ public class BlockEntityChestCore extends BlockEntity {
         tag.putInt("data_version", DATA_VERSION);
         tag.put("storage", ChestStorage.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), storage.toContents()).getOrThrow());
         saveStructure(tag);
+        tag.put("settings", ChestSettings.CODEC.encodeStart(NbtOps.INSTANCE, settings).getOrThrow());
     }
 
     private void saveStructure(CompoundTag tag) {
@@ -427,6 +496,9 @@ public class BlockEntityChestCore extends BlockEntity {
                 ? BlockPos.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("decorated")).result().map(ImmutableList::copyOf).orElse(ImmutableList.of())
                 : List.of();
         lastSize = tag.getInt("last_size");
+        if (tag.contains("settings")) {
+            settings = ChestSettings.CODEC.parse(NbtOps.INSTANCE, tag.get("settings")).result().orElse(ChestSettings.DEFAULT);
+        }
         applyProfile(true);
     }
 
@@ -437,11 +509,15 @@ public class BlockEntityChestCore extends BlockEntity {
         if (!contents.entries().isEmpty()) {
             components.set(RegistryEntries.COMPONENT_CHEST_CONTENTS.value(), contents);
         }
+        if (!settings.equals(ChestSettings.DEFAULT)) {
+            components.set(RegistryEntries.COMPONENT_CHEST_SETTINGS.value(), settings);
+        }
     }
 
     @Override
     protected void applyImplicitComponents(DataComponentInput input) {
         super.applyImplicitComponents(input);
+        settings = input.getOrDefault(RegistryEntries.COMPONENT_CHEST_SETTINGS.value(), ChestSettings.DEFAULT);
         ChestStorage.Contents contents = input.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value());
         if (contents != null) {
             storage.loadContents(contents);
@@ -453,5 +529,6 @@ public class BlockEntityChestCore extends BlockEntity {
     public void removeComponentsFromTag(CompoundTag tag) {
         super.removeComponentsFromTag(tag);
         tag.remove("storage");
+        tag.remove("settings");
     }
 }

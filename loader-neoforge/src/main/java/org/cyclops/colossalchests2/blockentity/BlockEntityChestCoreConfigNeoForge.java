@@ -12,6 +12,7 @@ import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.capability.ItemHandlerChestStorage;
 import org.cyclops.colossalchests2.client.render.RenderChestCoreNeoForge;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
+import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.cyclopscore.init.ModBase;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +26,7 @@ public class BlockEntityChestCoreConfigNeoForge<M extends ModBase<?>> extends Bl
         super(mod, BlockEntityChestCore::new);
         mod.getModEventBus().addListener(this::registerCapabilities);
         BlockEntityChestCore.capabilityInvalidator = Level::invalidateCapabilities;
+        ChestNetwork.canReceive = (player, packet) -> player.connection.hasChannel(packet);
     }
 
     @Override

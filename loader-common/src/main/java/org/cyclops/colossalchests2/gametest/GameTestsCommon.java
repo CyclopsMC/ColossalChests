@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -24,20 +25,29 @@ import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
+import org.cyclops.colossalchests2.block.ChestInteractions;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.capability.LoaderCapabilities;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.inventory.ChestClickAction;
+import org.cyclops.colossalchests2.inventory.ChestSettings;
+import org.cyclops.colossalchests2.inventory.ChestSortMode;
+import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
+import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -415,6 +425,209 @@ public class GameTestsCommon {
     private static void tickLid(GameTestHelper helper, BlockPos corePos) {
         BlockEntityChestCore core = getCore(helper, corePos);
         BlockEntityChestCore.clientTick(helper.getLevel(), core.getBlockPos(), core.getBlockState(), core);
+    }
+
+    // GUI
+
+    private static ServerPlayer makeViewer(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos near = helper.absolutePos(MIN_A.offset(1, 0, -2));
+        player.moveTo(near.getX() + 0.5, near.getY(), near.getZ() + 0.5);
+        return player;
+    }
+
+    private static void use(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
+        BlockPos absolute = helper.absolutePos(pos);
+        helper.getLevel().getBlockState(absolute).useWithoutItem(helper.getLevel(), player,
+                new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false));
+    }
+
+    /**
+     * Open the menu like a click on the given member does. The menu is created directly, as NeoForge refuses
+     * to send the open packet to mock players.
+     */
+    private static ContainerChest openChest(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
+        BlockPos absolute = helper.absolutePos(pos);
+        BlockEntityChestCore core = ChestInteractions.findFormedCore(helper.getLevel().getBlockState(absolute), helper.getLevel(), absolute)
+                .orElseThrow(() -> new GameTestAssertException("Expected a formed chest to open from " + pos));
+        ContainerChest menu = new ContainerChest(100, player.getInventory(), core);
+        player.containerMenu = menu;
+        return menu;
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuOpensFromEveryMember(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    for (BlockPos pos : new ChestStructure(MIN_A, 3).shell()) {
+                        ContainerChest menu = openChest(helper, player, pos);
+                        helper.assertValueEqual(menu.getCorePos(), helper.absolutePos(corePos), "core of the menu opened from " + pos);
+                        helper.assertTrue(getCore(helper, corePos).getViewers().contains(player), "Expected the player to view the chest");
+                        player.closeContainer();
+                        helper.assertTrue(getCore(helper, corePos).getViewers().isEmpty(), "Expected closing to remove the viewer");
+                    }
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuDoesNotOpenWhenDormant(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> helper.setBlock(MIN_A.offset(0, 1, 1), Blocks.AIR))
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    use(helper, player, MIN_A);
+                    use(helper, player, corePos);
+                    helper.assertFalse(player.containerMenu instanceof ContainerChest, "Expected no menu for a dormant chest");
+                    StructureDiagnosis.Result result = ChestInteractions.explain(player, helper.getLevel(), helper.absolutePos(MIN_A));
+                    helper.assertValueEqual(result.getProblem(), StructureDiagnosis.Problem.BLOCKS, "diagnosed problem");
+                    helper.assertValueEqual(result.missing(), List.of(helper.absolutePos(MIN_A.offset(0, 1, 1))), "missing walls");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuClickRules(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    player.getInventory().clearContent();
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    storage.insert(0, STONE, 1000, false);
+                    ContainerChest menu = openChest(helper, player, corePos);
+
+                    menu.handleChestClick(player, 0, ChestClickAction.TAKE_STACK);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 64, "cursor after left click");
+                    helper.assertValueEqual(storage.getSlot(0).getCount(), 936L, "count after left click");
+                    menu.handleChestClick(player, 0, ChestClickAction.TAKE_STACK);
+                    helper.assertTrue(menu.getCarried().isEmpty(), "Expected the cursor to go back in");
+                    menu.handleChestClick(player, 0, ChestClickAction.TAKE_HALF);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 32, "cursor after right click");
+                    menu.setCarried(ItemStack.EMPTY);
+                    menu.handleChestClick(player, 0, ChestClickAction.MOVE_STACK);
+                    helper.assertValueEqual(player.getInventory().countItem(Items.STONE), 64, "stone in inventory after shift click");
+                    // The remaining 904 fit in the other 35 inventory slots.
+                    menu.handleChestClick(player, 0, ChestClickAction.MOVE_ALL);
+                    helper.assertValueEqual(player.getInventory().countItem(Items.STONE), 968, "stone in inventory after ctrl click");
+                    helper.assertTrue(storage.getSlot(0).isEmpty(), "Expected ctrl click to empty the slot");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuShiftClickFromPlayerInventory(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makeViewer(helper);
+                    player.getInventory().clearContent();
+                    player.getInventory().setItem(0, new ItemStack(Items.DIRT, 32));
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    // Menu slots 27 to 35 are the hotbar.
+                    menu.quickMoveStack(player, 27);
+                    helper.assertTrue(player.getInventory().getItem(0).isEmpty(), "Expected the hotbar slot to be emptied");
+                    helper.assertValueEqual(getCore(helper, corePos).getStorage().getSlot(0).getCount(), 32L, "dirt in the chest");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuViewersSeeChanges(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        ServerPlayer[] players = new ServerPlayer[2];
+        ContainerChest[] menus = new ContainerChest[2];
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    for (int i = 0; i < 2; i++) {
+                        players[i] = makeViewer(helper);
+                        menus[i] = openChest(helper, players[i], corePos);
+                    }
+                    getCore(helper, corePos).getStorage().insert(4, STONE, 100, false);
+                })
+                // The core hands changed slots to open menus on its tick, the menus send them on broadcast.
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    for (int i = 0; i < 2; i++) {
+                        menus[i].broadcastChanges();
+                        helper.assertValueEqual(menus[i].getChestSlot(4).getCount(), 100L, "count synced to viewer " + i);
+                    }
+                    for (ServerPlayer player : players) {
+                        player.closeContainer();
+                    }
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuSearchAndSortOnServer(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    storage.insert(0, STONE, 5, false);
+                    storage.insert(1, new ItemStack(Items.DIRT), 50, false);
+                    storage.insert(2, new ItemStack(Items.STONE_BRICKS), 500, false);
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.handleSettings("stone", ChestSettings.DEFAULT.withSortMode(ChestSortMode.COUNT));
+                    menu.broadcastChanges();
+                    helper.assertTrue(Arrays.equals(menu.getView(), new int[]{2, 0}), "Expected stone slots by count, got " + Arrays.toString(menu.getView()));
+                    helper.assertValueEqual(getCore(helper, corePos).getSettings().sortMode(), ChestSortMode.COUNT, "sticky sort mode");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuClosesWhenDormant(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        ServerPlayer[] player = new ServerPlayer[1];
+        ContainerChest[] menu = new ContainerChest[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    player[0] = makeViewer(helper);
+                    menu[0] = openChest(helper, player[0], corePos);
+                    helper.assertTrue(menu[0].stillValid(player[0]), "Expected a valid menu");
+                    helper.setBlock(MIN_A.offset(0, 1, 1), Blocks.AIR);
+                })
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
+                .thenExecute(() -> {
+                    helper.assertFalse(menu[0].stillValid(player[0]), "Expected the menu to close on a dormant chest");
+                    player[0].closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testSettingsTravelWithCore(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos newCorePos = buildWalls(helper, MIN_B, 3, ChestMaterial.WOOD, new BlockPos(1, 1, 0), Set.of());
+        ChestSettings settings = ChestSettings.DEFAULT.withSortMode(ChestSortMode.MOD).withShowCounts(false);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    getCore(helper, corePos).setSettings(settings);
+                    ItemStack dropped = breakCoreAndPickUp(helper, corePos);
+                    helper.assertValueEqual(dropped.get(RegistryEntries.COMPONENT_CHEST_SETTINGS.value()), settings, "settings on the item");
+                    placeCore(helper, dropped, newCorePos);
+                })
+                .thenWaitUntil(() -> assertFormed(helper, newCorePos, MIN_B, 3))
+                .thenExecute(() -> helper.assertValueEqual(getCore(helper, newCorePos).getSettings(), settings, "restored settings"))
+                .thenSucceed();
     }
 
     // Persistence

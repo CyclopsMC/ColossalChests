@@ -10,6 +10,8 @@ import org.cyclops.colossalchests2.block.BlockChestWallConfig;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
+import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
+import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.config.ChestTablesReloadListenerFabric;
 import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
 import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
@@ -65,6 +67,8 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         configHandler.addConfigurable(new GeneralConfig<>(this));
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
+        configHandler.addConfigurable(new DataComponentChestSettingsConfig<>(this));
+        configHandler.addConfigurable(new ContainerChestConfig<>(this));
         for (ChestMaterial material : ChestMaterial.VALUES) {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));

@@ -86,3 +86,4 @@ Lid seam and slot info (`phase4-15-seam-repro.txt` and `phase4-14-full-slots.txt
 | `seam-fixed-netherite-front.png`, `seam-fixed-angle.png`, `seam-fixed-iron-wood.png` | After copying row 42 into row 14 for every material |
 | `phase4-slots-full-tooltip.png` | The slots tooltip with the number of full slots |
 | `phase4-search-no-tooltip.png` | No tooltip on the search field |
+| `phase4-capacity-label.png`, `phase4-capacity-tooltip.png` (`phase4-16-capacity.txt`) | "16 stacks per slot", with items per slot by stack size in the tooltip |

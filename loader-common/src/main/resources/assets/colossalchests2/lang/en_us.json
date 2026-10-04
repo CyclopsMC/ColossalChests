@@ -35,7 +35,7 @@
   "gui.colossalchests2.over_capacity": "%s slots are over capacity: take items out until they fit",
   "gui.colossalchests2.count": "%s of %s",
   "gui.colossalchests2.slot_over_capacity": "Over capacity: take items out until it fits again.",
-  "chest.colossalchests2.over_capacity": "Over capacity slots: %s. They hold more than they can, so they only allow taking items out. This happens after re-forming a chest smaller or lowering capacity settings.",
+  "chest.colossalchests2.over_capacity": "Over capacity slots: %s. They hold more than they can, so they are extract-only. This happens after re-forming a chest or lowering capacity settings.",
   "chest.colossalchests2.diagnosis.none": "This chest has no problems, it should form shortly.",
   "chest.colossalchests2.diagnosis.no_core": "Not formed: no chest core. Replace one wall with a core of the same material.",
   "chest.colossalchests2.diagnosis.multiple_cores": "Not formed: a chest needs exactly one core, found %s (highlighted).",

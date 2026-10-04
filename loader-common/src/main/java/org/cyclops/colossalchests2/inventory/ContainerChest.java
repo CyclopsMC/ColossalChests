@@ -140,6 +140,31 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     /**
+     * @param slot A chest slot.
+     * @param type An item type.
+     * @return If the type may go into the slot as last synced, ignoring how full it is.
+     */
+    public boolean canChestSlotAccept(int slot, ItemStack type) {
+        DeepSlot deepSlot = chestSlots[slot];
+        return !type.isEmpty() && (deepSlot.isEmpty() || deepSlot.matches(type));
+    }
+
+    /**
+     * @param slot A chest slot.
+     * @param type An item type.
+     * @return How much of the type fits in the slot as last synced.
+     */
+    public long getChestSlotSpace(int slot, ItemStack type) {
+        if (!canChestSlotAccept(slot, type)) {
+            return 0;
+        }
+        DeepSlot deepSlot = chestSlots[slot];
+        // An empty slot's synced capacity is for full stacks, so scale it down for smaller stacks.
+        long capacity = deepSlot.isEmpty() ? Math.min(depth * type.getMaxStackSize(), capacities[slot]) : capacities[slot];
+        return Math.max(0, capacity - deepSlot.getCount());
+    }
+
+    /**
      * @return Stacks per slot.
      */
     public long getDepth() {

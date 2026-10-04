@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.client.gui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
+import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestLayout;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
@@ -23,10 +25,13 @@ import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
+import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -48,6 +53,9 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_SEARCH_MISS = 0xC0303030;
     private static final int COLOR_SEARCH_HIT = 0xFFFFD83D;
     private static final int COLOR_TEXT = 0xFF404040;
+    private static final int COLOR_DRAG_PREVIEW = 0x80FFFFFF;
+    private static final int COLOR_COUNT = 0xFFFFFF;
+    private static final int COLOR_COUNT_CAPPED = 0xFFFF55;
     private static final int COLOR_WARNING = 0xFFAA0000;
     private static final int SETTINGS_WIDTH = 16;
     private static final int SETTINGS_HEIGHT = 15;
@@ -62,7 +70,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
     // Dragging the cursor stack over chest slots spreads it, like over vanilla slots.
     private int dragButton = -1;
+    private int dragStartSlot = -1;
     private final Set<Integer> draggedSlots = Sets.newLinkedHashSet();
+    @Nullable
+    private DragPreview dragPreview;
 
     public ContainerScreenChest(ContainerChest menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -149,9 +160,20 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                 Component.translatable(value ? "options.on" : "options.off"));
     }
 
+    private record DragPreview(ItemStack cursor, ItemStack remainder, Map<Integer, Long> added, Set<Integer> capped) {
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // Like vanilla, the cursor shows what a drag would leave on it.
+        dragPreview = getDragPreview();
+        if (dragPreview != null) {
+            menu.setCarried(dragPreview.remainder());
+        }
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        if (dragPreview != null) {
+            menu.setCarried(dragPreview.cursor());
+        }
         renderChestTooltip(guiGraphics, mouseX, mouseY);
         renderInfoTooltip(guiGraphics, mouseX, mouseY);
         renderTooltip(guiGraphics, mouseX, mouseY);
@@ -174,10 +196,16 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             int y = topPos + layout.getSlotY(slot);
             drawSlot(guiGraphics, x, y);
             DeepSlot deepSlot = menu.getChestSlot(slot);
-            if (!deepSlot.isEmpty()) {
+            if (dragPreview != null && dragPreview.added().containsKey(slot)) {
+                // What the slot would hold when releasing the drag now, yellow when full.
+                guiGraphics.fill(x, y, x + 16, y + 16, COLOR_DRAG_PREVIEW);
+                guiGraphics.renderItem(dragPreview.cursor(), x, y);
+                drawCount(guiGraphics, deepSlot.getCount() + dragPreview.added().get(slot), x, y,
+                        dragPreview.capped().contains(slot) ? COLOR_COUNT_CAPPED : COLOR_COUNT);
+            } else if (!deepSlot.isEmpty()) {
                 guiGraphics.renderItem(deepSlot.getPrototype(), x, y);
                 if (deepSlot.getCount() > 0) {
-                    drawCount(guiGraphics, deepSlot.getCount(), x, y);
+                    drawCount(guiGraphics, deepSlot.getCount(), x, y, COLOR_COUNT);
                 }
             }
             if (menu.isChestSlotOverCapacity(slot)) {
@@ -189,20 +217,20 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             } else if (!query.isBlank()) {
                 drawSearchHit(guiGraphics, x, y);
             }
-            if (slot == hovered || draggedSlots.contains(slot)) {
+            if (slot == hovered) {
                 renderSlotHighlight(guiGraphics, x, y, 0);
             }
         }
     }
 
-    private void drawCount(GuiGraphics guiGraphics, long count, int x, int y) {
+    private void drawCount(GuiGraphics guiGraphics, long count, int x, int y, int color) {
         String text = IModHelpers.get().getGuiHelpers().quantityToScaledString(count);
         float scale = 0.5F;
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, 0, 300);
         IModHelpers.get().getRenderHelpers().drawScaledString(guiGraphics, font, text,
                 x + 16 - Math.round(font.width(text) * scale), y + 16 - Math.round(font.lineHeight * scale) + 1,
-                scale, 0xFFFFFF, true, Font.DisplayMode.NORMAL);
+                scale, color, true, Font.DisplayMode.NORMAL);
         guiGraphics.pose().popPose();
     }
 
@@ -386,8 +414,11 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         if ((left || right) && !menu.getCarried().isEmpty() && !hasShiftDown() && !hasControlDown()) {
             // With a stack on the cursor, the release decides between a click and a drag.
             dragButton = button;
+            dragStartSlot = slot;
             draggedSlots.clear();
-            draggedSlots.add(slot);
+            if (menu.canChestSlotAccept(slot, menu.getCarried())) {
+                draggedSlots.add(slot);
+            }
         } else if (left || right) {
             ChestClickAction action;
             if (right) {
@@ -410,7 +441,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         if (dragButton >= 0 && button == dragButton) {
             int slot = getHoveredSlot(mouseX, mouseY);
             // Like vanilla, never drag over more slots than there are items.
-            if (slot >= 0 && draggedSlots.size() < menu.getCarried().getCount()) {
+            if (slot >= 0 && draggedSlots.size() < menu.getCarried().getCount()
+                    && menu.canChestSlotAccept(slot, menu.getCarried())) {
                 draggedSlots.add(slot);
             }
             return true;
@@ -418,12 +450,36 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
+    /**
+     * @return What releasing the drag now would do, or null if not dragging over several slots.
+     */
+    @Nullable
+    private DragPreview getDragPreview() {
+        ItemStack cursor = menu.getCarried();
+        if (dragButton < 0 || draggedSlots.size() < 2 || cursor.isEmpty()) {
+            return null;
+        }
+        Map<Integer, Long> added = Maps.newHashMap();
+        Set<Integer> capped = Sets.newHashSet();
+        int[] slots = draggedSlots.stream().mapToInt(Integer::intValue).toArray();
+        ItemStack remainder = ChestClickLogic.drag(slots, dragButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT, cursor, (slot, amount) -> {
+            long inserted = Math.min(amount, menu.getChestSlotSpace(slot, cursor));
+            added.put(slot, inserted);
+            if (inserted < amount) {
+                capped.add(slot);
+            }
+            return inserted;
+        });
+        return new DragPreview(cursor, remainder, added, capped);
+    }
+
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (dragButton >= 0 && button == dragButton) {
             boolean oneEach = dragButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
-            if (draggedSlots.size() == 1) {
-                sendClick(draggedSlots.iterator().next(), oneEach ? ChestClickAction.TAKE_HALF : ChestClickAction.TAKE_STACK);
+            if (draggedSlots.size() < 2) {
+                int slot = draggedSlots.isEmpty() ? dragStartSlot : draggedSlots.iterator().next();
+                sendClick(slot, oneEach ? ChestClickAction.TAKE_HALF : ChestClickAction.TAKE_STACK);
             } else {
                 ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundChestDragPacket(menu.containerId,
                         draggedSlots.stream().mapToInt(Integer::intValue).toArray(), oneEach));

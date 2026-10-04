@@ -50,6 +50,18 @@ public final class ChestClickLogic {
      * @return The new cursor stack.
      */
     public static ItemStack drag(ChestStorage storage, int[] slots, boolean oneEach, ItemStack cursor) {
+        return drag(slots, oneEach, cursor, (slot, amount) -> storage.insert(slot, cursor, amount, false));
+    }
+
+    /**
+     * {@link #drag(ChestStorage, int[], boolean, ItemStack)} through an inserter, so the GUI can preview a drag.
+     * @param slots The dragged slots, in drag order.
+     * @param oneEach If each slot gets one item, otherwise the cursor is split evenly.
+     * @param cursor The stack on the cursor, not modified.
+     * @param inserter Inserts into a slot and returns how much went in.
+     * @return The new cursor stack.
+     */
+    public static ItemStack drag(int[] slots, boolean oneEach, ItemStack cursor, Inserter inserter) {
         if (cursor.isEmpty() || slots.length == 0) {
             return cursor;
         }
@@ -59,9 +71,14 @@ public final class ChestClickLogic {
             if (remaining <= 0) {
                 break;
             }
-            remaining -= (int) storage.insert(slot, cursor, Math.min(perSlot, remaining), false);
+            remaining -= (int) inserter.insert(slot, Math.min(perSlot, remaining));
         }
         return cursor.copyWithCount(remaining);
+    }
+
+    @FunctionalInterface
+    public interface Inserter {
+        long insert(int slot, int amount);
     }
 
     private static int maxStack(DeepSlot deepSlot) {

@@ -44,6 +44,7 @@ import org.cyclops.colossalchests2.capability.LoaderCapabilities;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
+import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
@@ -625,6 +626,51 @@ public class GameTestsCommon {
                     menu.handleChestDrag(new int[]{3, 3, 4, -1, 999}, true);
                     helper.assertValueEqual(menu.getCarried().getCount(), 8, "cursor after a one-each drag");
                     helper.assertValueEqual(storage.getSlot(4).getCount(), 1L, "count after a one-each drag");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMenuDragPreviewMatchesDrag(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    ItemStack pearl = new ItemStack(Items.ENDER_PEARL);
+                    storage.insert(1, STONE, storage.getCapacity(STONE) - 2, false);
+                    storage.insert(2, pearl, 1, false);
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    menu.broadcastChanges();
+                    // The space the GUI sees equals what the storage would accept.
+                    for (ItemStack type : List.of(STONE, pearl)) {
+                        for (int slot = 0; slot < 4; slot++) {
+                            helper.assertValueEqual(menu.getChestSlotSpace(slot, type), storage.insert(slot, type, Long.MAX_VALUE, true),
+                                    "space for " + type + " in slot " + slot);
+                        }
+                    }
+                    // The preview predicts the drag, including the slot that fills up.
+                    int[] slots = {0, 1, 2, 3};
+                    ItemStack cursor = STONE.copyWithCount(20);
+                    long[] predicted = new long[4];
+                    ItemStack predictedCursor = ChestClickLogic.drag(slots, false, cursor, (slot, amount) -> {
+                        predicted[slot] = Math.min(amount, menu.getChestSlotSpace(slot, cursor));
+                        return predicted[slot];
+                    });
+                    long[] before = new long[4];
+                    for (int slot = 0; slot < 4; slot++) {
+                        before[slot] = storage.getSlot(slot).getCount();
+                    }
+                    menu.setCarried(cursor);
+                    menu.handleChestDrag(slots, false);
+                    helper.assertValueEqual(menu.getCarried().getCount(), predictedCursor.getCount(), "cursor after the drag");
+                    for (int slot = 0; slot < 4; slot++) {
+                        helper.assertValueEqual(storage.getSlot(slot).getCount() - before[slot], predicted[slot], "added to slot " + slot);
+                    }
+                    helper.assertValueEqual(predicted[1], 2L, "the nearly full slot is capped");
+                    helper.assertValueEqual(predicted[2], 0L, "the pearl slot is skipped");
                     player.closeContainer();
                 })
                 .thenSucceed();

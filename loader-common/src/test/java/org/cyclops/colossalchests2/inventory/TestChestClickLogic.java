@@ -181,6 +181,17 @@ public class TestChestClickLogic extends BootstrapTest {
     }
 
     @Test
+    public void testDragThroughInserterKeepsWhatDoesNotFit() {
+        long[] added = new long[3];
+        ItemStack cursor = ChestClickLogic.drag(new int[]{0, 1, 2}, false, STONE.copyWithCount(9), (slot, amount) -> {
+            added[slot] = slot == 1 ? 1 : amount;
+            return added[slot];
+        });
+        assertEquals(2, cursor.getCount());
+        assertArrayEquals(new long[]{3, 1, 3}, added);
+    }
+
+    @Test
     public void testDragSkipsSlotsOfOtherTypes() {
         storage.insert(1, PEARL, 1, false);
         ItemStack cursor = ChestClickLogic.drag(storage, new int[]{0, 1, 2}, false, STONE.copyWithCount(9));

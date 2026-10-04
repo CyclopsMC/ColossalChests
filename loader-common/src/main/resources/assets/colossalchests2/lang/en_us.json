@@ -31,7 +31,7 @@
   "gui.colossalchests2.lock_all": "Lock all",
   "gui.colossalchests2.clear_locks": "Clear locks",
   "gui.colossalchests2.requires_lock_upgrade": "Requires the Lock upgrade.",
-  "gui.colossalchests2.over_capacity": "%s over capacity",
+  "gui.colossalchests2.over_capacity": "%s slots are over capacity: take items out until they fit",
   "gui.colossalchests2.count": "%s of %s",
   "gui.colossalchests2.slot_over_capacity": "Over capacity: take items out until it fits again.",
   "chest.colossalchests2.over_capacity": "Over capacity slots: %s. They hold more than they can, so they only allow taking items out. This happens after re-forming a chest smaller or lowering capacity settings.",
@@ -45,8 +45,10 @@
   "gui.colossalchests2.show_fill_levels.info": "If Display walls show how full their slot is.",
   "gui.colossalchests2.show_counts.info": "If Display walls show item counts.",
   "gui.colossalchests2.show_upgrade_indicators.info": "If Display walls show the applied upgrades.",
-  "gui.colossalchests2.slots": "%s slots",
-  "gui.colossalchests2.capacity": "%s items per slot",
-  "gui.colossalchests2.capacity.stacks": "%s stacks of 64",
-  "gui.colossalchests2.capacity.small_stacks": "%s for items that stack to 16"
+  "gui.colossalchests2.slots_used": "%s/%s slots",
+  "gui.colossalchests2.slots_used.info": "%s of %s slots hold items",
+  "gui.colossalchests2.per_slot": "%s per slot",
+  "gui.colossalchests2.per_slot.info": "Each slot holds %s stacks",
+  "gui.colossalchests2.capacity.stack_64": "%s items that stack to 64",
+  "gui.colossalchests2.capacity.stack_16": "%s items that stack to 16"
 }

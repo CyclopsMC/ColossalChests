@@ -3,19 +3,14 @@ package org.cyclops.colossalchests2.client.gui;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
 import org.cyclops.colossalchests2.inventory.ChestLayout;
@@ -26,6 +21,7 @@ import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.lwjgl.glfw.GLFW;
 
@@ -52,14 +48,10 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int COLOR_SEARCH_MISS = 0xC0303030;
     private static final int COLOR_TEXT = 0xFF404040;
     private static final int COLOR_WARNING = 0xFFAA0000;
-    private static final int COLOR_TAB_UNSELECTED = 0xFFA8A8A8;
-    private static final int TAB_WIDTH = 25;
-    private static final int TAB_HEIGHT = 24;
-    private static final int TAB_Y = 4;
-    private static final ItemStack SETTINGS_ICON = new ItemStack(Items.COMPARATOR);
+    private static final int SETTINGS_WIDTH = 16;
+    private static final int SETTINGS_HEIGHT = 15;
     private static final int SEARCH_Y = 18;
     private static final int SEARCH_HEIGHT = 12;
-    private static final ItemStack CAPACITY_ICON = new ItemStack(Items.COBBLESTONE);
 
     private final ChestLayout layout;
     private final List<Button> settingsButtons = Lists.newArrayList();
@@ -84,13 +76,16 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
         // Borderless on a sunken field, like the creative search tab.
         String query = searchField != null ? searchField.getValue() : "";
-        searchField = new EditBox(font, leftPos + 10, topPos + SEARCH_Y + 2, imageWidth - 20, font.lineHeight,
+        searchField = new EditBox(font, leftPos + getGridLeft() + 2, topPos + SEARCH_Y + 2, getGridWidth() - 4, font.lineHeight,
                 Component.translatable("gui.colossalchests2.search"));
         searchField.setMaxLength(ContainerChest.MAX_QUERY_LENGTH);
         searchField.setBordered(false);
         searchField.setTextColor(0xFFFFFF);
         searchField.setValue(query);
         addRenderableWidget(searchField);
+
+        addRenderableWidget(new SettingsButton(leftPos + getGridLeft() + getGridWidth() - SETTINGS_WIDTH, topPos + 3,
+                b -> setSettingsOpen(!settingsOpen)));
 
         // Two columns of three rows, which fits the grid area of the smallest chest.
         int settingsX = leftPos + layout.getGridX() - 1;
@@ -152,30 +147,19 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         renderChestTooltip(guiGraphics, mouseX, mouseY);
         renderInfoTooltip(guiGraphics, mouseX, mouseY);
-        if (isOverSettingsTab(mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, List.of(Component.translatable("gui.colossalchests2.settings")), Optional.empty(), mouseX, mouseY);
-        }
         renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        // Like creative tabs: a closed tab sits behind the panel, an open one joins it.
-        if (!settingsOpen) {
-            drawSettingsTab(guiGraphics, false);
-        }
         drawPanel(guiGraphics, leftPos, topPos, imageWidth, imageHeight);
-        if (settingsOpen) {
-            drawSettingsTab(guiGraphics, true);
-        }
         for (int i = 0; i < 36; i++) {
             drawSlot(guiGraphics, leftPos + menu.slots.get(i).x, topPos + menu.slots.get(i).y);
         }
-        drawInfo(guiGraphics);
         if (settingsOpen) {
             return;
         }
-        drawSearchField(guiGraphics, leftPos + 8, topPos + SEARCH_Y, imageWidth - 16);
+        drawSearchField(guiGraphics, leftPos + getGridLeft(), topPos + SEARCH_Y, getGridWidth());
         String query = searchField.getValue();
         int hovered = getHoveredSlot(mouseX, mouseY);
         for (int slot = 0; slot < layout.slotCount(); slot++) {
@@ -213,41 +197,46 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     }
 
     /**
-     * Slot count and capacity per slot, as icons with numbers where the inventory label would be.
+     * The left and width of the slot grid's background, which the search field lines up with.
      */
-    private void drawInfo(GuiGraphics guiGraphics) {
-        int x = leftPos + 8;
-        int y = topPos + getInfoY();
-        drawMiniSlot(guiGraphics, x, y);
-        String slots = formatCount(menu.getChestSlotCount());
-        guiGraphics.drawString(font, slots, x + 11, y + 1, COLOR_TEXT, false);
-        int capacityX = getCapacityIconX();
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(leftPos + capacityX, y, 0);
-        guiGraphics.pose().scale(0.5625F, 0.5625F, 1);
-        guiGraphics.renderItem(CAPACITY_ICON, 0, 0);
-        guiGraphics.pose().popPose();
-        guiGraphics.drawString(font, formatCount(getItemsPerSlot()), leftPos + capacityX + 11, y + 1, COLOR_TEXT, false);
-        int overCapacity = getOverCapacityCount();
-        if (overCapacity > 0) {
-            Component warning = Component.translatable("gui.colossalchests2.over_capacity", overCapacity);
-            guiGraphics.drawString(font, warning, leftPos + imageWidth - 8 - font.width(warning), y + 1, COLOR_WARNING, false);
-        }
+    private int getGridLeft() {
+        return layout.getGridX() - 1;
+    }
+
+    private int getGridWidth() {
+        return layout.columns() * ChestLayout.SLOT_SIZE;
     }
 
     private int getInfoY() {
-        return layout.getPlayerInventoryY() - 12;
+        return layout.getPlayerInventoryY() - 11;
     }
 
-    private int getCapacityIconX() {
-        return 8 + 11 + font.width(formatCount(menu.getChestSlotCount())) + 8;
+    private Component getSlotsInfo() {
+        return Component.translatable("gui.colossalchests2.slots_used", formatCount(getUsedSlots()), formatCount(menu.getChestSlotCount()));
+    }
+
+    private Component getCapacityInfo() {
+        return Component.translatable("gui.colossalchests2.per_slot", formatCount(menu.getDepth() * 64));
     }
 
     /**
-     * @return How many items that stack to 64 fit in a slot.
+     * Slots in use, and capacity per slot, where vanilla shows the inventory label.
      */
-    private long getItemsPerSlot() {
-        return menu.getDepth() * 64;
+    private void drawInfo(GuiGraphics guiGraphics) {
+        int y = getInfoY();
+        guiGraphics.drawString(font, getSlotsInfo(), getGridLeft() + 1, y, getOverCapacityCount() > 0 ? COLOR_WARNING : COLOR_TEXT, false);
+        Component capacity = getCapacityInfo();
+        guiGraphics.drawString(font, capacity, getGridLeft() + getGridWidth() - font.width(capacity), y, COLOR_TEXT, false);
+    }
+
+    private int getUsedSlots() {
+        int count = 0;
+        for (int slot = 0; slot < menu.getChestSlotCount(); slot++) {
+            if (menu.getChestSlot(slot).getCount() > 0) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private int getOverCapacityCount() {
@@ -263,43 +252,26 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private void renderInfoTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         int x = mouseX - leftPos;
         int y = mouseY - topPos - getInfoY();
-        if (y < 0 || y > 9) {
+        if (y < -1 || y > font.lineHeight) {
             return;
         }
-        int capacityX = getCapacityIconX();
-        if (x >= 8 && x < capacityX - 4) {
-            guiGraphics.renderTooltip(font, List.of(Component.translatable("gui.colossalchests2.slots", menu.getChestSlotCount())),
-                    Optional.empty(), mouseX, mouseY);
-        } else if (x >= capacityX && x < capacityX + 11 + font.width(formatCount(getItemsPerSlot()))) {
+        int left = getGridLeft() + 1;
+        int right = getGridLeft() + getGridWidth();
+        if (x >= left && x < left + font.width(getSlotsInfo())) {
+            List<Component> lines = Lists.newArrayList(Component.translatable("gui.colossalchests2.slots_used.info",
+                    formatCount(getUsedSlots()), formatCount(menu.getChestSlotCount())));
+            int overCapacity = getOverCapacityCount();
+            if (overCapacity > 0) {
+                lines.add(Component.translatable("gui.colossalchests2.over_capacity", formatCount(overCapacity)).withStyle(ChatFormatting.RED));
+            }
+            guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
+        } else if (x >= right - font.width(getCapacityInfo()) && x < right) {
             guiGraphics.renderTooltip(font, List.of(
-                    Component.translatable("gui.colossalchests2.capacity", formatCount(getItemsPerSlot())),
-                    Component.translatable("gui.colossalchests2.capacity.stacks", formatCount(menu.getDepth())).withStyle(ChatFormatting.GRAY),
-                    Component.translatable("gui.colossalchests2.capacity.small_stacks", formatCount(menu.getDepth() * 16)).withStyle(ChatFormatting.GRAY)),
+                    Component.translatable("gui.colossalchests2.per_slot.info", formatCount(menu.getDepth())),
+                    Component.translatable("gui.colossalchests2.capacity.stack_64", formatCount(menu.getDepth() * 64)).withStyle(ChatFormatting.GRAY),
+                    Component.translatable("gui.colossalchests2.capacity.stack_16", formatCount(menu.getDepth() * 16)).withStyle(ChatFormatting.GRAY)),
                     Optional.empty(), mouseX, mouseY);
         }
-    }
-
-    private int getTabX() {
-        return leftPos + imageWidth - 4;
-    }
-
-    private boolean isOverSettingsTab(double mouseX, double mouseY) {
-        return mouseX >= getTabX() + 4 && mouseX < getTabX() + TAB_WIDTH && mouseY >= topPos + TAB_Y && mouseY < topPos + TAB_Y + TAB_HEIGHT;
-    }
-
-    private void drawSettingsTab(GuiGraphics guiGraphics, boolean open) {
-        int x = getTabX();
-        int y = topPos + TAB_Y;
-        guiGraphics.fill(x, y, x + TAB_WIDTH - 1, y + TAB_HEIGHT, COLOR_OUTLINE);
-        guiGraphics.fill(x, y + 1, x + TAB_WIDTH, y + TAB_HEIGHT - 1, COLOR_OUTLINE);
-        guiGraphics.fill(x, y + 1, x + TAB_WIDTH - 1, y + TAB_HEIGHT - 1, COLOR_LIGHT);
-        guiGraphics.fill(x, y + 3, x + TAB_WIDTH - 1, y + TAB_HEIGHT - 1, COLOR_SHADOW);
-        guiGraphics.fill(x, y + 3, x + TAB_WIDTH - 3, y + TAB_HEIGHT - 3, open ? COLOR_BACKGROUND : COLOR_TAB_UNSELECTED);
-        if (open) {
-            // Join the tab with the panel by covering the panel's border.
-            guiGraphics.fill(x - 1, y + 3, x + 1, y + TAB_HEIGHT - 3, COLOR_BACKGROUND);
-        }
-        guiGraphics.renderItem(SETTINGS_ICON, x + (TAB_WIDTH - 16) / 2, y + (TAB_HEIGHT - 16) / 2 + 1);
     }
 
     private static void drawPanel(GuiGraphics guiGraphics, int x, int y, int width, int height) {
@@ -316,12 +288,6 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         guiGraphics.fill(x, y, x + 16, y + 16, COLOR_SLOT);
     }
 
-    private static void drawMiniSlot(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.fill(x, y, x + 9, y + 9, COLOR_SLOT_SHADOW);
-        guiGraphics.fill(x + 1, y + 1, x + 9, y + 9, COLOR_LIGHT);
-        guiGraphics.fill(x + 1, y + 1, x + 8, y + 8, COLOR_SLOT);
-    }
-
     /**
      * The sunken search field of the creative inventory.
      */
@@ -335,6 +301,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        drawInfo(guiGraphics);
         guiGraphics.drawString(font, title, 8, 6, COLOR_TEXT, false);
         if (settingsOpen) {
             guiGraphics.drawString(font, Component.translatable("gui.colossalchests2.settings"), 8, SEARCH_Y + 2, COLOR_TEXT, false);
@@ -376,11 +343,6 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && isOverSettingsTab(mouseX, mouseY)) {
-            setSettingsOpen(!settingsOpen);
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-            return true;
-        }
         int slot = getHoveredSlot(mouseX, mouseY);
         if (slot < 0) {
             return super.mouseClicked(mouseX, mouseY, button);
@@ -439,12 +401,6 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    @Override
-    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top, int button) {
-        // The tab sticks out of the panel, so clicking it must not drop the cursor stack.
-        return super.hasClickedOutside(mouseX, mouseY, left, top, button) && !isOverSettingsTab(mouseX, mouseY);
-    }
-
     private void sendClick(int slot, ChestClickAction action) {
         ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundChestClickPacket(menu.containerId, slot, action));
     }
@@ -456,6 +412,33 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             return searchField.keyPressed(keyCode, scanCode, modifiers) || searchField.canConsumeInput();
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    /**
+     * A vanilla button with the settings icon of Cyclops mods.
+     */
+    private static class SettingsButton extends Button {
+
+        // The visible part of the 18x18 config board icon.
+        private static final int ICON_U = 38;
+        private static final int ICON_V = 21;
+        private static final int ICON_WIDTH = 14;
+        private static final int ICON_HEIGHT = 13;
+
+        SettingsButton(int x, int y, OnPress onPress) {
+            super(x, y, SETTINGS_WIDTH, SETTINGS_HEIGHT, Component.translatable("gui.colossalchests2.settings"), onPress, DEFAULT_NARRATION);
+            setTooltip(Tooltip.create(Component.translatable("gui.colossalchests2.settings")));
+        }
+
+        @Override
+        protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            Component message = getMessage();
+            // Draw the vanilla button without its label, then the icon on it.
+            setMessage(Component.empty());
+            super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
+            setMessage(message);
+            guiGraphics.blit(Images.ICONS, getX() + 1, getY() + 1, ICON_U, ICON_V, ICON_WIDTH, ICON_HEIGHT);
+        }
     }
 
 }

@@ -78,3 +78,4 @@ Search syntax and drag preview (`phase4-12-search-syntax.txt` and `phase4-13-dra
 | `phase4-search-and.png` | `dia @minecraft`: both terms must match |
 | `phase4-drag-preview-left.png` | Mid-drag of 37 stone over a full stone slot and 5 empty slots: 6 each, yellow count on the full slot, 7 left on the cursor |
 | `phase4-drag-released.png` | After release: the same result |
+| `phase4-search-border-behind.png` | `@minecraft`: the match border drawn behind items and counts |

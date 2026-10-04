@@ -64,7 +64,7 @@
   "gui.colossalchests2.show_upgrade_indicators": "Upgrades: %s",
   "gui.colossalchests2.lock_all": "Lock all",
   "gui.colossalchests2.wall.filter": "Filter",
-  "gui.colossalchests2.wall.filter.info": "Click with an item to add it. With an empty filter, any item passes. Compressed items are taken out in the form in the filter.",
+  "gui.colossalchests2.wall.filter.info": "Click with item to configure.",
   "gui.colossalchests2.wall.mode": "Direction",
   "gui.colossalchests2.wall.mode.both": "In and out",
   "gui.colossalchests2.wall.mode.both.info": "Items can be inserted and extracted.",

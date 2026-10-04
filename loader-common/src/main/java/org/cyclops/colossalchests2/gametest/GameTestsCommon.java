@@ -4,10 +4,12 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -59,6 +61,9 @@ import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 import java.util.List;
@@ -716,6 +721,215 @@ public class GameTestsCommon {
                 .thenSucceed();
     }
 
+    // Upgrades
+
+    private static ItemStack upgradeItem(ChestUpgrade upgrade) {
+        return new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "upgrade_" + upgrade.getId().getPath())));
+    }
+
+    /**
+     * Click an upgrade slot in the menu like a player would.
+     */
+    private static void clickUpgradeSlot(ContainerChest menu, ServerPlayer player, int upgradeSlot) {
+        menu.clicked(menu.getUpgradeSlotsStart() + upgradeSlot, 0, ClickType.PICKUP, player);
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testDepthUpgradeOnCopper4x4(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 4, ChestMaterial.COPPER);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 4))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    helper.assertValueEqual(menu.getUpgradeSlotCount(), 2, "upgrade slots of a copper chest");
+                    helper.assertValueEqual(storage.getProfile().depth(), 64L, "depth without upgrades");
+
+                    // Insert: the capacity doubles.
+                    menu.setCarried(upgradeItem(ChestUpgrades.DEPTH));
+                    clickUpgradeSlot(menu, player, 0);
+                    helper.assertTrue(menu.getCarried().isEmpty(), "Expected the upgrade to be placed");
+                    helper.assertValueEqual(storage.getProfile().depth(), 128L, "depth with a Depth upgrade");
+                    helper.assertValueEqual(storage.getCapacity(STONE), 128L * 64, "stone capacity with a Depth upgrade");
+
+                    // A second one does not fit a copper chest.
+                    menu.setCarried(upgradeItem(ChestUpgrades.DEPTH));
+                    clickUpgradeSlot(menu, player, 1);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 1, "rejected second Depth upgrade on the cursor");
+                    menu.setCarried(ItemStack.EMPTY);
+
+                    // Fill a slot past the capacity without it: removal is refused.
+                    storage.insert(0, STONE, 64 * 64 + 1, false);
+                    menu.broadcastChanges();
+                    helper.assertValueEqual(menu.getUpgradeRemovalProblems(0), 1, "slots keeping the upgrade in");
+                    clickUpgradeSlot(menu, player, 0);
+                    helper.assertTrue(menu.getCarried().isEmpty(), "Expected the removal to be refused");
+                    helper.assertValueEqual(storage.getProfile().depth(), 128L, "depth after a refused removal");
+
+                    // Once it fits, removal works.
+                    storage.extract(0, 1, false);
+                    menu.broadcastChanges();
+                    helper.assertValueEqual(menu.getUpgradeRemovalProblems(0), 0, "slots keeping the upgrade in after emptying");
+                    clickUpgradeSlot(menu, player, 0);
+                    helper.assertTrue(menu.getCarried().is(upgradeItem(ChestUpgrades.DEPTH).getItem()), "Expected the upgrade on the cursor");
+                    helper.assertValueEqual(storage.getProfile().depth(), 64L, "depth after removal");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testSlotExpansionUpgrade(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+                    // Shift-clicking an upgrade from the inventory installs it.
+                    player.getInventory().setItem(9, upgradeItem(ChestUpgrades.SLOT_EXPANSION));
+                    menu.quickMoveStack(player, 0);
+                    helper.assertValueEqual(storage.getSlotCount(), 54, "slots with a Slot Expansion");
+                    storage.insert(40, STONE, 1, false);
+                    menu.broadcastChanges();
+                    helper.assertValueEqual(menu.getUpgradeRemovalProblems(0), 1, "slots keeping the expansion in");
+                    menu.quickMoveStack(player, menu.getUpgradeSlotsStart());
+                    helper.assertValueEqual(storage.getSlotCount(), 54, "slots after a refused removal");
+                    storage.extract(40, 1, false);
+                    menu.quickMoveStack(player, menu.getUpgradeSlotsStart());
+                    helper.assertValueEqual(storage.getSlotCount(), 27, "slots after removal");
+                    helper.assertTrue(player.getInventory().contains(upgradeItem(ChestUpgrades.SLOT_EXPANSION)), "Expected the upgrade back in the inventory");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUpgradeSlotsRejectWhatDoesNotFit(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ChestUpgradeInventory upgrades = getCore(helper, corePos).getUpgrades();
+                    helper.assertValueEqual(upgrades.getContainerSize(), 1, "upgrade slots of a wooden chest");
+                    helper.assertFalse(upgrades.canPlaceItem(0, upgradeItem(ChestUpgrades.DEPTH)), "Expected a wooden chest to refuse Depth");
+                    helper.assertFalse(upgrades.canPlaceItem(0, STONE), "Expected upgrade slots to refuse other items");
+                    helper.assertTrue(upgrades.canPlaceItem(0, upgradeItem(ChestUpgrades.LOCK)), "Expected a wooden chest to take Lock");
+                    upgrades.setItem(0, upgradeItem(ChestUpgrades.LOCK));
+                    helper.assertFalse(upgrades.canPlaceItem(0, upgradeItem(ChestUpgrades.SLOT_EXPANSION)), "Expected a full slot to refuse");
+                    helper.assertFalse(upgrades.canTakeItem(upgrades, 0, upgrades.getItem(0)), "Expected automation to never take upgrades");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testLockActions(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    ChestStorage storage = core.getStorage();
+                    storage.insert(0, STONE, 10, false);
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerChest menu = openChest(helper, player, corePos);
+
+                    // Without the Lock upgrade, lock clicks do nothing.
+                    menu.handleChestClick(player, 0, ChestClickAction.TOGGLE_LOCK);
+                    helper.assertFalse(storage.getSlot(0).isLocked(), "Expected no lock without the Lock upgrade");
+
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.LOCK));
+                    menu.handleChestClick(player, 0, ChestClickAction.TOGGLE_LOCK);
+                    helper.assertTrue(storage.getSlot(0).isLocked(), "Expected alt-click to lock");
+                    menu.handleChestClick(player, 0, ChestClickAction.TOGGLE_LOCK);
+                    helper.assertFalse(storage.getSlot(0).isLocked(), "Expected alt-click to unlock");
+
+                    // A right click with a cursor item reserves an empty slot without inserting.
+                    menu.setCarried(new ItemStack(Items.DIRT, 5));
+                    menu.handleChestClick(player, 3, ChestClickAction.LOCK_TO_CURSOR);
+                    helper.assertTrue(storage.getSlot(3).isLocked() && storage.getSlot(3).matches(new ItemStack(Items.DIRT)), "Expected a dirt reservation");
+                    helper.assertValueEqual(storage.getSlot(3).getCount(), 0L, "reserved count");
+                    helper.assertValueEqual(menu.getCarried().getCount(), 5, "cursor after reserving");
+                    menu.setCarried(ItemStack.EMPTY);
+                    helper.assertValueEqual(storage.insert(new ItemStack(Items.DIRT), 4, false), 4L, "dirt inserted");
+                    helper.assertValueEqual(storage.getSlot(3).getCount(), 4L, "dirt goes to its reserved slot");
+
+                    menu.handleChestClick(player, 0, ChestClickAction.LOCK_ALL);
+                    helper.assertTrue(storage.getSlot(0).isLocked(), "Expected Lock all to lock filled slots");
+                    menu.handleChestClick(player, 0, ChestClickAction.CLEAR_LOCKS);
+                    helper.assertFalse(storage.getSlot(0).isLocked() || storage.getSlot(3).isLocked(), "Expected Clear locks to unlock all");
+
+                    // Removing the Lock upgrade is never refused and clears locks.
+                    menu.handleChestClick(player, 0, ChestClickAction.LOCK_ALL);
+                    menu.broadcastChanges();
+                    helper.assertValueEqual(menu.getUpgradeRemovalProblems(0), 0, "slots keeping the Lock upgrade in");
+                    clickUpgradeSlot(menu, player, 0);
+                    helper.assertTrue(menu.getCarried().is(upgradeItem(ChestUpgrades.LOCK).getItem()), "Expected the Lock upgrade on the cursor");
+                    helper.assertFalse(storage.getSlot(0).isLocked(), "Expected locks to be cleared with the upgrade");
+                    helper.assertValueEqual(storage.getSlot(0).getCount(), 10L, "contents after clearing locks");
+                    player.closeContainer();
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testLockedSlotsRejectOtherTypesFromHopper(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos target = getHopperTarget(corePos, MIN_A.offset(1, 2, 1));
+        BlockPos hopperPos = LoaderCapabilities.blockCapabilitiesSupported ? target.above() : target.north();
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.LOCK));
+                    // Every slot is reserved for stone, so dirt has nowhere to go.
+                    for (int slot = 0; slot < core.getStorage().getSlotCount(); slot++) {
+                        core.getStorage().lockTo(slot, STONE);
+                    }
+                    helper.setBlock(hopperPos, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING,
+                            LoaderCapabilities.blockCapabilitiesSupported ? Direction.DOWN : Direction.SOUTH));
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
+                    hopper.setItem(0, new ItemStack(Items.DIRT, 2));
+                    hopper.setItem(1, new ItemStack(Items.STONE, 2));
+                })
+                .thenWaitUntil(() -> helper.assertValueEqual(getCore(helper, corePos).getStorage().getSlot(0).getCount(), 2L, "stone in its locked slot"))
+                .thenExecute(() -> {
+                    HopperBlockEntity hopper = (HopperBlockEntity) helper.getBlockEntity(hopperPos);
+                    helper.assertValueEqual(hopper.getItem(0).getCount(), 2, "dirt left in the hopper");
+                    helper.assertTrue(hopper.getItem(0).is(Items.DIRT), "Expected dirt to stay in the hopper");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUpgradesTravelWithCore(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos newCorePos = buildWalls(helper, MIN_B, 3, ChestMaterial.WOOD, new BlockPos(1, 1, 0), Set.of());
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.SLOT_EXPANSION));
+                    core.getStorage().insert(50, STONE, 7, false);
+                    assertRoundTrip(helper, core);
+                    ItemStack dropped = breakCoreAndPickUp(helper, corePos);
+                    helper.assertTrue(dropped.has(RegistryEntries.COMPONENT_CHEST_UPGRADES.value()), "Expected upgrades on the item");
+                    placeCore(helper, dropped, newCorePos);
+                })
+                .thenWaitUntil(() -> assertFormed(helper, newCorePos, MIN_B, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, newCorePos);
+                    helper.assertValueEqual(core.getUpgradeSet().count(ChestUpgrades.SLOT_EXPANSION), 1, "restored Slot Expansion");
+                    helper.assertValueEqual(core.getStorage().getSlotCount(), 54, "restored slot count");
+                    helper.assertValueEqual(core.getStorage().getSlot(50).getCount(), 7L, "restored contents in an expanded slot");
+                })
+                .thenSucceed();
+    }
+
     private static <T extends PacketBase<T>> T roundTrip(GameTestHelper helper, T packet, StreamCodec<RegistryFriendlyByteBuf, T> codec) {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
         codec.encode(buf, packet);
@@ -755,7 +969,12 @@ public class GameTestsCommon {
                     helper.assertValueEqual(menu.getCarried().getCount(), 64, "cursor after a click for another menu");
 
                     // A client menu takes what the server sends.
-                    ContainerChest client = new ContainerChest(menu.containerId, player.getInventory(), getCore(helper, corePos));
+                    FriendlyByteBuf openData = new FriendlyByteBuf(Unpooled.buffer());
+                    ContainerChest.writeOpenData(openData, getCore(helper, corePos));
+                    ContainerChest client = new ContainerChest(menu.containerId, player.getInventory(), openData);
+                    helper.assertValueEqual(client.getUpgradeSlotCount(), 1, "upgrade slots of a wooden chest");
+                    helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.DEPTH), 0, "depth upgrades a wooden chest takes");
+                    helper.assertValueEqual(client.getMaxUpgradeCount(ChestUpgrades.SLOT_EXPANSION), 2, "slot expansions a chest takes");
                     player.containerMenu = client;
                     DeepSlot locked = DeepSlot.of(STONE, 0, true, null);
                     roundTrip(helper, new ClientboundChestSlotsPacket(menu.containerId, new int[]{0, 3},
@@ -766,9 +985,10 @@ public class GameTestsCommon {
                     helper.assertTrue(client.isChestSlotOverCapacity(0), "Expected 5000 of 1024 to be over capacity");
                     helper.assertValueEqual(client.getChestSlotCapacity(3), 64L, "synced capacity");
                     CapacityProfile profile = new CapacityProfile(7, 300, true, 3);
-                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, profile, settings), ClientboundChestStatePacket.CODEC)
+                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, profile, settings, new int[]{4}), ClientboundChestStatePacket.CODEC)
                             .actionClient(helper.getLevel(), player);
                     helper.assertValueEqual(client.getProfile(), profile, "synced capacity profile");
+                    helper.assertValueEqual(client.getUpgradeRemovalProblems(0), 4, "synced upgrade removal problems");
                     // An empty slot takes what the profile allows for the type.
                     helper.assertValueEqual(client.getChestSlotSpace(5, new ItemStack(Items.DIAMOND_SWORD)), 3L, "space for unstackables");
                     helper.assertValueEqual(client.getChestSlotSpace(5, new ItemStack(Items.ENDER_PEARL)), 7L * 16, "space for 16-stacks");
@@ -1044,6 +1264,7 @@ public class GameTestsCommon {
         helper.assertValueEqual(loaded.getLastSize(), core.getLastSize(), "last size");
         helper.assertValueEqual(loaded.getStorage().getSlotCount(), core.getStorage().getSlotCount(), "slot count");
         helper.assertValueEqual(loaded.getStorage().getProfile(), core.getStorage().getProfile(), "profile");
+        helper.assertValueEqual(loaded.getUpgradeSet(), core.getUpgradeSet(), "upgrades");
         for (int slot = 0; slot < core.getStorage().getSlotCount(); slot++) {
             helper.assertValueEqual(loaded.getStorage().getSlot(slot), core.getStorage().getSlot(slot), "slot " + slot);
         }

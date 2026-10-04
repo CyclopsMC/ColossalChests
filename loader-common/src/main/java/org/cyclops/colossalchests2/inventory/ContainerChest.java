@@ -7,6 +7,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import org.cyclops.colossalchests2.RegistryEntries;
@@ -18,9 +20,15 @@ import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.DeepSlot;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
+import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Lists;
 import java.util.Arrays;
+import java.util.List;
 import java.util.BitSet;
 import java.util.Objects;
 
@@ -38,40 +46,51 @@ public class ContainerChest extends AbstractContainerMenu {
     public static final double MAX_DISTANCE = 8;
     public static final int MAX_QUERY_LENGTH = 64;
     public static final int MAX_DRAG_SLOTS = 81;
+    public static final int UPGRADE_SLOT_X = -19;
+    public static final int UPGRADE_SLOT_Y = 8;
 
     private final Player player;
     private final BlockPos corePos;
     @Nullable
     private final BlockEntityChestCore core;
     private final ChestLayout layout;
+    private final Container upgradeContainer;
+    private final int[] maxUpgradeCounts;
+    private final int upgradeSlotsStart;
 
     // On the client what the server sent, on the server what it last sent.
     private final DeepSlot[] chestSlots;
     private final long[] capacities;
     private CapacityProfile profile = CapacityProfile.ofDepth(0);
     private ChestSettings settings = ChestSettings.DEFAULT;
+    // Per upgrade slot, the chest slots that keep its upgrade from being removed.
+    private int[] upgradeRemovalProblems;
 
     // Server only.
     private final BitSet dirtySlots = new BitSet();
     private boolean stateDirty = true;
+    private boolean upgradesDirty = true;
     @Nullable
     private ChestSettings sentSettings;
+    @Nullable
+    private int[] sentUpgradeRemovalProblems;
 
     /**
      * Client-side constructor.
      */
     public ContainerChest(int id, Inventory inventory, FriendlyByteBuf data) {
-        this(id, inventory, data.readBlockPos(), data.readVarInt(), null);
+        this(id, inventory, data.readBlockPos(), data.readVarInt(), new SimpleContainer(data.readVarInt()), readMaxUpgradeCounts(data), null);
     }
 
     /**
      * Server-side constructor.
      */
     public ContainerChest(int id, Inventory inventory, BlockEntityChestCore core) {
-        this(id, inventory, core.getBlockPos(), core.getStorage().getSlotCount(), core);
+        this(id, inventory, core.getBlockPos(), core.getStorage().getSlotCount(), core.getUpgrades(), getMaxUpgradeCounts(core), core);
     }
 
-    private ContainerChest(int id, Inventory inventory, BlockPos corePos, int slotCount, @Nullable BlockEntityChestCore core) {
+    private ContainerChest(int id, Inventory inventory, BlockPos corePos, int slotCount, Container upgradeContainer,
+                           int[] maxUpgradeCounts, @Nullable BlockEntityChestCore core) {
         super(RegistryEntries.MENU_CHEST.value(), id);
         this.player = inventory.player;
         this.corePos = corePos;
@@ -80,7 +99,14 @@ public class ContainerChest extends AbstractContainerMenu {
         this.chestSlots = new DeepSlot[slotCount];
         Arrays.fill(this.chestSlots, DeepSlot.EMPTY);
         this.capacities = new long[slotCount];
+        this.upgradeContainer = upgradeContainer;
+        this.maxUpgradeCounts = maxUpgradeCounts;
+        this.upgradeRemovalProblems = new int[upgradeContainer.getContainerSize()];
         addPlayerSlots(inventory);
+        this.upgradeSlotsStart = slots.size();
+        for (int slot = 0; slot < upgradeContainer.getContainerSize(); slot++) {
+            addSlot(new UpgradeSlot(upgradeContainer, slot, UPGRADE_SLOT_X, UPGRADE_SLOT_Y + slot * 18));
+        }
         if (core != null && player instanceof ServerPlayer serverPlayer) {
             this.settings = core.getSettings();
             this.dirtySlots.set(0, slotCount);
@@ -94,6 +120,51 @@ public class ContainerChest extends AbstractContainerMenu {
     public static void writeOpenData(FriendlyByteBuf data, BlockEntityChestCore core) {
         data.writeBlockPos(core.getBlockPos());
         data.writeVarInt(core.getStorage().getSlotCount());
+        data.writeVarInt(core.getUpgrades().getContainerSize());
+        data.writeVarIntArray(getMaxUpgradeCounts(core));
+    }
+
+    private static int[] getMaxUpgradeCounts(BlockEntityChestCore core) {
+        return ChestUpgrades.VALUES.stream().mapToInt(core::getMaxUpgradeCount).toArray();
+    }
+
+    private static int[] readMaxUpgradeCounts(FriendlyByteBuf data) {
+        int[] counts = data.readVarIntArray();
+        return counts.length == ChestUpgrades.VALUES.size() ? counts : new int[ChestUpgrades.VALUES.size()];
+    }
+
+    /**
+     * An upgrade slot. It takes an upgrade if the chest takes one more of it, and gives it back if contents
+     * would still fit without it.
+     */
+    public class UpgradeSlot extends Slot {
+
+        public UpgradeSlot(Container container, int slot, int x, int y) {
+            super(container, slot, x, y);
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            if (core != null) {
+                return container.canPlaceItem(getContainerSlot(), stack);
+            }
+            ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(stack);
+            return upgrade != null && !hasItem() && getUpgradeSet().count(upgrade) < getMaxUpgradeCount(upgrade);
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            if (core != null) {
+                return core.getUpgradeRemovalProblems(getContainerSlot()).isOk();
+            }
+            return getUpgradeRemovalProblems(getContainerSlot()) == 0;
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+
     }
 
     private void addPlayerSlots(Inventory inventory) {
@@ -175,6 +246,42 @@ public class ContainerChest extends AbstractContainerMenu {
         return settings;
     }
 
+    public int getUpgradeSlotsStart() {
+        return upgradeSlotsStart;
+    }
+
+    public int getUpgradeSlotCount() {
+        return upgradeContainer.getContainerSize();
+    }
+
+    /**
+     * @return The installed upgrades, as last synced on the client.
+     */
+    public UpgradeSet getUpgradeSet() {
+        List<ItemStack> stacks = Lists.newArrayList();
+        for (int slot = 0; slot < upgradeContainer.getContainerSize(); slot++) {
+            stacks.add(upgradeContainer.getItem(slot));
+        }
+        return UpgradeSet.of(stacks);
+    }
+
+    /**
+     * @param upgrade An upgrade.
+     * @return How many of the upgrade this chest takes.
+     */
+    public int getMaxUpgradeCount(ChestUpgrade upgrade) {
+        int index = ChestUpgrades.VALUES.indexOf(upgrade);
+        return index >= 0 ? maxUpgradeCounts[index] : 0;
+    }
+
+    /**
+     * @param upgradeSlot An upgrade slot index.
+     * @return The number of chest slots that keep its upgrade from being removed.
+     */
+    public int getUpgradeRemovalProblems(int upgradeSlot) {
+        return upgradeRemovalProblems[upgradeSlot];
+    }
+
     public boolean isFor(BlockEntityChestCore core) {
         return this.core == core;
     }
@@ -201,16 +308,54 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     /**
+     * Called by the core when its upgrades changed.
+     */
+    public void onUpgradesChanged() {
+        this.upgradesDirty = true;
+    }
+
+    /**
      * Apply a click on a chest slot.
      */
     public void handleChestClick(ServerPlayer player, int slot, ChestClickAction action) {
-        if (core == null || !core.isFormed() || slot < 0 || slot >= Math.min(chestSlots.length, core.getStorage().getSlotCount())) {
+        if (core == null || !core.isFormed()) {
+            return;
+        }
+        if (action.isLockAction()) {
+            handleLock(slot, action);
+            return;
+        }
+        if (slot < 0 || slot >= Math.min(chestSlots.length, core.getStorage().getSlotCount())) {
             return;
         }
         setCarried(ChestClickLogic.click(core.getStorage(), slot, action, getCarried(), stack -> {
             player.getInventory().add(stack);
             return stack;
         }));
+    }
+
+    private void handleLock(int slot, ChestClickAction action) {
+        ChestStorage storage = core.getStorage();
+        if (!core.getUpgradeSet().has(ChestUpgrades.LOCK)) {
+            return;
+        }
+        boolean validSlot = slot >= 0 && slot < Math.min(chestSlots.length, storage.getSlotCount());
+        switch (action) {
+            case TOGGLE_LOCK -> {
+                if (validSlot) {
+                    storage.setLocked(slot, !storage.getSlot(slot).isLocked());
+                }
+            }
+            case LOCK_TO_CURSOR -> {
+                if (validSlot && storage.getSlot(slot).getCount() == 0) {
+                    storage.lockTo(slot, getCarried());
+                }
+            }
+            case LOCK_ALL -> storage.lockAllFilled();
+            case CLEAR_LOCKS -> storage.clearLocks();
+            default -> {
+            }
+        }
     }
 
     /**
@@ -244,6 +389,12 @@ public class ContainerChest extends AbstractContainerMenu {
 
     private void sendChestChanges(ServerPlayer serverPlayer) {
         ChestStorage storage = core.getStorage();
+        if (upgradesDirty || !dirtySlots.isEmpty()) {
+            upgradesDirty = false;
+            for (int slot = 0; slot < upgradeRemovalProblems.length; slot++) {
+                upgradeRemovalProblems[slot] = core.getUpgradeRemovalProblems(slot).offendingSlots().size();
+            }
+        }
         if (!dirtySlots.isEmpty()) {
             int[] changed = dirtySlots.stream().filter(slot -> slot < storage.getSlotCount()).toArray();
             dirtySlots.clear();
@@ -260,12 +411,15 @@ public class ContainerChest extends AbstractContainerMenu {
                     new ClientboundChestSlotsPacket(containerId, changed, contents, changedCapacities), serverPlayer);
         }
         CapacityProfile newProfile = storage.getProfile();
-        if (stateDirty || !newProfile.equals(profile)) {
+        if (stateDirty || !newProfile.equals(profile) || !Arrays.equals(sentUpgradeRemovalProblems, upgradeRemovalProblems)) {
             stateDirty = false;
-            if (!newProfile.equals(profile) || !Objects.equals(sentSettings, settings)) {
+            if (!newProfile.equals(profile) || !Objects.equals(sentSettings, settings)
+                    || !Arrays.equals(sentUpgradeRemovalProblems, upgradeRemovalProblems)) {
                 profile = newProfile;
                 sentSettings = settings;
-                ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, profile, settings), serverPlayer);
+                sentUpgradeRemovalProblems = upgradeRemovalProblems.clone();
+                ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, profile, settings,
+                        sentUpgradeRemovalProblems), serverPlayer);
             }
         }
     }
@@ -281,16 +435,18 @@ public class ContainerChest extends AbstractContainerMenu {
         }
     }
 
-    public void applyState(CapacityProfile profile, ChestSettings settings) {
+    public void applyState(CapacityProfile profile, ChestSettings settings, int[] upgradeRemovalProblems) {
         this.profile = profile;
         this.settings = settings;
+        if (upgradeRemovalProblems.length == this.upgradeRemovalProblems.length) {
+            this.upgradeRemovalProblems = upgradeRemovalProblems;
+        }
     }
 
     // Vanilla
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        // Only player slots exist, shift-clicking one moves it into the chest.
         if (core == null || index < 0 || index >= slots.size() || !core.isFormed()) {
             return ItemStack.EMPTY;
         }
@@ -299,6 +455,17 @@ public class ContainerChest extends AbstractContainerMenu {
             return ItemStack.EMPTY;
         }
         ItemStack stack = slot.getItem();
+        if (index >= upgradeSlotsStart) {
+            // Out of an upgrade slot, into the player inventory.
+            if (slot.mayPickup(player) && moveItemStackTo(stack, 0, upgradeSlotsStart, true)) {
+                slot.setChanged();
+            }
+            return ItemStack.EMPTY;
+        }
+        if (ItemChestUpgrade.getUpgrade(stack) != null && moveItemStackTo(stack, upgradeSlotsStart, slots.size(), false)) {
+            slot.setChanged();
+            return ItemStack.EMPTY;
+        }
         long inserted = core.getStorage().insert(stack, stack.getCount(), false);
         if (inserted > 0) {
             stack.shrink((int) inserted);

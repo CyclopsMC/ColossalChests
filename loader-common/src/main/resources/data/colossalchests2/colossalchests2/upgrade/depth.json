@@ -1,0 +1,13 @@
+{
+  "max_count": 0,
+  "max_count_by_material": {
+    "colossalchests2:wood": 0,
+    "colossalchests2:copper": 1,
+    "colossalchests2:iron": 2,
+    "colossalchests2:gold": 3,
+    "colossalchests2:diamond": 4,
+    "colossalchests2:obsidian": 5,
+    "colossalchests2:netherite": 6
+  },
+  "value": 2
+}

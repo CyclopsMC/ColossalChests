@@ -1,0 +1,64 @@
+package org.cyclops.colossalchests2.upgrade;
+
+import net.minecraft.resources.ResourceLocation;
+import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.config.UpgradeProperties;
+import org.cyclops.colossalchests2.storage.CapacityProfile;
+
+/**
+ * A core upgrade type. Its limits and strength come from its data file, see {@link UpgradeProperties}.
+ * @author rubensworks
+ */
+public class ChestUpgrade {
+
+    private final ResourceLocation id;
+
+    public ChestUpgrade(ResourceLocation id) {
+        this.id = id;
+    }
+
+    public ResourceLocation getId() {
+        return id;
+    }
+
+    public UpgradeProperties getProperties() {
+        return ChestTablesLoader.get().getUpgrade(id);
+    }
+
+    /**
+     * @param material A material id.
+     * @return How many of this upgrade a chest of that material takes.
+     */
+    public int getMaxCount(ResourceLocation material) {
+        return getProperties().getMaxCount(material);
+    }
+
+    /**
+     * Apply the capacity modifiers of this upgrade.
+     * @param builder The profile being built.
+     * @param count The installed count, at least 1.
+     */
+    public void applyProfile(CapacityProfile.Builder builder, int count) {
+    }
+
+    /**
+     * @param count The installed count.
+     * @return The slots this upgrade adds.
+     */
+    public int getExtraSlots(int count) {
+        return 0;
+    }
+
+    /**
+     * @return The arguments of the item's info tooltip.
+     */
+    public Object[] getInfoArguments() {
+        return new Object[0];
+    }
+
+    @Override
+    public String toString() {
+        return id.toString();
+    }
+
+}

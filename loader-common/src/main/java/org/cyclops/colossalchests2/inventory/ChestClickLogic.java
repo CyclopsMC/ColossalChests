@@ -37,6 +37,8 @@ public final class ChestClickLogic {
                 }
                 yield cursor;
             }
+            // Lock actions are handled by the menu.
+            case TOGGLE_LOCK, LOCK_TO_CURSOR, LOCK_ALL, CLEAR_LOCKS -> cursor;
         };
     }
 

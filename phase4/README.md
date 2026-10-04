@@ -36,7 +36,6 @@ Follow-up checks (`phase4-0-lid-compare.txt` in a fresh world, then `phase4-7-bu
 | Screenshot | Shows |
 |---|---|
 | `lid-compare-closed.png`, `lid-compare-open-profile.png` | The lock at vanilla proportions next to vanilla chests, closed and open |
-| `phase4-marker-on-lock.png` | The core marker drawn on the front of the closed lock while sneaking |
 
 `phase4-7-build.txt` places a wall against an unformed wall (it is placed instead of showing the diagnosis), and opens a formed chest with a block in hand.
 
@@ -58,3 +57,12 @@ Header and info rework (`phase4-9-gui-v3.txt`, fresh world). Replaces the tab an
 | `phase4-v3-slots-tooltip.png`, `phase4-v3-capacity-tooltip.png` | Their tooltips |
 | `phase4-v3-settings.png` | The settings view |
 | `phase4-v3-over-capacity.png` | Over capacity: the slot info turns red and its tooltip explains why |
+
+Search and seam checks (`phase4-10-search-v4.txt` opens the chest, then the search field is clicked at its `find search` position; `phase4-11-seam.txt` in a fresh world):
+
+| Screenshot | Shows |
+|---|---|
+| `phase4-v4-search-hit.png` | Search for "pearl": the match gets a yellow inner border, the rest is dimmed |
+| `phase4-v4-search-selected.png` | Right-clicking the search field selects its text |
+| `phase4-v4-search-replaced.png` | Typing "dia" then replaces it: two matches |
+| `phase4-seam-closed.png`, `phase4-seam-netherite-front.png` | Closed obsidian and netherite chests without z-fighting at the lid seam |

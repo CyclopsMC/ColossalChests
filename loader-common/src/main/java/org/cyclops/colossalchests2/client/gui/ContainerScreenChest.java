@@ -65,7 +65,6 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private final ChestLayout layout;
     private final List<Button> settingsButtons = Lists.newArrayList();
     private EditBox searchField;
-    private final Tooltip searchHelp = Tooltip.create(Component.translatable("gui.colossalchests2.search.info"));
     private boolean settingsOpen;
 
     // Dragging the cursor stack over chest slots spreads it, like over vanilla slots.
@@ -144,11 +143,6 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     @Override
     protected void containerTick() {
         super.containerTick();
-        // Help on hover, hidden while typing so it does not cover the slots.
-        Tooltip searchTooltip = searchField.isFocused() ? null : searchHelp;
-        if (searchField.getTooltip() != searchTooltip) {
-            searchField.setTooltip(searchTooltip);
-        }
         ChestSettings settings = menu.getSettings();
         settingsButtons.get(0).setMessage(toggleLabel("show_fill_levels", settings.showFillLevels()));
         settingsButtons.get(1).setMessage(toggleLabel("show_counts", settings.showCounts()));
@@ -269,6 +263,17 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         guiGraphics.drawString(font, capacity, getGridLeft() + getGridWidth() - font.width(capacity), y, COLOR_TEXT, false);
     }
 
+    private int getFullSlots() {
+        int count = 0;
+        for (int slot = 0; slot < menu.getChestSlotCount(); slot++) {
+            DeepSlot deepSlot = menu.getChestSlot(slot);
+            if (deepSlot.getCount() > 0 && deepSlot.getCount() >= menu.getChestSlotCapacity(slot)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private int getUsedSlots() {
         int count = 0;
         for (int slot = 0; slot < menu.getChestSlotCount(); slot++) {
@@ -300,6 +305,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         if (x >= left && x < left + font.width(getSlotsInfo())) {
             List<Component> lines = Lists.newArrayList(Component.translatable("gui.colossalchests2.slots_used.info",
                     formatCount(getUsedSlots()), formatCount(menu.getChestSlotCount())));
+            lines.add(Component.translatable("gui.colossalchests2.slots_full", formatCount(getFullSlots())).withStyle(ChatFormatting.GRAY));
             int overCapacity = getOverCapacityCount();
             if (overCapacity > 0) {
                 lines.add(Component.translatable("gui.colossalchests2.over_capacity", formatCount(overCapacity)).withStyle(ChatFormatting.RED));

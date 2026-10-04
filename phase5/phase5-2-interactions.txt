@@ -1,0 +1,37 @@
+# Continues phase5-1-open. Installs Depth by clicking, shows the refusal, locks, reserves a slot, then swaps Lock for Slot Expansion.
+# Hotbar (gui coords at 854x480, scale 2): depth 141,195; slot expansion 159,195; lock 177,195. Upgrade slots: 114,43 and 114,61.
+click --at 141,195 --button 0
+click --at 114,43 --button 0
+click --at 141,195 --button 0
+wait --ticks 3
+mouse-move 400,10
+screenshot --name phase5-depth-installed
+eval "server.execute { def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(0, dev.item('minecraft:stone'), 2000, false) }"
+wait --ticks 5
+mouse-move 114,43
+wait --ticks 3
+screenshot --name phase5-removal-refused
+click --at 114,43 --button 0
+click --at 177,195 --button 0
+click --at 114,61 --button 0
+wait --ticks 3
+# Alt can't be faked, so the alt-click is sent as its click packet.
+eval "def cl = screen.getClass().getClassLoader(); def P = cl.loadClass('org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket'); def A = cl.loadClass('org.cyclops.colossalchests2.inventory.ChestClickAction'); cl.loadClass('org.cyclops.colossalchests2.ColossalChestsInstance').MOD.getPacketHandlerCommon().sendToServer(P.newInstance(screen.menu.containerId, 0, A.TOGGLE_LOCK))"
+command "give @p minecraft:dirt 16"
+wait --ticks 5
+click --at 177,195 --button 0
+click --at 249,69 --button 1
+click --at 177,195 --button 0
+wait --ticks 3
+mouse-move 400,10
+screenshot --name phase5-locks
+mouse-move 141,69
+wait --ticks 3
+screenshot --name phase5-locked-tooltip
+click --at 114,61 --button 0
+click --at 195,195 --button 0
+click --at 159,195 --button 0
+click --at 114,61 --button 0
+wait --ticks 10
+mouse-move 400,10
+screenshot --name phase5-slot-expansion

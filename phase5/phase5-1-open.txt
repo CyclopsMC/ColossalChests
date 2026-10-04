@@ -1,0 +1,13 @@
+# Fresh world. A copper 4x4 with some contents, upgrades in the inventory, opened from a wall.
+command "fill 2 4 4 5 7 7 colossalchests2:chest_wall_copper hollow"
+command "setblock 3 5 4 colossalchests2:chest_core_copper"
+command "give @p colossalchests2:upgrade_depth 2"
+command "give @p colossalchests2:upgrade_slot_expansion 2"
+command "give @p colossalchests2:upgrade_lock"
+wait --ticks 10
+eval "server.execute { def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(dev.item('minecraft:stone'), 5000, false); s.insert(dev.item('minecraft:diamond'), 3, false); s.insert(dev.item('minecraft:oak_log'), 300, false) }"
+teleport 3.5 4 1 --yaw 0 --pitch -5
+use 2 5 4 --face north
+wait --ticks 10
+mouse-move 400,10
+screenshot --name phase5-gui

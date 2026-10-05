@@ -12,6 +12,8 @@
   "block.colossalchests2.chest_wall_void": "Void Chest Interface",
   "block.colossalchests2.chest_wall_void.info": "An interface that destroys overflowing items.",
   "block.colossalchests2.chest_wall_display": "Chest Display",
+  "block.colossalchests2.chest_wall_magnet": "Magnet Chest Wall",
+  "block.colossalchests2.chest_wall_magnet.info": "Pulls dropped items around it into the chest.",
   "block.colossalchests2.chest_wall_display.info": "Shows an item and its count. Take items with (sneak-)left-click and insert with (double) right-click. Right-click with empty hand to configure.",
   "block.colossalchests2.chest_wall_gold": "Golden Chest Wall",
   "block.colossalchests2.chest_core_gold": "Golden Chest Core",

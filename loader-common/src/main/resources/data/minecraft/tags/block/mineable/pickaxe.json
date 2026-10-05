@@ -14,6 +14,7 @@
     "colossalchests2:chest_core_netherite",
     "colossalchests2:chest_wall_interface",
     "colossalchests2:chest_wall_void",
-    "colossalchests2:chest_wall_display"
+    "colossalchests2:chest_wall_display",
+    "colossalchests2:chest_wall_magnet"
   ]
 }

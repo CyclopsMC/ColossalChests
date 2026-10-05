@@ -1966,4 +1966,66 @@ public class GameTestsCommon {
                 .thenSucceed();
     }
 
+    // Magnet walls
+
+    private static ItemEntity dropItem(GameTestHelper helper, Vec3 relative, ItemStack stack) {
+        Vec3 absolute = helper.absoluteVec(relative);
+        ItemEntity item = new ItemEntity(helper.getLevel(), absolute.x, absolute.y, absolute.z, stack.copy(), 0, 0, 0);
+        helper.getLevel().addFreshEntity(item);
+        return item;
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 200)
+    public void testMagnetWallPullsItems(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.MAGNET);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    helper.assertTrue(getWall(helper, wallPos).getItemHandlerLogic().isEmpty(), "Expected no item access through a Magnet wall");
+                    // Above the chest, and to the side of it at its height.
+                    dropItem(helper, Vec3.atCenterOf(wallPos.above(3)), STONE.copyWithCount(16));
+                    dropItem(helper, Vec3.atCenterOf(MIN_A.offset(5, 0, 1)), new ItemStack(Items.DIRT, 3));
+                    // Items that may not be picked up, such as ones a player just threw, are left alone.
+                    dropItem(helper, Vec3.atCenterOf(wallPos.above(2).east(2)), new ItemStack(Items.DIAMOND)).setNeverPickUp();
+                })
+                .thenWaitUntil(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    helper.assertValueEqual(DisplayStats.of(storage, STONE).count(), 16L, "stone pulled in");
+                    helper.assertValueEqual(DisplayStats.of(storage, new ItemStack(Items.DIRT)).count(), 3L, "dirt pulled in");
+                })
+                .thenExecute(() -> {
+                    AABB area = new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(16);
+                    helper.assertValueEqual(helper.getLevel().getEntitiesOfClass(ItemEntity.class, area, item -> item.getItem().is(Items.STONE)).size(), 0, "stone entities left");
+                    helper.assertValueEqual(helper.getLevel().getEntitiesOfClass(ItemEntity.class, area, item -> item.getItem().is(Items.DIAMOND)).size(), 1, "diamond entities left");
+                    helper.assertValueEqual(DisplayStats.of(getCore(helper, corePos).getStorage(), new ItemStack(Items.DIAMOND)).count(), 0L, "diamonds pulled in");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 200)
+    public void testMagnetWallLeavesWhatDoesNotFit(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.MAGNET);
+        BlockPos dropPos = wallPos.above(2).east(2);
+        ItemEntity[] dirt = new ItemEntity[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    // Every slot full of stone.
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    storage.insert(STONE, Long.MAX_VALUE / 4, false);
+                    helper.assertValueEqual(storage.insert(new ItemStack(Items.DIRT), 1, true), 0L, "room for dirt");
+                    dirt[0] = dropItem(helper, Vec3.atCenterOf(dropPos), new ItemStack(Items.DIRT));
+                })
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    helper.assertTrue(dirt[0].isAlive(), "Expected the dirt to stay");
+                    // It fell straight down instead of being pulled towards the wall.
+                    helper.assertValueEqual(dirt[0].blockPosition().getX(), helper.absolutePos(dropPos).getX(), "dirt x");
+                    helper.assertValueEqual(dirt[0].blockPosition().getZ(), helper.absolutePos(dropPos).getZ(), "dirt z");
+                })
+                .thenSucceed();
+    }
+
 }

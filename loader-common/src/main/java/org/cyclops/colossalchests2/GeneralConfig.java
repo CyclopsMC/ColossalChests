@@ -15,6 +15,7 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     public static final int MIN_SIZE = 2;
     public static final int HARD_MAX_SIZE = 10;
     public static final int HARD_MAX_SLOTS = 108;
+    public static final int HARD_MAX_MAGNET_RADIUS = 32;
 
     @ConfigurablePropertyCommon(category = "chest", comment = "The number of slots of a chest without upgrades.", minimalValue = 1, maximalValue = HARD_MAX_SLOTS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static int baseSlots = 27;
@@ -45,6 +46,11 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     @ConfigurablePropertyCommon(category = "chest", comment = "If items that do not stack, such as tools, can be stored.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static boolean acceptNonStackables = true;
 
+    @ConfigurablePropertyCommon(category = "magnet", comment = "If Magnet walls pull dropped items into their chest.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static boolean magnetEnabled = true;
+    @ConfigurablePropertyCommon(category = "magnet", comment = "How far from a Magnet wall dropped items are pulled, in blocks.", minimalValue = 1, maximalValue = HARD_MAX_MAGNET_RADIUS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static int magnetRadius = 8;
+
     @ConfigurablePropertyCommon(category = "display", comment = "If Display walls show blocks and other 3D items like an item frame, front-on, instead of like an inventory icon.", configLocation = ModConfigLocation.CLIENT)
     public static boolean displayItemFrameStyle = false;
 
@@ -66,6 +72,13 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
      */
     public static int getMaxSlots() {
         return Math.clamp(maxSlots, 1, HARD_MAX_SLOTS);
+    }
+
+    /**
+     * @return The radius of Magnet walls, within [1, {@link #HARD_MAX_MAGNET_RADIUS}].
+     */
+    public static int getMagnetRadius() {
+        return Math.clamp(magnetRadius, 1, HARD_MAX_MAGNET_RADIUS);
     }
 
     /**

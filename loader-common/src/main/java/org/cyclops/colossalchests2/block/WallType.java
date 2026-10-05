@@ -18,7 +18,11 @@ public enum WallType {
     /**
      * Shows one item type and its count on its faces, and lets players take and insert it by clicking.
      */
-    DISPLAY;
+    DISPLAY,
+    /**
+     * Pulls dropped items around it into the chest.
+     */
+    MAGNET;
 
     public static final WallType[] VALUES = values();
 
@@ -33,7 +37,7 @@ public enum WallType {
      * @return If automation can move items through this wall.
      */
     public boolean exposesItems() {
-        return this != DISPLAY;
+        return this == INTERFACE || this == VOID;
     }
 
     public String getRegistryName() {

@@ -119,7 +119,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         return switch (getWallType()) {
             case INTERFACE -> new WallAccess(mode, settings.getItems(), false);
             case VOID -> new WallAccess(WallAccess.Mode.BOTH, List.of(), true);
-            case DISPLAY -> WallAccess.OPEN;
+            case DISPLAY, MAGNET -> WallAccess.OPEN;
         };
     }
 

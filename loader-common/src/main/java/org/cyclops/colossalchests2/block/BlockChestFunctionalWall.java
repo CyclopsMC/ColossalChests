@@ -85,7 +85,13 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return type == WallType.DISPLAY && !level.isClientSide && blockEntityType == RegistryEntries.BLOCK_ENTITY_CHEST_WALL.value()
-                ? (l, p, s, be) -> BlockEntityChestWall.serverTick(l, p, s, (BlockEntityChestWall) be) : null;
+        if (level.isClientSide || blockEntityType != RegistryEntries.BLOCK_ENTITY_CHEST_WALL.value()) {
+            return null;
+        }
+        return switch (type) {
+            case DISPLAY -> (l, p, s, be) -> BlockEntityChestWall.serverTick(l, p, s, (BlockEntityChestWall) be);
+            case MAGNET -> (l, p, s, be) -> MagnetWall.tick(l, p, (BlockEntityChestWall) be);
+            default -> null;
+        };
     }
 }

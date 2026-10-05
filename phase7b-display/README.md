@@ -48,3 +48,23 @@ Real input, read back from the inventory:
 | Holding attack with an iron pickaxe | The wall breaks |
 
 `break` with an empty hand reports a failure, which is the expected outcome, hence `--continue-on-error`. `hold-key ATTACK` does not register a click like a mouse press does, so clicks are held for 8 ticks, past vanilla's 5 tick repeat delay in creative; that also checks that a held click takes only once.
+
+## Controls (display-4-controls.txt)
+
+An iron 3x3 with a Display wall showing iron ingots. Run in a fresh world on NeoForge, also checked on Fabric. Real input, read back from the inventory:
+
+| Action | Result |
+|---|---|
+| 5 quick sneak-left-clicks, 2 ticks apart (also 6 clicks 1 tick apart in survival) | 5 (6) iron ingots, the wall does not break |
+| Holding sneak-attack for 40 (survival: 60) ticks | 1 iron ingot, not one per repeat |
+| Sneak-right-click, empty hand | Nothing happens (PASS), no screen |
+| Right-click with 64 ingots, then right away with the now empty hand | Both inventory stacks inserted |
+| Right-click, empty hand, later | Opens the Display settings |
+
+| Screenshot | Shows |
+|---|---|
+| `display-settings.png` | The settings: one ghost slot with the shown item (screenshot from Fabric, with the final spacing) |
+| `display-settings-empty.png` | The tooltip of the empty slot (older 4px tighter spacing) |
+| `display-plate-side.png`, `display-plate-corner.png` | The plate has sides down to the chest, so it no longer floats. Where two plates meet on a corner block, a half pixel notch remains along the edge |
+
+In the settings, shift-clicking an inventory item shows it, clicking with an item shows it and keeps the cursor, clicking with an empty cursor clears it.

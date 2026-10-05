@@ -1,0 +1,62 @@
+# Fresh world. An iron 3x3 with a Display wall left of the core, showing iron ingots.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 2 5 4 colossalchests2:chest_wall_display"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+eval "server.submit({ server.overworld().getChunkAt(dev.pos(2, 5, 4)); def be = server.overworld().getBlockEntity(dev.pos(2, 5, 4)); be.setDisplayed(dev.item('minecraft:iron_ingot')); server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage().insert(dev.item('minecraft:iron_ingot'), 500, false) } as Runnable).get()"
+teleport 2.5 4 1 --yaw 0 --pitch 0
+look --at 2.5,5.5,4
+wait --ticks 20
+# Five quick sneak-left-clicks take five ingots. Raising the click count is what a mouse press does, hold-key is not.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 5
+eval "def k = mc.options.keyAttack; k.@clickCount = k.@clickCount + 1"
+wait --ticks 2
+eval "def k = mc.options.keyAttack; k.@clickCount = k.@clickCount + 1"
+wait --ticks 2
+eval "def k = mc.options.keyAttack; k.@clickCount = k.@clickCount + 1"
+wait --ticks 2
+eval "def k = mc.options.keyAttack; k.@clickCount = k.@clickCount + 1"
+wait --ticks 2
+eval "def k = mc.options.keyAttack; k.@clickCount = k.@clickCount + 1"
+wait --ticks 2
+wait --ticks 8
+inventory
+# Holding sneak-attack for 40 ticks takes one more, not one per repeat.
+hold-key ATTACK --ticks 40
+wait --ticks 10
+inventory
+block 2 5 4
+# Sneak-right-click with an empty hand does nothing.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+use 2 5 4 --face north
+wait --ticks 10
+status
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 5
+# Right-click with ingots inserts them, a quick empty right-click after it inserts the rest of the inventory.
+command "give @p minecraft:iron_ingot 64"
+command "give @p minecraft:iron_ingot 64"
+hold 0
+inventory
+use 2 5 4 --face north
+use 2 5 4 --face north
+wait --ticks 10
+inventory
+# Later, a plain empty right-click opens the settings.
+wait --ticks 20
+use 2 5 4 --face north
+wait --ticks 20
+status
+snapshot
+mouse-move 400,188
+wait --ticks 5
+screenshot --name display-settings
+# The plate from the side.
+close-screen
+teleport 0.6 5 3.3
+look --at 2.0,5.5,4
+wait --ticks 40
+screenshot --name display-plate-side

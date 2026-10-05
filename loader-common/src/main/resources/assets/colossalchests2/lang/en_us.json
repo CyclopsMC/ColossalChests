@@ -13,7 +13,7 @@
   "block.colossalchests2.chest_wall_void.info": "An interface that destroys overflowing items.",
   "block.colossalchests2.chest_wall_display": "Chest Display",
   "block.colossalchests2.chest_wall_redstone": "Redstone Chest Wall",
-  "block.colossalchests2.chest_wall_redstone.info": "Gives a comparator signal for the whole chest or one item. Sneak-right-click with empty hand to choose the item.",
+  "block.colossalchests2.chest_wall_redstone.info": "Emits a redstone signal, also to comparators, by how full the chest or one item is. Sneak-right-click with empty hand to choose the item.",
   "block.colossalchests2.chest_wall_display.info": "Shows an item and its count. Take items with (sneak-)left-click and insert with (double) right-click. Right-click with empty hand to configure.",
   "block.colossalchests2.chest_wall_gold": "Golden Chest Wall",
   "block.colossalchests2.chest_core_gold": "Golden Chest Core",

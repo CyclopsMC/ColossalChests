@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComparatorBlock;
 import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
@@ -1980,16 +1981,27 @@ public class GameTestsCommon {
         BlockPos comparatorPos = wallPos.north();
         helper.setBlock(comparatorPos.below(), Blocks.STONE);
         helper.setBlock(comparatorPos, Blocks.COMPARATOR.defaultBlockState().setValue(ComparatorBlock.FACING, Direction.SOUTH));
+        // A second wall powers a lamp directly, without a comparator.
+        BlockPos lampWallPos = placeWall(helper, MIN_A.offset(1, 0, 2), WallType.REDSTONE);
+        BlockPos lampPos = lampWallPos.south();
+        helper.setBlock(lampPos, Blocks.REDSTONE_LAMP);
         ItemStack dirt = new ItemStack(Items.DIRT);
         helper.startSequence()
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
                     helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 0, "signal of an empty chest");
+                    helper.assertBlockProperty(lampPos, RedstoneLampBlock.LIT, false);
                     helper.assertTrue(getWall(helper, wallPos).getItemHandlerLogic().isEmpty(), "Expected no item access through a Redstone wall");
                     getCore(helper, corePos).getStorage().insert(STONE, 1024, false);
                 })
                 // Without a target, like the core: one full slot of 27.
                 .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 1, "whole chest signal"))
+                .thenWaitUntil(() -> {
+                    helper.assertBlockProperty(lampPos, RedstoneLampBlock.LIT, true);
+                    helper.assertValueEqual(helper.getLevel().getSignal(helper.absolutePos(lampWallPos), Direction.NORTH), 1, "weak power");
+                    // Weak power only, like a trapped chest's sides.
+                    helper.assertValueEqual(helper.getLevel().getDirectSignal(helper.absolutePos(lampWallPos), Direction.NORTH), 0, "strong power");
+                })
                 .thenExecute(() -> getWall(helper, wallPos).getRedstoneTarget().setItem(0, dirt.copy()))
                 .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 0, "signal without dirt"))
                 .thenExecute(() -> {
@@ -2015,6 +2027,7 @@ public class GameTestsCommon {
                     // Only Redstone walls give a signal.
                     BlockState interfaceState = functionalWall(WallType.INTERFACE).defaultBlockState();
                     helper.assertFalse(interfaceState.hasAnalogOutputSignal(), "Expected no signal from an Interface");
+                    helper.assertFalse(interfaceState.isSignalSource(), "Expected no power from an Interface");
                 })
                 // Two full slots of 27.
                 .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 2, "whole chest signal again"))

@@ -61,6 +61,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
      */
     public static final int DOUBLE_CLICK_TICKS = 10;
     private static final int DISPLAY_UPDATE_TICKS = 10;
+    private static final int SIGNAL_UPDATE_TICKS = 10;
 
     private final SimpleContainer settings = new SimpleContainer(FILTER_SLOTS) {
         @Override
@@ -81,14 +82,14 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     private int disabledOptions;
     private final Map<UUID, InsertClick> lastInserts = Maps.newHashMap();
     private final Container displayedContainer = new DisplayedContainer();
+    // The last signal a Redstone wall emitted, so redstone does not recompute it on every query.
+    private int redstoneSignal;
     private final SimpleContainer redstoneTarget = new SimpleContainer(1) {
         @Override
         public void setChanged() {
             super.setChanged();
             BlockEntityChestWall.this.setChanged();
-            if (level != null && !level.isClientSide) {
-                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
-            }
+            updateRedstoneSignal();
         }
 
         @Override
@@ -154,6 +155,31 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         ItemStack target = redstoneTarget.getItem(0);
         return getCore().map(core -> target.isEmpty() ? StorageSignals.getComparatorSignal(core.getStorage())
                 : StorageSignals.getComparatorSignal(core.getStorage(), target)).orElse(0);
+    }
+
+    /**
+     * @return The redstone power a Redstone wall emits to its neighbours, as last updated.
+     */
+    public int getRedstoneSignal() {
+        return redstoneSignal;
+    }
+
+    /**
+     * Refresh the signal of a Redstone wall: comparators read it again, and neighbours are updated when its power
+     * changed.
+     */
+    public void updateRedstoneSignal() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        Block block = getBlockState().getBlock();
+        int signal = getComparatorSignal();
+        if (signal != redstoneSignal) {
+            redstoneSignal = signal;
+            setChanged();
+            level.updateNeighborsAt(worldPosition, block);
+        }
+        level.updateNeighbourForOutputSignal(worldPosition, block);
     }
 
     /**
@@ -303,6 +329,10 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         if (level.getGameTime() % DISPLAY_UPDATE_TICKS == 0 && wall.getWallType() == WallType.DISPLAY) {
             wall.updateDisplayStats(false);
         }
+        // Contents changes update the signal right away, this catches the chest forming or breaking.
+        if (level.getGameTime() % SIGNAL_UPDATE_TICKS == 0 && wall.getWallType() == WallType.REDSTONE) {
+            wall.updateRedstoneSignal();
+        }
     }
 
     private void onSettingsChanged() {
@@ -328,6 +358,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         if (!redstoneTarget.getItem(0).isEmpty()) {
             tag.put("redstone_target", redstoneTarget.getItem(0).save(registries));
         }
+        tag.putInt("redstone_signal", redstoneSignal);
     }
 
     private void saveDisplay(CompoundTag tag, HolderLookup.Provider registries, boolean withStats) {
@@ -383,6 +414,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         loadDisplay(tag, registries);
         redstoneTarget.getItems().set(0, tag.contains("redstone_target")
                 ? ItemStack.parseOptional(registries, tag.getCompound("redstone_target")) : ItemStack.EMPTY);
+        redstoneSignal = tag.getInt("redstone_signal");
     }
 
     @Override

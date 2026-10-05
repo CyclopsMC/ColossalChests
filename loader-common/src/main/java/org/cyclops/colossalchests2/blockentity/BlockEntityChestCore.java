@@ -358,8 +358,9 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
             level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
             for (BlockPos pos : decoratedPositions) {
                 BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof BlockChestFunctionalWall wall && wall.getType() == WallType.REDSTONE) {
-                    level.updateNeighbourForOutputSignal(pos, wall);
+                if (state.getBlock() instanceof BlockChestFunctionalWall wall && wall.getType() == WallType.REDSTONE
+                        && level.getBlockEntity(pos) instanceof BlockEntityChestWall redstoneWall) {
+                    redstoneWall.updateRedstoneSignal();
                 }
             }
         }

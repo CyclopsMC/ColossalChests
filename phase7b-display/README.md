@@ -24,17 +24,17 @@ A wood and an iron 3x3, each with Display walls for cobblestone, iron ingots, oa
 
 A Display wall at the top centre sits under the chest's latch, which hides part of it (kept as is).
 
-## Visual settings (display-1-face.txt)
+## Per side options (display-1-face.txt)
 
 An iron 3x3 with Compression, Lock and Void, holding 300 iron blocks in a locked, voiding slot. Right-clicking the Display wall with 10 iron ingots makes it show iron ingots and inserts them.
 
 | Screenshot | Shows |
 |---|---|
-| `display-all-toggles.png` | All visual settings on: 2.71K (300 blocks and 10 ingots counted as ingots), fill bar, and the Compression, Void and Lock indicators |
+| `display-all-toggles.png` | All options of the front side on: 2.71K (300 blocks and 10 ingots counted as ingots), fill bar, and the Compression, Void and Lock indicators |
 | `display-no-counts.png` | Counts off |
 | `display-no-fill.png` | Fill levels off |
 | `display-no-indicators.png` | Upgrade indicators off |
-| `display-toggles.png` | The four states side by side |
+| `display-toggles.png` | The four states side by side (from before the plate had sides) |
 
 ## Clicks (display-2-clicks.txt)
 
@@ -81,3 +81,13 @@ An iron 3x3 with a Display wall on its top left front corner. Real right-clicks 
 | `display-faces-front-hidden.png` | The hidden front shows the plain chest, the right side still shows cobblestone |
 
 Right-clicking the hidden front with an empty hand opened the chest, like a plain wall.
+
+## Options per side (display-6-options.txt)
+
+The corner wall of display-5-faces.txt, with a Lock upgrade and its iron slot locked.
+
+| Screenshot | Shows |
+|---|---|
+| `display-options-settings.png` | Each side has icon toggles for count, fill level and upgrades under its Shown/Hidden button; off is dimmed and struck through. Here: top upgrades, front count and right fill level off, with the tooltip of the front count |
+| `display-options-world.png` | The front shows the fill bar and the Lock indicator but no count; the right side shows its count but no fill bar |
+| `chest-settings-tab.png` | The chest's settings tab, which keeps only the lock and void buttons |

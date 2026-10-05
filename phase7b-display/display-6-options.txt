@@ -1,0 +1,23 @@
+# Continues display-5-faces.txt up to its first screenshot. Per side options of the corner wall.
+# Lock upgrade and a locked iron slot, so the front shows an indicator.
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.getUpgrades().setItem(0, dev.item('colossalchests2:upgrade_lock')); be.getStorage().setLocked(0, true) } as Runnable).get()"
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+wait --ticks 20
+screenshot --name display-options-before
+open-gui 2 6 4 --face north
+# Front: count off. Right: fill level off. Top: upgrades off.
+click --widget /root/children[5]
+wait --ticks 5
+click --widget /root/children[10]
+wait --ticks 5
+click --widget /root/children[3]
+wait --ticks 5
+snapshot
+mouse-move 383,212
+wait --ticks 5
+screenshot --name display-options-settings
+close-screen
+teleport 0.2 4 1.8
+look --at 2.5,6.6,4.5
+wait --ticks 40
+screenshot --name display-options-world

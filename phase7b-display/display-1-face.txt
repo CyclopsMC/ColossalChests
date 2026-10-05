@@ -1,4 +1,4 @@
-# Fresh world. An iron 3x3 with Compression, Lock and Void, and a Display wall left of the core.
+# Fresh world. The front side's options are toggled per side. An iron 3x3 with Compression, Lock and Void, and a Display wall left of the core.
 resize --width 1600 --height 900 --gui-scale 2
 command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
 command "setblock 2 5 4 colossalchests2:chest_wall_display"
@@ -18,13 +18,13 @@ teleport 2.5 4 0 --yaw 0 --pitch 0
 look --at 2.5,5.5,4
 wait --ticks 40
 screenshot --name display-all-toggles
-eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowCounts(false)) } as Runnable).get()"
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(2, 5, 4)); def opt = be.class.classLoader.loadClass('org.cyclops.colossalchests2.blockentity.DisplayOption'); def f = be.getDisplayFaces().find { it.name() == 'NORTH' }; be.setEnabled(f, opt.COUNT, false) } as java.util.function.Supplier).get()"
 wait --ticks 40
 screenshot --name display-no-counts
-eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowCounts(true).withShowFillLevels(false)) } as Runnable).get()"
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(2, 5, 4)); def opt = be.class.classLoader.loadClass('org.cyclops.colossalchests2.blockentity.DisplayOption'); def f = be.getDisplayFaces().find { it.name() == 'NORTH' }; be.setEnabled(f, opt.COUNT, true); be.setEnabled(f, opt.FILL_LEVEL, false) } as java.util.function.Supplier).get()"
 wait --ticks 40
 screenshot --name display-no-fill
-eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowFillLevels(true).withShowUpgradeIndicators(false)) } as Runnable).get()"
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(2, 5, 4)); def opt = be.class.classLoader.loadClass('org.cyclops.colossalchests2.blockentity.DisplayOption'); def f = be.getDisplayFaces().find { it.name() == 'NORTH' }; be.setEnabled(f, opt.FILL_LEVEL, true); be.setEnabled(f, opt.UPGRADE_INDICATORS, false) } as java.util.function.Supplier).get()"
 wait --ticks 40
 screenshot --name display-no-indicators
-eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(3, 5, 4)); be.setSettings(be.getSettings().withShowUpgradeIndicators(true)) } as Runnable).get()"
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(2, 5, 4)); def opt = be.class.classLoader.loadClass('org.cyclops.colossalchests2.blockentity.DisplayOption'); def f = be.getDisplayFaces().find { it.name() == 'NORTH' }; be.setEnabled(f, opt.UPGRADE_INDICATORS, true) } as java.util.function.Supplier).get()"

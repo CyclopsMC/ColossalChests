@@ -165,21 +165,21 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     }
 
     /**
-     * Refresh the signal of a Redstone wall: comparators read it again, and neighbours are updated when its power
-     * changed.
+     * Refresh the signal of a Redstone wall. Only when it changed are neighbours and comparators updated, as both
+     * read the same value.
      */
     public void updateRedstoneSignal() {
         if (level == null || level.isClientSide) {
             return;
         }
-        Block block = getBlockState().getBlock();
         int signal = getComparatorSignal();
         if (signal != redstoneSignal) {
             redstoneSignal = signal;
             setChanged();
+            Block block = getBlockState().getBlock();
             level.updateNeighborsAt(worldPosition, block);
+            level.updateNeighbourForOutputSignal(worldPosition, block);
         }
-        level.updateNeighbourForOutputSignal(worldPosition, block);
     }
 
     /**

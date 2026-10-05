@@ -1,0 +1,41 @@
+# Fresh world. An iron 3x3 (2..4, 4..6, 4..6) with a Redstone wall at the bottom middle of the front, a comparator
+# in front of it and a redstone lamp after that.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 3 4 4 colossalchests2:chest_wall_redstone"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+command "setblock 3 4 3 minecraft:comparator[facing=south]"
+command "setblock 3 4 2 minecraft:redstone_wire"
+command "setblock 3 4 1 minecraft:redstone_lamp"
+wait --ticks 20
+teleport 5.5 4 0.5
+look --at 3.5,4.5,2.5
+wait --ticks 20
+block 3 4 3 --nbt
+screenshot --name redstone-empty
+# Stone in the chest lights the lamp, like a comparator on the core.
+eval "server.submit({ server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage().insert(dev.item('minecraft:stone'), 5000, false) } as Runnable).get()"
+wait --ticks 20
+block 3 4 3 --nbt
+block 3 4 1
+screenshot --name redstone-whole-chest
+# Sneak-right-click with an empty hand opens the settings.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent(); server.playerList.players[0].getInventory().setItem(9, dev.item('minecraft:dirt')) } as Runnable).get()"
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 5
+use 3 4 4 --face north
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 10
+snapshot
+mouse-move 16,16
+wait --ticks 5
+screenshot --name redstone-settings-whole-chest
+# Shift-clicking dirt targets dirt: the chest holds none, so the signal drops to 0.
+slot-click 1 --type quick_move
+wait --ticks 10
+screenshot --name redstone-settings-dirt
+close-screen
+wait --ticks 20
+block 3 4 3 --nbt
+block 3 4 1
+screenshot --name redstone-dirt-none

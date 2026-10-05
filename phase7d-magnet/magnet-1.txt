@@ -1,0 +1,33 @@
+# Fresh world. An iron 3x3 (2..4, 4..6, 4..6) with a Magnet wall at the top middle.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 3 6 5 colossalchests2:chest_wall_magnet"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+command "give @p minecraft:cobblestone 64"
+hold 0
+teleport 3.5 4 -1.5 --yaw 0 --pitch 0
+look --at 3.5,6,1
+wait --ticks 10
+# Throw the stack with the drop key: thrown items have a pickup delay, so they land first and are pulled after it.
+eval "mc.player.drop(true)"
+wait --ticks 6
+screenshot --name magnet-thrown
+wait --ticks 30
+screenshot --name magnet-pulling
+wait --ticks 40
+eval "server.submit({ server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage().getSlot(0).toString() } as java.util.function.Supplier).get()"
+# A block broken nearby drops into the chest.
+command "setblock 7 4 5 minecraft:oak_log"
+command "setblock 7 4 5 minecraft:air destroy"
+wait --ticks 60
+eval "server.submit({ def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); (0..2).collect { s.getSlot(it).toString() } } as java.util.function.Supplier).get()"
+# No loose items are left.
+eval "server.submit({ server.overworld().getAllEntities().findAll { it.class.simpleName == 'ItemEntity' }.collect { it.getItem().toString() } } as java.util.function.Supplier).get()"
+# Sneaking shows the wall's icon.
+teleport 2.3 7 4.2
+look --at 3.5,7,5.5
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 30
+screenshot --name magnet-sneak-icon
+eval "mc.options.keyShift.setDown(false)"

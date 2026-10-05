@@ -1,0 +1,31 @@
+# Fresh world. Chest A (wood 2x2 at 2..3, 4..5, 4..5) holds stone; its core is broken to get a core item carrying it.
+# Chest B (iron 3x3 at 8..10, 4..6, 4..6) is where it is offered.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 3 5 5 colossalchests2:chest_wall_wood"
+command "setblock 2 4 4 colossalchests2:chest_core_wood"
+command "fill 8 4 4 10 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 9 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+eval "server.submit({ server.overworld().getBlockEntity(dev.pos(2, 4, 4)).getStorage().insert(dev.item('minecraft:stone'), 100, false) } as java.util.function.Supplier).get()"
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+command "setblock 2 4 4 minecraft:air destroy"
+wait --ticks 5
+command "give @p minecraft:shulker_box[container=[{slot:0,item:{id:'minecraft:stone',count:1}}]]"
+# Slot 9: the core with contents. Slot 10: a shulker box holding a copy of it. Slot 11: a shulker box with stone.
+eval "server.submit({ def inv = server.playerList.players[0].getInventory(); def drop = server.overworld().getAllEntities().find { it.class.simpleName == 'ItemEntity' && it.getItem().toString().contains('chest_core') }; def core = drop.getItem().copy(); drop.discard(); inv.setItem(9, core); def stoneShulker = inv.removeItemNoUpdate(0); def entry = stoneShulker.getComponentsPatch().entrySet().find { it.key.toString().contains('container') }; def filled = stoneShulker.copy(); filled.set(entry.key, entry.value.get().class.fromItems([core.copy()])); inv.setItem(10, filled); inv.setItem(11, stoneShulker); 'ok' } as java.util.function.Supplier).get()"
+inventory
+# Shift-click all three into chest B, standing on it so the menu stays in reach.
+teleport 9.5 7 5.5
+wait --ticks 10
+open-gui 9 5 4 --face north
+slot-click 0 --type quick_move
+wait --ticks 5
+slot-click 1 --type quick_move
+wait --ticks 5
+slot-click 2 --type quick_move
+wait --ticks 5
+close-screen
+inventory
+eval "server.submit({ def s = server.overworld().getBlockEntity(dev.pos(9, 5, 4)).getStorage(); (0..2).collect { s.getSlot(it).toString() } } as java.util.function.Supplier).get()"
+# Expected: the chest holds only the stone shulker box; the core and the shulker box holding it stay in the inventory.
+eval "server.submit({ def st = server.overworld().getBlockEntity(dev.pos(9, 5, 4)).getStorage().getSlot(0).getPrototype(); def inv = server.playerList.players[0].getInventory(); def c = { s -> s.getComponentsPatch().entrySet().find { it.key.toString().contains('container') }.value.get().nonEmptyItems().collect { it.toString() } }; ['stored': c(st), 'kept10': c(inv.getItem(10))] } as java.util.function.Supplier).get()"

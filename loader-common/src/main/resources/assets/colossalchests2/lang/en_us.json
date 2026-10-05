@@ -75,7 +75,7 @@
   "gui.colossalchests2.display.shown": "Shown",
   "gui.colossalchests2.display.hidden": "Hidden",
   "gui.colossalchests2.display.shown_option": "Visibility",
-  "gui.colossalchests2.display.shown_option.info": "A hidden side looks and acts like a plain chest wall. At least one side stays shown.",
+  "gui.colossalchests2.display.shown_option.info": "A hidden side looks and acts like a plain chest wall. Sneak to see it, sneak-right-click it with empty hand for these settings.",
   "gui.colossalchests2.display.count": "Count: %s",
   "gui.colossalchests2.display.count.info": "If this side shows how many of its item the chest holds.",
   "gui.colossalchests2.display.fill_level": "Fill level: %s",

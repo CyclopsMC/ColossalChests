@@ -179,16 +179,14 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     }
 
     /**
-     * Turn an option of a face of a Display wall on or off. The last shown face of a formed chest can not be hidden, so
-     * its settings stay reachable.
+     * Turn an option of a face of a Display wall on or off.
      * @param face A face.
      * @param option An option.
      * @param enabled If it is on.
      * @return If it changed.
      */
     public boolean setEnabled(Direction face, DisplayOption option, boolean enabled) {
-        if (isEnabled(face, option) == enabled || (option == DisplayOption.SHOWN && !enabled
-                && getDisplayFaces().stream().noneMatch(other -> other != face && !isFaceHidden(other)))) {
+        if (isEnabled(face, option) == enabled) {
             return false;
         }
         disabledOptions ^= getOptionBit(face, option);

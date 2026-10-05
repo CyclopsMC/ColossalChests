@@ -1913,7 +1913,8 @@ public class GameTestsCommon {
                     helper.assertTrue(wall.isEnabled(Direction.WEST, DisplayOption.FILL_LEVEL), "Expected a fill level on the west face");
                     helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.NORTH, DisplayOption.SHOWN)), "Expected north to be hidden");
                     helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.WEST, DisplayOption.SHOWN)), "Expected west to be hidden");
-                    helper.assertFalse(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.UP, DisplayOption.SHOWN)), "Expected the last face to stay shown");
+                    helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.UP, DisplayOption.SHOWN)), "Expected all faces to hide");
+                    helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.UP, DisplayOption.SHOWN)), "Expected the top to show again");
                     helper.assertFalse(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.SOUTH, DisplayOption.COUNT)), "Expected an inner face to be refused");
                     helper.assertTrue(wall.isFaceHidden(Direction.NORTH), "Expected north to be hidden");
                     helper.assertFalse(wall.isFaceHidden(Direction.UP), "Expected the top to be shown");

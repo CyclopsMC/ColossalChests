@@ -159,13 +159,20 @@ public final class DisplayWallInteractions {
 
     /**
      * A right-click with an empty hand on a face: right after an insert there it inserts all of the type it shows,
-     * otherwise it opens the settings. Sneaking does nothing.
+     * otherwise it opens the settings. Sneaking does nothing, except on a hidden face, where it is the only way to the
+     * settings.
      * @return The result, or null to fall back to the default wall behaviour.
      */
     @Nullable
     public static InteractionResult useWithoutItem(Player player, BlockEntityChestWall wall, Direction face) {
         if (wall.isFaceHidden(face)) {
-            return null;
+            if (!player.isSecondaryUseActive()) {
+                return null;
+            }
+            if (player instanceof ServerPlayer serverPlayer) {
+                openSettings(serverPlayer, wall);
+            }
+            return InteractionResult.sidedSuccess(player.level().isClientSide);
         }
         if (player.isSecondaryUseActive()) {
             return InteractionResult.PASS;
@@ -177,10 +184,14 @@ public final class DisplayWallInteractions {
                 insertAll(player, storage.get(), wall.getDisplayed(face));
                 wall.updateDisplayStats(false);
             } else {
-                IModHelpers.get().getMinecraftHelpers().openMenu(serverPlayer, wall, buf -> ContainerDisplay.writeOpenData(buf, wall));
+                openSettings(serverPlayer, wall);
             }
         }
         return InteractionResult.sidedSuccess(player.level().isClientSide);
+    }
+
+    private static void openSettings(ServerPlayer player, BlockEntityChestWall wall) {
+        IModHelpers.get().getMinecraftHelpers().openMenu(player, wall, buf -> ContainerDisplay.writeOpenData(buf, wall));
     }
 
     /**

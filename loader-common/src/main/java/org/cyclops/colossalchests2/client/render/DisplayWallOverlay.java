@@ -29,12 +29,16 @@ import java.util.List;
 
 /**
  * Shows each shown face of a Display wall as a recessed panel in a frame of the chest's material, with its item, count,
- * fill level and the upgrades affecting it, as the face's options say. Hidden faces show the plain chest.
+ * fill level and the upgrades affecting it, as the face's options say. Hidden faces show the plain chest, or the Display
+ * wall icon while the player sneaks.
  * @author rubensworks
  */
 public class DisplayWallOverlay implements IChestOverlay {
 
     private static final ResourceLocation PANEL_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/display_panel");
+    private static final ResourceLocation HIDDEN_ICON = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_wall_display_icon");
+    private static final float ICON_MIN = 3F / 16F;
+    private static final float ICON_MAX = 13F / 16F;
     private static final ResourceLocation BAR_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/display_bar");
     private static final int COLOR_TEXT = 0xFFFFFF;
     private static final int COLOR_BAR_BACKGROUND = 0xFF101010;
@@ -56,10 +60,18 @@ public class DisplayWallOverlay implements IChestOverlay {
     public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
                        PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
         Level level = core.getLevel();
-        if (!(level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) || wall.isFaceHidden(face)) {
+        if (!(level.getBlockEntity(pos) instanceof BlockEntityChestWall wall)) {
             return;
         }
         TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
+        if (wall.isFaceHidden(face)) {
+            // Like other functional walls, so its settings can be found again.
+            if (ChestOverlayHelpers.isRevealingMembers()) {
+                ChestOverlayHelpers.renderSprite(poseStack, buffers, atlas.getSprite(HIDDEN_ICON), ICON_MIN, ICON_MIN, ICON_MAX, ICON_MAX,
+                        light, overlay);
+            }
+            return;
+        }
         poseStack.pushPose();
         renderPanel(core, atlas, poseStack, buffers, light, overlay);
         ItemStack displayed = wall.getDisplayed(face);

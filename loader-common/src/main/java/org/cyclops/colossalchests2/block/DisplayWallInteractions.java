@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -12,21 +13,31 @@ import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.network.packet.ServerboundDisplayTakePacket;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 /**
  * Drawer style clicks on Display walls: left-click takes, right-click inserts, a double right-click inserts all.
+ * An empty right-click opens the settings.
  * @author rubensworks
  */
 public final class DisplayWallInteractions {
 
-    private static final int HELD_CLICK_TICKS = 6;
-
-    private static long lastAttackTick = -HELD_CLICK_TICKS - 1;
+    private static boolean attackReleased = true;
 
     private DisplayWallInteractions() {
+    }
+
+    /**
+     * Called on the client at the end of each tick.
+     * @param attackDown If the attack button is held.
+     */
+    public static void onClientTick(boolean attackDown) {
+        if (!attackDown) {
+            attackReleased = true;
+        }
     }
 
     public static boolean isDisplayWall(BlockState state) {
@@ -45,7 +56,7 @@ public final class DisplayWallInteractions {
 
     /**
      * Handle a left-click on a block, called on both sides by the loaders before mining starts.
-     * The client asks the server to take items, once per click and not while the button is held.
+     * The client asks the server to take items, once per click.
      * @param player The player.
      * @param level The level.
      * @param pos The clicked position.
@@ -55,14 +66,10 @@ public final class DisplayWallInteractions {
         if (!isProtectedFromMining(level.getBlockState(pos), player)) {
             return false;
         }
-        if (level.isClientSide) {
-            long tick = level.getGameTime();
-            // A held click repeats every tick, or every 6 ticks in creative. A new click comes after a longer gap.
-            // Game time can also restart in another world.
-            if (tick - lastAttackTick > HELD_CLICK_TICKS || tick < lastAttackTick) {
-                ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundDisplayTakePacket(pos, player.isShiftKeyDown()));
-            }
-            lastAttackTick = tick;
+        // Holding the button repeats this, only a new click takes again.
+        if (level.isClientSide && attackReleased) {
+            attackReleased = false;
+            ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundDisplayTakePacket(pos, player.isShiftKeyDown()));
         }
         return true;
     }
@@ -102,7 +109,8 @@ public final class DisplayWallInteractions {
     @Nullable
     public static ItemInteractionResult useItemOn(ItemStack stack, Player player, BlockEntityChestWall wall) {
         Optional<ChestStorage> storage = getStorage(wall);
-        if (storage.isEmpty()) {
+        // An empty hand is handled by useWithoutItem.
+        if (stack.isEmpty() || storage.isEmpty()) {
             return null;
         }
         if (!player.level().isClientSide) {
@@ -122,27 +130,24 @@ public final class DisplayWallInteractions {
     }
 
     /**
-     * A right-click with an empty hand: sneaking clears the display, a double click inserts all of the shown type.
-     * @return The result, or null to fall back to opening the chest.
+     * A right-click with an empty hand: right after an insert it inserts all of the shown type, otherwise it opens the
+     * settings. Sneaking does nothing.
      */
-    @Nullable
     public static InteractionResult useWithoutItem(Player player, BlockEntityChestWall wall) {
-        if (getStorage(wall).isEmpty()) {
-            return null;
-        }
         if (player.isSecondaryUseActive()) {
-            if (!player.level().isClientSide) {
-                wall.setDisplayed(ItemStack.EMPTY);
-            }
-            return InteractionResult.sidedSuccess(player.level().isClientSide);
+            return InteractionResult.PASS;
         }
         // Only the server knows about the previous click, the client lets it decide.
-        if (!player.level().isClientSide && !wall.getDisplayed().isEmpty() && wall.recordInsertClick(player, player.level().getGameTime())) {
-            insertAll(player, getStorage(wall).get(), wall.getDisplayed());
-            wall.updateDisplayStats(false);
-            return InteractionResult.CONSUME;
+        if (player instanceof ServerPlayer serverPlayer) {
+            Optional<ChestStorage> storage = getStorage(wall);
+            if (storage.isPresent() && !wall.getDisplayed().isEmpty() && wall.recordInsertClick(player, player.level().getGameTime())) {
+                insertAll(player, storage.get(), wall.getDisplayed());
+                wall.updateDisplayStats(false);
+            } else {
+                IModHelpers.get().getMinecraftHelpers().openMenu(serverPlayer, wall, buf -> buf.writeBlockPos(wall.getBlockPos()));
+            }
         }
-        return null;
+        return InteractionResult.sidedSuccess(player.level().isClientSide);
     }
 
     /**

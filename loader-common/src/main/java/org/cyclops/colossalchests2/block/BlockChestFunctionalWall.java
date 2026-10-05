@@ -55,7 +55,7 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        // Like other walls a click opens the chest, sneaking opens an interface's own settings.
+        // Like other walls a click opens the chest, sneaking opens an interface's own settings. A display has its own.
         if (type == WallType.INTERFACE && player.isSecondaryUseActive()) {
             if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
                 IModHelpers.get().getMinecraftHelpers().openMenu(serverPlayer, wall, buf -> buf.writeBlockPos(pos));
@@ -63,10 +63,7 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (type == WallType.DISPLAY && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
-            InteractionResult result = DisplayWallInteractions.useWithoutItem(player, wall);
-            if (result != null) {
-                return result;
-            }
+            return DisplayWallInteractions.useWithoutItem(player, wall);
         }
         return super.useWithoutItem(state, level, pos, player, hit);
     }

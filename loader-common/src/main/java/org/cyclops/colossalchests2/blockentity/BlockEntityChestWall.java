@@ -28,6 +28,7 @@ import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.WallAccess;
+import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.storage.DisplayStats;
@@ -69,6 +70,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     private ItemStack displayed = ItemStack.EMPTY;
     private DisplayStats displayStats = DisplayStats.EMPTY;
     private final Map<UUID, Long> lastInserts = Maps.newHashMap();
+    private final Container displayedContainer = new DisplayedContainer();
 
     public BlockEntityChestWall(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -147,6 +149,13 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         lastInserts.clear();
         setChanged();
         updateDisplayStats(true);
+    }
+
+    /**
+     * @return A single slot container of the type a Display wall shows, for its menu.
+     */
+    public Container getDisplayedContainer() {
+        return displayedContainer;
     }
 
     /**
@@ -256,6 +265,63 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     @Nullable
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new ContainerInterface(id, inventory, this);
+        return getWallType() == WallType.DISPLAY ? new ContainerDisplay(id, inventory, this) : new ContainerInterface(id, inventory, this);
+    }
+
+    private class DisplayedContainer implements Container {
+
+        @Override
+        public int getContainerSize() {
+            return 1;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return displayed.isEmpty();
+        }
+
+        @Override
+        public ItemStack getItem(int slot) {
+            return slot == 0 ? displayed : ItemStack.EMPTY;
+        }
+
+        @Override
+        public ItemStack removeItem(int slot, int amount) {
+            return removeItemNoUpdate(slot);
+        }
+
+        @Override
+        public ItemStack removeItemNoUpdate(int slot) {
+            ItemStack previous = getItem(slot);
+            setItem(slot, ItemStack.EMPTY);
+            return previous;
+        }
+
+        @Override
+        public void setItem(int slot, ItemStack stack) {
+            if (slot == 0) {
+                setDisplayed(stack);
+            }
+        }
+
+        @Override
+        public int getMaxStackSize() {
+            return 1;
+        }
+
+        @Override
+        public void setChanged() {
+            BlockEntityChestWall.this.setChanged();
+        }
+
+        @Override
+        public boolean stillValid(Player player) {
+            return Container.stillValidBlockEntity(BlockEntityChestWall.this, player);
+        }
+
+        @Override
+        public void clearContent() {
+            setDisplayed(ItemStack.EMPTY);
+        }
     }
 }

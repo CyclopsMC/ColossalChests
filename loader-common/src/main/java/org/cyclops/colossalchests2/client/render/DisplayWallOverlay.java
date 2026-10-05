@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -84,7 +84,9 @@ public class DisplayWallOverlay implements IChestOverlay {
         // A frame of the chest's material, so the panel looks built into it.
         if (core.getBlockState().getBlock() instanceof BlockChestCore block) {
             ResourceLocation frame = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_wall_" + block.getMaterial().getName());
-            ChestOverlayHelpers.renderSprite(poseStack, buffers, atlas.getSprite(frame), 0, 0, 1, 1, light, overlay);
+            TextureAtlasSprite frameSprite = atlas.getSprite(frame);
+            ChestOverlayHelpers.renderSprite(poseStack, buffers, frameSprite, 0, 0, 1, 1, light, overlay);
+            ChestOverlayHelpers.renderSides(poseStack, buffers, frameSprite, RenderChestCore.OVERLAY_OFFSET, light, overlay);
             poseStack.translate(0, 0, LAYER);
         }
         // The panel texture has a transparent rim, so the frame shows around it.

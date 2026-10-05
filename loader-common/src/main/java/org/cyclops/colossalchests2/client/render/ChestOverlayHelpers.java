@@ -69,6 +69,44 @@ public final class ChestOverlayHelpers {
     }
 
     /**
+     * Draw the four sides of the face's unit square back to the chest surface, so a full face overlay looks like a
+     * plate on the chest instead of floating in front of it.
+     * @param poseStack The pose stack.
+     * @param buffers The buffers.
+     * @param sprite A sprite on the block atlas, whose outer rows texture the sides.
+     * @param depth How far the face lies in front of the chest surface.
+     * @param light The packed light.
+     * @param overlay The packed overlay.
+     */
+    public static void renderSides(PoseStack poseStack, MultiBufferSource buffers, TextureAtlasSprite sprite, float depth,
+                                   int light, int overlay) {
+        VertexConsumer buffer = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+        PoseStack.Pose pose = poseStack.last();
+        float u0 = sprite.getU0();
+        float u1 = sprite.getU1();
+        float v0 = sprite.getV0();
+        float v1 = v0 + (sprite.getV1() - v0) * Math.min(1F, depth);
+        float z = -depth;
+        // Bottom, top, left, right, each counter-clockwise seen from outside.
+        quad(buffer, pose, 0, -1, 0, light, overlay, 0, 0, z, u0, v1, 1, 0, z, u1, v1, 1, 0, 0, u1, v0, 0, 0, 0, u0, v0);
+        quad(buffer, pose, 0, 1, 0, light, overlay, 0, 1, 0, u0, v0, 1, 1, 0, u1, v0, 1, 1, z, u1, v1, 0, 1, z, u0, v1);
+        quad(buffer, pose, -1, 0, 0, light, overlay, 0, 0, 0, u0, v0, 0, 1, 0, u1, v0, 0, 1, z, u1, v1, 0, 0, z, u0, v1);
+        quad(buffer, pose, 1, 0, 0, light, overlay, 1, 0, z, u0, v1, 1, 1, z, u1, v1, 1, 1, 0, u1, v0, 1, 0, 0, u0, v0);
+    }
+
+    private static void quad(VertexConsumer buffer, PoseStack.Pose pose, float nx, float ny, float nz, int light, int overlay,
+                             float... vertices) {
+        for (int i = 0; i < 20; i += 5) {
+            buffer.addVertex(pose, vertices[i], vertices[i + 1], vertices[i + 2])
+                    .setColor(0xFFFFFFFF)
+                    .setUv(vertices[i + 3], vertices[i + 4])
+                    .setOverlay(overlay)
+                    .setLight(light)
+                    .setNormal(pose, nx, ny, nz);
+        }
+    }
+
+    /**
      * Draw an item flat on the face, like in a GUI slot.
      * @param poseStack The pose stack.
      * @param buffers The buffers.

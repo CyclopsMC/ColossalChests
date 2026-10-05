@@ -16,6 +16,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -55,6 +56,7 @@ import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
+import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -1749,6 +1751,20 @@ public class GameTestsCommon {
                 new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false));
     }
 
+    /**
+     * Right-click with the held item like the server does: an item use that passes falls back to an empty hand use.
+     */
+    private static InteractionResult click(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
+        BlockPos absolute = helper.absolutePos(pos);
+        BlockState state = helper.getLevel().getBlockState(absolute);
+        BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false);
+        ItemInteractionResult result = state.useItemOn(player.getMainHandItem(), helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+        if (result == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION) {
+            return state.useWithoutItem(helper.getLevel(), player, hit);
+        }
+        return result.result();
+    }
+
     private static int countInInventory(ServerPlayer player, Item item) {
         int count = 0;
         for (ItemStack stack : player.getInventory().items) {
@@ -1784,8 +1800,7 @@ public class GameTestsCommon {
                     player.getInventory().setItem(3, STONE.copyWithCount(20));
                     player.getInventory().setItem(4, STONE.copyWithCount(30));
                     useWithItem(helper, player, display, STONE.copyWithCount(1));
-                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                    use(helper, player, display);
+                    helper.assertValueEqual(click(helper, player, display), InteractionResult.CONSUME, "double click");
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 0, "stone left in the inventory");
                     helper.assertValueEqual(DisplayStats.of(storage, STONE).count(), 61L, "stored stone after inserting all");
                     // Left-clicks take a stack or one, through the packet the client sends.
@@ -1797,10 +1812,11 @@ public class GameTestsCommon {
                     roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 1, "single stone taken");
-                    // Sneaking with an empty hand clears the display.
+                    // Sneaking with an empty hand does nothing.
+                    player.getInventory().clearContent();
                     player.setShiftKeyDown(true);
-                    use(helper, player, display);
-                    helper.assertTrue(wall.getDisplayed().isEmpty(), "Expected the display to be cleared");
+                    helper.assertValueEqual(click(helper, player, display), InteractionResult.PASS, "sneaking click");
+                    helper.assertTrue(wall.getDisplayed().is(Items.STONE), "Expected stone to stay shown");
                 })
                 .thenSucceed();
     }
@@ -1831,6 +1847,40 @@ public class GameTestsCommon {
                     BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
                     loaded.loadWithComponents(wall.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
                     helper.assertTrue(loaded.getDisplayed().is(Items.STONE), "Expected the shown item after loading");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testDisplayWallSettings(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos display = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.DISPLAY);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, display);
+                    ServerPlayer player = makeViewer(helper);
+                    getCore(helper, corePos).getStorage().insert(STONE, 5, false);
+                    wall.setDisplayed(STONE);
+                    player.getInventory().setItem(3, STONE.copyWithCount(20));
+                    // The settings choose the shown item through a ghost slot. Created directly, like openChest.
+                    ContainerDisplay menu = new ContainerDisplay(102, player.getInventory(), wall);
+                    player.containerMenu = menu;
+                    helper.assertTrue(menu.getSlot(0).getItem().is(Items.STONE), "Expected the shown item in the slot");
+                    menu.setCarried(new ItemStack(Items.DIRT, 5));
+                    menu.clicked(0, 0, ClickType.PICKUP, player);
+                    helper.assertValueEqual(menu.getCarried().getCount(), 5, "cursor kept");
+                    helper.assertTrue(wall.getDisplayed().is(Items.DIRT), "Expected dirt to be shown");
+                    menu.setCarried(ItemStack.EMPTY);
+                    menu.clicked(0, 0, ClickType.PICKUP, player);
+                    helper.assertTrue(wall.getDisplayed().isEmpty(), "Expected the display to be cleared");
+                    // Shift-clicking an inventory item shows it, and leaves it in the inventory.
+                    int stoneSlot = menu.slots.indexOf(menu.slots.stream()
+                            .filter(slot -> slot.container == player.getInventory() && slot.getContainerSlot() == 3).findFirst().orElseThrow());
+                    menu.quickMoveStack(player, stoneSlot);
+                    helper.assertTrue(wall.getDisplayed().is(Items.STONE), "Expected stone to be shown");
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 20, "stone kept after shift-click");
+                    helper.assertValueEqual(wall.getDisplayStats().count(), 5L, "shown count");
                 })
                 .thenSucceed();
     }

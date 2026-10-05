@@ -7,9 +7,12 @@ command "setblock 3 5 4 colossalchests2:chest_core_iron"
 command "setblock 3 4 3 minecraft:comparator[facing=south]"
 command "setblock 3 4 2 minecraft:redstone_wire"
 command "setblock 3 4 1 minecraft:redstone_lamp"
+# A second Redstone wall on the front left corner powers a lamp directly, without a comparator.
+command "setblock 2 4 4 colossalchests2:chest_wall_redstone"
+command "setblock 1 4 4 minecraft:redstone_lamp"
 wait --ticks 20
 teleport 5.5 4 0.5
-look --at 3.5,4.5,2.5
+look --at 2.5,4.5,2.5
 wait --ticks 20
 block 3 4 3 --nbt
 screenshot --name redstone-empty
@@ -18,6 +21,7 @@ eval "server.submit({ server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getSto
 wait --ticks 20
 block 3 4 3 --nbt
 block 3 4 1
+block 1 4 4
 screenshot --name redstone-whole-chest
 # Sneak-right-click with an empty hand opens the settings.
 eval "server.submit({ server.playerList.players[0].getInventory().clearContent(); server.playerList.players[0].getInventory().setItem(9, dev.item('minecraft:dirt')) } as Runnable).get()"

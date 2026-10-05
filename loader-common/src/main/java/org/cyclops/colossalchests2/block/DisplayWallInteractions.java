@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -79,7 +80,7 @@ public final class DisplayWallInteractions {
     }
 
     /**
-     * Take the shown type into the player's inventory, dropping what does not fit.
+     * Take the shown type into the player's held slot, then the rest of the inventory, dropping what does not fit.
      * @param player The player.
      * @param wall A Display wall.
      * @param single If one item is taken, otherwise a stack.
@@ -94,7 +95,15 @@ public final class DisplayWallInteractions {
         long taken = storage.get().extract(type, single ? 1 : type.getMaxStackSize(), false);
         if (taken > 0) {
             ItemStack stack = type.copyWithCount((int) taken);
-            if (!player.getInventory().add(stack)) {
+            // Fill the held slot first.
+            Inventory inventory = player.getInventory();
+            ItemStack held = inventory.getSelected();
+            if (held.isEmpty()) {
+                inventory.setItem(inventory.selected, stack.split(stack.getMaxStackSize()));
+            } else if (ItemStack.isSameItemSameComponents(held, stack)) {
+                held.grow(stack.split(Math.max(0, held.getMaxStackSize() - held.getCount())).getCount());
+            }
+            if (!stack.isEmpty() && !inventory.add(stack)) {
                 player.drop(stack, false);
             }
             wall.updateDisplayStats(false);

@@ -1812,6 +1812,26 @@ public class GameTestsCommon {
                     roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 1, "single stone taken");
+                    // Taken items go to the held slot first, even when an earlier slot is free.
+                    player.getInventory().clearContent();
+                    player.getInventory().selected = 4;
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(player.getInventory().getItem(4).getCount(), 1, "stone in the held slot");
+                    // A held stack is topped up, the rest goes elsewhere.
+                    player.getInventory().setItem(4, STONE.copyWithCount(60));
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), false), ServerboundDisplayTakePacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(player.getInventory().getItem(4).getCount(), 64, "held stone topped up");
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 124, "stone after taking a stack");
+                    // Another held item stays, the stone goes elsewhere.
+                    player.getInventory().clearContent();
+                    player.getInventory().setItem(4, new ItemStack(Items.DIRT));
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
+                            .actionServer(helper.getLevel(), player);
+                    helper.assertTrue(player.getInventory().getItem(4).is(Items.DIRT), "Expected the held dirt to stay");
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 1, "stone next to the held dirt");
+                    player.getInventory().selected = 0;
                     // Sneaking with an empty hand does nothing.
                     player.getInventory().clearContent();
                     player.setShiftKeyDown(true);

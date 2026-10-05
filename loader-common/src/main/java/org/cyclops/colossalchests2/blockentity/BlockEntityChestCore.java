@@ -10,10 +10,10 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -41,14 +41,13 @@ import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
 import org.cyclops.colossalchests2.config.MaterialProperties;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
-import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.multiblock.ChestShape;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.LevelStructureView;
 import org.cyclops.colossalchests2.multiblock.StructureDetector;
+import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.CompressionFamilies;
 import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
@@ -92,7 +91,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     private ChestStructure structure;
     private int lastSize;
     private List<BlockPos> decoratedPositions = List.of();
-    private ChestSettings settings = ChestSettings.DEFAULT;
     private boolean registered;
     private boolean validationRequested = true;
     private int validationCooldown;
@@ -254,26 +252,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
 
     public int getComparatorSignal() {
         return isFormed() ? StorageSignals.getComparatorSignal(storage) : 0;
-    }
-
-    public ChestSettings getSettings() {
-        return settings;
-    }
-
-    /**
-     * Change the GUI settings, and show them to everyone viewing the chest and to clients rendering Display walls.
-     */
-    public void setSettings(ChestSettings settings) {
-        this.settings = settings;
-        setChanged();
-        if (level != null && !level.isClientSide) {
-            syncToClients();
-        }
-        for (ServerPlayer viewer : viewers) {
-            if (viewer.containerMenu instanceof ContainerChest menu && menu.isFor(this)) {
-                menu.onSettingsChanged(settings);
-            }
-        }
     }
 
     /**
@@ -575,7 +553,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         tag.putInt("data_version", DATA_VERSION);
         tag.put("storage", ChestStorage.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), storage.toContents()).getOrThrow());
         saveStructure(tag);
-        tag.put("settings", ChestSettings.CODEC.encodeStart(NbtOps.INSTANCE, settings).getOrThrow());
         tag.put("upgrades", ItemContainerContents.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE),
                 ItemContainerContents.fromItems(upgrades.getItems())).getOrThrow());
     }
@@ -589,13 +566,12 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     }
 
     /**
-     * Clients only receive what they render: the structure and the visual settings, not the contents.
+     * Clients only receive what they render: the structure, not the contents.
      */
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag();
         saveStructure(tag);
-        tag.put("settings", ChestSettings.CODEC.encodeStart(NbtOps.INSTANCE, settings).getOrThrow());
         return tag;
     }
 
@@ -624,9 +600,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
                 ? BlockPos.CODEC.listOf().parse(NbtOps.INSTANCE, tag.get("decorated")).result().map(ImmutableList::copyOf).orElse(ImmutableList.of())
                 : List.of();
         lastSize = tag.getInt("last_size");
-        if (tag.contains("settings")) {
-            settings = ChestSettings.CODEC.parse(NbtOps.INSTANCE, tag.get("settings")).result().orElse(ChestSettings.DEFAULT);
-        }
         applyProfile(true);
     }
 
@@ -637,9 +610,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         if (!contents.entries().isEmpty()) {
             components.set(RegistryEntries.COMPONENT_CHEST_CONTENTS.value(), contents);
         }
-        if (!settings.equals(ChestSettings.DEFAULT)) {
-            components.set(RegistryEntries.COMPONENT_CHEST_SETTINGS.value(), settings);
-        }
         if (!upgrades.isEmpty()) {
             components.set(RegistryEntries.COMPONENT_CHEST_UPGRADES.value(), ItemContainerContents.fromItems(upgrades.getItems()));
         }
@@ -648,7 +618,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     @Override
     protected void applyImplicitComponents(DataComponentInput input) {
         super.applyImplicitComponents(input);
-        settings = input.getOrDefault(RegistryEntries.COMPONENT_CHEST_SETTINGS.value(), ChestSettings.DEFAULT);
         loadUpgrades(input.getOrDefault(RegistryEntries.COMPONENT_CHEST_UPGRADES.value(), ItemContainerContents.EMPTY));
         ChestStorage.Contents contents = input.get(RegistryEntries.COMPONENT_CHEST_CONTENTS.value());
         if (contents != null) {
@@ -661,7 +630,6 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     public void removeComponentsFromTag(CompoundTag tag) {
         super.removeComponentsFromTag(tag);
         tag.remove("storage");
-        tag.remove("settings");
         tag.remove("upgrades");
     }
 

@@ -15,7 +15,6 @@ import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigForge;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigForge;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
-import org.cyclops.colossalchests2.component.DataComponentChestSettingsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
@@ -85,7 +84,6 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         configHandler.addConfigurable(new GeneralConfig<>(this));
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
-        configHandler.addConfigurable(new DataComponentChestSettingsConfig<>(this));
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));
         configHandler.addConfigurable(new ContainerChestConfig<>(this));
         for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {

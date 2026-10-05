@@ -18,7 +18,7 @@ import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
+import org.cyclops.colossalchests2.blockentity.DisplayOption;
 import org.cyclops.colossalchests2.storage.DisplayStats;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * Shows each shown face of a Display wall as a recessed panel in a frame of the chest's material, with its item, count,
- * fill level and the upgrades affecting it, honouring the chest's visual settings. Hidden faces show the plain chest.
+ * fill level and the upgrades affecting it, as the face's options say. Hidden faces show the plain chest.
  * @author rubensworks
  */
 public class DisplayWallOverlay implements IChestOverlay {
@@ -64,19 +64,18 @@ public class DisplayWallOverlay implements IChestOverlay {
         renderPanel(core, atlas, poseStack, buffers, light, overlay);
         ItemStack displayed = wall.getDisplayed(face);
         if (!displayed.isEmpty()) {
-            ChestSettings settings = core.getSettings();
             DisplayStats stats = wall.getDisplayStats(face);
             poseStack.translate(0, 0, LAYER);
             renderDisplayedItem(poseStack, buffers, level, displayed, light);
             poseStack.translate(0, 0, LAYER);
-            if (settings.showCounts()) {
+            if (wall.isEnabled(face, DisplayOption.COUNT)) {
                 String count = IModHelpers.get().getGuiHelpers().quantityToScaledString(stats.count());
                 ChestOverlayHelpers.renderText(poseStack, buffers, count, 0.5F, TEXT_Y0, TEXT_HEIGHT, COLOR_TEXT, light);
             }
-            if (settings.showFillLevels()) {
+            if (wall.isEnabled(face, DisplayOption.FILL_LEVEL)) {
                 renderFillBar(atlas.getSprite(BAR_TEXTURE), stats.getFillLevel(), poseStack, buffers, light, overlay);
             }
-            if (settings.showUpgradeIndicators()) {
+            if (wall.isEnabled(face, DisplayOption.UPGRADE_INDICATORS)) {
                 renderIndicators(atlas, stats, poseStack, buffers, light, overlay);
             }
         }

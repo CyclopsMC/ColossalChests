@@ -48,13 +48,13 @@ import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
+import org.cyclops.colossalchests2.blockentity.DisplayOption;
 import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
 import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
@@ -66,7 +66,6 @@ import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
-import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundDisplayTakePacket;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
@@ -424,8 +423,6 @@ public class GameTestsCommon {
                     BlockEntityChestCore core = getCore(helper, corePos);
                     core.getStorage().insert(STONE, 10, false);
                     helper.assertValueEqual(core.getDecoratedPositions(), List.of(helper.absolutePos(corePos)), "decorated positions");
-                    // Display walls render with the chest's visual settings.
-                    core.setSettings(core.getSettings().withShowCounts(false));
                     CompoundTag tag = core.getUpdateTag(helper.getLevel().registryAccess());
                     helper.assertFalse(tag.contains("storage"), "Expected no contents in the update tag");
 
@@ -433,7 +430,6 @@ public class GameTestsCommon {
                     client.loadWithComponents(tag, helper.getLevel().registryAccess());
                     helper.assertValueEqual(client.getStructure(), core.getStructure(), "synced structure");
                     helper.assertValueEqual(client.getDecoratedPositions(), core.getDecoratedPositions(), "synced decorated positions");
-                    helper.assertValueEqual(client.getSettings(), core.getSettings(), "synced settings");
                     helper.assertValueEqual(client.getFacing(), Direction.NORTH, "synced facing");
                     helper.assertTrue(client.getStorage().getSlot(0).isEmpty(), "Expected no synced contents");
                 })
@@ -720,24 +716,6 @@ public class GameTestsCommon {
                     helper.assertFalse(menu[0].stillValid(player[0]), "Expected the menu to close on a dormant chest");
                     player[0].closeContainer();
                 })
-                .thenSucceed();
-    }
-
-    @GameTest(template = TEMPLATE_EMPTY)
-    public void testSettingsTravelWithCore(GameTestHelper helper) {
-        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
-        BlockPos newCorePos = buildWalls(helper, MIN_B, 3, ChestMaterial.WOOD, new BlockPos(1, 1, 0), Set.of());
-        ChestSettings settings = ChestSettings.DEFAULT.withShowFillLevels(false).withShowCounts(false);
-        helper.startSequence()
-                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
-                .thenExecute(() -> {
-                    getCore(helper, corePos).setSettings(settings);
-                    ItemStack dropped = breakCoreAndPickUp(helper, corePos);
-                    helper.assertValueEqual(dropped.get(RegistryEntries.COMPONENT_CHEST_SETTINGS.value()), settings, "settings on the item");
-                    placeCore(helper, dropped, newCorePos);
-                })
-                .thenWaitUntil(() -> assertFormed(helper, newCorePos, MIN_B, 3))
-                .thenExecute(() -> helper.assertValueEqual(getCore(helper, newCorePos).getSettings(), settings, "restored settings"))
                 .thenSucceed();
     }
 
@@ -1172,14 +1150,10 @@ public class GameTestsCommon {
                     ContainerChest menu = openChest(helper, player, corePos);
                     storage.insert(0, STONE, 1000, false);
 
-                    // The server handles clicks and settings from the client.
+                    // The server handles clicks from the client.
                     roundTrip(helper, new ServerboundChestClickPacket(menu.containerId, 0, ChestClickAction.TAKE_STACK), ServerboundChestClickPacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(menu.getCarried().getCount(), 64, "cursor after a click packet");
-                    ChestSettings settings = ChestSettings.DEFAULT.withShowFillLevels(false);
-                    roundTrip(helper, new ServerboundChestSettingsPacket(menu.containerId, settings), ServerboundChestSettingsPacket.CODEC)
-                            .actionServer(helper.getLevel(), player);
-                    helper.assertValueEqual(getCore(helper, corePos).getSettings(), settings, "settings after a settings packet");
                     player.containerMenu.setCarried(STONE.copyWithCount(6));
                     roundTrip(helper, new ServerboundChestDragPacket(menu.containerId, new int[]{5, 6}, false), ServerboundChestDragPacket.CODEC)
                             .actionServer(helper.getLevel(), player);
@@ -1216,7 +1190,7 @@ public class GameTestsCommon {
                     helper.assertTrue(client.isChestSlotOverCapacity(0), "Expected 5000 of 1024 to be over capacity");
                     helper.assertValueEqual(client.getChestSlotCapacity(3), 64L, "synced capacity");
                     CapacityProfile profile = new CapacityProfile(7, 300, true, 3);
-                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, profile, settings, new int[]{4}), ClientboundChestStatePacket.CODEC)
+                    roundTrip(helper, new ClientboundChestStatePacket(menu.containerId, profile, new int[]{4}), ClientboundChestStatePacket.CODEC)
                             .actionClient(helper.getLevel(), player);
                     helper.assertValueEqual(client.getProfile(), profile, "synced capacity profile");
                     helper.assertValueEqual(client.getUpgradeRemovalProblems(0), 4, "synced upgrade removal problems");
@@ -1224,7 +1198,6 @@ public class GameTestsCommon {
                     helper.assertValueEqual(client.getChestSlotSpace(5, new ItemStack(Items.DIAMOND_SWORD)), 3L, "space for unstackables");
                     helper.assertValueEqual(client.getChestSlotSpace(5, new ItemStack(Items.ENDER_PEARL)), 7L * 16, "space for 16-stacks");
                     helper.assertValueEqual(client.getChestSlotSpace(5, STONE), 300L, "space capped per slot");
-                    helper.assertValueEqual(client.getSettings(), settings, "synced settings");
                     player.containerMenu = menu;
                     player.closeContainer();
                     client.removed(player);
@@ -1933,10 +1906,15 @@ public class GameTestsCommon {
                     // The settings have a column per face, and keep at least one face shown.
                     ContainerDisplay menu = new ContainerDisplay(103, player.getInventory(), wall);
                     helper.assertValueEqual(menu.getFaces().size(), 3, "columns");
-                    helper.assertTrue(menu.clickMenuButton(player, Direction.NORTH.ordinal()), "Expected north to be hidden");
-                    helper.assertTrue(menu.clickMenuButton(player, Direction.WEST.ordinal()), "Expected west to be hidden");
-                    helper.assertFalse(menu.clickMenuButton(player, Direction.UP.ordinal()), "Expected the last face to stay shown");
-                    helper.assertFalse(menu.clickMenuButton(player, Direction.SOUTH.ordinal()), "Expected an inner face to be refused");
+                    // Each face has its own options, all on at first.
+                    helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.WEST, DisplayOption.COUNT)), "Expected the west count to toggle");
+                    helper.assertFalse(wall.isEnabled(Direction.WEST, DisplayOption.COUNT), "Expected no count on the west face");
+                    helper.assertTrue(wall.isEnabled(Direction.UP, DisplayOption.COUNT), "Expected a count on the top face");
+                    helper.assertTrue(wall.isEnabled(Direction.WEST, DisplayOption.FILL_LEVEL), "Expected a fill level on the west face");
+                    helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.NORTH, DisplayOption.SHOWN)), "Expected north to be hidden");
+                    helper.assertTrue(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.WEST, DisplayOption.SHOWN)), "Expected west to be hidden");
+                    helper.assertFalse(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.UP, DisplayOption.SHOWN)), "Expected the last face to stay shown");
+                    helper.assertFalse(menu.clickMenuButton(player, ContainerDisplay.getButton(Direction.SOUTH, DisplayOption.COUNT)), "Expected an inner face to be refused");
                     helper.assertTrue(wall.isFaceHidden(Direction.NORTH), "Expected north to be hidden");
                     helper.assertFalse(wall.isFaceHidden(Direction.UP), "Expected the top to be shown");
                     // A hidden face acts like a plain wall: no inserts, no takes, mined normally.
@@ -1956,6 +1934,7 @@ public class GameTestsCommon {
                     client.loadWithComponents(wall.getUpdateTag(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
                     helper.assertTrue(client.getDisplayed(Direction.WEST).is(Items.DIRT), "Expected dirt on the client");
                     helper.assertTrue(client.isFaceHidden(Direction.NORTH), "Expected north hidden on the client");
+                    helper.assertFalse(client.isEnabled(Direction.WEST, DisplayOption.COUNT), "Expected no west count on the client");
                     helper.assertValueEqual(client.getDisplayStats(Direction.NORTH), wall.getDisplayStats(Direction.NORTH), "north stats on the client");
                 })
                 .thenSucceed();

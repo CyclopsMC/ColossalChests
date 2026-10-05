@@ -47,7 +47,7 @@ import java.util.UUID;
 /**
  * A functional wall, giving automation access to its chest under the wall's rules.
  * Only an Interface has settings: its filter and direction. A Display wall keeps the type it shows on each face,
- * which faces are hidden, and its stats for clients.
+ * what each face shows, and its stats for clients.
  * @author rubensworks
  */
 public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
@@ -75,7 +75,8 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     private WallAccess.Mode mode = WallAccess.Mode.BOTH;
     private final ItemStack[] displayed = new ItemStack[FACES];
     private final DisplayStats[] displayStats = new DisplayStats[FACES];
-    private int hiddenFaces;
+    // A bit per side and option, set when the option is off.
+    private int disabledOptions;
     private final Map<UUID, InsertClick> lastInserts = Maps.newHashMap();
     private final Container displayedContainer = new DisplayedContainer();
 
@@ -170,36 +171,50 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
 
     /**
      * @param face A face.
-     * @return If a Display wall shows nothing on the face, and acts like a plain wall there.
+     * @param option An option.
+     * @return If the option is on for the face of a Display wall.
      */
-    public boolean isFaceHidden(Direction face) {
-        return (hiddenFaces & (1 << face.ordinal())) != 0;
+    public boolean isEnabled(Direction face, DisplayOption option) {
+        return (disabledOptions & getOptionBit(face, option)) == 0;
     }
 
     /**
-     * Show or hide a face of a Display wall. The last shown face of a formed chest can not be hidden, so its settings
-     * stay reachable.
+     * Turn an option of a face of a Display wall on or off. The last shown face of a formed chest can not be hidden, so
+     * its settings stay reachable.
      * @param face A face.
-     * @param hidden If it is hidden.
+     * @param option An option.
+     * @param enabled If it is on.
      * @return If it changed.
      */
-    public boolean setFaceHidden(Direction face, boolean hidden) {
-        if (isFaceHidden(face) == hidden
-                || (hidden && getDisplayFaces().stream().noneMatch(other -> other != face && !isFaceHidden(other)))) {
+    public boolean setEnabled(Direction face, DisplayOption option, boolean enabled) {
+        if (isEnabled(face, option) == enabled || (option == DisplayOption.SHOWN && !enabled
+                && getDisplayFaces().stream().noneMatch(other -> other != face && !isFaceHidden(other)))) {
             return false;
         }
-        setHiddenFaces(hiddenFaces ^ (1 << face.ordinal()));
+        disabledOptions ^= getOptionBit(face, option);
+        setChanged();
+        updateDisplayStats(true);
         return true;
     }
 
-    public int getHiddenFaces() {
-        return hiddenFaces;
+    /**
+     * @param face A face.
+     * @return If a Display wall shows nothing on the face, and acts like a plain wall there.
+     */
+    public boolean isFaceHidden(Direction face) {
+        return !isEnabled(face, DisplayOption.SHOWN);
     }
 
-    private void setHiddenFaces(int hiddenFaces) {
-        this.hiddenFaces = hiddenFaces;
-        setChanged();
-        updateDisplayStats(true);
+    /**
+     * @param face A face.
+     * @return The options that are off for the face, a bit per option ordinal.
+     */
+    public int getDisabledOptions(Direction face) {
+        return (disabledOptions >> (face.ordinal() * DisplayOption.values().length)) & ((1 << DisplayOption.values().length) - 1);
+    }
+
+    private static int getOptionBit(Direction face, DisplayOption option) {
+        return 1 << (face.ordinal() * DisplayOption.values().length + option.ordinal());
     }
 
     /**
@@ -298,7 +313,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
             }
         }
         tag.put("display", faces);
-        tag.putInt("hidden_faces", hiddenFaces);
+        tag.putInt("disabled_options", disabledOptions);
     }
 
     private void loadDisplay(CompoundTag tag, HolderLookup.Provider registries) {
@@ -315,7 +330,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
                 }
             }
         }
-        hiddenFaces = tag.getInt("hidden_faces");
+        disabledOptions = tag.getInt("disabled_options");
     }
 
     @Override

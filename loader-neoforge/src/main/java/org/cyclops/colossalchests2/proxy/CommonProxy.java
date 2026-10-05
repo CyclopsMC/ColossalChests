@@ -4,10 +4,9 @@ import org.cyclops.colossalchests2.ColossalChests;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundDisplayTakePacket;
-import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
-import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
 import org.cyclops.cyclopscore.init.ModBase;
 import org.cyclops.cyclopscore.network.PacketHandler;
 import org.cyclops.cyclopscore.proxy.CommonProxyComponent;
@@ -33,6 +32,5 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(ServerboundChestFormPacket.class, ServerboundChestFormPacket.TYPE, ServerboundChestFormPacket.CODEC);
         packetHandler.register(ServerboundDisplayTakePacket.class, ServerboundDisplayTakePacket.TYPE, ServerboundDisplayTakePacket.CODEC);
         packetHandler.register(ServerboundChestDragPacket.class, ServerboundChestDragPacket.TYPE, ServerboundChestDragPacket.CODEC);
-        packetHandler.register(ServerboundChestSettingsPacket.class, ServerboundChestSettingsPacket.TYPE, ServerboundChestSettingsPacket.CODEC);
     }
 }

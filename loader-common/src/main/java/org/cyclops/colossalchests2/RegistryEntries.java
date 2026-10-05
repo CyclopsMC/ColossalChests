@@ -9,7 +9,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
@@ -31,8 +30,6 @@ public class RegistryEntries {
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerInterface>> MENU_INTERFACE = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:interface"));
 
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerDisplay>> MENU_DISPLAY = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:display"));
-
-    public static final DeferredHolderCommon<DataComponentType<?>, DataComponentType<ChestSettings>> COMPONENT_CHEST_SETTINGS = DeferredHolderCommon.create(Registries.DATA_COMPONENT_TYPE, ResourceLocation.parse("colossalchests2:chest_settings"));
 
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerChest>> MENU_CHEST = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:chest"));
 

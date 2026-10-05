@@ -1,0 +1,31 @@
+# Continues display-5-faces.txt up to its first screenshot. Hide all sides, find them again by sneaking.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+wait --ticks 5
+open-gui 2 6 4 --face north
+click --widget /root/children[0]
+wait --ticks 5
+click --widget /root/children[4]
+wait --ticks 5
+click --widget /root/children[8]
+wait --ticks 5
+snapshot
+close-screen
+teleport 0.2 4 1.8
+look --at 2.5,6.6,4.5
+wait --ticks 40
+screenshot --name display-all-hidden
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 40
+screenshot --name display-all-hidden-sneaking
+# Sneak-right-click with an empty hand on a hidden side opens the settings.
+use 2 6 4 --face west
+wait --ticks 10
+status
+snapshot
+eval "mc.options.keyShift.setDown(false)"
+close-screen
+wait --ticks 5
+# Without sneaking, the hidden side acts like a plain wall and opens the chest.
+use 2 6 4 --face west
+wait --ticks 10
+status

@@ -91,3 +91,14 @@ The corner wall of display-5-faces.txt, with a Lock upgrade and its iron slot lo
 | `display-options-settings.png` | Each side has icon toggles for count, fill level and upgrades under its Shown/Hidden button; off is dimmed and struck through. Here: top upgrades, front count and right fill level off, with the tooltip of the front count |
 | `display-options-world.png` | The front shows the fill bar and the Lock indicator but no count; the right side shows its count but no fill bar |
 | `chest-settings-tab.png` | The chest's settings tab, which keeps only the lock and void buttons |
+
+## Hidden sides (display-7-hidden.txt)
+
+The corner wall with all three sides hidden through the settings.
+
+| Screenshot | Shows |
+|---|---|
+| `display-all-hidden.png` | All sides hidden: plain chest |
+| `display-all-hidden-sneaking.png` | While sneaking, each hidden side shows the Display wall icon, like Interface and Void walls |
+
+Sneak-right-clicking a hidden side with an empty hand opened the Display settings; right-clicking it without sneaking opened the chest.

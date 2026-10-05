@@ -68,3 +68,16 @@ An iron 3x3 with a Display wall showing iron ingots. Run in a fresh world on Neo
 | `display-plate-side.png`, `display-plate-corner.png` | The plate has sides down to the chest, so it no longer floats. Where two plates meet on a corner block, a half pixel notch remains along the edge |
 
 In the settings, shift-clicking an inventory item shows it, clicking with an item shows it and keeps the cursor, clicking with an empty cursor clears it.
+
+## Sides (display-5-faces.txt)
+
+An iron 3x3 with a Display wall on its top left front corner. Real right-clicks with an item on each side set a different item per side.
+
+| Screenshot | Shows |
+|---|---|
+| `display-faces.png` | Iron ingots on the front, cobblestone on the right side (the top, with torches, is out of view) |
+| `display-faces-settings.png` | The settings: a column per side, named relative to the chest's front, with its item and a Shown/Hidden toggle |
+| `display-faces-hidden-settings.png` | After clicking all three toggles: Top and Front hidden, the last side stays shown |
+| `display-faces-front-hidden.png` | The hidden front shows the plain chest, the right side still shows cobblestone |
+
+Right-clicking the hidden front with an empty hand opened the chest, like a plain wall.

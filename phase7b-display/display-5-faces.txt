@@ -1,0 +1,49 @@
+# Fresh world. An iron 3x3 with a Display wall on its top left front corner, showing a different item on each side.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 2 6 4 colossalchests2:chest_wall_display"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+eval "server.submit({ def s = server.overworld().getBlockEntity(dev.pos(3, 5, 4)).getStorage(); s.insert(dev.item('minecraft:iron_ingot'), 200, false); s.insert(dev.item('minecraft:cobblestone'), 900, false); s.insert(dev.item('minecraft:torch'), 30, false) } as Runnable).get()"
+# Real right-clicks with an item set each side.
+command "give @p minecraft:iron_ingot 1"
+hold 0
+use 2 6 4 --face north
+command "give @p minecraft:cobblestone 1"
+use 2 6 4 --face west
+command "give @p minecraft:torch 1"
+use 2 6 4 --face up
+wait --ticks 20
+teleport 0.2 7.5 1.8
+look --at 2.5,6.6,4.5
+wait --ticks 40
+screenshot --name display-faces
+# The settings: a column per side.
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+wait --ticks 5
+open-gui 2 6 4 --face north
+snapshot
+mouse-move 10,10
+wait --ticks 5
+screenshot --name display-faces-settings
+click --widget /root/children[1]
+wait --ticks 5
+click --widget /root/children[0]
+wait --ticks 5
+click --widget /root/children[2]
+wait --ticks 5
+snapshot
+mouse-move 400,201
+wait --ticks 5
+screenshot --name display-faces-hidden-settings
+close-screen
+wait --ticks 40
+screenshot --name display-faces-hidden
+use 2 6 4 --face north
+wait --ticks 10
+status
+close-screen
+teleport 0.2 4 1.8
+look --at 2.5,6.6,4.5
+wait --ticks 40
+screenshot --name display-faces-front-hidden

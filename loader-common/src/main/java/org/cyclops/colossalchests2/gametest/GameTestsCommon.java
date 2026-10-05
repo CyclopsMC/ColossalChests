@@ -58,6 +58,7 @@ import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
+import org.cyclops.colossalchests2.inventory.ContainerRedstone;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
@@ -1963,6 +1964,60 @@ public class GameTestsCommon {
                     helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), helper.absolutePos(interfacePos), Direction.UP),
                             "Expected an Interface to mine normally");
                 })
+                .thenSucceed();
+    }
+
+    // Redstone walls
+
+    private static int getComparatorOutput(GameTestHelper helper, BlockPos comparatorPos) {
+        return ((ComparatorBlockEntity) helper.getBlockEntity(comparatorPos)).getOutputSignal();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testRedstoneWallSignal(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = placeWall(helper, MIN_A.offset(1, 0, 0), WallType.REDSTONE);
+        BlockPos comparatorPos = wallPos.north();
+        helper.setBlock(comparatorPos.below(), Blocks.STONE);
+        helper.setBlock(comparatorPos, Blocks.COMPARATOR.defaultBlockState().setValue(ComparatorBlock.FACING, Direction.SOUTH));
+        ItemStack dirt = new ItemStack(Items.DIRT);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 0, "signal of an empty chest");
+                    helper.assertTrue(getWall(helper, wallPos).getItemHandlerLogic().isEmpty(), "Expected no item access through a Redstone wall");
+                    getCore(helper, corePos).getStorage().insert(STONE, 1024, false);
+                })
+                // Without a target, like the core: one full slot of 27.
+                .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 1, "whole chest signal"))
+                .thenExecute(() -> getWall(helper, wallPos).getRedstoneTarget().setItem(0, dirt.copy()))
+                .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 0, "signal without dirt"))
+                .thenExecute(() -> {
+                    ChestStorage storage = getCore(helper, corePos).getStorage();
+                    storage.insert(dirt, storage.getCapacity(dirt), false);
+                })
+                // Only the dirt slot counts, and it is full.
+                .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 15, "signal of a full dirt slot"))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, wallPos);
+                    // The target survives saving and loading.
+                    BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
+                    loaded.loadWithComponents(wall.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+                    helper.assertTrue(loaded.getRedstoneTarget().getItem(0).is(Items.DIRT), "Expected the target after loading");
+                    // The settings set the target through a ghost slot, and show the signal.
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerRedstone menu = new ContainerRedstone(104, player.getInventory(), wall);
+                    player.containerMenu = menu;
+                    helper.assertValueEqual(menu.getSignal(), 15, "signal in the settings");
+                    menu.setCarried(ItemStack.EMPTY);
+                    menu.clicked(0, 0, ClickType.PICKUP, player);
+                    helper.assertTrue(wall.getRedstoneTarget().getItem(0).isEmpty(), "Expected the whole chest again");
+                    // Only Redstone walls give a signal.
+                    BlockState interfaceState = functionalWall(WallType.INTERFACE).defaultBlockState();
+                    helper.assertFalse(interfaceState.hasAnalogOutputSignal(), "Expected no signal from an Interface");
+                })
+                // Two full slots of 27.
+                .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 2, "whole chest signal again"))
                 .thenSucceed();
     }
 

@@ -21,6 +21,7 @@ import org.cyclops.colossalchests2.config.ChestTablesReloadListenerFabric;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
+import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
 import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
 import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
@@ -96,5 +97,6 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         configHandler.addConfigurable(new BlockEntityChestWallConfigFabric<>(this));
         configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
+        configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));
     }
 }

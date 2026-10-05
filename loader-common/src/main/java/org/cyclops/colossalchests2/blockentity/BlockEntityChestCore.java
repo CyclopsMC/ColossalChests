@@ -36,8 +36,10 @@ import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockChestCore;
+import org.cyclops.colossalchests2.block.BlockChestFunctionalWall;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
 import org.cyclops.colossalchests2.config.MaterialProperties;
@@ -354,6 +356,12 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
             contentsChanged = false;
             setChanged();
             level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            for (BlockPos pos : decoratedPositions) {
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() instanceof BlockChestFunctionalWall wall && wall.getType() == WallType.REDSTONE) {
+                    level.updateNeighbourForOutputSignal(pos, wall);
+                }
+            }
         }
         if (!viewers.isEmpty() && storage.hasDirtySlots()) {
             onDirtySlots(storage.drainDirtySlots());

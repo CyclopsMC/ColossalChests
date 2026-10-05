@@ -63,7 +63,10 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
             return InteractionResult.sidedSuccess(level.isClientSide);
         }
         if (type == WallType.DISPLAY && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
-            return DisplayWallInteractions.useWithoutItem(player, wall);
+            InteractionResult result = DisplayWallInteractions.useWithoutItem(player, wall, hit.getDirection());
+            if (result != null) {
+                return result;
+            }
         }
         return super.useWithoutItem(state, level, pos, player, hit);
     }
@@ -71,7 +74,7 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (type == WallType.DISPLAY && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
-            ItemInteractionResult result = DisplayWallInteractions.useItemOn(stack, player, wall);
+            ItemInteractionResult result = DisplayWallInteractions.useItemOn(stack, player, wall, hit.getDirection());
             if (result != null) {
                 return result;
             }

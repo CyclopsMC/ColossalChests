@@ -2,9 +2,12 @@ package org.cyclops.colossalchests2.blockentity;
 
 import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -31,9 +34,11 @@ import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
+import org.cyclops.colossalchests2.multiblock.ChestShape;
 import org.cyclops.colossalchests2.storage.DisplayStats;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,13 +46,14 @@ import java.util.UUID;
 
 /**
  * A functional wall, giving automation access to its chest under the wall's rules.
- * Only an Interface has settings: its filter and direction. A Display wall keeps the type it shows, and its stats
- * for clients.
+ * Only an Interface has settings: its filter and direction. A Display wall keeps the type it shows on each face,
+ * which faces are hidden, and its stats for clients.
  * @author rubensworks
  */
 public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
 
     public static final int FILTER_SLOTS = 9;
+    public static final int FACES = Direction.values().length;
     /**
      * The longest time between two clicks on a Display wall that make a double click.
      */
@@ -67,13 +73,16 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         }
     };
     private WallAccess.Mode mode = WallAccess.Mode.BOTH;
-    private ItemStack displayed = ItemStack.EMPTY;
-    private DisplayStats displayStats = DisplayStats.EMPTY;
-    private final Map<UUID, Long> lastInserts = Maps.newHashMap();
+    private final ItemStack[] displayed = new ItemStack[FACES];
+    private final DisplayStats[] displayStats = new DisplayStats[FACES];
+    private int hiddenFaces;
+    private final Map<UUID, InsertClick> lastInserts = Maps.newHashMap();
     private final Container displayedContainer = new DisplayedContainer();
 
     public BlockEntityChestWall(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        Arrays.fill(displayed, ItemStack.EMPTY);
+        Arrays.fill(displayStats, DisplayStats.EMPTY);
     }
 
     public BlockEntityChestWall(BlockPos pos, BlockState state) {
@@ -138,41 +147,86 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     }
 
     /**
-     * @return The type a Display wall shows, empty if none.
+     * @return The faces of a Display wall on the outside of its formed chest, which can show an item.
      */
-    public ItemStack getDisplayed() {
-        return displayed;
+    public List<Direction> getDisplayFaces() {
+        return getCore().map(core -> ChestShape.getOuterFaces(core.getStructure(), worldPosition)).orElse(List.of());
     }
 
-    public void setDisplayed(ItemStack type) {
-        displayed = type.isEmpty() ? ItemStack.EMPTY : type.copyWithCount(1);
+    /**
+     * @param face A face.
+     * @return The type a Display wall shows on the face, empty if none.
+     */
+    public ItemStack getDisplayed(Direction face) {
+        return displayed[face.ordinal()];
+    }
+
+    public void setDisplayed(Direction face, ItemStack type) {
+        displayed[face.ordinal()] = type.isEmpty() ? ItemStack.EMPTY : type.copyWithCount(1);
         lastInserts.clear();
         setChanged();
         updateDisplayStats(true);
     }
 
     /**
-     * @return A single slot container of the type a Display wall shows, for its menu.
+     * @param face A face.
+     * @return If a Display wall shows nothing on the face, and acts like a plain wall there.
+     */
+    public boolean isFaceHidden(Direction face) {
+        return (hiddenFaces & (1 << face.ordinal())) != 0;
+    }
+
+    /**
+     * Show or hide a face of a Display wall. The last shown face of a formed chest can not be hidden, so its settings
+     * stay reachable.
+     * @param face A face.
+     * @param hidden If it is hidden.
+     * @return If it changed.
+     */
+    public boolean setFaceHidden(Direction face, boolean hidden) {
+        if (isFaceHidden(face) == hidden
+                || (hidden && getDisplayFaces().stream().noneMatch(other -> other != face && !isFaceHidden(other)))) {
+            return false;
+        }
+        setHiddenFaces(hiddenFaces ^ (1 << face.ordinal()));
+        return true;
+    }
+
+    public int getHiddenFaces() {
+        return hiddenFaces;
+    }
+
+    private void setHiddenFaces(int hiddenFaces) {
+        this.hiddenFaces = hiddenFaces;
+        setChanged();
+        updateDisplayStats(true);
+    }
+
+    /**
+     * @return A container with the type a Display wall shows on each face, by face ordinal, for its menu.
      */
     public Container getDisplayedContainer() {
         return displayedContainer;
     }
 
     /**
-     * @return What a Display wall shows about its type, as last synced on clients.
+     * @param face A face.
+     * @return What a Display wall shows about the type on the face, as last synced on clients.
      */
-    public DisplayStats getDisplayStats() {
-        return displayStats;
+    public DisplayStats getDisplayStats(Direction face) {
+        return displayStats[face.ordinal()];
     }
 
     /**
      * @param player A player.
+     * @param face The clicked face.
      * @param gameTime The current game time.
-     * @return If the player's previous insert was recent enough to make this click a double click. Records this click.
+     * @return If the player's previous insert was on the same face and recent enough to make this click a double
+     * click. Records this click.
      */
-    public boolean recordInsertClick(Player player, long gameTime) {
-        Long previous = lastInserts.put(player.getUUID(), gameTime);
-        return previous != null && gameTime - previous <= DOUBLE_CLICK_TICKS;
+    public boolean recordInsertClick(Player player, Direction face, long gameTime) {
+        InsertClick previous = lastInserts.put(player.getUUID(), new InsertClick(face, gameTime));
+        return previous != null && previous.face() == face && gameTime - previous.gameTime() <= DOUBLE_CLICK_TICKS;
     }
 
     /**
@@ -183,9 +237,17 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         if (level == null || level.isClientSide) {
             return;
         }
-        DisplayStats stats = getCore().map(core -> DisplayStats.of(core.getStorage(), displayed)).orElse(DisplayStats.EMPTY);
-        if (force || !stats.equals(displayStats)) {
-            displayStats = stats;
+        Optional<BlockEntityChestCore> core = getCore();
+        boolean changed = force;
+        for (Direction face : Direction.values()) {
+            ItemStack type = displayed[face.ordinal()];
+            DisplayStats stats = core.map(c -> DisplayStats.of(c.getStorage(), type)).orElse(DisplayStats.EMPTY);
+            if (!stats.equals(displayStats[face.ordinal()])) {
+                displayStats[face.ordinal()] = stats;
+                changed = true;
+            }
+        }
+        if (changed) {
             BlockState state = getBlockState();
             level.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
         }
@@ -216,9 +278,44 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         super.saveAdditional(tag, registries);
         tag.putString("mode", mode.name());
         ContainerHelper.saveAllItems(tag, settings.getItems(), registries);
-        if (!displayed.isEmpty()) {
-            tag.put("displayed", displayed.save(registries));
+        saveDisplay(tag, registries, false);
+    }
+
+    private void saveDisplay(CompoundTag tag, HolderLookup.Provider registries, boolean withStats) {
+        ListTag faces = new ListTag();
+        for (Direction face : Direction.values()) {
+            ItemStack type = displayed[face.ordinal()];
+            if (!type.isEmpty() || (withStats && !displayStats[face.ordinal()].equals(DisplayStats.EMPTY))) {
+                CompoundTag faceTag = new CompoundTag();
+                faceTag.putString("face", face.getSerializedName());
+                if (!type.isEmpty()) {
+                    faceTag.put("item", type.save(registries));
+                }
+                if (withStats) {
+                    faceTag.put("stats", displayStats[face.ordinal()].toTag());
+                }
+                faces.add(faceTag);
+            }
         }
+        tag.put("display", faces);
+        tag.putInt("hidden_faces", hiddenFaces);
+    }
+
+    private void loadDisplay(CompoundTag tag, HolderLookup.Provider registries) {
+        Arrays.fill(displayed, ItemStack.EMPTY);
+        Arrays.fill(displayStats, DisplayStats.EMPTY);
+        for (Tag entry : tag.getList("display", Tag.TAG_COMPOUND)) {
+            CompoundTag faceTag = (CompoundTag) entry;
+            Direction face = Direction.byName(faceTag.getString("face"));
+            if (face != null) {
+                displayed[face.ordinal()] = faceTag.contains("item")
+                        ? ItemStack.parseOptional(registries, faceTag.getCompound("item")) : ItemStack.EMPTY;
+                if (faceTag.contains("stats")) {
+                    displayStats[face.ordinal()] = DisplayStats.fromTag(faceTag.getCompound("stats"));
+                }
+            }
+        }
+        hiddenFaces = tag.getInt("hidden_faces");
     }
 
     @Override
@@ -234,20 +331,14 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         for (int i = 0; i < items.size(); i++) {
             settings.getItems().set(i, items.get(i));
         }
-        displayed = tag.contains("displayed") ? ItemStack.parseOptional(registries, tag.getCompound("displayed")) : ItemStack.EMPTY;
-        if (tag.contains("display_stats")) {
-            displayStats = DisplayStats.fromTag(tag.getCompound("display_stats"));
-        }
+        loadDisplay(tag, registries);
     }
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         // Clients only need what a Display wall shows.
         CompoundTag tag = new CompoundTag();
-        if (!displayed.isEmpty()) {
-            tag.put("displayed", displayed.save(registries));
-        }
-        tag.put("display_stats", displayStats.toTag());
+        saveDisplay(tag, registries, true);
         return tag;
     }
 
@@ -268,21 +359,24 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         return getWallType() == WallType.DISPLAY ? new ContainerDisplay(id, inventory, this) : new ContainerInterface(id, inventory, this);
     }
 
+    private record InsertClick(Direction face, long gameTime) {
+    }
+
     private class DisplayedContainer implements Container {
 
         @Override
         public int getContainerSize() {
-            return 1;
+            return FACES;
         }
 
         @Override
         public boolean isEmpty() {
-            return displayed.isEmpty();
+            return Arrays.stream(displayed).allMatch(ItemStack::isEmpty);
         }
 
         @Override
         public ItemStack getItem(int slot) {
-            return slot == 0 ? displayed : ItemStack.EMPTY;
+            return displayed[slot];
         }
 
         @Override
@@ -299,9 +393,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
 
         @Override
         public void setItem(int slot, ItemStack stack) {
-            if (slot == 0) {
-                setDisplayed(stack);
-            }
+            setDisplayed(Direction.from3DDataValue(slot), stack);
         }
 
         @Override
@@ -321,7 +413,9 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
 
         @Override
         public void clearContent() {
-            setDisplayed(ItemStack.EMPTY);
+            for (Direction face : Direction.values()) {
+                setDisplayed(face, ItemStack.EMPTY);
+            }
         }
     }
 }

@@ -50,7 +50,7 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         });
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ChestTablesReloadListenerFabric());
         AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
-                DisplayWallInteractions.onAttack(player, level, pos) ? InteractionResult.FAIL : InteractionResult.PASS);
+                DisplayWallInteractions.onAttack(player, level, pos, direction) ? InteractionResult.FAIL : InteractionResult.PASS);
     }
 
     @Override

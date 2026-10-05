@@ -57,7 +57,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         }, modEventBus);
         NeoForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> event.addListener(new ChestTablesReloadListener()));
         NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.LeftClickBlock event) -> {
-            if (DisplayWallInteractions.onAttack(event.getEntity(), event.getLevel(), event.getPos())) {
+            if (DisplayWallInteractions.onAttack(event.getEntity(), event.getLevel(), event.getPos(), event.getFace())) {
                 event.setCanceled(true);
             }
         });

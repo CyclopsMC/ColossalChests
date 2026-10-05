@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -12,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
+import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.network.packet.ServerboundDisplayTakePacket;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -21,7 +23,7 @@ import java.util.Optional;
 
 /**
  * Drawer style clicks on Display walls: left-click takes, right-click inserts, a double right-click inserts all.
- * An empty right-click opens the settings.
+ * An empty right-click opens the settings. Each face shows its own type, or acts like a plain wall when hidden.
  * @author rubensworks
  */
 public final class DisplayWallInteractions {
@@ -46,13 +48,27 @@ public final class DisplayWallInteractions {
     }
 
     /**
+     * @param level The level.
+     * @param pos A position.
+     * @param face A face of it, null if unknown.
+     * @return The Display wall at the position, if the face is not hidden.
+     */
+    public static Optional<BlockEntityChestWall> getShownWall(Level level, BlockPos pos, @Nullable Direction face) {
+        return isDisplayWall(level.getBlockState(pos)) && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall
+                && (face == null || !wall.isFaceHidden(face)) ? Optional.of(wall) : Optional.empty();
+    }
+
+    /**
      * A Display wall is only mined with a tool that can harvest it, so taking items never breaks the chest.
-     * @param state A block state.
+     * Hidden faces act like a plain wall.
+     * @param level The level.
+     * @param pos A position.
+     * @param face The clicked face, null if unknown.
      * @param player A player.
      * @return If a left-click by the player must not mine the block.
      */
-    public static boolean isProtectedFromMining(BlockState state, Player player) {
-        return isDisplayWall(state) && !player.getMainHandItem().isCorrectToolForDrops(state);
+    public static boolean isProtectedFromMining(Level level, BlockPos pos, @Nullable Direction face, Player player) {
+        return getShownWall(level, pos, face).isPresent() && !player.getMainHandItem().isCorrectToolForDrops(level.getBlockState(pos));
     }
 
     /**
@@ -61,16 +77,17 @@ public final class DisplayWallInteractions {
      * @param player The player.
      * @param level The level.
      * @param pos The clicked position.
+     * @param face The clicked face, null if unknown.
      * @return If mining must be cancelled.
      */
-    public static boolean onAttack(Player player, Level level, BlockPos pos) {
-        if (!isProtectedFromMining(level.getBlockState(pos), player)) {
+    public static boolean onAttack(Player player, Level level, BlockPos pos, @Nullable Direction face) {
+        if (!isProtectedFromMining(level, pos, face, player)) {
             return false;
         }
         // Holding the button repeats this, only a new click takes again.
-        if (level.isClientSide && attackReleased) {
+        if (level.isClientSide && attackReleased && face != null) {
             attackReleased = false;
-            ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundDisplayTakePacket(pos, player.isShiftKeyDown()));
+            ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundDisplayTakePacket(pos, face, player.isShiftKeyDown()));
         }
         return true;
     }
@@ -80,14 +97,16 @@ public final class DisplayWallInteractions {
     }
 
     /**
-     * Take the shown type into the player's held slot, then the rest of the inventory, dropping what does not fit.
+     * Take the type shown on a face into the player's held slot, then the rest of the inventory, dropping what does
+     * not fit.
      * @param player The player.
      * @param wall A Display wall.
+     * @param face The clicked face.
      * @param single If one item is taken, otherwise a stack.
      * @return How many were taken.
      */
-    public static long take(Player player, BlockEntityChestWall wall, boolean single) {
-        ItemStack type = wall.getDisplayed();
+    public static long take(Player player, BlockEntityChestWall wall, Direction face, boolean single) {
+        ItemStack type = wall.getDisplayed(face);
         Optional<ChestStorage> storage = getStorage(wall);
         if (type.isEmpty() || storage.isEmpty()) {
             return 0;
@@ -112,23 +131,23 @@ public final class DisplayWallInteractions {
     }
 
     /**
-     * A right-click with an item: an empty display starts showing it, and the shown type is inserted.
+     * A right-click with an item on a face: an empty face starts showing it, and the type it shows is inserted.
      * @return The result, or null to fall back to the default wall behaviour.
      */
     @Nullable
-    public static ItemInteractionResult useItemOn(ItemStack stack, Player player, BlockEntityChestWall wall) {
+    public static ItemInteractionResult useItemOn(ItemStack stack, Player player, BlockEntityChestWall wall, Direction face) {
         Optional<ChestStorage> storage = getStorage(wall);
         // An empty hand is handled by useWithoutItem.
-        if (stack.isEmpty() || storage.isEmpty()) {
+        if (stack.isEmpty() || storage.isEmpty() || wall.isFaceHidden(face)) {
             return null;
         }
         if (!player.level().isClientSide) {
-            if (wall.getDisplayed().isEmpty()) {
-                wall.setDisplayed(stack);
+            if (wall.getDisplayed(face).isEmpty()) {
+                wall.setDisplayed(face, stack);
             }
-            if (ItemStack.isSameItemSameComponents(stack, wall.getDisplayed())) {
-                if (wall.recordInsertClick(player, player.level().getGameTime())) {
-                    insertAll(player, storage.get(), wall.getDisplayed());
+            if (ItemStack.isSameItemSameComponents(stack, wall.getDisplayed(face))) {
+                if (wall.recordInsertClick(player, face, player.level().getGameTime())) {
+                    insertAll(player, storage.get(), wall.getDisplayed(face));
                 } else {
                     stack.shrink((int) storage.get().insert(stack, stack.getCount(), false));
                 }
@@ -139,21 +158,26 @@ public final class DisplayWallInteractions {
     }
 
     /**
-     * A right-click with an empty hand: right after an insert it inserts all of the shown type, otherwise it opens the
-     * settings. Sneaking does nothing.
+     * A right-click with an empty hand on a face: right after an insert there it inserts all of the type it shows,
+     * otherwise it opens the settings. Sneaking does nothing.
+     * @return The result, or null to fall back to the default wall behaviour.
      */
-    public static InteractionResult useWithoutItem(Player player, BlockEntityChestWall wall) {
+    @Nullable
+    public static InteractionResult useWithoutItem(Player player, BlockEntityChestWall wall, Direction face) {
+        if (wall.isFaceHidden(face)) {
+            return null;
+        }
         if (player.isSecondaryUseActive()) {
             return InteractionResult.PASS;
         }
         // Only the server knows about the previous click, the client lets it decide.
         if (player instanceof ServerPlayer serverPlayer) {
             Optional<ChestStorage> storage = getStorage(wall);
-            if (storage.isPresent() && !wall.getDisplayed().isEmpty() && wall.recordInsertClick(player, player.level().getGameTime())) {
-                insertAll(player, storage.get(), wall.getDisplayed());
+            if (storage.isPresent() && !wall.getDisplayed(face).isEmpty() && wall.recordInsertClick(player, face, player.level().getGameTime())) {
+                insertAll(player, storage.get(), wall.getDisplayed(face));
                 wall.updateDisplayStats(false);
             } else {
-                IModHelpers.get().getMinecraftHelpers().openMenu(serverPlayer, wall, buf -> buf.writeBlockPos(wall.getBlockPos()));
+                IModHelpers.get().getMinecraftHelpers().openMenu(serverPlayer, wall, buf -> ContainerDisplay.writeOpenData(buf, wall));
             }
         }
         return InteractionResult.sidedSuccess(player.level().isClientSide);

@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shows a Display wall as a recessed panel in a frame of the chest's material, with its item, count, fill level and
- * the upgrades affecting it, honouring the chest's visual settings.
+ * Shows each shown face of a Display wall as a recessed panel in a frame of the chest's material, with its item, count,
+ * fill level and the upgrades affecting it, honouring the chest's visual settings. Hidden faces show the plain chest.
  * @author rubensworks
  */
 public class DisplayWallOverlay implements IChestOverlay {
@@ -56,14 +56,18 @@ public class DisplayWallOverlay implements IChestOverlay {
     public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
                        PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
         Level level = core.getLevel();
+        if (!(level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) || wall.isFaceHidden(face)) {
+            return;
+        }
         TextureAtlas atlas = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS);
         poseStack.pushPose();
         renderPanel(core, atlas, poseStack, buffers, light, overlay);
-        if (level.getBlockEntity(pos) instanceof BlockEntityChestWall wall && !wall.getDisplayed().isEmpty()) {
+        ItemStack displayed = wall.getDisplayed(face);
+        if (!displayed.isEmpty()) {
             ChestSettings settings = core.getSettings();
-            DisplayStats stats = wall.getDisplayStats();
+            DisplayStats stats = wall.getDisplayStats(face);
             poseStack.translate(0, 0, LAYER);
-            renderDisplayedItem(poseStack, buffers, level, wall.getDisplayed(), light);
+            renderDisplayedItem(poseStack, buffers, level, displayed, light);
             poseStack.translate(0, 0, LAYER);
             if (settings.showCounts()) {
                 String count = IModHelpers.get().getGuiHelpers().quantityToScaledString(stats.count());

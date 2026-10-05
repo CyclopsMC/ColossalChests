@@ -1745,10 +1745,14 @@ public class GameTestsCommon {
     // Display walls
 
     private static ItemInteractionResult useWithItem(GameTestHelper helper, ServerPlayer player, BlockPos pos, ItemStack stack) {
+        return useWithItem(helper, player, pos, stack, Direction.UP);
+    }
+
+    private static ItemInteractionResult useWithItem(GameTestHelper helper, ServerPlayer player, BlockPos pos, ItemStack stack, Direction face) {
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         BlockPos absolute = helper.absolutePos(pos);
         return helper.getLevel().getBlockState(absolute).useItemOn(stack, helper.getLevel(), player, InteractionHand.MAIN_HAND,
-                new BlockHitResult(Vec3.atCenterOf(absolute), Direction.UP, absolute, false));
+                new BlockHitResult(Vec3.atCenterOf(absolute), face, absolute, false));
     }
 
     /**
@@ -1788,7 +1792,7 @@ public class GameTestsCommon {
                     // The first item clicked in becomes the shown item and is inserted.
                     ItemStack held = STONE.copyWithCount(10);
                     useWithItem(helper, player, display, held);
-                    helper.assertTrue(wall.getDisplayed().is(Items.STONE), "Expected stone to be shown");
+                    helper.assertTrue(wall.getDisplayed(Direction.UP).is(Items.STONE), "Expected stone to be shown");
                     helper.assertTrue(held.isEmpty(), "Expected the held stone to be inserted");
                     helper.assertValueEqual(DisplayStats.of(storage, STONE).count(), 10L, "stored stone");
                     // Other items are not inserted.
@@ -1804,30 +1808,30 @@ public class GameTestsCommon {
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 0, "stone left in the inventory");
                     helper.assertValueEqual(DisplayStats.of(storage, STONE).count(), 61L, "stored stone after inserting all");
                     // Left-clicks take a stack or one, through the packet the client sends.
-                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), false), ServerboundDisplayTakePacket.CODEC)
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), Direction.UP, false), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 61, "stone taken as one stack");
                     player.getInventory().clearContent();
                     storage.insert(STONE, 100, false);
-                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), Direction.UP, true), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 1, "single stone taken");
                     // Taken items go to the held slot first, even when an earlier slot is free.
                     player.getInventory().clearContent();
                     player.getInventory().selected = 4;
-                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), Direction.UP, true), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(player.getInventory().getItem(4).getCount(), 1, "stone in the held slot");
                     // A held stack is topped up, the rest goes elsewhere.
                     player.getInventory().setItem(4, STONE.copyWithCount(60));
-                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), false), ServerboundDisplayTakePacket.CODEC)
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), Direction.UP, false), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertValueEqual(player.getInventory().getItem(4).getCount(), 64, "held stone topped up");
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 124, "stone after taking a stack");
                     // Another held item stays, the stone goes elsewhere.
                     player.getInventory().clearContent();
                     player.getInventory().setItem(4, new ItemStack(Items.DIRT));
-                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), true), ServerboundDisplayTakePacket.CODEC)
+                    roundTrip(helper, new ServerboundDisplayTakePacket(helper.absolutePos(display), Direction.UP, true), ServerboundDisplayTakePacket.CODEC)
                             .actionServer(helper.getLevel(), player);
                     helper.assertTrue(player.getInventory().getItem(4).is(Items.DIRT), "Expected the held dirt to stay");
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 1, "stone next to the held dirt");
@@ -1836,7 +1840,7 @@ public class GameTestsCommon {
                     player.getInventory().clearContent();
                     player.setShiftKeyDown(true);
                     helper.assertValueEqual(click(helper, player, display), InteractionResult.PASS, "sneaking click");
-                    helper.assertTrue(wall.getDisplayed().is(Items.STONE), "Expected stone to stay shown");
+                    helper.assertTrue(wall.getDisplayed(Direction.UP).is(Items.STONE), "Expected stone to stay shown");
                 })
                 .thenSucceed();
     }
@@ -1850,23 +1854,23 @@ public class GameTestsCommon {
                 .thenExecute(() -> {
                     BlockEntityChestWall wall = getWall(helper, display);
                     helper.assertTrue(wall.getItemHandlerLogic().isEmpty(), "Expected no item access through a Display wall");
-                    wall.setDisplayed(STONE);
+                    wall.setDisplayed(Direction.UP, STONE);
                     getCore(helper, corePos).getStorage().insert(STONE, 40, false);
                 })
                 // The stats follow the chest on their own.
-                .thenWaitUntil(() -> helper.assertValueEqual(getWall(helper, display).getDisplayStats().count(), 40L, "shown count"))
+                .thenWaitUntil(() -> helper.assertValueEqual(getWall(helper, display).getDisplayStats(Direction.UP).count(), 40L, "shown count"))
                 .thenExecute(() -> {
                     BlockEntityChestWall wall = getWall(helper, display);
                     // What clients get.
                     CompoundTag tag = wall.getUpdateTag(helper.getLevel().registryAccess());
                     BlockEntityChestWall client = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
                     client.loadWithComponents(tag, helper.getLevel().registryAccess());
-                    helper.assertTrue(client.getDisplayed().is(Items.STONE), "Expected the shown item on the client");
-                    helper.assertValueEqual(client.getDisplayStats(), wall.getDisplayStats(), "stats on the client");
+                    helper.assertTrue(client.getDisplayed(Direction.UP).is(Items.STONE), "Expected the shown item on the client");
+                    helper.assertValueEqual(client.getDisplayStats(Direction.UP), wall.getDisplayStats(Direction.UP), "stats on the client");
                     // The shown item survives saving and loading.
                     BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
                     loaded.loadWithComponents(wall.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
-                    helper.assertTrue(loaded.getDisplayed().is(Items.STONE), "Expected the shown item after loading");
+                    helper.assertTrue(loaded.getDisplayed(Direction.UP).is(Items.STONE), "Expected the shown item after loading");
                 })
                 .thenSucceed();
     }
@@ -1881,7 +1885,7 @@ public class GameTestsCommon {
                     BlockEntityChestWall wall = getWall(helper, display);
                     ServerPlayer player = makeViewer(helper);
                     getCore(helper, corePos).getStorage().insert(STONE, 5, false);
-                    wall.setDisplayed(STONE);
+                    wall.setDisplayed(Direction.UP, STONE);
                     player.getInventory().setItem(3, STONE.copyWithCount(20));
                     // The settings choose the shown item through a ghost slot. Created directly, like openChest.
                     ContainerDisplay menu = new ContainerDisplay(102, player.getInventory(), wall);
@@ -1890,17 +1894,69 @@ public class GameTestsCommon {
                     menu.setCarried(new ItemStack(Items.DIRT, 5));
                     menu.clicked(0, 0, ClickType.PICKUP, player);
                     helper.assertValueEqual(menu.getCarried().getCount(), 5, "cursor kept");
-                    helper.assertTrue(wall.getDisplayed().is(Items.DIRT), "Expected dirt to be shown");
+                    helper.assertTrue(wall.getDisplayed(Direction.UP).is(Items.DIRT), "Expected dirt to be shown");
                     menu.setCarried(ItemStack.EMPTY);
                     menu.clicked(0, 0, ClickType.PICKUP, player);
-                    helper.assertTrue(wall.getDisplayed().isEmpty(), "Expected the display to be cleared");
+                    helper.assertTrue(wall.getDisplayed(Direction.UP).isEmpty(), "Expected the display to be cleared");
                     // Shift-clicking an inventory item shows it, and leaves it in the inventory.
                     int stoneSlot = menu.slots.indexOf(menu.slots.stream()
                             .filter(slot -> slot.container == player.getInventory() && slot.getContainerSlot() == 3).findFirst().orElseThrow());
                     menu.quickMoveStack(player, stoneSlot);
-                    helper.assertTrue(wall.getDisplayed().is(Items.STONE), "Expected stone to be shown");
+                    helper.assertTrue(wall.getDisplayed(Direction.UP).is(Items.STONE), "Expected stone to be shown");
                     helper.assertValueEqual(countInInventory(player, Items.STONE), 20, "stone kept after shift-click");
-                    helper.assertValueEqual(wall.getDisplayStats().count(), 5L, "shown count");
+                    helper.assertValueEqual(wall.getDisplayStats(Direction.UP).count(), 5L, "shown count");
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testDisplayWallFaces(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos display = placeWall(helper, MIN_A.offset(0, 2, 0), WallType.DISPLAY);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, display);
+                    ServerPlayer player = makeViewer(helper);
+                    BlockPos absolute = helper.absolutePos(display);
+                    helper.assertValueEqual(Set.copyOf(wall.getDisplayFaces()), Set.of(Direction.UP, Direction.NORTH, Direction.WEST), "outer faces");
+                    // Each face shows its own item.
+                    useWithItem(helper, player, display, STONE.copyWithCount(10), Direction.NORTH);
+                    useWithItem(helper, player, display, new ItemStack(Items.DIRT, 5), Direction.WEST);
+                    helper.assertTrue(wall.getDisplayed(Direction.NORTH).is(Items.STONE), "Expected stone on the north face");
+                    helper.assertTrue(wall.getDisplayed(Direction.WEST).is(Items.DIRT), "Expected dirt on the west face");
+                    helper.assertTrue(wall.getDisplayed(Direction.UP).isEmpty(), "Expected nothing on the top face");
+                    helper.assertValueEqual(wall.getDisplayStats(Direction.WEST).count(), 5L, "dirt shown on the west face");
+                    player.getInventory().clearContent();
+                    new ServerboundDisplayTakePacket(absolute, Direction.WEST, true).actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(countInInventory(player, Items.DIRT), 1, "dirt taken from the west face");
+                    // The settings have a column per face, and keep at least one face shown.
+                    ContainerDisplay menu = new ContainerDisplay(103, player.getInventory(), wall);
+                    helper.assertValueEqual(menu.getFaces().size(), 3, "columns");
+                    helper.assertTrue(menu.clickMenuButton(player, Direction.NORTH.ordinal()), "Expected north to be hidden");
+                    helper.assertTrue(menu.clickMenuButton(player, Direction.WEST.ordinal()), "Expected west to be hidden");
+                    helper.assertFalse(menu.clickMenuButton(player, Direction.UP.ordinal()), "Expected the last face to stay shown");
+                    helper.assertFalse(menu.clickMenuButton(player, Direction.SOUTH.ordinal()), "Expected an inner face to be refused");
+                    helper.assertTrue(wall.isFaceHidden(Direction.NORTH), "Expected north to be hidden");
+                    helper.assertFalse(wall.isFaceHidden(Direction.UP), "Expected the top to be shown");
+                    // A hidden face acts like a plain wall: no inserts, no takes, mined normally.
+                    ItemStack stone = STONE.copyWithCount(3);
+                    helper.assertValueEqual(useWithItem(helper, player, display, stone, Direction.NORTH),
+                            ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION, "click on a hidden face");
+                    helper.assertValueEqual(stone.getCount(), 3, "stone kept");
+                    player.getInventory().clearContent();
+                    new ServerboundDisplayTakePacket(absolute, Direction.NORTH, false).actionServer(helper.getLevel(), player);
+                    helper.assertValueEqual(countInInventory(player, Items.STONE), 0, "stone taken from a hidden face");
+                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute, Direction.NORTH),
+                            "Expected a hidden face to mine normally");
+                    helper.assertTrue(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute, Direction.UP),
+                            "Expected a shown face to be protected");
+                    // Faces, items and visibility reach clients.
+                    BlockEntityChestWall client = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
+                    client.loadWithComponents(wall.getUpdateTag(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+                    helper.assertTrue(client.getDisplayed(Direction.WEST).is(Items.DIRT), "Expected dirt on the client");
+                    helper.assertTrue(client.isFaceHidden(Direction.NORTH), "Expected north hidden on the client");
+                    helper.assertValueEqual(client.getDisplayStats(Direction.NORTH), wall.getDisplayStats(Direction.NORTH), "north stats on the client");
                 })
                 .thenSucceed();
     }
@@ -1917,14 +1973,14 @@ public class GameTestsCommon {
                     BlockPos absolute = helper.absolutePos(display);
                     for (ItemStack held : List.of(ItemStack.EMPTY, STONE.copy(), new ItemStack(Items.WOODEN_SWORD))) {
                         player.setItemInHand(InteractionHand.MAIN_HAND, held);
-                        helper.assertTrue(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute),
+                        helper.assertTrue(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute, Direction.UP),
                                 "Expected mining to be cancelled with " + held);
                     }
                     player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
-                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute), "Expected a pickaxe to mine");
+                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), absolute, Direction.UP), "Expected a pickaxe to mine");
                     // Only Display walls are protected.
                     player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), helper.absolutePos(interfacePos)),
+                    helper.assertFalse(DisplayWallInteractions.onAttack(player, helper.getLevel(), helper.absolutePos(interfacePos), Direction.UP),
                             "Expected an Interface to mine normally");
                 })
                 .thenSucceed();

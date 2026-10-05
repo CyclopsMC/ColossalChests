@@ -39,6 +39,6 @@ public class CommonCapabilitiesModCompat implements IModCompat {
         event.registerBlockEntity(Capabilities.InventoryState.BLOCK, RegistryEntries.BLOCK_ENTITY_CHEST_CORE.value(),
                 (core, side) -> core.isFormed() ? new InventoryStateChestStorage(core.getStorage()) : null);
         event.registerBlockEntity(Capabilities.InventoryState.BLOCK, RegistryEntries.BLOCK_ENTITY_CHEST_WALL.value(),
-                (wall, side) -> wall.getCore().map(core -> (IInventoryState) new InventoryStateChestStorage(core.getStorage())).orElse(null));
+                (wall, side) -> wall.getExposedCore().map(core -> (IInventoryState) new InventoryStateChestStorage(core.getStorage())).orElse(null));
     }
 }

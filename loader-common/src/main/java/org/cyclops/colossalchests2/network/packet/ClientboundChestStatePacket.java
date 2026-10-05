@@ -7,13 +7,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.cyclops.colossalchests2.Reference;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 /**
- * The chest state a viewer needs besides slots: capacity rules, settings, and why upgrades can't be removed.
+ * The chest state a viewer needs besides slots: capacity rules and why upgrades can't be removed.
  * @author rubensworks
  */
 public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStatePacket> {
@@ -23,18 +22,16 @@ public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStat
 
     private int containerId;
     private CapacityProfile profile;
-    private ChestSettings settings;
     private int[] upgradeRemovalProblems;
 
     public ClientboundChestStatePacket() {
         super(TYPE);
     }
 
-    public ClientboundChestStatePacket(int containerId, CapacityProfile profile, ChestSettings settings, int[] upgradeRemovalProblems) {
+    public ClientboundChestStatePacket(int containerId, CapacityProfile profile, int[] upgradeRemovalProblems) {
         super(TYPE);
         this.containerId = containerId;
         this.profile = profile;
-        this.settings = settings;
         this.upgradeRemovalProblems = upgradeRemovalProblems;
     }
 
@@ -50,7 +47,6 @@ public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStat
         buf.writeVarLong(profile.maxItemsPerSlot());
         buf.writeBoolean(profile.acceptNonStackables());
         buf.writeVarLong(profile.nonStackableCapacity());
-        ChestSettings.STREAM_CODEC.encode(buf, settings);
         buf.writeVarIntArray(upgradeRemovalProblems);
     }
 
@@ -58,14 +54,13 @@ public class ClientboundChestStatePacket extends PacketBase<ClientboundChestStat
     public void decode(RegistryFriendlyByteBuf buf) {
         containerId = buf.readVarInt();
         profile = new CapacityProfile(buf.readVarLong(), buf.readVarLong(), buf.readBoolean(), buf.readVarLong());
-        settings = ChestSettings.STREAM_CODEC.decode(buf);
         upgradeRemovalProblems = buf.readVarIntArray();
     }
 
     @Override
     public void actionClient(Level level, Player player) {
         if (player.containerMenu instanceof ContainerChest menu && menu.containerId == containerId) {
-            menu.applyState(profile, settings, upgradeRemovalProblems);
+            menu.applyState(profile, upgradeRemovalProblems);
         }
     }
 

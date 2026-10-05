@@ -1,19 +1,21 @@
 package org.cyclops.colossalchests2.inventory;
 
+import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.network.ChestNetwork;
@@ -24,7 +26,6 @@ import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
 import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
-import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
@@ -32,11 +33,9 @@ import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.Lists;
 import java.util.Arrays;
-import java.util.List;
 import java.util.BitSet;
-import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -71,16 +70,12 @@ public class ContainerChest extends AbstractContainerMenu {
     private final DeepSlot[] chestSlots;
     private final long[] capacities;
     private CapacityProfile profile = CapacityProfile.ofDepth(0);
-    private ChestSettings settings = ChestSettings.DEFAULT;
     // Per upgrade slot, the chest slots that keep its upgrade from being removed.
     private int[] upgradeRemovalProblems;
 
     // Server only.
     private final BitSet dirtySlots = new BitSet();
-    private boolean stateDirty = true;
     private boolean upgradesDirty = true;
-    @Nullable
-    private ChestSettings sentSettings;
     @Nullable
     private int[] sentUpgradeRemovalProblems;
 
@@ -120,7 +115,6 @@ public class ContainerChest extends AbstractContainerMenu {
             addSlot(new UpgradeSlot(upgradeContainer, slot, UPGRADE_SLOT_X, UPGRADE_SLOT_Y + slot * 18));
         }
         if (core != null && player instanceof ServerPlayer serverPlayer) {
-            this.settings = core.getSettings();
             this.dirtySlots.set(0, slotCount);
             core.addViewer(serverPlayer);
         }
@@ -291,10 +285,6 @@ public class ContainerChest extends AbstractContainerMenu {
         return profile;
     }
 
-    public ChestSettings getSettings() {
-        return settings;
-    }
-
     public int getUpgradeSlotsStart() {
         return upgradeSlotsStart;
     }
@@ -390,14 +380,6 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     /**
-     * Called by the core when its settings changed.
-     */
-    public void onSettingsChanged(ChestSettings settings) {
-        this.settings = settings;
-        this.stateDirty = true;
-    }
-
-    /**
      * Called by the core when its upgrades changed.
      */
     public void onUpgradesChanged() {
@@ -471,15 +453,6 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     /**
-     * Apply new settings from the GUI.
-     */
-    public void handleSettings(ChestSettings settings) {
-        if (core != null && !settings.equals(core.getSettings())) {
-            core.setSettings(settings);
-        }
-    }
-
-    /**
      * Spread the cursor stack over chest slots, like dragging over vanilla slots.
      */
     public void handleChestDrag(int[] dragged, boolean oneEach) {
@@ -523,16 +496,11 @@ public class ContainerChest extends AbstractContainerMenu {
                     new ClientboundChestSlotsPacket(containerId, changed, contents, changedCapacities), serverPlayer);
         }
         CapacityProfile newProfile = storage.getProfile();
-        if (stateDirty || !newProfile.equals(profile) || !Arrays.equals(sentUpgradeRemovalProblems, upgradeRemovalProblems)) {
-            stateDirty = false;
-            if (!newProfile.equals(profile) || !Objects.equals(sentSettings, settings)
-                    || !Arrays.equals(sentUpgradeRemovalProblems, upgradeRemovalProblems)) {
-                profile = newProfile;
-                sentSettings = settings;
-                sentUpgradeRemovalProblems = upgradeRemovalProblems.clone();
-                ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, profile, settings,
-                        sentUpgradeRemovalProblems), serverPlayer);
-            }
+        // Nothing was sent yet at first, so the first check always sends.
+        if (!newProfile.equals(profile) || !Arrays.equals(sentUpgradeRemovalProblems, upgradeRemovalProblems)) {
+            profile = newProfile;
+            sentUpgradeRemovalProblems = upgradeRemovalProblems.clone();
+            ChestNetwork.sendToPlayer(new ClientboundChestStatePacket(containerId, profile, sentUpgradeRemovalProblems), serverPlayer);
         }
     }
 
@@ -547,9 +515,8 @@ public class ContainerChest extends AbstractContainerMenu {
         }
     }
 
-    public void applyState(CapacityProfile profile, ChestSettings settings, int[] upgradeRemovalProblems) {
+    public void applyState(CapacityProfile profile, int[] upgradeRemovalProblems) {
         this.profile = profile;
-        this.settings = settings;
         if (upgradeRemovalProblems.length == this.upgradeRemovalProblems.length) {
             this.upgradeRemovalProblems = upgradeRemovalProblems;
         }

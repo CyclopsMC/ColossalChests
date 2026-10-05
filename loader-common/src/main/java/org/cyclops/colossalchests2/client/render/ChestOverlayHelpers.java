@@ -3,6 +3,7 @@ package org.cyclops.colossalchests2.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -35,6 +36,16 @@ public final class ChestOverlayHelpers {
      */
     public static void renderSprite(PoseStack poseStack, MultiBufferSource buffers, TextureAtlasSprite sprite,
                                     float x0, float y0, float x1, float y1, int light, int overlay) {
+        renderSprite(poseStack, buffers, sprite, x0, y0, x1, y1, light, overlay, 0xFFFFFFFF);
+    }
+
+    /**
+     * {@link #renderSprite(PoseStack, MultiBufferSource, TextureAtlasSprite, float, float, float, float, int, int)},
+     * tinted.
+     * @param color The ARGB tint.
+     */
+    public static void renderSprite(PoseStack poseStack, MultiBufferSource buffers, TextureAtlasSprite sprite,
+                                    float x0, float y0, float x1, float y1, int light, int overlay, int color) {
         VertexConsumer buffer = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
         PoseStack.Pose pose = poseStack.last();
         float u0 = sprite.getU0();
@@ -42,19 +53,57 @@ public final class ChestOverlayHelpers {
         // Texture v grows downwards, face y grows upwards.
         float v0 = sprite.getV1();
         float v1 = sprite.getV0();
-        vertex(buffer, pose, x0, y0, u0, v0, light, overlay);
-        vertex(buffer, pose, x1, y0, u1, v0, light, overlay);
-        vertex(buffer, pose, x1, y1, u1, v1, light, overlay);
-        vertex(buffer, pose, x0, y1, u0, v1, light, overlay);
+        vertex(buffer, pose, x0, y0, u0, v0, light, overlay, color);
+        vertex(buffer, pose, x1, y0, u1, v0, light, overlay, color);
+        vertex(buffer, pose, x1, y1, u1, v1, light, overlay, color);
+        vertex(buffer, pose, x0, y1, u0, v1, light, overlay, color);
     }
 
-    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float u, float v, int light, int overlay) {
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float u, float v, int light, int overlay, int color) {
         buffer.addVertex(pose, x, y, 0)
-                .setColor(255, 255, 255, 255)
+                .setColor(color)
                 .setUv(u, v)
                 .setOverlay(overlay)
                 .setLight(light)
                 .setNormal(pose, 0, 0, 1);
+    }
+
+    /**
+     * Draw the four sides of the face's unit square back to the chest surface, so a full face overlay looks like a
+     * plate on the chest instead of floating in front of it.
+     * @param poseStack The pose stack.
+     * @param buffers The buffers.
+     * @param sprite A sprite on the block atlas, whose outer rows texture the sides.
+     * @param depth How far the face lies in front of the chest surface.
+     * @param light The packed light.
+     * @param overlay The packed overlay.
+     */
+    public static void renderSides(PoseStack poseStack, MultiBufferSource buffers, TextureAtlasSprite sprite, float depth,
+                                   int light, int overlay) {
+        VertexConsumer buffer = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+        PoseStack.Pose pose = poseStack.last();
+        float u0 = sprite.getU0();
+        float u1 = sprite.getU1();
+        float v0 = sprite.getV0();
+        float v1 = v0 + (sprite.getV1() - v0) * Math.min(1F, depth);
+        float z = -depth;
+        // Bottom, top, left, right, each counter-clockwise seen from outside.
+        quad(buffer, pose, 0, -1, 0, light, overlay, 0, 0, z, u0, v1, 1, 0, z, u1, v1, 1, 0, 0, u1, v0, 0, 0, 0, u0, v0);
+        quad(buffer, pose, 0, 1, 0, light, overlay, 0, 1, 0, u0, v0, 1, 1, 0, u1, v0, 1, 1, z, u1, v1, 0, 1, z, u0, v1);
+        quad(buffer, pose, -1, 0, 0, light, overlay, 0, 0, 0, u0, v0, 0, 1, 0, u1, v0, 0, 1, z, u1, v1, 0, 0, z, u0, v1);
+        quad(buffer, pose, 1, 0, 0, light, overlay, 1, 0, z, u0, v1, 1, 1, z, u1, v1, 1, 1, 0, u1, v0, 1, 0, 0, u0, v0);
+    }
+
+    private static void quad(VertexConsumer buffer, PoseStack.Pose pose, float nx, float ny, float nz, int light, int overlay,
+                             float... vertices) {
+        for (int i = 0; i < 20; i += 5) {
+            buffer.addVertex(pose, vertices[i], vertices[i + 1], vertices[i + 2])
+                    .setColor(0xFFFFFFFF)
+                    .setUv(vertices[i + 3], vertices[i + 4])
+                    .setOverlay(overlay)
+                    .setLight(light)
+                    .setNormal(pose, nx, ny, nz);
+        }
     }
 
     /**
@@ -84,6 +133,30 @@ public final class ChestOverlayHelpers {
      */
     public static boolean isRevealingMembers() {
         return Minecraft.getInstance().player != null && Minecraft.getInstance().player.isCrouching();
+    }
+
+    /**
+     * Draw a line of text with a shadow on the face, centered horizontally.
+     * @param poseStack The pose stack.
+     * @param buffers The buffers.
+     * @param text The text.
+     * @param centerX Horizontal center.
+     * @param y0 Bottom edge.
+     * @param height Height of the text.
+     * @param color The RGB color.
+     * @param light The packed light.
+     */
+    public static void renderText(PoseStack poseStack, MultiBufferSource buffers, String text, float centerX, float y0, float height,
+                                  int color, int light) {
+        Font font = Minecraft.getInstance().font;
+        float scale = height / font.lineHeight;
+        poseStack.pushPose();
+        // Font y grows downwards, face y upwards.
+        poseStack.translate(centerX, y0 + height, 0);
+        poseStack.scale(scale, -scale, scale);
+        font.drawInBatch(text, -font.width(text) / 2F, 0, color, true, poseStack.last().pose(), buffers,
+                Font.DisplayMode.POLYGON_OFFSET, 0, light);
+        poseStack.popPose();
     }
 
 }

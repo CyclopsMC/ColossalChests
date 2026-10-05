@@ -10,19 +10,24 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
 import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestLayout;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
-import org.cyclops.colossalchests2.inventory.ChestSettings;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
-import org.cyclops.colossalchests2.network.packet.ServerboundChestSettingsPacket;
+import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
+import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
+import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
@@ -30,21 +35,14 @@ import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.cyclops.cyclopscore.client.gui.image.Images;
 import org.cyclops.cyclopscore.helper.IModHelpers;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
-import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
-import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
-import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 
 import java.text.NumberFormat;
 import java.util.List;
-import java.util.Map;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -122,36 +120,24 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         addRenderableWidget(new SettingsButton(leftPos + getGridLeft() + getGridWidth() - SETTINGS_WIDTH, topPos + 3,
                 b -> setSettingsOpen(!settingsOpen)));
 
-        // Two columns of three rows, which fits the grid area of the smallest chest.
+        // Two columns of two rows, which fits the grid area of the smallest chest.
         int settingsX = leftPos + layout.getGridX() - 1;
-        // From the search row, so four rows fit above the info row of the smallest chest.
+        // From the search row.
         int settingsY = topPos + SEARCH_Y - 1;
         int width = (layout.columns() * ChestLayout.SLOT_SIZE) / 2 - 1;
         int height = 16;
-        settingsButtons.add(addRenderableWidget(Button.builder(Component.empty(),
-                        b -> sendSettings(menu.getSettings().withShowFillLevels(!menu.getSettings().showFillLevels())))
-                .bounds(settingsX, settingsY, width, height)
-                .tooltip(Tooltip.create(Component.translatable("gui.colossalchests2.show_fill_levels.info"))).build()));
-        settingsButtons.add(addRenderableWidget(Button.builder(Component.empty(),
-                        b -> sendSettings(menu.getSettings().withShowCounts(!menu.getSettings().showCounts())))
-                .bounds(settingsX + width + 2, settingsY, width, height)
-                .tooltip(Tooltip.create(Component.translatable("gui.colossalchests2.show_counts.info"))).build()));
-        settingsButtons.add(addRenderableWidget(Button.builder(Component.empty(),
-                        b -> sendSettings(menu.getSettings().withShowUpgradeIndicators(!menu.getSettings().showUpgradeIndicators())))
-                .bounds(settingsX, settingsY + height + 2, width, height)
-                .tooltip(Tooltip.create(Component.translatable("gui.colossalchests2.show_upgrade_indicators.info"))).build()));
         settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.lock_all"),
                         b -> sendClick(0, ChestClickAction.LOCK_ALL))
-                .bounds(settingsX, settingsY + 2 * (height + 2), width, height).build()));
+                .bounds(settingsX, settingsY, width, height).build()));
         settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.clear_locks"),
                         b -> sendClick(0, ChestClickAction.CLEAR_LOCKS))
-                .bounds(settingsX + width + 2, settingsY + 2 * (height + 2), width, height).build()));
+                .bounds(settingsX + width + 2, settingsY, width, height).build()));
         settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.void_all"),
                         b -> sendClick(0, ChestClickAction.VOID_ALL))
-                .bounds(settingsX, settingsY + 3 * (height + 2), width, height).build()));
+                .bounds(settingsX, settingsY + height + 2, width, height).build()));
         settingsButtons.add(addRenderableWidget(Button.builder(Component.translatable("gui.colossalchests2.clear_voids"),
                         b -> sendClick(0, ChestClickAction.CLEAR_VOIDS))
-                .bounds(settingsX + width + 2, settingsY + 3 * (height + 2), width, height).build()));
+                .bounds(settingsX + width + 2, settingsY + height + 2, width, height).build()));
         setSettingsOpen(settingsOpen);
     }
 
@@ -163,22 +149,14 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         searchField.visible = !open;
     }
 
-    private void sendSettings(ChestSettings settings) {
-        ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToServer(new ServerboundChestSettingsPacket(menu.containerId, settings));
-    }
-
     @Override
     protected void containerTick() {
         super.containerTick();
-        ChestSettings settings = menu.getSettings();
-        settingsButtons.get(0).setMessage(toggleLabel("show_fill_levels", settings.showFillLevels()));
-        settingsButtons.get(1).setMessage(toggleLabel("show_counts", settings.showCounts()));
-        settingsButtons.get(2).setMessage(toggleLabel("show_upgrade_indicators", settings.showUpgradeIndicators()));
         // Locks and void marks come with their upgrades.
-        updateUpgradeButton(settingsButtons.get(3), hasLockUpgrade(), "lock_all", "requires_lock_upgrade");
-        updateUpgradeButton(settingsButtons.get(4), hasLockUpgrade(), "clear_locks", "requires_lock_upgrade");
-        updateUpgradeButton(settingsButtons.get(5), hasVoidUpgrade(), "void_all", "requires_void_upgrade");
-        updateUpgradeButton(settingsButtons.get(6), hasVoidUpgrade(), "clear_voids", "requires_void_upgrade");
+        updateUpgradeButton(settingsButtons.get(0), hasLockUpgrade(), "lock_all", "requires_lock_upgrade");
+        updateUpgradeButton(settingsButtons.get(1), hasLockUpgrade(), "clear_locks", "requires_lock_upgrade");
+        updateUpgradeButton(settingsButtons.get(2), hasVoidUpgrade(), "void_all", "requires_void_upgrade");
+        updateUpgradeButton(settingsButtons.get(3), hasVoidUpgrade(), "clear_voids", "requires_void_upgrade");
     }
 
     private static void updateUpgradeButton(Button button, boolean enabled, String key, String disabledKey) {
@@ -194,11 +172,6 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
 
     private boolean hasLockUpgrade() {
         return menu.getUpgradeSet().has(ChestUpgrades.LOCK);
-    }
-
-    private static Component toggleLabel(String key, boolean value) {
-        return Component.translatable("gui.colossalchests2." + key,
-                Component.translatable(value ? "options.on" : "options.off"));
     }
 
     private record DragPreview(ItemStack cursor, ItemStack remainder, Map<Integer, Long> added, Set<Integer> capped) {

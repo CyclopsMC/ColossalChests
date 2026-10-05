@@ -71,7 +71,7 @@ public class ContainerScreenInterface extends AbstractContainerScreen<ContainerI
 
     @Override
     protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        if (menu.getCarried().isEmpty() && hoveredSlot != null && ContainerInterface.isSettingsSlot(hoveredSlot.index) && !hoveredSlot.hasItem()) {
+        if (menu.getCarried().isEmpty() && hoveredSlot != null && menu.isGhostSlot(hoveredSlot.index) && !hoveredSlot.hasItem()) {
             String key = "gui.colossalchests2.wall.filter";
             guiGraphics.renderComponentTooltip(font, List.of(Component.translatable(key),
                     Component.translatable(key + ".info").withStyle(ChatFormatting.GRAY)), mouseX, mouseY);

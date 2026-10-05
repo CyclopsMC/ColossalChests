@@ -45,6 +45,9 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     @ConfigurablePropertyCommon(category = "chest", comment = "If items that do not stack, such as tools, can be stored.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static boolean acceptNonStackables = true;
 
+    @ConfigurablePropertyCommon(category = "display", comment = "If Display walls show blocks and other 3D items like an item frame, front-on, instead of like an inventory icon.", configLocation = ModConfigLocation.CLIENT)
+    public static boolean displayItemFrameStyle = false;
+
     public GeneralConfig(M mod) {
         super(mod, "general");
     }

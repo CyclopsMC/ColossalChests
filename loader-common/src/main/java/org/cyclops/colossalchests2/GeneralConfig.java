@@ -46,9 +46,9 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     @ConfigurablePropertyCommon(category = "chest", comment = "If items that do not stack, such as tools, can be stored.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static boolean acceptNonStackables = true;
 
-    @ConfigurablePropertyCommon(category = "magnet", comment = "If Magnet walls pull dropped items into their chest.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    @ConfigurablePropertyCommon(category = "magnet", comment = "If Magnet walls can pull dropped items.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static boolean magnetEnabled = true;
-    @ConfigurablePropertyCommon(category = "magnet", comment = "How far from a new Magnet wall dropped items are pulled, in blocks. Players can change it per wall, up to magnetMaxRadius.", minimalValue = 1, maximalValue = HARD_MAX_MAGNET_RADIUS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    @ConfigurablePropertyCommon(category = "magnet", comment = "Default range value for Magnet walls. Players can change it per wall, up to magnetMaxRadius.", minimalValue = 1, maximalValue = HARD_MAX_MAGNET_RADIUS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static int magnetRadius = 8;
     @ConfigurablePropertyCommon(category = "magnet", comment = "The largest radius players can set on a Magnet wall, in blocks.", minimalValue = 1, maximalValue = HARD_MAX_MAGNET_RADIUS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static int magnetMaxRadius = 32;

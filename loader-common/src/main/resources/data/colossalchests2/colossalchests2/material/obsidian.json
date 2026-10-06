@@ -1,1 +1,6 @@
-{ "upgrade_slots": 6, "max_size": 8, "blast_resistant": true }
+{
+  "upgrade_slots": 6,
+  "max_size": 8,
+  "blast_resistant": true,
+  "upgrade_cost": [{ "item": "minecraft:obsidian", "count": 8 }]
+}

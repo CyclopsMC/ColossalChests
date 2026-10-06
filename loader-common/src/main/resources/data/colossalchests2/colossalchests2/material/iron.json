@@ -1,1 +1,5 @@
-{ "upgrade_slots": 3, "max_size": 5 }
+{
+  "upgrade_slots": 3,
+  "max_size": 5,
+  "upgrade_cost": [{ "item": "minecraft:iron_ingot", "count": 8 }]
+}

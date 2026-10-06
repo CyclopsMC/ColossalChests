@@ -1,1 +1,5 @@
-{ "upgrade_slots": 5, "max_size": 7 }
+{
+  "upgrade_slots": 5,
+  "max_size": 7,
+  "upgrade_cost": [{ "item": "minecraft:diamond", "count": 8 }]
+}

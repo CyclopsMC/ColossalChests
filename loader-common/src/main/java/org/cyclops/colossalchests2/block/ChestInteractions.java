@@ -14,6 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.material.ItemMaterialUpgrade;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.LevelStructureView;
 import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
@@ -39,10 +40,10 @@ public final class ChestInteractions {
 
     /**
      * With an item in hand, an unformed chest lets the item be used, so walls can be placed against walls
-     * while building. A formed chest still opens, like a vanilla chest.
+     * while building. A formed chest still opens, like a vanilla chest, unless a Material Upgrade is used on it.
      */
     public static ItemInteractionResult useItemOn(ItemStack stack, BlockState state) {
-        return !stack.isEmpty() && !state.getValue(BlockChestCore.FORMED)
+        return !stack.isEmpty() && (!state.getValue(BlockChestCore.FORMED) || stack.getItem() instanceof ItemMaterialUpgrade)
                 ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
                 : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }

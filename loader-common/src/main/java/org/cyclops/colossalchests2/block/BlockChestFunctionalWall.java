@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
+import org.cyclops.colossalchests2.material.ItemMaterialUpgrade;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 import org.jetbrains.annotations.Nullable;
 
@@ -76,7 +77,8 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (type == WallType.DISPLAY && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
+        if (type == WallType.DISPLAY && !(stack.getItem() instanceof ItemMaterialUpgrade)
+                && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
             ItemInteractionResult result = DisplayWallInteractions.useItemOn(stack, player, wall, hit.getDirection());
             if (result != null) {
                 return result;

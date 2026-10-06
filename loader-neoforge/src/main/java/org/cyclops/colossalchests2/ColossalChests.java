@@ -26,6 +26,7 @@ import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
 import org.cyclops.colossalchests2.inventory.ContainerMagnetConfig;
 import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
+import org.cyclops.colossalchests2.material.ItemMaterialUpgradeConfig;
 import org.cyclops.colossalchests2.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests2.proxy.ClientProxy;
 import org.cyclops.colossalchests2.proxy.CommonProxy;
@@ -101,6 +102,11 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         for (ChestMaterial material : ChestMaterial.VALUES) {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
+        }
+        for (ChestMaterial material : ChestMaterial.VALUES) {
+            if (material.previous().isPresent()) {
+                configHandler.addConfigurable(new ItemMaterialUpgradeConfig<>(this, material));
+            }
         }
         for (WallType type : WallType.VALUES) {
             configHandler.addConfigurable(new BlockChestFunctionalWallConfig<>(this, type));

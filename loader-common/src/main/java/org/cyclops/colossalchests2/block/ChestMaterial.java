@@ -1,7 +1,10 @@
 package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
@@ -48,6 +51,34 @@ public record ChestMaterial(ResourceLocation id, SoundType soundType, float hard
      */
     public MaterialProperties getProperties() {
         return ChestTablesLoader.get().getMaterial(id);
+    }
+
+    /**
+     * @return The material a Material Upgrade turns this one into, if any.
+     */
+    public Optional<ChestMaterial> next() {
+        int index = VALUES.indexOf(this);
+        return index + 1 < VALUES.size() ? Optional.of(VALUES.get(index + 1)) : Optional.empty();
+    }
+
+    /**
+     * @return The material a downgrade turns this one into, if any.
+     */
+    public Optional<ChestMaterial> previous() {
+        int index = VALUES.indexOf(this);
+        return index > 0 ? Optional.of(VALUES.get(index - 1)) : Optional.empty();
+    }
+
+    public Block getWallBlock() {
+        return BuiltInRegistries.BLOCK.get(id.withPrefix("chest_wall_"));
+    }
+
+    public Block getCoreBlock() {
+        return BuiltInRegistries.BLOCK.get(id.withPrefix("chest_core_"));
+    }
+
+    public Component getDisplayName() {
+        return Component.translatable("material.colossalchests2." + getName());
     }
 
     public static Optional<ChestMaterial> byId(ResourceLocation id) {

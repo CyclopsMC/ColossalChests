@@ -179,7 +179,7 @@ public class ChestStorage {
      * @return If the type may go into the slot, ignoring how full it is.
      */
     public boolean canAccept(int slot, ItemStack type) {
-        if (type.isEmpty() || getCapacity(type) <= 0) {
+        if (type.isEmpty() || getCapacity(type) <= 0 || !NestedChests.canStore(type)) {
             return false;
         }
         DeepSlot deepSlot = slots[slot];
@@ -334,7 +334,7 @@ public class ChestStorage {
      */
     public boolean lockTo(int slot, ItemStack type) {
         DeepSlot deepSlot = slots[slot];
-        if (type.isEmpty()) {
+        if (type.isEmpty() || !NestedChests.canStore(type)) {
             return false;
         }
         type = getStoredType(type);

@@ -2117,6 +2117,8 @@ public class GameTestsCommon {
                     ContainerMagnet menu = new ContainerMagnet(105, player.getInventory(), wall);
                     menu.clickMenuButton(player, ContainerMagnet.BUTTON_INCREASE);
                     helper.assertValueEqual(menu.getRadius(), GeneralConfig.getMagnetDefaultRadius() + 1, "radius after +1");
+                    menu.clickMenuButton(player, ContainerMagnet.BUTTON_INCREASE_MORE);
+                    helper.assertValueEqual(menu.getRadius(), GeneralConfig.getMagnetDefaultRadius() + 1 + 8, "radius after +8");
                     for (int i = 0; i < GeneralConfig.HARD_MAX_MAGNET_RADIUS; i++) {
                         menu.clickMenuButton(player, ContainerMagnet.BUTTON_DECREASE_MORE);
                     }
@@ -2126,12 +2128,20 @@ public class GameTestsCommon {
                     }
                     helper.assertValueEqual(wall.getMagnetRadius(), GeneralConfig.getMagnetMaxRadius(), "largest radius");
                     helper.assertValueEqual(menu.getMaxRadius(), GeneralConfig.getMagnetMaxRadius(), "maximum in the settings");
+                    // Radius 1 reaches the blocks next to the wall: dirt on the chest's top, one block from the wall.
+                    wall.setMagnetRadius(1);
+                    dropItem(helper, Vec3.atBottomCenterOf(wallPos.above().south()), new ItemStack(Items.DIRT, 2));
+                })
+                .thenWaitUntil(() -> helper.assertValueEqual(DisplayStats.of(getCore(helper, corePos).getStorage(), new ItemStack(Items.DIRT)).count(),
+                        2L, "dirt next to the wall pulled in with radius 1"))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, wallPos);
                     // It survives saving and loading.
                     wall.setMagnetRadius(2);
                     BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
                     loaded.loadWithComponents(wall.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
                     helper.assertValueEqual(loaded.getMagnetRadius(), 2, "radius after loading");
-                    // Dirt on a block next to the chest, about 4.7 blocks from the wall.
+                    // Dirt on a block next to the chest, about 3.4 blocks from the wall's block.
                     helper.setBlock(MIN_A.offset(5, -1, 1), Blocks.STONE);
                     dirt[0] = dropItem(helper, Vec3.atCenterOf(MIN_A.offset(5, 0, 1)), new ItemStack(Items.DIRT));
                 })
@@ -2141,7 +2151,7 @@ public class GameTestsCommon {
                     getWall(helper, wallPos).setMagnetRadius(5);
                 })
                 .thenWaitUntil(() -> helper.assertValueEqual(DisplayStats.of(getCore(helper, corePos).getStorage(), new ItemStack(Items.DIRT)).count(),
-                        1L, "dirt pulled in with a larger radius"))
+                        3L, "dirt pulled in with a larger radius"))
                 .thenSucceed();
     }
 

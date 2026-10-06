@@ -45,9 +45,10 @@ public final class MagnetWall {
         Vec3 center = Vec3.atCenterOf(pos);
         // Pulled items can land on any face of the chest, not only on the wall.
         AABB reach = AABB.encapsulatingFullBlocks(structure.min(), structure.max()).inflate(REACH);
+        // Items within the radius of the wall's block, in blocks along each axis, like a beacon's range.
         // Items a player just dropped have a pickup delay, so a player can still throw items near the chest.
         for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(radius),
-                item -> item.isAlive() && !item.hasPickUpDelay() && item.distanceToSqr(center) <= (double) radius * radius)) {
+                item -> item.isAlive() && !item.hasPickUpDelay())) {
             ItemStack stack = item.getItem();
             if (item.getBoundingBox().intersects(reach)) {
                 long inserted = storage.insertAutomated(stack, stack.getCount(), false);

@@ -1,0 +1,60 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "fill -3 3 -3 9 3 9 minecraft:stone"
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 6 5 colossalchests2:chest_wall_interface"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "gamemode survival"
+command "clear @p"
+wait --ticks 20
+command "give @p colossalchests2:material_upgrade_tool"
+teleport -1.5 4 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+hold 0
+# Without a material.
+use 3 5 4 --face north
+wait --ticks 2
+teleport -1.5 4 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 3
+screenshot --name tool-no-target
+use-item
+wait --ticks 10
+screenshot --name tool-gui-empty
+snapshot
+click --at 422,218
+wait --ticks 5
+mouse-move 400,150
+wait --ticks 3
+screenshot --name tool-gui-diamond
+close-screen
+wait --ticks 2
+inventory
+# Missing walls.
+command "give @p colossalchests2:chest_wall_diamond 20"
+use 3 5 4 --face north
+teleport -1.5 4 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 3
+screenshot --name tool-missing
+command "give @p colossalchests2:chest_wall_diamond 6"
+hold 0
+use 3 5 4 --face north
+teleport -1.5 4 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 10
+screenshot --name tool-diamond
+inventory
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+# Back to wood with the returned walls.
+hold 0
+use-item
+wait --ticks 5
+click --at 334,218
+wait --ticks 3
+close-screen
+use 3 5 4 --face north
+teleport -1.5 4 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 10
+screenshot --name tool-back-to-wood
+inventory

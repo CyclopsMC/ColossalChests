@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "colossalchests2:chest_wall_obsidian"
+    },
+    {
+      "item": "minecraft:chest"
+    }
+  ],
+  "result": {
+    "id": "colossalchests2:chest_core_obsidian",
+    "count": 1
+  }
+}

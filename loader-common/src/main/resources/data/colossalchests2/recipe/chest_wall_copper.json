@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "XXX",
+    "XLX",
+    "XXX"
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:copper_ingot"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    }
+  },
+  "result": {
+    "id": "colossalchests2:chest_wall_copper",
+    "count": 1
+  }
+}

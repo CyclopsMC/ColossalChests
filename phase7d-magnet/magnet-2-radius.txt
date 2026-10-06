@@ -17,7 +17,7 @@ snapshot
 mouse-move 10,10
 wait --ticks 5
 screenshot --name magnet-radius-default
-# + adds 1. Shift adds 5, but setting the sneak key binding here does not press the physical shift key the screen reads, so this second click also adds 1.
+# + adds 1. Shift adds 8 (5 when written), but setting the sneak key binding here does not press the physical shift key the screen reads, so this second click also adds 1.
 click --widget /root/children[1]
 wait --ticks 5
 eval "mc.options.keyShift.setDown(true)"

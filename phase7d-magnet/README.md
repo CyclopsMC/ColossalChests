@@ -25,4 +25,4 @@ Read back from the world: after the delay the cobblestone was pulled in (slot 0:
 | `magnet-radius-default.png` | The settings, opened by sneak-right-click with an empty hand: radius 8 (the config default), maximum 32 (the config maximum) |
 | `magnet-radius-changed.png` | After two clicks on +: radius 10, read back from the wall too |
 
-Steps of 5 while holding shift are covered by a game test; this script can not press the physical shift key the screen reads.
+Steps of 8 while holding shift (5 when these screenshots were taken) are covered by a game test; this script can not press the physical shift key the screen reads.

@@ -72,4 +72,27 @@ public class TestStorageSignals extends BootstrapTest {
         assertEquals(8, StorageSignals.getComparatorSignal(storage));
     }
 
+    @Test
+    public void testTypeAbsentIsZero() {
+        ChestStorage storage = new ChestStorage(3, CapacityProfile.ofDepth(4));
+        storage.insert(new ItemStack(Items.STONE), 256, false);
+        assertEquals(0, StorageSignals.getComparatorSignal(storage, new ItemStack(Items.DIRT)));
+    }
+
+    @Test
+    public void testTypeOnlyCountsItsSlots() {
+        // A quarter full dirt slot, next to a full stone slot and an empty one.
+        ChestStorage storage = new ChestStorage(3, CapacityProfile.ofDepth(4));
+        storage.insert(new ItemStack(Items.STONE), 256, false);
+        storage.insert(new ItemStack(Items.DIRT), 64, false);
+        assertEquals(4, StorageSignals.getComparatorSignal(storage, new ItemStack(Items.DIRT)));
+        assertEquals(15, StorageSignals.getComparatorSignal(storage, new ItemStack(Items.STONE)));
+    }
+
+    @Test
+    public void testTypeSingleItemGivesOne() {
+        ChestStorage storage = new ChestStorage(3, CapacityProfile.ofDepth(4));
+        storage.insert(new ItemStack(Items.DIRT), 1, false);
+        assertEquals(1, StorageSignals.getComparatorSignal(storage, new ItemStack(Items.DIRT)));
+    }
 }

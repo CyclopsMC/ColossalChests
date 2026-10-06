@@ -11,7 +11,7 @@
       "item": "minecraft:iron_ingot"
     },
     "C": {
-      "item": "minecraft:chest"
+      "tag": "colossalchests2:chest_walls"
     }
   },
   "result": {

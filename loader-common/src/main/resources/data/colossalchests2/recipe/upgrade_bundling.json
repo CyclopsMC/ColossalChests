@@ -14,7 +14,7 @@
       "item": "minecraft:string"
     },
     "C": {
-      "item": "minecraft:chest"
+      "tag": "colossalchests2:chest_walls"
     }
   },
   "result": {

@@ -2231,9 +2231,12 @@ public class GameTestsCommon {
         assertCrafts(helper, CraftingInput.of(2, 2, List.of(ironWall, new ItemStack(Items.ENDER_PEARL), i, new ItemStack(Items.REDSTONE))),
                 modItem("chest_wall_magnet"));
         assertCrafts(helper, CraftingInput.of(2, 1, List.of(modItem("chest_wall_display"), new ItemStack(Items.HOPPER))), null);
-        ItemStack c = new ItemStack(Items.CHEST);
+        // Upgrades are built around any plain wall, not a chest, so they do not clash with other mods.
         ItemStack d = new ItemStack(Items.DIAMOND);
-        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, c, d, i, d, i)), modItem("upgrade_depth"));
+        ItemStack w = modItem("chest_wall_wood");
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, w, d, i, d, i)), modItem("upgrade_depth"));
+        ItemStack c = new ItemStack(Items.CHEST);
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, c, d, i, d, i)), null);
 
         SmithingRecipeInput smithing = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), modItem("chest_wall_diamond"),
                 new ItemStack(Items.NETHERITE_SCRAP));

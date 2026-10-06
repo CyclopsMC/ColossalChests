@@ -14,7 +14,7 @@
       "item": "minecraft:diamond"
     },
     "C": {
-      "item": "minecraft:chest"
+      "tag": "colossalchests2:chest_walls"
     }
   },
   "result": {

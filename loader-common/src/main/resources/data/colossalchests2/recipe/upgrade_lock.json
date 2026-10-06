@@ -3,7 +3,7 @@
   "category": "misc",
   "pattern": [
     " N ",
-    "N N",
+    "NCN",
     "III"
   ],
   "key": {
@@ -12,6 +12,9 @@
     },
     "I": {
       "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "tag": "colossalchests2:chest_walls"
     }
   },
   "result": {

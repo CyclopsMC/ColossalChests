@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWall;
 import org.cyclops.colossalchests2.block.BlockChestWall;
@@ -34,6 +35,7 @@ import org.cyclops.colossalchests2.capability.StorageSignals;
 import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
+import org.cyclops.colossalchests2.inventory.ContainerMagnet;
 import org.cyclops.colossalchests2.inventory.ContainerRedstone;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestShape;
@@ -81,6 +83,8 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
     // A bit per side and option, set when the option is off.
     private int disabledOptions;
     private final Map<UUID, InsertClick> lastInserts = Maps.newHashMap();
+    // A Magnet wall's radius, or -1 for the configured default.
+    private int magnetRadius = -1;
     private final Container displayedContainer = new DisplayedContainer();
     // The last signal a Redstone wall emitted, so redstone does not recompute it on every query.
     private int redstoneSignal;
@@ -137,7 +141,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         return switch (getWallType()) {
             case INTERFACE -> new WallAccess(mode, settings.getItems(), false);
             case VOID -> new WallAccess(WallAccess.Mode.BOTH, List.of(), true);
-            case DISPLAY, REDSTONE -> WallAccess.OPEN;
+            case DISPLAY, REDSTONE, MAGNET -> WallAccess.OPEN;
         };
     }
 
@@ -179,6 +183,25 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
             Block block = getBlockState().getBlock();
             level.updateNeighborsAt(worldPosition, block);
             level.updateNeighbourForOutputSignal(worldPosition, block);
+        }
+    }
+
+    /**
+     * @return The radius a Magnet wall pulls items from, within [1, the configured maximum].
+     */
+    public int getMagnetRadius() {
+        int max = GeneralConfig.getMagnetMaxRadius();
+        return magnetRadius < 0 ? GeneralConfig.getMagnetDefaultRadius() : Math.clamp(magnetRadius, 1, max);
+    }
+
+    /**
+     * @param radius The radius a Magnet wall pulls items from, clamped to [1, the configured maximum].
+     */
+    public void setMagnetRadius(int radius) {
+        int clamped = Math.clamp(radius, 1, GeneralConfig.getMagnetMaxRadius());
+        if (clamped != getMagnetRadius() || magnetRadius < 0) {
+            magnetRadius = clamped;
+            setChanged();
         }
     }
 
@@ -355,6 +378,9 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         tag.putString("mode", mode.name());
         ContainerHelper.saveAllItems(tag, settings.getItems(), registries);
         saveDisplay(tag, registries, false);
+        if (magnetRadius >= 0) {
+            tag.putInt("magnet_radius", magnetRadius);
+        }
         if (!redstoneTarget.getItem(0).isEmpty()) {
             tag.put("redstone_target", redstoneTarget.getItem(0).save(registries));
         }
@@ -412,6 +438,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
             settings.getItems().set(i, items.get(i));
         }
         loadDisplay(tag, registries);
+        magnetRadius = tag.contains("magnet_radius") ? tag.getInt("magnet_radius") : -1;
         redstoneTarget.getItems().set(0, tag.contains("redstone_target")
                 ? ItemStack.parseOptional(registries, tag.getCompound("redstone_target")) : ItemStack.EMPTY);
         redstoneSignal = tag.getInt("redstone_signal");
@@ -442,6 +469,7 @@ public class BlockEntityChestWall extends BlockEntity implements MenuProvider {
         return switch (getWallType()) {
             case DISPLAY -> new ContainerDisplay(id, inventory, this);
             case REDSTONE -> new ContainerRedstone(id, inventory, this);
+            case MAGNET -> new ContainerMagnet(id, inventory, this);
             default -> new ContainerInterface(id, inventory, this);
         };
     }

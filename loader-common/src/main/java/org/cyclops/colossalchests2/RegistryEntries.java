@@ -12,6 +12,7 @@ import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
+import org.cyclops.colossalchests2.inventory.ContainerMagnet;
 import org.cyclops.colossalchests2.inventory.ContainerRedstone;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.cyclopscore.config.DeferredHolderCommon;
@@ -29,6 +30,8 @@ public class RegistryEntries {
     public static final DeferredHolderCommon<BlockEntityType<?>, BlockEntityType<BlockEntityChestWall>> BLOCK_ENTITY_CHEST_WALL = DeferredHolderCommon.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests2:chest_wall"));
 
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerInterface>> MENU_INTERFACE = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:interface"));
+
+    public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerMagnet>> MENU_MAGNET = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:magnet"));
 
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerRedstone>> MENU_REDSTONE = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:redstone"));
 

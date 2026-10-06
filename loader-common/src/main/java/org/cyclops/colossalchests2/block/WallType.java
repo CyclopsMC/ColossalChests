@@ -23,7 +23,11 @@ public enum WallType {
     /**
      * A comparator signal for the whole chest, or for the slots holding one item type set in its own GUI.
      */
-    REDSTONE;
+    REDSTONE,
+    /**
+     * Pulls dropped items around it into the chest.
+     */
+    MAGNET;
 
     public static final WallType[] VALUES = values();
 

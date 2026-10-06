@@ -15,6 +15,7 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     public static final int MIN_SIZE = 2;
     public static final int HARD_MAX_SIZE = 10;
     public static final int HARD_MAX_SLOTS = 108;
+    public static final int HARD_MAX_MAGNET_RADIUS = 128;
 
     @ConfigurablePropertyCommon(category = "chest", comment = "The number of slots of a chest without upgrades.", minimalValue = 1, maximalValue = HARD_MAX_SLOTS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static int baseSlots = 27;
@@ -45,6 +46,13 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
     @ConfigurablePropertyCommon(category = "chest", comment = "If items that do not stack, such as tools, can be stored.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
     public static boolean acceptNonStackables = true;
 
+    @ConfigurablePropertyCommon(category = "magnet", comment = "If Magnet walls can pull dropped items.", isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static boolean magnetEnabled = true;
+    @ConfigurablePropertyCommon(category = "magnet", comment = "Default range value for Magnet walls. Players can change it per wall, up to magnetMaxRadius.", minimalValue = 1, maximalValue = HARD_MAX_MAGNET_RADIUS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static int magnetRadius = 8;
+    @ConfigurablePropertyCommon(category = "magnet", comment = "The largest radius players can set on a Magnet wall, in blocks.", minimalValue = 1, maximalValue = HARD_MAX_MAGNET_RADIUS, isCommandable = true, configLocation = ModConfigLocation.SERVER)
+    public static int magnetMaxRadius = 32;
+
     @ConfigurablePropertyCommon(category = "display", comment = "If Display walls show blocks and other 3D items like an item frame, front-on, instead of like an inventory icon.", configLocation = ModConfigLocation.CLIENT)
     public static boolean displayItemFrameStyle = false;
 
@@ -66,6 +74,20 @@ public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
      */
     public static int getMaxSlots() {
         return Math.clamp(maxSlots, 1, HARD_MAX_SLOTS);
+    }
+
+    /**
+     * @return The largest radius of Magnet walls, within [1, {@link #HARD_MAX_MAGNET_RADIUS}].
+     */
+    public static int getMagnetMaxRadius() {
+        return Math.clamp(magnetMaxRadius, 1, HARD_MAX_MAGNET_RADIUS);
+    }
+
+    /**
+     * @return The radius of Magnet walls that have not been changed, within [1, {@link #getMagnetMaxRadius()}].
+     */
+    public static int getMagnetDefaultRadius() {
+        return Math.clamp(magnetRadius, 1, getMagnetMaxRadius());
     }
 
     /**

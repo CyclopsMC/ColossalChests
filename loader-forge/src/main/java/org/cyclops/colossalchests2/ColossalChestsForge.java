@@ -20,6 +20,7 @@ import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
+import org.cyclops.colossalchests2.inventory.ContainerMagnetConfig;
 import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
 import org.cyclops.colossalchests2.proxy.ClientProxyForge;
 import org.cyclops.colossalchests2.proxy.CommonProxyForge;
@@ -102,5 +103,6 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
         configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));
+        configHandler.addConfigurable(new ContainerMagnetConfig<>(this));
     }
 }

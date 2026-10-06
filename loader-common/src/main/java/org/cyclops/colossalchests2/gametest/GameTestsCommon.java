@@ -63,6 +63,7 @@ import org.cyclops.colossalchests2.inventory.ChestSearch;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
+import org.cyclops.colossalchests2.inventory.ContainerMagnet;
 import org.cyclops.colossalchests2.inventory.ContainerRedstone;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -2098,6 +2099,49 @@ public class GameTestsCommon {
                 })
                 // Two full slots of 27.
                 .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 2, "whole chest signal again"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY, timeoutTicks = 200)
+    public void testMagnetWallRadius(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos wallPos = placeWall(helper, MIN_A.offset(1, 2, 1), WallType.MAGNET);
+        ItemEntity[] dirt = new ItemEntity[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestWall wall = getWall(helper, wallPos);
+                    helper.assertValueEqual(wall.getMagnetRadius(), GeneralConfig.getMagnetDefaultRadius(), "default radius");
+                    // The settings change it in steps of 1 or 5, within 1 and the configured maximum.
+                    ServerPlayer player = makeViewer(helper);
+                    ContainerMagnet menu = new ContainerMagnet(105, player.getInventory(), wall);
+                    menu.clickMenuButton(player, ContainerMagnet.BUTTON_INCREASE);
+                    helper.assertValueEqual(menu.getRadius(), GeneralConfig.getMagnetDefaultRadius() + 1, "radius after +1");
+                    for (int i = 0; i < GeneralConfig.HARD_MAX_MAGNET_RADIUS; i++) {
+                        menu.clickMenuButton(player, ContainerMagnet.BUTTON_DECREASE_MORE);
+                    }
+                    helper.assertValueEqual(wall.getMagnetRadius(), 1, "smallest radius");
+                    for (int i = 0; i < GeneralConfig.HARD_MAX_MAGNET_RADIUS; i++) {
+                        menu.clickMenuButton(player, ContainerMagnet.BUTTON_INCREASE_MORE);
+                    }
+                    helper.assertValueEqual(wall.getMagnetRadius(), GeneralConfig.getMagnetMaxRadius(), "largest radius");
+                    helper.assertValueEqual(menu.getMaxRadius(), GeneralConfig.getMagnetMaxRadius(), "maximum in the settings");
+                    // It survives saving and loading.
+                    wall.setMagnetRadius(2);
+                    BlockEntityChestWall loaded = new BlockEntityChestWall(wall.getBlockPos(), wall.getBlockState());
+                    loaded.loadWithComponents(wall.saveWithoutMetadata(helper.getLevel().registryAccess()), helper.getLevel().registryAccess());
+                    helper.assertValueEqual(loaded.getMagnetRadius(), 2, "radius after loading");
+                    // Dirt on a block next to the chest, about 4.7 blocks from the wall.
+                    helper.setBlock(MIN_A.offset(5, -1, 1), Blocks.STONE);
+                    dirt[0] = dropItem(helper, Vec3.atCenterOf(MIN_A.offset(5, 0, 1)), new ItemStack(Items.DIRT));
+                })
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    helper.assertTrue(dirt[0].isAlive(), "Expected dirt outside the radius to stay");
+                    getWall(helper, wallPos).setMagnetRadius(5);
+                })
+                .thenWaitUntil(() -> helper.assertValueEqual(DisplayStats.of(getCore(helper, corePos).getStorage(), new ItemStack(Items.DIRT)).count(),
+                        1L, "dirt pulled in with a larger radius"))
                 .thenSucceed();
     }
 

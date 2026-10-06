@@ -57,9 +57,9 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        // A right-click opens the chest, while sneaking opens the settings of an interface or redstone wall. Display walls
-        // handle their own clicks.
-        if ((type == WallType.INTERFACE || type == WallType.REDSTONE) && player.isSecondaryUseActive()) {
+        // A right-click opens the chest, while sneaking opens the settings of an interface, redstone or magnet wall. Display
+        // walls handle their own clicks.
+        if ((type == WallType.INTERFACE || type == WallType.REDSTONE || type == WallType.MAGNET) && player.isSecondaryUseActive()) {
             if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
                 IModHelpers.get().getMinecraftHelpers().openMenu(serverPlayer, wall, buf -> buf.writeBlockPos(pos));
             }

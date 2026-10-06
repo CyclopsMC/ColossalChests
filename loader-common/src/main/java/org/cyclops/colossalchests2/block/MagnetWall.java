@@ -41,7 +41,7 @@ public final class MagnetWall {
         }
         ChestStorage storage = core.get().getStorage();
         ChestStructure structure = core.get().getStructure();
-        int radius = GeneralConfig.getMagnetRadius();
+        int radius = wall.getMagnetRadius();
         Vec3 center = Vec3.atCenterOf(pos);
         // Pulled items can land on any face of the chest, not only on the wall.
         AABB reach = AABB.encapsulatingFullBlocks(structure.min(), structure.max()).inflate(REACH);

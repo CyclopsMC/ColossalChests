@@ -1,0 +1,115 @@
+# Fresh world. A wooden 3x3 (2..4, 4..6, 4..6) with an Interface wall at the top middle, upgraded tier by tier in survival.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill -3 3 -3 9 3 9 minecraft:stone"
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 6 5 colossalchests2:chest_wall_interface"
+command "setblock 3 5 4 colossalchests2:chest_core_wood"
+command "gamemode survival"
+command "clear @p"
+wait --ticks 20
+command "give @p colossalchests2:material_upgrade_copper"
+command "give @p colossalchests2:material_upgrade_iron"
+command "give @p colossalchests2:material_upgrade_gold"
+command "give @p colossalchests2:material_upgrade_diamond"
+command "give @p colossalchests2:material_upgrade_obsidian"
+command "give @p colossalchests2:material_upgrade_netherite"
+teleport -1.5 4 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 20
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-0-wood
+# Without materials the upgrade is refused.
+hold 0
+use 3 5 4 --face north
+wait --ticks 2
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name refused-missing
+command "give @p minecraft:copper_ingot 200"
+hold 0
+use 3 5 4 --face north
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-1-copper
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+inventory
+command "give @p minecraft:iron_ingot 200"
+hold 1
+use 3 5 4 --face north
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-2-iron
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+inventory
+command "give @p minecraft:gold_ingot 200"
+hold 2
+use 3 5 4 --face north
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-3-gold
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+inventory
+command "give @p minecraft:diamond 200"
+hold 3
+use 3 5 4 --face north
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-4-diamond
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+inventory
+command "give @p minecraft:obsidian 200"
+hold 4
+use 3 5 4 --face north
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-5-obsidian
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+inventory
+command "give @p minecraft:netherite_scrap 25"
+command "give @p minecraft:gold_ingot 25"
+hold 5
+use 3 5 4 --face north
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name tier-6-netherite
+eval "server.submit({ def l = server.overworld(); [l.getBlockState(dev.pos(3, 5, 4)).toString(), l.getBlockState(dev.pos(2, 4, 4)).toString(), l.getBlockState(dev.pos(3, 6, 5)).toString()] } as java.util.function.Supplier).get()"
+inventory
+# A netherite 3x3 can go back to obsidian: sneak-right-click with the netherite upgrade refunds its cost.
+hold 5
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 5
+use 3 5 4 --face north
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 10
+teleport -1.5 5 -3.5 --yaw 0 --pitch 0
+look --at 3,5,5
+wait --ticks 5
+screenshot --name downgraded-obsidian
+inventory
+# Back up again with the refund.
+hold 5
+use 3 5 4 --face north
+wait --ticks 10
+hold 6
+open-gui 3 5 4
+wait --ticks 10
+screenshot --name netherite-gui
+close-screen
+# Item tooltip.
+key E
+wait --ticks 5

@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
@@ -24,6 +25,8 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -49,6 +52,7 @@ import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.blockentity.DisplayOption;
+import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
@@ -74,6 +78,7 @@ import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
 import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.colossalchests2.storage.DisplayStats;
+import org.cyclops.colossalchests2.storage.NestedChests;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
@@ -2024,6 +2029,47 @@ public class GameTestsCommon {
                     // It fell straight down instead of being pulled towards the wall.
                     helper.assertValueEqual(dirt[0].blockPosition().getX(), helper.absolutePos(dropPos).getX(), "dirt x");
                     helper.assertValueEqual(dirt[0].blockPosition().getZ(), helper.absolutePos(dropPos).getZ(), "dirt z");
+                })
+                .thenSucceed();
+    }
+
+    // Nested chests
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testFilledCoresCanNotBeStored(GameTestHelper helper) {
+        BlockPos corePosA = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos corePosB = buildChest(helper, MIN_B, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    assertFormed(helper, corePosA, MIN_A, 3);
+                    assertFormed(helper, corePosB, MIN_B, 3);
+                })
+                .thenExecute(() -> {
+                    helper.assertValueEqual(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(RegistryEntries.COMPONENT_CHEST_CONTENTS.value()),
+                            NestedChests.CONTENTS_COMPONENT, "contents component id");
+                    getCore(helper, corePosA).getStorage().insert(STONE, 100, false);
+                    ItemStack filledCore = breakCoreAndPickUp(helper, corePosA);
+                    helper.assertTrue(filledCore.has(RegistryEntries.COMPONENT_CHEST_CONTENTS.value()), "Expected a core with contents");
+                    ChestStorage storage = getCore(helper, corePosB).getStorage();
+                    // Not through any insert path, and no slot can be locked to it.
+                    helper.assertValueEqual(storage.insert(filledCore, 1, false), 0L, "filled core inserted");
+                    helper.assertValueEqual(storage.insertAutomated(filledCore, 1, false), 0L, "filled core inserted by automation");
+                    helper.assertTrue(ItemStack.matches(new ItemHandlerLogic(storage).insertItem(0, filledCore.copy(), false), filledCore),
+                            "Expected an item handler to refuse a filled core");
+                    helper.assertFalse(storage.lockTo(0, filledCore), "Expected no lock to a filled core");
+                    // Nor inside a shulker box or bundle.
+                    ItemStack shulker = new ItemStack(Items.SHULKER_BOX);
+                    shulker.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(filledCore)));
+                    helper.assertValueEqual(storage.insert(shulker, 1, false), 0L, "shulker box with a filled core inserted");
+                    ItemStack bundle = new ItemStack(Items.BUNDLE);
+                    bundle.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(List.of(shulker)));
+                    helper.assertValueEqual(storage.insert(bundle, 1, false), 0L, "bundle with a filled core inserted");
+                    // Empty cores and other containers are fine.
+                    ItemStack emptyCore = new ItemStack(filledCore.getItem());
+                    helper.assertValueEqual(storage.insert(emptyCore, 1, false), 1L, "empty core inserted");
+                    ItemStack stoneShulker = new ItemStack(Items.SHULKER_BOX);
+                    stoneShulker.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(STONE.copyWithCount(64))));
+                    helper.assertValueEqual(storage.insert(stoneShulker, 1, false), 1L, "shulker box with stone inserted");
                 })
                 .thenSucceed();
     }

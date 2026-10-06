@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests2.block;
 
+
 import java.util.Locale;
 
 /**
@@ -18,7 +19,11 @@ public enum WallType {
     /**
      * Shows one item type and its count on its faces, and lets players take and insert it by clicking.
      */
-    DISPLAY;
+    DISPLAY,
+    /**
+     * A comparator signal for the whole chest, or for the slots holding one item type set in its own GUI.
+     */
+    REDSTONE;
 
     public static final WallType[] VALUES = values();
 
@@ -33,7 +38,7 @@ public enum WallType {
      * @return If automation can move items through this wall.
      */
     public boolean exposesItems() {
-        return this != DISPLAY;
+        return this == INTERFACE || this == VOID;
     }
 
     public String getRegistryName() {

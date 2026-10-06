@@ -24,6 +24,7 @@ import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
+import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
 import org.cyclops.colossalchests2.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests2.proxy.ClientProxy;
 import org.cyclops.colossalchests2.proxy.CommonProxy;
@@ -107,6 +108,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         configHandler.addConfigurable(new BlockEntityChestWallConfigNeoForge<>(this));
         configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
+        configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));
     }
 
     /**

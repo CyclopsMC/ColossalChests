@@ -17,3 +17,12 @@ An iron 3x3 with a Magnet wall at the top middle, default config (on, radius 8).
 | `magnet-sneak-icon.png` | While sneaking, the wall shows its icon, like other functional walls |
 
 Read back from the world: after the delay the cobblestone was pulled in (slot 0: 64 cobblestone), an oak log broken 3 blocks away dropped into the chest (slot 1: 1 oak log), and no item entities were left.
+
+## Radius (magnet-2-radius.txt)
+
+| Screenshot | Shows |
+|---|---|
+| `magnet-radius-default.png` | The settings, opened by sneak-right-click with an empty hand: radius 8 (the config default), maximum 32 (the config maximum) |
+| `magnet-radius-changed.png` | After two clicks on +: radius 10, read back from the wall too |
+
+Steps of 5 while holding shift are covered by a game test; this script can not press the physical shift key the screen reads.

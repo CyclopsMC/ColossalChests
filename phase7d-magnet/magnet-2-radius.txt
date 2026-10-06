@@ -1,0 +1,31 @@
+# Fresh world. An iron 3x3 (2..4, 4..6, 4..6) with a Magnet wall at the top middle; the player stands on the chest.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 3 6 5 colossalchests2:chest_wall_magnet"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+eval "server.submit({ server.playerList.players[0].getInventory().clearContent() } as Runnable).get()"
+teleport 2.5 7 4.5
+wait --ticks 10
+# Sneak-right-click with an empty hand opens the settings.
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 5
+use 3 6 5 --face up
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 10
+snapshot
+mouse-move 10,10
+wait --ticks 5
+screenshot --name magnet-radius-default
+# + adds 1. Shift adds 5, but setting the sneak key binding here does not press the physical shift key the screen reads, so this second click also adds 1.
+click --widget /root/children[1]
+wait --ticks 5
+eval "mc.options.keyShift.setDown(true)"
+click --widget /root/children[1]
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 5
+snapshot
+mouse-move 10,10
+wait --ticks 5
+screenshot --name magnet-radius-changed
+eval "server.submit({ server.overworld().getBlockEntity(dev.pos(3, 6, 5)).getMagnetRadius() } as java.util.function.Supplier).get()"

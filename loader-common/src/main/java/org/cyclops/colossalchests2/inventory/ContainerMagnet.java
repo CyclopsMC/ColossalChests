@@ -22,7 +22,7 @@ public class ContainerMagnet extends AbstractContainerMenu {
     public static final int BUTTON_INCREASE = 1;
     public static final int BUTTON_DECREASE_MORE = 2;
     public static final int BUTTON_INCREASE_MORE = 3;
-    public static final int STEP_MORE = 5;
+    public static final int STEP_MORE = 8;
 
     @Nullable
     private final BlockEntityChestWall wall;

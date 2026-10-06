@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.Reference;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,12 +24,12 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
     public static final ChestTables DEFAULT = new ChestTables(
             ImmutableMap.<ResourceLocation, MaterialProperties>builder()
                     .put(id("wood"), new MaterialProperties(1, 3, false))
-                    .put(id("copper"), new MaterialProperties(2, 4, false, List.of(cost("copper_ingot", 8))))
-                    .put(id("iron"), new MaterialProperties(3, 5, false, List.of(cost("iron_ingot", 8))))
-                    .put(id("gold"), new MaterialProperties(4, 6, false, List.of(cost("gold_ingot", 8))))
-                    .put(id("diamond"), new MaterialProperties(5, 7, false, List.of(cost("diamond", 8))))
-                    .put(id("obsidian"), new MaterialProperties(6, 8, true, List.of(cost("obsidian", 8))))
-                    .put(id("netherite"), new MaterialProperties(7, 10, true, List.of(cost("netherite_scrap", 1), cost("gold_ingot", 1))))
+                    .put(id("copper"), new MaterialProperties(2, 4, false))
+                    .put(id("iron"), new MaterialProperties(3, 5, false))
+                    .put(id("gold"), new MaterialProperties(4, 6, false))
+                    .put(id("diamond"), new MaterialProperties(5, 7, false))
+                    .put(id("obsidian"), new MaterialProperties(6, 8, true))
+                    .put(id("netherite"), new MaterialProperties(7, 10, true))
                     .build(),
             ImmutableMap.<ResourceLocation, UpgradeProperties>builder()
                     .put(id("depth"), new UpgradeProperties(0, ImmutableMap.<ResourceLocation, Integer>builder()
@@ -68,10 +67,6 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
             properties = DEFAULT.upgrades().getOrDefault(upgrade, UpgradeProperties.DISABLED);
         }
         return properties;
-    }
-
-    private static MaterialCost cost(String item, int count) {
-        return new MaterialCost(ResourceLocation.withDefaultNamespace(item), count);
     }
 
     private static ResourceLocation id(String path) {

@@ -6,14 +6,14 @@
       "item": "minecraft:stick"
     },
     {
-      "item": "colossalchests2:chest_wall_netherite"
+      "tag": "colossalchests2:chest_walls"
     },
     {
       "item": "minecraft:stick"
     }
   ],
   "result": {
-    "id": "colossalchests2:material_upgrade_netherite",
+    "id": "colossalchests2:material_upgrade_tool",
     "count": 1
   }
 }

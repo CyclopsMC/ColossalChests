@@ -16,13 +16,15 @@ import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigForge;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigForge;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
+import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
 import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
 import org.cyclops.colossalchests2.inventory.ContainerMagnetConfig;
+import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
-import org.cyclops.colossalchests2.material.ItemMaterialUpgradeConfig;
+import org.cyclops.colossalchests2.material.ItemMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.proxy.ClientProxyForge;
 import org.cyclops.colossalchests2.proxy.CommonProxyForge;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
@@ -88,6 +90,7 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));
+        configHandler.addConfigurable(new DataComponentMaterialTargetConfig<>(this));
         configHandler.addConfigurable(new ContainerChestConfig<>(this));
         for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, upgrade));
@@ -96,11 +99,7 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
         }
-        for (ChestMaterial material : ChestMaterial.VALUES) {
-            if (material.previous().isPresent()) {
-                configHandler.addConfigurable(new ItemMaterialUpgradeConfig<>(this, material));
-            }
-        }
+        configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));
         for (WallType type : WallType.VALUES) {
             configHandler.addConfigurable(new BlockChestFunctionalWallConfig<>(this, type));
         }
@@ -110,5 +109,6 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
         configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));
         configHandler.addConfigurable(new ContainerMagnetConfig<>(this));
+        configHandler.addConfigurable(new ContainerMaterialUpgradeToolConfig<>(this));
     }
 }

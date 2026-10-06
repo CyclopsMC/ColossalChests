@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "colossalchests2:item/material_upgrade_gold"
+    "layer0": "colossalchests2:item/material_upgrade_tool"
   }
 }

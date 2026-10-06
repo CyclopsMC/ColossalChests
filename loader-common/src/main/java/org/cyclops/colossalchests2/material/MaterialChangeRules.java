@@ -1,18 +1,14 @@
 package org.cyclops.colossalchests2.material;
 
-import com.google.common.collect.Maps;
-import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.block.ChestMaterial;
-import org.cyclops.colossalchests2.config.MaterialCost;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 
-import java.util.List;
 import java.util.Map;
 
 /**
- * What changing the material of a formed chest costs, and when it is refused.
+ * When changing the material of a formed chest is refused.
  * @author rubensworks
  */
 public final class MaterialChangeRules {
@@ -69,22 +65,6 @@ public final class MaterialChangeRules {
     public static int getShellBlocks(int size) {
         int inner = Math.max(0, size - 2);
         return size * size * size - inner * inner * inner;
-    }
-
-    /**
-     * @param perBlock The cost for one block.
-     * @param blocks The number of blocks.
-     * @return The total cost, with entries of the same item merged.
-     */
-    public static List<MaterialCost> getTotalCost(List<MaterialCost> perBlock, int blocks) {
-        Map<ResourceLocation, Integer> totals = Maps.newLinkedHashMap();
-        for (MaterialCost cost : perBlock) {
-            totals.merge(cost.item(), cost.count() * blocks, Integer::sum);
-        }
-        return totals.entrySet().stream()
-                .filter(entry -> entry.getValue() > 0)
-                .map(entry -> new MaterialCost(entry.getKey(), entry.getValue()))
-                .toList();
     }
 
 }

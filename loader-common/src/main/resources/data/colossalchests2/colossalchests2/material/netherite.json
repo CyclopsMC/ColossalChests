@@ -1,6 +1,1 @@
-{
-  "upgrade_slots": 7,
-  "max_size": 10,
-  "blast_resistant": true,
-  "upgrade_cost": [{ "item": "minecraft:netherite_scrap", "count": 1 }, { "item": "minecraft:gold_ingot", "count": 1 }]
-}
+{ "upgrade_slots": 7, "max_size": 10, "blast_resistant": true }

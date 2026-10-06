@@ -53,22 +53,6 @@ public record ChestMaterial(ResourceLocation id, SoundType soundType, float hard
         return ChestTablesLoader.get().getMaterial(id);
     }
 
-    /**
-     * @return The material a Material Upgrade turns this one into, if any.
-     */
-    public Optional<ChestMaterial> next() {
-        int index = VALUES.indexOf(this);
-        return index + 1 < VALUES.size() ? Optional.of(VALUES.get(index + 1)) : Optional.empty();
-    }
-
-    /**
-     * @return The material a downgrade turns this one into, if any.
-     */
-    public Optional<ChestMaterial> previous() {
-        int index = VALUES.indexOf(this);
-        return index > 0 ? Optional.of(VALUES.get(index - 1)) : Optional.empty();
-    }
-
     public Block getWallBlock() {
         return BuiltInRegistries.BLOCK.get(id.withPrefix("chest_wall_"));
     }

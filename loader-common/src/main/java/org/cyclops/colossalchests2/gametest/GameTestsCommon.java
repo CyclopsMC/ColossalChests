@@ -57,7 +57,6 @@ import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.WallAccess;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
-import org.cyclops.colossalchests2.config.MaterialCost;
 import org.cyclops.colossalchests2.inventory.ChestClickAction;
 import org.cyclops.colossalchests2.inventory.ChestClickLogic;
 import org.cyclops.colossalchests2.inventory.ChestSearch;
@@ -65,8 +64,9 @@ import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.inventory.ContainerMagnet;
+import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeTool;
 import org.cyclops.colossalchests2.inventory.ContainerRedstone;
-import org.cyclops.colossalchests2.material.MaterialChangeRules;
+import org.cyclops.colossalchests2.material.ItemMaterialUpgradeTool;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
@@ -90,6 +90,7 @@ import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgrade;
 import org.cyclops.cyclopscore.network.PacketBase;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -2214,12 +2215,12 @@ public class GameTestsCommon {
                     int slots = core.getStorage().getSlotCount();
                     ServerPlayer player = makePlayerNorthOf(helper, corePos);
                     player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
-                    ChestMaterial current = ChestMaterial.WOOD;
-                    while (current.next().isPresent()) {
-                        ChestMaterial target = current.next().get();
+                    for (int i = 1; i < ChestMaterial.VALUES.size(); i++) {
+                        ChestMaterial previous = ChestMaterial.VALUES.get(i - 1);
+                        ChestMaterial target = ChestMaterial.VALUES.get(i);
                         // 24 plain walls and the core, the interface stays.
-                        giveUpgradeCost(player, target, 25);
-                        helper.assertTrue(useMaterialUpgrade(helper, player, corePos, target, false).consumesAction(),
+                        giveWalls(player, target, 25);
+                        helper.assertTrue(useMaterialUpgrade(helper, player, corePos, target).consumesAction(),
                                 "Expected an upgrade to " + target.getName());
                         helper.assertBlockPresent(core(target), corePos);
                         for (BlockPos pos : new ChestStructure(MIN_A, 3).shell()) {
@@ -2235,10 +2236,8 @@ public class GameTestsCommon {
                         helper.assertValueEqual(upgraded.getUpgradeSet().count(ChestUpgrades.SLOT_EXPANSION), 1, "upgrades in " + target.getName());
                         helper.assertValueEqual(upgraded.getStorage().getSlotCount(), slots, "slots in " + target.getName());
                         helper.assertValueEqual(upgraded.getUpgrades().getContainerSize(), target.getProperties().upgradeSlots(), "upgrade slots");
-                        for (MaterialCost cost : target.getProperties().upgradeCost()) {
-                            helper.assertValueEqual(countInInventory(player, BuiltInRegistries.ITEM.get(cost.item())), 0, "left over " + cost.item());
-                        }
-                        current = target;
+                        helper.assertValueEqual(countInInventory(player, wall(target).asItem()), 0, "new walls left");
+                        helper.assertValueEqual(countInInventory(player, wall(previous).asItem()), 25, "old walls returned");
                     }
                 })
                 .thenSucceed();
@@ -2253,38 +2252,39 @@ public class GameTestsCommon {
                     getCore(helper, corePos).getStorage().insert(STONE, 100, false);
                     ServerPlayer player = makePlayerNorthOf(helper, corePos);
                     player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
-                    // One ingot short of 26 blocks, and named ingots are never taken.
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.COPPER_INGOT, 64));
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.COPPER_INGOT, 64));
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.COPPER_INGOT, 64));
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.COPPER_INGOT, 15));
-                    ItemStack named = new ItemStack(Items.COPPER_INGOT, 64);
+                    Item diamondWall = wall(ChestMaterial.DIAMOND).asItem();
+                    // A tool without a material does nothing.
+                    giveWalls(player, ChestMaterial.DIAMOND, 26);
+                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, null).consumesAction(),
+                            "Expected a tool without a material to fail");
+                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.WOOD).consumesAction(),
+                            "Expected a change to the same material to fail");
+                    // One wall short of 26 blocks, and named walls are never taken.
+                    player.getInventory().clearContent();
+                    giveWalls(player, ChestMaterial.DIAMOND, 25);
+                    ItemStack named = new ItemStack(diamondWall, 64);
                     named.set(DataComponents.CUSTOM_NAME, Component.literal("Keep"));
                     player.getInventory().placeItemBackInInventory(named);
-                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, false).consumesAction(),
-                            "Expected the upgrade to fail without enough materials");
-                    helper.assertValueEqual(countInInventory(player, Items.COPPER_INGOT), 26 * 8 - 1 + 64, "copper after failing");
+                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.DIAMOND).consumesAction(),
+                            "Expected the upgrade to fail without enough walls");
+                    helper.assertValueEqual(countInInventory(player, diamondWall), 25 + 64, "diamond walls after failing");
+                    helper.assertValueEqual(countInInventory(player, wall(ChestMaterial.WOOD).asItem()), 0, "wood walls after failing");
                     helper.assertBlockPresent(core(ChestMaterial.WOOD), corePos);
                     helper.assertBlockPresent(wall(ChestMaterial.WOOD), MIN_A);
-                    // Upgrades for other tiers do nothing.
-                    player.getInventory().placeItemBackInInventory(new ItemStack(Items.COPPER_INGOT, 1));
-                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.IRON, false).consumesAction(),
-                            "Expected an iron upgrade to fail on wood");
-                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, true).consumesAction(),
-                            "Expected a downgrade of wood to fail");
-                    helper.assertBlockPresent(core(ChestMaterial.WOOD), corePos);
-                    helper.assertValueEqual(countInInventory(player, Items.COPPER_INGOT), 26 * 8 + 64, "copper after other tiers");
-                    // Exactly enough.
-                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, false).consumesAction(),
+                    // Exactly enough, skipping the tiers in between.
+                    giveWalls(player, ChestMaterial.DIAMOND, 1);
+                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.DIAMOND).consumesAction(),
                             "Expected the upgrade to succeed");
-                    helper.assertValueEqual(countInInventory(player, Items.COPPER_INGOT), 64, "named copper left");
+                    helper.assertBlockPresent(core(ChestMaterial.DIAMOND), corePos);
+                    helper.assertValueEqual(countInInventory(player, diamondWall), 64, "named diamond walls left");
+                    helper.assertValueEqual(countInInventory(player, wall(ChestMaterial.WOOD).asItem()), 26, "wood walls returned");
                     helper.assertValueEqual(countStored(getCore(helper, corePos).getStorage(), STONE), 100L, "stone");
-                    // Creative players pay nothing.
+                    // Creative players neither pay nor get walls back.
                     player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
-                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.IRON, false).consumesAction(),
-                            "Expected a creative upgrade to succeed");
+                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.IRON).consumesAction(),
+                            "Expected a creative change to succeed");
                     helper.assertBlockPresent(core(ChestMaterial.IRON), corePos);
-                    helper.assertValueEqual(countInInventory(player, Items.COPPER_INGOT), 64, "named copper left after creative");
+                    helper.assertValueEqual(countInInventory(player, diamondWall), 64, "diamond walls after creative");
                 })
                 .thenSucceed();
     }
@@ -2303,27 +2303,26 @@ public class GameTestsCommon {
                     core.getStorage().insert(STONE, 100, false);
                     ServerPlayer player = makePlayerNorthOf(helper, corePos);
                     player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+                    giveWalls(player, ChestMaterial.WOOD, 56);
                     // Wood has one upgrade slot.
                     core.getUpgrades().setItem(0, upgradeItem(ChestUpgrades.SLOT_EXPANSION));
                     core.getUpgrades().setItem(1, upgradeItem(ChestUpgrades.DEPTH));
-                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, true).consumesAction(),
+                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.WOOD).consumesAction(),
                             "Expected a downgrade with too many upgrades to fail");
                     // Wood takes no Depth.
                     core.getUpgrades().setItem(0, ItemStack.EMPTY);
-                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, true).consumesAction(),
+                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.WOOD).consumesAction(),
                             "Expected a downgrade with Depth to fail");
                     // Too large for wood.
-                    helper.assertFalse(useMaterialUpgrade(helper, player, largeCorePos, ChestMaterial.COPPER, true).consumesAction(),
+                    helper.assertFalse(useMaterialUpgrade(helper, player, largeCorePos, ChestMaterial.WOOD).consumesAction(),
                             "Expected a downgrade of a 4x4 chest to fail");
                     helper.assertBlockPresent(core(ChestMaterial.COPPER), corePos);
                     helper.assertBlockPresent(core(ChestMaterial.COPPER), largeCorePos);
-                    helper.assertValueEqual(countInInventory(player, Items.COPPER_INGOT), 0, "copper refunded by failures");
-                    // Without sneaking, a copper upgrade does nothing on copper.
-                    core.getUpgrades().setItem(1, upgradeItem(ChestUpgrades.SLOT_EXPANSION));
-                    helper.assertFalse(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, false).consumesAction(),
-                            "Expected an upgrade of copper to copper to fail");
+                    helper.assertValueEqual(countInInventory(player, wall(ChestMaterial.WOOD).asItem()), 56, "wood walls after failures");
+                    helper.assertValueEqual(countInInventory(player, wall(ChestMaterial.COPPER).asItem()), 0, "copper walls after failures");
                     // The upgrade in the second slot moves to wood's only slot.
-                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.COPPER, true).consumesAction(),
+                    core.getUpgrades().setItem(1, upgradeItem(ChestUpgrades.SLOT_EXPANSION));
+                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.WOOD).consumesAction(),
                             "Expected the downgrade to succeed");
                     helper.assertBlockPresent(core(ChestMaterial.WOOD), corePos);
                     helper.assertBlockPresent(wall(ChestMaterial.WOOD), MIN_A);
@@ -2333,36 +2332,54 @@ public class GameTestsCommon {
                     helper.assertTrue(ItemChestUpgrade.getUpgrade(downgraded.getUpgrades().getItem(0)) == ChestUpgrades.SLOT_EXPANSION,
                             "Expected the slot expansion in the first slot");
                     helper.assertValueEqual(countStored(downgraded.getStorage(), STONE), 100L, "stone");
-                    helper.assertValueEqual(countInInventory(player, Items.COPPER_INGOT), 26 * 8, "refunded copper");
+                    helper.assertValueEqual(countInInventory(player, wall(ChestMaterial.WOOD).asItem()), 30, "wood walls left");
+                    helper.assertValueEqual(countInInventory(player, wall(ChestMaterial.COPPER).asItem()), 26, "copper walls returned");
                 })
                 .thenSucceed();
     }
 
-    private static Item materialUpgradeItem(ChestMaterial to) {
-        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "material_upgrade_" + to.getName()));
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testMaterialUpgradeToolMenu(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack tool = new ItemStack(materialUpgradeTool());
+        player.setItemInHand(InteractionHand.OFF_HAND, tool);
+        ContainerMaterialUpgradeTool menu = new ContainerMaterialUpgradeTool(0, player.getInventory(), InteractionHand.OFF_HAND);
+        helper.assertValueEqual(menu.getTarget(), -1, "target without a material");
+        helper.assertTrue(menu.clickMenuButton(player, ChestMaterial.VALUES.indexOf(ChestMaterial.DIAMOND)), "Expected the button to work");
+        helper.assertValueEqual(ItemMaterialUpgradeTool.getTarget(player.getOffhandItem()).orElse(null), ChestMaterial.DIAMOND, "target");
+        helper.assertValueEqual(menu.getTarget(), ChestMaterial.VALUES.indexOf(ChestMaterial.DIAMOND), "menu target");
+        helper.assertFalse(menu.clickMenuButton(player, ChestMaterial.VALUES.size()), "Expected an unknown button to fail");
+        helper.assertTrue(menu.stillValid(player), "Expected the menu to be valid while holding the tool");
+        player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
+        helper.assertFalse(menu.stillValid(player), "Expected the menu to close without the tool");
+        helper.succeed();
     }
 
-    private static void giveUpgradeCost(ServerPlayer player, ChestMaterial target, int blocks) {
-        for (MaterialCost cost : MaterialChangeRules.getTotalCost(target.getProperties().upgradeCost(), blocks)) {
-            Item item = BuiltInRegistries.ITEM.get(cost.item());
-            for (int remaining = cost.count(); remaining > 0; remaining -= item.getDefaultMaxStackSize()) {
-                player.getInventory().placeItemBackInInventory(new ItemStack(item, Math.min(remaining, item.getDefaultMaxStackSize())));
-            }
+    private static Item materialUpgradeTool() {
+        return BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "material_upgrade_tool"));
+    }
+
+    private static void giveWalls(ServerPlayer player, ChestMaterial material, int count) {
+        Item item = wall(material).asItem();
+        for (int remaining = count; remaining > 0; remaining -= item.getDefaultMaxStackSize()) {
+            player.getInventory().placeItemBackInInventory(new ItemStack(item, Math.min(remaining, item.getDefaultMaxStackSize())));
         }
     }
 
     /**
-     * Right-click a block with a Material Upgrade like the server does for a player.
+     * Right-click a block with a Material Upgrade Tool like the server does for a player.
+     * @param target The tool's material, or null for none.
      */
-    private static InteractionResult useMaterialUpgrade(GameTestHelper helper, ServerPlayer player, BlockPos pos, ChestMaterial to, boolean sneak) {
+    private static InteractionResult useMaterialUpgrade(GameTestHelper helper, ServerPlayer player, BlockPos pos, @Nullable ChestMaterial target) {
         // The off hand keeps the tool out of the inventory slots that pay.
-        ItemStack tool = new ItemStack(materialUpgradeItem(to));
+        ItemStack tool = new ItemStack(materialUpgradeTool());
+        if (target != null) {
+            ItemMaterialUpgradeTool.setTarget(tool, target);
+        }
         player.setItemInHand(InteractionHand.OFF_HAND, tool);
-        player.setShiftKeyDown(sneak);
         BlockPos absolute = helper.absolutePos(pos);
         InteractionResult result = player.gameMode.useItemOn(player, helper.getLevel(), tool, InteractionHand.OFF_HAND,
                 new BlockHitResult(Vec3.atCenterOf(absolute), Direction.NORTH, absolute, false));
-        player.setShiftKeyDown(false);
         player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
         return result;
     }

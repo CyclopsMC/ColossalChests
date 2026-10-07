@@ -1,0 +1,52 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "fill -3 3 -3 10 3 10 minecraft:stone"
+command "setblock 1 4 3 colossalchests2:uncolossal_chest[facing=north]"
+command "setblock 2 4 3 colossalchests2:uncolossal_chest[facing=east]"
+command "setblock 3 4 3 colossalchests2:uncolossal_chest[facing=south]"
+command "setblock 4 4 3 colossalchests2:uncolossal_chest[facing=west]"
+command "setblock 6 4 3 minecraft:chest[facing=north]"
+command "fill 1 4 6 3 4 8 minecraft:glass"
+command "setblock 2 4 7 colossalchests2:uncolossal_chest[facing=north,waterlogged=true]"
+wait --ticks 20
+teleport 3.5 5.2 0.2 --yaw 0 --pitch 0
+look --at 3.5,4.2,3.5
+wait --ticks 10
+screenshot --name uncolossal-facings
+eval "level.getBlockEntity(dev.pos(1, 4, 3)).triggerEvent(1, 1); level.getBlockEntity(dev.pos(1, 4, 3)).getOpenNess(1F)"
+wait --ticks 15
+teleport 1.5 4.8 1.6 --yaw 0 --pitch 0
+look --at 1.5,4.15,3.5
+wait --ticks 5
+screenshot --name uncolossal-lid-open
+eval "level.getBlockEntity(dev.pos(1, 4, 3)).triggerEvent(1, 0)"
+teleport 2.5 6 5.2 --yaw 0 --pitch 0
+look --at 2.5,4.2,7.5
+wait --ticks 10
+screenshot --name uncolossal-waterlogged
+command "give @p colossalchests2:uncolossal_chest"
+command "give @p minecraft:stone 64"
+hold 0
+teleport 3.5 5.2 0.2 --yaw 0 --pitch 0
+look --at 3.5,4.2,3.5
+open-gui 3 4 3
+wait --ticks 5
+screenshot --name uncolossal-gui
+close-screen
+command "gamemode survival"
+key E
+wait --ticks 5
+screenshot --name uncolossal-item-inventory
+close-screen
+command "gamemode survival"
+command "clear @p"
+command "give @p colossalchests2:uncolossal_chest"
+command "give @p minecraft:chest"
+hold 0
+teleport 3.5 5.2 0.2 --yaw 0 --pitch 0
+look --at 3.5,4.2,3.5
+wait --ticks 5
+screenshot --name uncolossal-item-hand
+key E
+wait --ticks 5
+screenshot --name uncolossal-item-inventory
+close-screen

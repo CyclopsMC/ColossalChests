@@ -16,9 +16,6 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -29,9 +26,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
@@ -39,6 +36,7 @@ import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWall;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.ChestSounds;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
@@ -87,7 +85,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     private final ChestStorage storage;
     private final ItemHandlerLogic itemHandlerLogic;
     private final Set<ServerPlayer> viewers = Sets.newHashSet();
-    private final ChestLidController lidController = new ChestLidController();
+    private final ChestLid lid = new ChestLid();
 
     @Nullable
     private ChestStructure structure;
@@ -118,7 +116,11 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, BlockEntityChestCore core) {
-        core.lidController.tickLid();
+        ChestStructure structure = core.getStructure();
+        if (structure != null) {
+            core.lid.setSpeed(ChestSounds.getLidSpeed(structure.size()));
+        }
+        core.lid.tick();
     }
 
     public ChestStorage getStorage() {
@@ -249,7 +251,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
      * @return How far the lid is open, from 0 to 1. Only meaningful on the client.
      */
     public float getOpenness(float partialTick) {
-        return lidController.getOpenness(partialTick);
+        return lid.getOpenness(partialTick);
     }
 
     public int getComparatorSignal() {
@@ -327,29 +329,35 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     public void addViewer(ServerPlayer player) {
         if (viewers.add(player)) {
             storage.markAllDirty();
-            onViewersChanged(viewers.size() == 1 ? SoundEvents.CHEST_OPEN : null);
+            onViewersChanged(viewers.size() == 1 ? Boolean.TRUE : null);
         }
     }
 
     public void removeViewer(ServerPlayer player) {
         if (viewers.remove(player)) {
-            onViewersChanged(viewers.isEmpty() ? SoundEvents.CHEST_CLOSE : null);
+            onViewersChanged(viewers.isEmpty() ? Boolean.FALSE : null);
         }
     }
 
-    private void onViewersChanged(@Nullable SoundEvent sound) {
+    /**
+     * @param open If the chest was opened or closed, or null if neither.
+     */
+    private void onViewersChanged(@Nullable Boolean open) {
         level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_VIEWERS, viewers.size());
-        if (sound != null && structure != null) {
-            double half = structure.size() / 2D;
-            level.playSound(null, structure.min().getX() + half, structure.min().getY() + half, structure.min().getZ() + half,
-                    sound, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
+        if (open != null && structure != null) {
+            ChestSounds.play(level, getCenter(structure), structure.size(), open);
         }
+    }
+
+    private Vec3 getCenter(ChestStructure structure) {
+        double half = structure.size() / 2D;
+        return new Vec3(structure.min().getX() + half, structure.min().getY() + half, structure.min().getZ() + half);
     }
 
     @Override
     public boolean triggerEvent(int id, int param) {
         if (id == EVENT_VIEWERS) {
-            lidController.shouldBeOpen(param > 0);
+            lid.shouldBeOpen(param > 0);
             return true;
         }
         return super.triggerEvent(id, param);

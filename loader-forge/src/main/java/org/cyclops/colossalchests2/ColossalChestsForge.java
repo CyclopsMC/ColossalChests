@@ -114,7 +114,7 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));
         configHandler.addConfigurable(new DataComponentMaterialTargetConfig<>(this));
         configHandler.addConfigurable(new ContainerChestConfig<>(this));
-        for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
+        for (ChestUpgrade upgrade : ChestUpgrades.BUILT_IN) {
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, upgrade));
         }
         for (BuiltInMaterial material : BuiltInMaterial.values()) {
@@ -122,8 +122,10 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material.getMaterial(), material::createProperties));
         }
         if (GameTestAddon.isEnabled()) {
+            GameTestAddon.register();
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
+            configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, GameTestAddon.UPGRADE));
         }
         configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));
         for (WallType type : WallType.VALUES) {

@@ -132,17 +132,17 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     private static int[] getMaxUpgradeCounts(BlockEntityChestCore core) {
-        return ChestUpgrades.VALUES.stream().mapToInt(core::getMaxUpgradeCount).toArray();
+        return ChestUpgrades.getAll().stream().mapToInt(core::getMaxUpgradeCount).toArray();
     }
 
     private static int[] getBetterMaterialTakesMore(BlockEntityChestCore core) {
-        return ChestUpgrades.VALUES.stream().mapToInt(upgrade -> ChestMaterial.getAll().stream()
+        return ChestUpgrades.getAll().stream().mapToInt(upgrade -> ChestMaterial.getAll().stream()
                 .anyMatch(material -> ChestUpgradeRules.getMaxCount(upgrade, material.id()) > core.getMaxUpgradeCount(upgrade)) ? 1 : 0).toArray();
     }
 
     private static int[] readUpgradeArray(FriendlyByteBuf data) {
         int[] values = data.readVarIntArray();
-        return values.length == ChestUpgrades.VALUES.size() ? values : new int[ChestUpgrades.VALUES.size()];
+        return values.length == ChestUpgrades.getAll().size() ? values : new int[ChestUpgrades.getAll().size()];
     }
 
     /**
@@ -309,7 +309,7 @@ public class ContainerChest extends AbstractContainerMenu {
      * @return How many of the upgrade this chest takes.
      */
     public int getMaxUpgradeCount(ChestUpgrade upgrade) {
-        int index = ChestUpgrades.VALUES.indexOf(upgrade);
+        int index = ChestUpgrades.getAll().indexOf(upgrade);
         return index >= 0 ? maxUpgradeCounts[index] : 0;
     }
 
@@ -339,7 +339,7 @@ public class ContainerChest extends AbstractContainerMenu {
      */
     public boolean doesBetterMaterialTakeMore(ItemStack stack) {
         ChestUpgrade upgrade = ItemChestUpgrade.getUpgrade(stack);
-        return upgrade != null && betterMaterialTakesMore[ChestUpgrades.VALUES.indexOf(upgrade)] == 1;
+        return upgrade != null && betterMaterialTakesMore[ChestUpgrades.getAll().indexOf(upgrade)] == 1;
     }
 
     /**

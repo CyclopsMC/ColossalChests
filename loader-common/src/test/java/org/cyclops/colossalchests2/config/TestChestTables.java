@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.junit.Test;
 
@@ -42,12 +43,15 @@ public class TestChestTables {
     }
 
     @Test
-    public void testShippedFilesMatchDefaults() throws Exception {
-        Map<ResourceLocation, JsonElement> files = Maps.newHashMap();
-        for (ResourceLocation id : ChestTables.DEFAULT.upgrades().keySet()) {
-            files.put(upgrade(id), read(ChestTablesLoader.DIRECTORY_UPGRADE + "/" + id.getPath() + ".json"));
+    public void testShippedUpgrades() {
+        ChestTables tables = ShippedTables.load();
+        assertEquals(new UpgradeProperties(0, Map.of(ChestMaterial.WOOD.id(), 0, ChestMaterial.COPPER.id(), 1, ChestMaterial.IRON.id(), 2,
+                        ChestMaterial.GOLD.id(), 3, ChestMaterial.DIAMOND.id(), 4, ChestMaterial.OBSIDIAN.id(), 5, ChestMaterial.NETHERITE.id(), 6), 2),
+                tables.getUpgrade(ChestUpgrades.DEPTH.getId()));
+        assertEquals(new UpgradeProperties(3, Map.of(), 27), tables.getUpgrade(ChestUpgrades.SLOT_EXPANSION.getId()));
+        for (ChestUpgrade upgrade : ChestUpgrades.BUILT_IN) {
+            assertTrue("Expected a data file for " + upgrade, tables.upgrades().containsKey(upgrade.getId()));
         }
-        assertEquals(ChestTables.DEFAULT.upgrades(), ChestTablesLoader.fromJson(files).upgrades());
     }
 
     @Test
@@ -119,9 +123,9 @@ public class TestChestTables {
     }
 
     @Test
-    public void testMissingUpgradeUsesShippedDefaults() {
+    public void testMissingUpgradeDisabled() {
         ChestTables tables = ChestTablesLoader.fromJson(Map.of());
-        assertEquals(ChestTables.DEFAULT.getUpgrade(ChestUpgrades.LOCK.getId()), tables.getUpgrade(ChestUpgrades.LOCK.getId()));
+        assertEquals(UpgradeProperties.DISABLED, tables.getUpgrade(ChestUpgrades.LOCK.getId()));
         assertEquals(UpgradeProperties.DISABLED, tables.getUpgrade(ResourceLocation.fromNamespaceAndPath("othermod", "unknown")));
     }
 
@@ -136,6 +140,11 @@ public class TestChestTables {
         ChestTables tables = ChestTablesLoader.fromJson(Map.of(material(TIN), JsonParser.parseString("{\"max_size\": 11}")), errors::add);
         assertEquals(1, errors.size());
         assertEquals(MaterialProperties.DEFAULT, tables.getMaterial(TIN));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterUpgradeDuplicate() {
+        ChestUpgrades.register(ChestUpgrades.DEPTH);
     }
 
 }

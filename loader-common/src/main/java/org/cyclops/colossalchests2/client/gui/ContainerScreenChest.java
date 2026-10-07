@@ -505,8 +505,8 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
         List<Component> lines = Lists.newArrayList(Component.translatable("gui.colossalchests2.upgrade.slot"),
                 Component.translatable("gui.colossalchests2.upgrade.slot.takes").withStyle(ChatFormatting.GRAY));
         UpgradeSet installed = menu.getUpgradeSet();
-        for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
-            Component name = Component.translatable("item.colossalchests2.upgrade_" + upgrade.getId().getPath());
+        for (ChestUpgrade upgrade : ChestUpgrades.getAll()) {
+            Component name = upgrade.getDisplayName();
             int max = menu.getMaxUpgradeCount(upgrade);
             lines.add(max == 0
                     ? Component.translatable("gui.colossalchests2.upgrade.slot.none", name).withStyle(ChatFormatting.DARK_GRAY)

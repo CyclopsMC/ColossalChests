@@ -1,10 +1,16 @@
 package org.cyclops.colossalchests2.gametest;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
+
 
 /**
  * Content registered like an addon would, only on game test servers, to test the extension points.
@@ -19,6 +25,24 @@ public final class GameTestAddon {
      */
     public static final ChestMaterial MATERIAL = new ChestMaterial(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID + "test", "test_addon"));
 
+    /**
+     * Refuses dirt, and adds a cobblestone every second. Defined by data/colossalchests2/colossalchests2/upgrade/test_addon.json,
+     * which does nothing outside game tests, as the upgrade is missing.
+     */
+    public static final ChestUpgrade UPGRADE = new ChestUpgrade(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon")) {
+        @Override
+        public boolean canInsert(BlockEntityChestCore core, ItemStack type, int count) {
+            return !type.is(Items.DIRT);
+        }
+
+        @Override
+        public void tick(BlockEntityChestCore core, int count) {
+            if (core.getLevel().getGameTime() % 20 == 0) {
+                core.getStorage().insert(new ItemStack(Items.COBBLESTONE), count, false);
+            }
+        }
+    };
+
     private GameTestAddon() {
     }
 
@@ -28,6 +52,13 @@ public final class GameTestAddon {
     public static boolean isEnabled() {
         return Boolean.getBoolean("neoforge.gameTestServer") || Boolean.getBoolean("forge.gameTestServer")
                 || System.getProperty("fabric-api.gametest") != null;
+    }
+
+    /**
+     * Register the addon upgrade, after which the caller registers its item.
+     */
+    public static void register() {
+        ChestUpgrades.register(UPGRADE);
     }
 
     /**

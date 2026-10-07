@@ -97,14 +97,37 @@ public final class ChestUpgrades {
         }
     };
 
-    public static final List<ChestUpgrade> VALUES = ImmutableList.of(DEPTH, SLOT_EXPANSION, LOCK, BUNDLING, VOID, COMPRESSION);
+    /**
+     * The upgrades of this mod, which it registers items for.
+     */
+    public static final List<ChestUpgrade> BUILT_IN = ImmutableList.of(DEPTH, SLOT_EXPANSION, LOCK, BUNDLING, VOID, COMPRESSION);
+
+    private static volatile List<ChestUpgrade> all = BUILT_IN;
 
     private ChestUpgrades() {
     }
 
+    /**
+     * Register an upgrade, which must happen while mods are constructed, before any world is loaded.
+     * @param upgrade The upgrade.
+     */
+    public static synchronized void register(ChestUpgrade upgrade) {
+        if (byId(upgrade.getId()) != null) {
+            throw new IllegalArgumentException("Chest upgrade " + upgrade.getId() + " is already registered");
+        }
+        all = ImmutableList.<ChestUpgrade>builder().addAll(all).add(upgrade).build();
+    }
+
+    /**
+     * @return All registered upgrades, this mod's first.
+     */
+    public static List<ChestUpgrade> getAll() {
+        return all;
+    }
+
     @Nullable
     public static ChestUpgrade byId(ResourceLocation id) {
-        return VALUES.stream().filter(upgrade -> upgrade.getId().equals(id)).findFirst().orElse(null);
+        return all.stream().filter(upgrade -> upgrade.getId().equals(id)).findFirst().orElse(null);
     }
 
     private static ResourceLocation id(String path) {

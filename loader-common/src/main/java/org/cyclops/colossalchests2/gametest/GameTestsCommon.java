@@ -771,7 +771,7 @@ public class GameTestsCommon {
     // Upgrades
 
     private static ItemStack upgradeItem(ChestUpgrade upgrade) {
-        return new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "upgrade_" + upgrade.getId().getPath())));
+        return new ItemStack(BuiltInRegistries.ITEM.get(upgrade.getId().withPrefix("upgrade_")));
     }
 
     /**
@@ -2245,7 +2245,8 @@ public class GameTestsCommon {
         Set<Item> results = recipes.getRecipes().stream()
                 .map(r -> r.value().getResultItem(level.registryAccess()).getItem())
                 .collect(Collectors.toSet());
-        Set<Item> testItems = Set.of(wall(GameTestAddon.MATERIAL).asItem(), core(GameTestAddon.MATERIAL).asItem());
+        Set<Item> testItems = Set.of(wall(GameTestAddon.MATERIAL).asItem(), core(GameTestAddon.MATERIAL).asItem(),
+                upgradeItem(GameTestAddon.UPGRADE).getItem());
         for (Item item : BuiltInRegistries.ITEM) {
             if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Reference.MOD_ID) && !testItems.contains(item)) {
                 helper.assertTrue(results.contains(item), "No recipe for " + item);
@@ -2925,6 +2926,36 @@ public class GameTestsCommon {
         helper.assertTrue(menu.clickMenuButton(player, ChestMaterial.getAll().indexOf(material)), "Expected the button to work");
         helper.assertValueEqual(ItemMaterialUpgradeTool.getTarget(player.getOffhandItem()).orElse(null), material, "target");
         helper.succeed();
+    }
+
+    // Addon upgrades
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAddonUpgradeHooks(GameTestHelper helper) {
+        ChestUpgrade upgrade = GameTestAddon.UPGRADE;
+        helper.assertValueEqual(ChestUpgrades.byId(upgrade.getId()), upgrade, "registered upgrade");
+        helper.assertTrue(ItemChestUpgrade.getUpgrade(upgradeItem(upgrade)) == upgrade, "Expected an upgrade item");
+        helper.assertValueEqual(((TranslatableContents) upgrade.getDisplayName().getContents()).getKey(),
+                "item.colossalchests2.upgrade_test_addon", "name key");
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    // From its data file.
+                    helper.assertValueEqual(core.getMaxUpgradeCount(upgrade), 1, "limit");
+                    core.getUpgrades().setItem(0, upgradeItem(upgrade));
+                    helper.assertValueEqual(core.getStorage().insert(new ItemStack(Items.DIRT), 5, false), 0L, "dirt inserted");
+                    helper.assertValueEqual(core.getStorage().insert(STONE, 5, false), 5L, "stone inserted");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(countStored(getCore(helper, corePos).getStorage(), new ItemStack(Items.COBBLESTONE)) > 0,
+                        "Expected the upgrade to add cobblestone"))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    core.getUpgrades().setItem(0, ItemStack.EMPTY);
+                    helper.assertValueEqual(core.getStorage().insert(new ItemStack(Items.DIRT), 5, false), 5L, "dirt inserted without the upgrade");
+                })
+                .thenSucceed();
     }
 
     @GameTest(template = TEMPLATE_EMPTY)

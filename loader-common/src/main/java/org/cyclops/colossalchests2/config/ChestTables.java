@@ -1,9 +1,7 @@
 package org.cyclops.colossalchests2.config;
 
-
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.Reference;
 
 import java.util.Map;
 
@@ -17,7 +15,7 @@ import java.util.Map;
  * </ul>
  * Chest-wide values such as slot counts and depth by size are in {@link org.cyclops.colossalchests2.GeneralConfig}.
  * @param materials Material properties by material id, only from data files.
- * @param upgrades Upgrade properties by upgrade id.
+ * @param upgrades Upgrade properties by upgrade id, only from data files.
  * @author rubensworks
  */
 public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, Map<ResourceLocation, UpgradeProperties> upgrades) {
@@ -27,25 +25,10 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
         upgrades = ImmutableMap.copyOf(upgrades);
     }
 
-    public static final ChestTables DEFAULT = new ChestTables(
-            Map.of(),
-            ImmutableMap.<ResourceLocation, UpgradeProperties>builder()
-                    .put(id("depth"), new UpgradeProperties(0, ImmutableMap.<ResourceLocation, Integer>builder()
-                            .put(id("wood"), 0)
-                            .put(id("copper"), 1)
-                            .put(id("iron"), 2)
-                            .put(id("gold"), 3)
-                            .put(id("diamond"), 4)
-                            .put(id("obsidian"), 5)
-                            .put(id("netherite"), 6)
-                            .build(), 2))
-                    .put(id("slot_expansion"), new UpgradeProperties(3, Map.of(), 27))
-                    .put(id("lock"), new UpgradeProperties(1, Map.of(), 1))
-                    .put(id("bundling"), new UpgradeProperties(4, Map.of(), 2))
-                    .put(id("void"), new UpgradeProperties(1, Map.of(), 1))
-                    .put(id("compression"), new UpgradeProperties(1, Map.of(id("wood"), 0), 1))
-                    .build()
-    );
+    /**
+     * The tables before data is loaded, or sent by the server.
+     */
+    public static final ChestTables DEFAULT = new ChestTables(Map.of(), Map.of());
 
     /**
      * @param material A material id.
@@ -72,18 +55,10 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
 
     /**
      * @param upgrade An upgrade id.
-     * @return The properties of the upgrade, or the shipped defaults if no file defines it.
+     * @return The properties of the upgrade, or disabled if no file defines it.
      */
     public UpgradeProperties getUpgrade(ResourceLocation upgrade) {
-        UpgradeProperties properties = upgrades.get(upgrade);
-        if (properties == null) {
-            properties = DEFAULT.upgrades().getOrDefault(upgrade, UpgradeProperties.DISABLED);
-        }
-        return properties;
-    }
-
-    private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, path);
+        return upgrades.getOrDefault(upgrade, UpgradeProperties.DISABLED);
     }
 
 }

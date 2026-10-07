@@ -21,19 +21,13 @@ import java.util.List;
 public class ChestUpgrade {
 
     private final ResourceLocation id;
-    private final UpgradeProperties defaultProperties;
 
     /**
-     * @param id The upgrade id, matching its data file.
-     * @param defaultProperties The limits and strength when no data file defines them.
+     * @param id The upgrade id, matching its data file data/[namespace]/colossalchests2/upgrade/[name].json.
+     *           Without a data file, the upgrade is disabled.
      */
-    public ChestUpgrade(ResourceLocation id, UpgradeProperties defaultProperties) {
+    public ChestUpgrade(ResourceLocation id) {
         this.id = id;
-        this.defaultProperties = defaultProperties;
-    }
-
-    public UpgradeProperties getDefaultProperties() {
-        return defaultProperties;
     }
 
     /**

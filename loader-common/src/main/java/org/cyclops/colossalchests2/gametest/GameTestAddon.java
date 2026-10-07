@@ -12,13 +12,11 @@ import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
-import org.cyclops.colossalchests2.config.UpgradeProperties;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfigCommon;
 import org.cyclops.cyclopscore.init.IModBase;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -35,10 +33,10 @@ public final class GameTestAddon {
     public static final ChestMaterial MATERIAL = new ChestMaterial(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID + "test", "test_addon"));
 
     /**
-     * Refuses dirt, and adds a cobblestone every second, without a data file.
+     * Refuses dirt, and adds a cobblestone every second. Defined by data/colossalchests2/colossalchests2/upgrade/test_addon.json,
+     * which does nothing outside game tests, as the upgrade is missing.
      */
-    public static final ChestUpgrade UPGRADE = new ChestUpgrade(
-            ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon"), new UpgradeProperties(1, Map.of(), 1)) {
+    public static final ChestUpgrade UPGRADE = new ChestUpgrade(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon")) {
         @Override
         public boolean canInsert(BlockEntityChestCore core, ItemStack type, int count) {
             return !type.is(Items.DIRT);

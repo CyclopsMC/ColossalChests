@@ -74,7 +74,7 @@ public class BlockChestCore extends BaseEntityBlock {
         if (!upgrades.counts().isEmpty()) {
             tooltip.add(Component.translatable("block.colossalchests2.chest_core.upgrades").withStyle(ChatFormatting.GRAY));
             upgrades.counts().forEach((upgrade, count) -> tooltip.add(Component.translatable("block.colossalchests2.chest_core.upgrade",
-                    count, Component.translatable("item.colossalchests2.upgrade_" + upgrade.getId().getPath())).withStyle(ChatFormatting.GRAY)));
+                    count, upgrade.getDisplayName()).withStyle(ChatFormatting.GRAY)));
         }
     }
 

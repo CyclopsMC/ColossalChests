@@ -17,6 +17,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.IntConsumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -37,6 +38,7 @@ public class ChestStorage {
     private int state;
     @Nullable
     private Supplier<CompressionFamilies> compression;
+    private Predicate<ItemStack> insertFilter = type -> true;
 
     public ChestStorage(int slotCount, CapacityProfile profile) {
         if (slotCount < 0) {
@@ -64,6 +66,13 @@ public class ChestStorage {
      */
     public int getState() {
         return state;
+    }
+
+    /**
+     * @param insertFilter Which item types may be inserted, on top of the other rules.
+     */
+    public void setInsertFilter(Predicate<ItemStack> insertFilter) {
+        this.insertFilter = insertFilter;
     }
 
     /**
@@ -179,7 +188,7 @@ public class ChestStorage {
      * @return If the type may go into the slot, ignoring how full it is.
      */
     public boolean canAccept(int slot, ItemStack type) {
-        if (type.isEmpty() || getCapacity(type) <= 0 || !NestedChests.canStore(type)) {
+        if (type.isEmpty() || getCapacity(type) <= 0 || !NestedChests.canStore(type) || !insertFilter.test(type)) {
             return false;
         }
         DeepSlot deepSlot = slots[slot];

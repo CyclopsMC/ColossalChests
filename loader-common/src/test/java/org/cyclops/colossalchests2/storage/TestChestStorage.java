@@ -546,4 +546,15 @@ public class TestChestStorage extends BootstrapTest {
         assertEquals(List.of(-1), changes);
     }
 
+    @Test
+    public void testInsertFilter() {
+        storage.setInsertFilter(type -> !type.is(Items.DIRT));
+        assertEquals(0, storage.insert(DIRT, 10, false));
+        assertEquals(0, storage.insert(0, DIRT, 10, false));
+        assertFalse(storage.canAccept(0, DIRT));
+        assertEquals(10, storage.insert(STONE, 10, false));
+        storage.setInsertFilter(type -> true);
+        assertEquals(10, storage.insert(DIRT, 10, false));
+    }
+
 }

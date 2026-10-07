@@ -1,10 +1,10 @@
 package org.cyclops.colossalchests2.config;
 
-import org.cyclops.colossalchests2.block.ChestMaterial;
-
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 
 import java.util.Map;
 
@@ -25,22 +25,7 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
 
     public static final ChestTables DEFAULT = new ChestTables(
             ChestMaterial.BUILT_IN.stream().collect(ImmutableMap.toImmutableMap(ChestMaterial::id, ChestMaterial::defaultProperties)),
-            ImmutableMap.<ResourceLocation, UpgradeProperties>builder()
-                    .put(id("depth"), new UpgradeProperties(0, ImmutableMap.<ResourceLocation, Integer>builder()
-                            .put(id("wood"), 0)
-                            .put(id("copper"), 1)
-                            .put(id("iron"), 2)
-                            .put(id("gold"), 3)
-                            .put(id("diamond"), 4)
-                            .put(id("obsidian"), 5)
-                            .put(id("netherite"), 6)
-                            .build(), 2))
-                    .put(id("slot_expansion"), new UpgradeProperties(3, Map.of(), 27))
-                    .put(id("lock"), new UpgradeProperties(1, Map.of(), 1))
-                    .put(id("bundling"), new UpgradeProperties(4, Map.of(), 2))
-                    .put(id("void"), new UpgradeProperties(1, Map.of(), 1))
-                    .put(id("compression"), new UpgradeProperties(1, Map.of(id("wood"), 0), 1))
-                    .build()
+            ChestUpgrades.BUILT_IN.stream().collect(ImmutableMap.toImmutableMap(ChestUpgrade::getId, ChestUpgrade::getDefaultProperties))
     );
 
     /**
@@ -72,18 +57,15 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
 
     /**
      * @param upgrade An upgrade id.
-     * @return The properties of the upgrade, or the shipped defaults if no file defines it.
+     * @return The properties of the upgrade, or its registered defaults if no file defines it.
      */
     public UpgradeProperties getUpgrade(ResourceLocation upgrade) {
         UpgradeProperties properties = upgrades.get(upgrade);
         if (properties == null) {
-            properties = DEFAULT.upgrades().getOrDefault(upgrade, UpgradeProperties.DISABLED);
+            ChestUpgrade registered = ChestUpgrades.byId(upgrade);
+            properties = registered != null ? registered.getDefaultProperties() : UpgradeProperties.DISABLED;
         }
         return properties;
-    }
-
-    private static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, path);
     }
 
 }

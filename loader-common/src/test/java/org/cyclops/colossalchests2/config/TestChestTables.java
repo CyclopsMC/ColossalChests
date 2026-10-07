@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.SoundType;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.junit.Test;
 
@@ -130,6 +131,20 @@ public class TestChestTables {
         ChestTables tables = ChestTablesLoader.fromJson(Map.of(material(TIN), JsonParser.parseString("{\"max_size\": 11}")), errors::add);
         assertEquals(1, errors.size());
         assertEquals(MaterialProperties.DEFAULT, tables.getMaterial(TIN));
+    }
+
+    @Test
+    public void testRegisteredUpgradeUsesItsDefaults() {
+        UpgradeProperties defaults = new UpgradeProperties(2, Map.of(), 5);
+        ChestUpgrade upgrade = new ChestUpgrade(ResourceLocation.fromNamespaceAndPath("othermod", "tables_test"), defaults);
+        ChestUpgrades.register(upgrade);
+        assertEquals(defaults, ChestTables.DEFAULT.getUpgrade(upgrade.getId()));
+        assertEquals(UpgradeProperties.DISABLED, ChestTables.DEFAULT.getUpgrade(ResourceLocation.fromNamespaceAndPath("othermod", "unknown")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegisterUpgradeDuplicate() {
+        ChestUpgrades.register(ChestUpgrades.DEPTH);
     }
 
 }

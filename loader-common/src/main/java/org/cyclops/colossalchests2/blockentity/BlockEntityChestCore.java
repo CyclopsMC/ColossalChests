@@ -63,6 +63,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -114,6 +115,8 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     public BlockEntityChestCore(BlockPos pos, BlockState state) {
         this(RegistryEntries.BLOCK_ENTITY_CHEST_CORE.value(), pos, state);
     }
+
+    private UpgradeSet hookedUpgrades = UpgradeSet.EMPTY;
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, BlockEntityChestCore core) {
         core.tick();
@@ -189,6 +192,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
             storage.clearVoids();
         }
         updateCompression();
+        updateUpgradeHooks();
         applyProfile(false);
         setChanged();
         if (storage.getSlotCount() != oldSlotCount) {
@@ -394,6 +398,9 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
                     redstoneWall.updateRedstoneSignal();
                 }
             }
+        }
+        if (isFormed()) {
+            hookedUpgrades.counts().forEach((upgrade, count) -> upgrade.tick(this, count));
         }
         if (!viewers.isEmpty() && storage.hasDirtySlots()) {
             onDirtySlots(storage.drainDirtySlots());
@@ -693,6 +700,23 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         upgrades.resize(getMaterialProperties(getBlockState()).upgradeSlots());
         loadingUpgrades = false;
         updateCompression();
+        updateUpgradeHooks();
+    }
+
+    /**
+     * Let installed upgrades filter inserts and tick.
+     */
+    private void updateUpgradeHooks() {
+        UpgradeSet upgrades = getUpgradeSet();
+        hookedUpgrades = upgrades;
+        storage.setInsertFilter(upgrades.counts().isEmpty() ? type -> true : type -> {
+            for (Map.Entry<ChestUpgrade, Integer> entry : upgrades.counts().entrySet()) {
+                if (!entry.getKey().canInsert(this, type, entry.getValue())) {
+                    return false;
+                }
+            }
+            return true;
+        });
     }
 
     /**

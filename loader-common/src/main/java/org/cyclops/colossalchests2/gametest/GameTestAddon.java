@@ -12,7 +12,6 @@ import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
-import org.cyclops.colossalchests2.config.MaterialProperties;
 import org.cyclops.colossalchests2.config.UpgradeProperties;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
@@ -29,11 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class GameTestAddon {
 
     /**
-     * After gold, with its depth limit set by the material instead of the upgrade.
+     * Defined by data/colossalchests2test/colossalchests2/material/test_addon.json: after gold, with its depth limit set
+     * by the material instead of the upgrade. That file does nothing outside game tests, as the blocks are missing.
+     * Its namespace differs from its blocks', like a material of another mod.
      */
-    public static final ChestMaterial MATERIAL = new ChestMaterial(
-            ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon"), SoundType.AMETHYST, 2.5F, false, 6.0F, ChestMaterial.GOLD.id(),
-            new MaterialProperties(4, 5, false, Map.of(ChestUpgrades.DEPTH.getId(), 3)));
+    public static final ChestMaterial MATERIAL = new ChestMaterial(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID + "test", "test_addon"));
 
     /**
      * Refuses dirt, and adds a cobblestone every second, without a data file.
@@ -70,10 +69,9 @@ public final class GameTestAddon {
     }
 
     /**
-     * Register the addon content, after which the caller registers its blocks and items.
+     * Register the addon upgrade, after which the caller registers its item.
      */
     public static void register() {
-        ChestMaterial.register(MATERIAL);
         ChestUpgrades.register(UPGRADE);
     }
 
@@ -105,6 +103,13 @@ public final class GameTestAddon {
         public WallConfig(M mod) {
             super(mod, WALL.getPath(), eConfig -> new Wall(Block.Properties.of().strength(2.5F)), getDefaultItemConstructor(mod));
         }
+    }
+
+    /**
+     * @return New properties for a wall or core of the test material.
+     */
+    public static Block.Properties createProperties() {
+        return Block.Properties.of().strength(2.5F, 6.0F).sound(SoundType.AMETHYST);
     }
 
 }

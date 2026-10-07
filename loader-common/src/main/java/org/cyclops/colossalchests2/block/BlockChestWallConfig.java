@@ -4,30 +4,26 @@ import net.minecraft.world.level.block.Block;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfigCommon;
 import org.cyclops.cyclopscore.init.IModBase;
 
+import java.util.function.Supplier;
+
 /**
  * Config for a {@link BlockChestWall} of one material.
  * @author rubensworks
  */
 public class BlockChestWallConfig<M extends IModBase> extends BlockConfigCommon<M> {
 
-    public BlockChestWallConfig(M mod, ChestMaterial material) {
+    /**
+     * @param mod The mod registering the block, named chest_wall_[material name].
+     * @param material The material.
+     * @param properties Creates the block properties, such as hardness and sound.
+     */
+    public BlockChestWallConfig(M mod, ChestMaterial material, Supplier<Block.Properties> properties) {
         super(
                 mod,
                 "chest_wall_" + material.getName(),
-                eConfig -> new BlockChestWall(createProperties(material), material),
+                eConfig -> new BlockChestWall(properties.get(), material),
                 getDefaultItemConstructor(mod)
         );
-    }
-
-    public static Block.Properties createProperties(ChestMaterial material) {
-        Block.Properties properties = Block.Properties.of()
-                .strength(material.hardness(), material.defaultBlastResistance())
-                .sound(material.soundType())
-                .isValidSpawn((state, level, pos, entityType) -> false);
-        if (material.needsPickaxe()) {
-            properties.requiresCorrectToolForDrops();
-        }
-        return properties;
     }
 
 }

@@ -13,7 +13,7 @@ public class BlockChestFunctionalWallConfig<M extends IModBase> extends BlockCon
         super(
                 mod,
                 type.getRegistryName(),
-                eConfig -> new BlockChestFunctionalWall(BlockChestWallConfig.createProperties(ChestMaterial.IRON), type),
+                eConfig -> new BlockChestFunctionalWall(BuiltInMaterial.IRON.createProperties(), type),
                 getDefaultItemConstructor(mod)
         );
     }

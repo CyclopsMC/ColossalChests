@@ -12,6 +12,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests2.advancement.ChestFormedTriggerConfig;
@@ -20,7 +21,7 @@ import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
 import org.cyclops.colossalchests2.block.BlockUncolossalChestConfigNeoForge;
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.BuiltInMaterial;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigNeoForge;
@@ -40,6 +41,7 @@ import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
 import org.cyclops.colossalchests2.material.ItemMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.modcompat.CommonCapabilitiesModCompat;
+import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.proxy.ClientProxy;
 import org.cyclops.colossalchests2.proxy.CommonProxy;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
@@ -70,6 +72,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
             _instance = instance;
         }, modEventBus);
         NeoForge.EVENT_BUS.addListener((AddReloadListenerEvent event) -> event.addListener(new ChestTablesReloadListener()));
+        NeoForge.EVENT_BUS.addListener((OnDatapackSyncEvent event) -> event.getRelevantPlayers().forEach(ChestNetwork::sendTables));
         NeoForge.EVENT_BUS.addListener((PlayerInteractEvent.LeftClickBlock event) -> {
             if (DisplayWallInteractions.onAttack(event.getEntity(), event.getLevel(), event.getPos(), event.getFace())) {
                 event.setCanceled(true);
@@ -120,14 +123,14 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         for (ChestUpgrade upgrade : ChestUpgrades.BUILT_IN) {
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, upgrade));
         }
-        for (ChestMaterial material : ChestMaterial.BUILT_IN) {
-            configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
-            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
+        for (BuiltInMaterial material : BuiltInMaterial.values()) {
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, material.getMaterial(), material::createProperties));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material.getMaterial(), material::createProperties));
         }
         if (GameTestAddon.isEnabled()) {
             GameTestAddon.register();
-            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL));
-            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL));
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, GameTestAddon.UPGRADE));
             configHandler.addConfigurable(new GameTestAddon.WallConfig<>(this));
         }

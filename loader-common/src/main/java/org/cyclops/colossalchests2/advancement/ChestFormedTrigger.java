@@ -39,7 +39,7 @@ public class ChestFormedTrigger extends SimpleCriterionTrigger<ChestFormedTrigge
     public record Instance(Optional<ContextAwarePredicate> player, Optional<ChestMaterial> material,
                            Optional<Integer> minimumSize) implements SimpleCriterionTrigger.SimpleInstance {
         public boolean matches(ChestMaterial material, int size) {
-            return this.material.map(m -> m == material).orElse(true) && this.minimumSize.map(s -> s <= size).orElse(true);
+            return this.material.map(m -> m.equals(material)).orElse(true) && this.minimumSize.map(s -> s <= size).orElse(true);
         }
     }
 

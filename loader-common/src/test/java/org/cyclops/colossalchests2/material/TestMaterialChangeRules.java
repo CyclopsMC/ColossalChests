@@ -1,10 +1,15 @@
 package org.cyclops.colossalchests2.material;
 
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.config.ChestTables;
+import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.config.ShippedTables;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
@@ -15,6 +20,16 @@ import static org.junit.Assert.*;
  * @author rubensworks
  */
 public class TestMaterialChangeRules extends BootstrapTest {
+
+    @Before
+    public void loadTables() {
+        ChestTablesLoader.set(ShippedTables.load());
+    }
+
+    @After
+    public void resetTables() {
+        ChestTablesLoader.set(ChestTables.DEFAULT);
+    }
 
     private static UpgradeSet upgrades(ChestUpgrade upgrade, int count) {
         return new UpgradeSet(Map.of(upgrade, count));

@@ -2,6 +2,7 @@ package org.cyclops.colossalchests2;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.commands.CommandBuildContext;
@@ -17,7 +18,7 @@ import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
 import org.cyclops.colossalchests2.block.BlockUncolossalChestConfigFabric;
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.BuiltInMaterial;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
@@ -36,6 +37,7 @@ import org.cyclops.colossalchests2.inventory.ContainerMagnetConfig;
 import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
 import org.cyclops.colossalchests2.material.ItemMaterialUpgradeToolConfig;
+import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
 import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
@@ -63,6 +65,7 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
             _instance = instance;
         });
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new ChestTablesReloadListenerFabric());
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> ChestNetwork.sendTables(player));
         AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) ->
                 DisplayWallInteractions.onAttack(player, level, pos, direction) ? InteractionResult.FAIL : InteractionResult.PASS);
     }
@@ -109,14 +112,14 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         for (ChestUpgrade upgrade : ChestUpgrades.BUILT_IN) {
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, upgrade));
         }
-        for (ChestMaterial material : ChestMaterial.BUILT_IN) {
-            configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
-            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
+        for (BuiltInMaterial material : BuiltInMaterial.values()) {
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, material.getMaterial(), material::createProperties));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material.getMaterial(), material::createProperties));
         }
         if (GameTestAddon.isEnabled()) {
             GameTestAddon.register();
-            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL));
-            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL));
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, GameTestAddon.UPGRADE));
             configHandler.addConfigurable(new GameTestAddon.WallConfig<>(this));
         }

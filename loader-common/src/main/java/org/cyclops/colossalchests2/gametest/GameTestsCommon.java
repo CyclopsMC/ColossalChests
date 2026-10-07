@@ -1,7 +1,10 @@
 package org.cyclops.colossalchests2.gametest;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentMap;
@@ -12,13 +15,20 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -58,6 +68,7 @@ import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.BlockUncolossalChest;
 import org.cyclops.colossalchests2.block.ChestInteractions;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.ChestSounds;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
@@ -107,6 +118,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -2251,7 +2263,15 @@ public class GameTestsCommon {
         ItemStack c = new ItemStack(Items.CHEST);
         assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, c, d, i, d, i)), null);
 
-        SmithingRecipeInput smithing = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), modItem("chest_wall_diamond"),
+        // Obsidian walls build on diamond walls, and netherite walls on obsidian walls.
+        ItemStack dw = modItem("chest_wall_diamond");
+        ItemStack o = new ItemStack(Items.OBSIDIAN);
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(dw, o, dw, o, ItemStack.EMPTY, o, dw, o, dw)),
+                modItem("chest_wall_obsidian").copyWithCount(4));
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(o, o, o, o, new ItemStack(Items.OAK_LOG), o, o, o, o)), null);
+        SmithingRecipeInput fromDiamond = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), dw, new ItemStack(Items.NETHERITE_SCRAP));
+        helper.assertTrue(recipes.getRecipeFor(RecipeType.SMITHING, fromDiamond, level).isEmpty(), "Expected no netherite walls from diamond walls");
+        SmithingRecipeInput smithing = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), modItem("chest_wall_obsidian"),
                 new ItemStack(Items.NETHERITE_SCRAP));
         ItemStack netherite = recipes.getRecipeFor(RecipeType.SMITHING, smithing, level)
                 .map(r -> r.value().assemble(smithing, level.registryAccess()))
@@ -2550,6 +2570,84 @@ public class GameTestsCommon {
             throw new GameTestAssertException("No uncolossal chest at " + pos);
         }
         return chest;
+    }
+
+    // Sounds
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testChestSoundsBySize(GameTestHelper helper) {
+        BlockPos corePosA = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos corePosB = buildChest(helper, MIN_B, 4, ChestMaterial.COPPER);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    assertFormed(helper, corePosA, MIN_A, 3);
+                    assertFormed(helper, corePosB, MIN_B, 4);
+                })
+                .thenExecute(() -> {
+                    ListeningPlayer listening = makeListeningPlayer(helper);
+                    ServerPlayer player = listening.player();
+                    EmbeddedChannel channel = listening.channel();
+                    assertSounds(helper, channel, MIN_A, 3, () -> openChest(helper, player, corePosA), SoundEvents.CHEST_OPEN);
+                    assertSounds(helper, channel, MIN_A, 3, player::closeContainer, SoundEvents.CHEST_CLOSE);
+                    assertSounds(helper, channel, MIN_B, 4, () -> openChest(helper, player, corePosB),
+                            SoundEvents.CHEST_OPEN);
+                    // A second viewer makes no sound.
+                    ServerPlayer other = makeViewer(helper);
+                    assertSounds(helper, channel, MIN_B, 4, () -> openChest(helper, other, corePosB));
+                    assertSounds(helper, channel, MIN_B, 4, player::closeContainer);
+                    assertSounds(helper, channel, MIN_B, 4, other::closeContainer,
+                            SoundEvents.CHEST_CLOSE);
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * Like {@link GameTestHelper#makeMockServerPlayerInLevel()}, but the packets it receives can be read from the channel.
+     */
+    private static ListeningPlayer makeListeningPlayer(GameTestHelper helper) {
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-sound-player"), false);
+        ServerPlayer player = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        EmbeddedChannel channel = new EmbeddedChannel(connection);
+        helper.getLevel().getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        BlockPos near = helper.absolutePos(MIN_A.offset(1, 0, -2));
+        player.moveTo(near.getX() + 0.5, near.getY(), near.getZ() + 0.5);
+        return new ListeningPlayer(player, channel);
+    }
+
+    private record ListeningPlayer(ServerPlayer player, EmbeddedChannel channel) {
+    }
+
+    /**
+     * Run an action and check the sounds it plays at the center of a chest, all at that size's pitch and volume.
+     */
+    private static void assertSounds(GameTestHelper helper, EmbeddedChannel channel, BlockPos min, int size, Runnable action, SoundEvent... expected) {
+        drainSounds(helper, channel, min, size);
+        action.run();
+        List<ClientboundSoundPacket> sounds = drainSounds(helper, channel, min, size);
+        helper.assertValueEqual(sounds.stream().map(packet -> packet.getSound().value()).toList(), List.of(expected), "sounds");
+        for (ClientboundSoundPacket packet : sounds) {
+            float pitch = ChestSounds.getPitch(size);
+            helper.assertTrue(packet.getPitch() >= pitch * 0.95F - 0.001F && packet.getPitch() <= pitch * 1.05F + 0.001F,
+                    "Expected a pitch around " + pitch + ", got " + packet.getPitch());
+            helper.assertTrue(packet.getSource() == SoundSource.BLOCKS, "Expected a block sound");
+        }
+        if (sounds.size() > 0) {
+            helper.assertValueEqual(sounds.get(0).getVolume(), ChestSounds.getVolume(size), "volume");
+        }
+    }
+
+    private static List<ClientboundSoundPacket> drainSounds(GameTestHelper helper, EmbeddedChannel channel, BlockPos min, int size) {
+        Vec3 center = Vec3.atLowerCornerOf(helper.absolutePos(min)).add(size / 2D, size / 2D, size / 2D);
+        List<ClientboundSoundPacket> sounds = Lists.newArrayList();
+        Object message;
+        while ((message = channel.readOutbound()) != null) {
+            // Packet positions are floats, which lose precision this far from the world origin.
+            if (message instanceof ClientboundSoundPacket packet && center.distanceToSqr(packet.getX(), packet.getY(), packet.getZ()) < 4) {
+                sounds.add(packet);
+            }
+        }
+        return sounds;
     }
 
 }

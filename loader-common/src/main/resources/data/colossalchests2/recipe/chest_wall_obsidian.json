@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "building",
   "pattern": [
-    "XXX",
-    "XLX",
-    "XXX"
+    "DOD",
+    "O O",
+    "DOD"
   ],
   "key": {
-    "X": {
-      "item": "minecraft:obsidian"
+    "D": {
+      "item": "colossalchests2:chest_wall_diamond"
     },
-    "L": {
-      "tag": "minecraft:logs"
+    "O": {
+      "item": "minecraft:obsidian"
     }
   },
   "result": {
     "id": "colossalchests2:chest_wall_obsidian",
-    "count": 2
+    "count": 4
   }
 }

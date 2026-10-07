@@ -1,7 +1,10 @@
 package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
@@ -48,6 +51,18 @@ public record ChestMaterial(ResourceLocation id, SoundType soundType, float hard
      */
     public MaterialProperties getProperties() {
         return ChestTablesLoader.get().getMaterial(id);
+    }
+
+    public Block getWallBlock() {
+        return BuiltInRegistries.BLOCK.get(id.withPrefix("chest_wall_"));
+    }
+
+    public Block getCoreBlock() {
+        return BuiltInRegistries.BLOCK.get(id.withPrefix("chest_core_"));
+    }
+
+    public Component getDisplayName() {
+        return Component.translatable("material.colossalchests2." + getName());
     }
 
     public static Optional<ChestMaterial> byId(ResourceLocation id) {

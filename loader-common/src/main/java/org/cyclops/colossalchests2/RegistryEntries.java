@@ -13,6 +13,7 @@ import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.inventory.ContainerDisplay;
 import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.inventory.ContainerMagnet;
+import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeTool;
 import org.cyclops.colossalchests2.inventory.ContainerRedstone;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.cyclopscore.config.DeferredHolderCommon;
@@ -37,10 +38,14 @@ public class RegistryEntries {
 
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerDisplay>> MENU_DISPLAY = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:display"));
 
+    public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerMaterialUpgradeTool>> MENU_MATERIAL_UPGRADE_TOOL = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:material_upgrade_tool"));
+
     public static final DeferredHolderCommon<MenuType<?>, MenuType<ContainerChest>> MENU_CHEST = DeferredHolderCommon.create(Registries.MENU, ResourceLocation.parse("colossalchests2:chest"));
 
     public static final DeferredHolderCommon<DataComponentType<?>, DataComponentType<ItemContainerContents>> COMPONENT_CHEST_UPGRADES = DeferredHolderCommon.create(Registries.DATA_COMPONENT_TYPE, ResourceLocation.parse("colossalchests2:chest_upgrades"));
 
     public static final DeferredHolderCommon<DataComponentType<?>, DataComponentType<ChestStorage.Contents>> COMPONENT_CHEST_CONTENTS = DeferredHolderCommon.create(Registries.DATA_COMPONENT_TYPE, ResourceLocation.parse("colossalchests2:chest_contents"));
+
+    public static final DeferredHolderCommon<DataComponentType<?>, DataComponentType<ResourceLocation>> COMPONENT_MATERIAL_TARGET = DeferredHolderCommon.create(Registries.DATA_COMPONENT_TYPE, ResourceLocation.parse("colossalchests2:material_target"));
 
 }

@@ -6,7 +6,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
-import org.cyclops.colossalchests2.storage.CapacityProfile;
+import org.cyclops.colossalchests2.api.IChestContents;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.api.upgrade.ICapacityModifiers;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,12 +25,12 @@ public final class ChestUpgrades {
      */
     public static final ChestUpgrade DEPTH = new ChestUpgrade(id("depth")) {
         @Override
-        public void applyProfile(CapacityProfile.Builder builder, int count) {
+        public void applyProfile(ICapacityModifiers modifiers, int count) {
             long multiplier = getProperties().value();
             for (int i = 0; i < count; i++) {
-                builder.multiplyDepth(multiplier);
+                modifiers.multiplyDepth(multiplier);
             }
-            builder.addNonStackableFactor(count);
+            modifiers.addNonStackableFactor(count);
         }
 
         @Override
@@ -62,10 +64,10 @@ public final class ChestUpgrades {
      */
     public static final ChestUpgrade BUNDLING = new ChestUpgrade(id("bundling")) {
         @Override
-        public void applyProfile(CapacityProfile.Builder builder, int count) {
+        public void applyProfile(ICapacityModifiers modifiers, int count) {
             long multiplier = getProperties().value();
             for (int i = 0; i < count; i++) {
-                builder.multiplyNonStackable(multiplier);
+                modifiers.multiplyNonStackable(multiplier);
             }
         }
 
@@ -86,7 +88,8 @@ public final class ChestUpgrades {
      */
     public static final ChestUpgrade COMPRESSION = new ChestUpgrade(id("compression")) {
         @Override
-        public List<Integer> getRemovalProblems(ChestStorage storage) {
+        public List<Integer> getRemovalProblems(IChestContents contents) {
+            ChestStorage storage = (ChestStorage) contents;
             List<Integer> slots = Lists.newArrayList();
             for (int slot = 0; slot < storage.getSlotCount(); slot++) {
                 if (storage.getSlot(slot).getRemainder() > 0) {

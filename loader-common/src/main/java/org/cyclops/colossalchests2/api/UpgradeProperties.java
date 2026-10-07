@@ -1,4 +1,4 @@
-package org.cyclops.colossalchests2.config;
+package org.cyclops.colossalchests2.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;

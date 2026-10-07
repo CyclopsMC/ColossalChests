@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.block;
 
 import net.minecraft.world.level.block.Block;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockConfigCommon;
 import org.cyclops.cyclopscore.init.IModBase;
 

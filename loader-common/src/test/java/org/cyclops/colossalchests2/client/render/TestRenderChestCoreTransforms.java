@@ -3,6 +3,7 @@ package org.cyclops.colossalchests2.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import org.cyclops.colossalchests2.api.client.IChestOverlay;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.joml.Vector3f;
 import org.junit.Test;

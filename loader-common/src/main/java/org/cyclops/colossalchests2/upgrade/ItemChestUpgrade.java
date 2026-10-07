@@ -5,6 +5,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.api.upgrade.IChestUpgradeItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.List;
  * An item that installs a core upgrade when placed in a chest's upgrade slots.
  * @author rubensworks
  */
-public class ItemChestUpgrade extends Item {
+public class ItemChestUpgrade extends Item implements IChestUpgradeItem {
 
     private final ChestUpgrade upgrade;
 
@@ -22,13 +24,14 @@ public class ItemChestUpgrade extends Item {
         this.upgrade = upgrade;
     }
 
+    @Override
     public ChestUpgrade getUpgrade() {
         return upgrade;
     }
 
     @Nullable
     public static ChestUpgrade getUpgrade(ItemStack stack) {
-        return stack.getItem() instanceof ItemChestUpgrade item ? item.getUpgrade() : null;
+        return stack.getItem() instanceof IChestUpgradeItem item ? item.getUpgrade() : null;
     }
 
     /**

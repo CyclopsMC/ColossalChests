@@ -1,6 +1,4 @@
-package org.cyclops.colossalchests2.client.render;
-
-import org.cyclops.colossalchests2.block.BlockChestCore;
+package org.cyclops.colossalchests2.api.client;
 
 import com.google.common.collect.Maps;
 import net.minecraft.world.level.block.Block;
@@ -26,8 +24,7 @@ public final class ChestOverlays {
 
     @Nullable
     public static IChestOverlay get(Block block) {
-        IChestOverlay overlay = OVERLAYS.get(block);
-        return overlay == null && block instanceof BlockChestCore ? CoreMarkerOverlay.INSTANCE : overlay;
+        return OVERLAYS.get(block);
     }
 
 }

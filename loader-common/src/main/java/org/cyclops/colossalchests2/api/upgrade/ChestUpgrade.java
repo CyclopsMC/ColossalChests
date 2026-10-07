@@ -1,21 +1,21 @@
-package org.cyclops.colossalchests2.upgrade;
+package org.cyclops.colossalchests2.api.upgrade;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
-import org.cyclops.colossalchests2.config.ChestTablesLoader;
-import org.cyclops.colossalchests2.config.UpgradeProperties;
-import org.cyclops.colossalchests2.storage.CapacityProfile;
-import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.cyclops.colossalchests2.api.ColossalChestsApi;
+import org.cyclops.colossalchests2.api.IChest;
+import org.cyclops.colossalchests2.api.IChestContents;
+import org.cyclops.colossalchests2.api.UpgradeProperties;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 /**
  * A core upgrade type. Its limits and strength come from its data file, see {@link UpgradeProperties}.
- * Addons register their own upgrades with {@link ChestUpgrades#register(ChestUpgrade)} while their mod is constructed,
- * and an {@link ItemChestUpgrade} named [namespace]:upgrade_[name] for it, for example with {@link ItemChestUpgradeConfig}.
+ * Addons register their own upgrades with {@link org.cyclops.colossalchests2.api.IColossalChestsApi#registerUpgrade}
+ * while their mod is constructed, and an item named [namespace]:upgrade_[name] for it, from
+ * {@link org.cyclops.colossalchests2.api.IColossalChestsApi#createUpgradeItem}.
  * @author rubensworks
  */
 public class ChestUpgrade {
@@ -42,7 +42,7 @@ public class ChestUpgrade {
     }
 
     public UpgradeProperties getProperties() {
-        return ChestTablesLoader.get().getUpgrade(id);
+        return ColossalChestsApi.get().getUpgradeProperties(id);
     }
 
     /**
@@ -50,15 +50,15 @@ public class ChestUpgrade {
      * @return How many of this upgrade a chest of that material takes.
      */
     public int getMaxCount(ResourceLocation material) {
-        return ChestTablesLoader.get().getMaxUpgradeCount(id, material);
+        return ColossalChestsApi.get().getMaxUpgradeCount(id, material);
     }
 
     /**
      * Apply the capacity modifiers of this upgrade.
-     * @param builder The profile being built.
+     * @param modifiers The capacity being built.
      * @param count The installed count, at least 1.
      */
-    public void applyProfile(CapacityProfile.Builder builder, int count) {
+    public void applyProfile(ICapacityModifiers modifiers, int count) {
     }
 
     /**
@@ -70,30 +70,30 @@ public class ChestUpgrade {
     }
 
     /**
-     * @param storage The chest storage.
+     * @param contents The chest contents.
      * @return Slots that keep this upgrade from being removed, besides slots that would not fit the new capacity.
      */
-    public List<Integer> getRemovalProblems(ChestStorage storage) {
+    public List<Integer> getRemovalProblems(IChestContents contents) {
         return List.of();
     }
 
     /**
      * Limit what goes into the chest, from players and automation alike.
-     * @param core The chest.
+     * @param chest The chest.
      * @param type The item type, its count is ignored.
      * @param count The installed count, at least 1.
      * @return If the chest takes this item type.
      */
-    public boolean canInsert(BlockEntityChestCore core, ItemStack type, int count) {
+    public boolean canInsert(IChest chest, ItemStack type, int count) {
         return true;
     }
 
     /**
      * Called each server tick while the chest is formed.
-     * @param core The chest.
+     * @param chest The chest.
      * @param count The installed count, at least 1.
      */
-    public void tick(BlockEntityChestCore core, int count) {
+    public void tick(IChest chest, int count) {
     }
 
     /**

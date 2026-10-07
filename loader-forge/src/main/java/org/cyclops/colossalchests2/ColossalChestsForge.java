@@ -13,6 +13,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.cyclops.colossalchests2.advancement.ChestFormedTriggerConfig;
 import org.cyclops.colossalchests2.advancement.MaterialChangedTriggerConfig;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
@@ -40,7 +41,6 @@ import org.cyclops.colossalchests2.material.ItemMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.proxy.ClientProxyForge;
 import org.cyclops.colossalchests2.proxy.CommonProxyForge;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgradeConfig;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
@@ -123,9 +123,9 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         }
         if (GameTestAddon.isEnabled()) {
             GameTestAddon.register();
-            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
-            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
-            configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, GameTestAddon.UPGRADE));
+            configHandler.addConfigurable(new GameTestAddon.MaterialWallConfig<>(this));
+            configHandler.addConfigurable(new GameTestAddon.MaterialCoreConfig<>(this));
+            configHandler.addConfigurable(new GameTestAddon.UpgradeConfig<>(this));
             configHandler.addConfigurable(new GameTestAddon.WallConfig<>(this));
         }
         configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));

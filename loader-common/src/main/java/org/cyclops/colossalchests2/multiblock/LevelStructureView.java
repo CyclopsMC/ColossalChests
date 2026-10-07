@@ -3,6 +3,7 @@ package org.cyclops.colossalchests2.multiblock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import org.cyclops.colossalchests2.api.block.IChestMember;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.jetbrains.annotations.Nullable;
@@ -33,11 +34,11 @@ public class LevelStructureView implements StructureView {
         if (state.getBlock() instanceof BlockChestCore coreBlock) {
             return new Member(coreBlock.getMaterial().id(), true);
         }
-        if (state.getBlock() instanceof BlockChestWall wall) {
-            boolean claimedByOther = state.getValue(BlockChestWall.FORMED) && ChestCoreIndex.findFormedCore(level, pos)
+        if (state.getBlock() instanceof IChestMember member) {
+            boolean claimedByOther = state.getValue(IChestMember.FORMED) && ChestCoreIndex.findFormedCore(level, pos)
                     .filter(other -> !other.getBlockPos().equals(core))
                     .isPresent();
-            return claimedByOther ? null : new Member(wall.getMemberMaterial(), false);
+            return claimedByOther ? null : new Member(member instanceof BlockChestWall wall ? wall.getMemberMaterial() : Member.ANY_MATERIAL, false);
         }
         return null;
     }

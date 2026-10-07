@@ -1,5 +1,7 @@
 package org.cyclops.colossalchests2.storage;
 
+import org.cyclops.colossalchests2.api.upgrade.ICapacityModifiers;
+
 /**
  * Determines how many items fit in a single slot of a {@link ChestStorage}.
  * Depth is uniform across all slots.
@@ -87,7 +89,7 @@ public record CapacityProfile(long depth, long maxItemsPerSlot, boolean acceptNo
      * Bundling multiplies by 2 per level and Depth adds 1 per upgrade.
      * All math saturates instead of overflowing.
      */
-    public static final class Builder {
+    public static final class Builder implements ICapacityModifiers {
 
         private long depth;
         private long nonStackableMultiplier = 1;
@@ -102,16 +104,19 @@ public record CapacityProfile(long depth, long maxItemsPerSlot, boolean acceptNo
             this.depth = baseDepth;
         }
 
+        @Override
         public Builder multiplyDepth(long factor) {
             this.depth = saturatedMultiply(depth, requirePositive(factor));
             return this;
         }
 
+        @Override
         public Builder multiplyNonStackable(long factor) {
             this.nonStackableMultiplier = saturatedMultiply(nonStackableMultiplier, requirePositive(factor));
             return this;
         }
 
+        @Override
         public Builder addNonStackableFactor(long amount) {
             this.nonStackableFactor = saturatedAdd(nonStackableFactor, requirePositive(amount));
             return this;

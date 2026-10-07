@@ -3,6 +3,7 @@ package org.cyclops.colossalchests2.upgrade;
 import com.google.common.collect.Sets;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.GeneralConfig;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.ResizeResult;

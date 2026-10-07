@@ -17,7 +17,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.RegistryEntries;
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerChestStorageForge;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;

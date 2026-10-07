@@ -15,12 +15,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
-import org.cyclops.colossalchests2.block.BlockChestCore;
-import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.IChest;
+import org.cyclops.colossalchests2.api.client.ChestOverlayHelpers;
+import org.cyclops.colossalchests2.api.client.IChestOverlay;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.blockentity.DisplayOption;
 import org.cyclops.colossalchests2.storage.DisplayStats;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.cyclopscore.helper.IModHelpers;
 
@@ -57,9 +59,9 @@ public class DisplayWallOverlay implements IChestOverlay {
     private static final float LAYER = 0.0005F;
 
     @Override
-    public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
+    public void render(IChest chest, BlockPos pos, Direction face, float partialTick,
                        PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
-        Level level = core.getLevel();
+        Level level = chest.getLevel();
         if (!(level.getBlockEntity(pos) instanceof BlockEntityChestWall wall)) {
             return;
         }
@@ -73,7 +75,7 @@ public class DisplayWallOverlay implements IChestOverlay {
             return;
         }
         poseStack.pushPose();
-        renderPanel(core, atlas, poseStack, buffers, light, overlay);
+        renderPanel(chest, atlas, poseStack, buffers, light, overlay);
         ItemStack displayed = wall.getDisplayed(face);
         if (!displayed.isEmpty()) {
             DisplayStats stats = wall.getDisplayStats(face);
@@ -94,11 +96,12 @@ public class DisplayWallOverlay implements IChestOverlay {
         poseStack.popPose();
     }
 
-    private void renderPanel(BlockEntityChestCore core, TextureAtlas atlas, PoseStack poseStack, MultiBufferSource buffers,
+    private void renderPanel(IChest chest, TextureAtlas atlas, PoseStack poseStack, MultiBufferSource buffers,
                              int light, int overlay) {
         // A frame of the chest's material, so the panel looks built into it.
-        if (core.getBlockState().getBlock() instanceof BlockChestCore block) {
-            ResourceLocation frame = block.getMaterial().id().withPrefix("block/chest_wall_");
+        ChestMaterial material = chest.getChestMaterial();
+        if (material != null) {
+            ResourceLocation frame = material.id().withPrefix("block/chest_wall_");
             TextureAtlasSprite frameSprite = atlas.getSprite(frame);
             ChestOverlayHelpers.renderSprite(poseStack, buffers, frameSprite, 0, 0, 1, 1, light, overlay);
             ChestOverlayHelpers.renderSides(poseStack, buffers, frameSprite, RenderChestCore.OVERLAY_OFFSET, light, overlay);

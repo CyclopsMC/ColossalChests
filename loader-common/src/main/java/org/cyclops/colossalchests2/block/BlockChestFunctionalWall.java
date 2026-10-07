@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.cyclops.colossalchests2.RegistryEntries;
-import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
+import org.cyclops.colossalchests2.api.IChest;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.material.ItemMaterialUpgradeTool;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -126,7 +126,7 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
     }
 
     @Override
-    public void onChestContentsChanged(BlockState state, Level level, BlockPos pos, BlockEntityChestCore core) {
+    public void onChestContentsChanged(BlockState state, Level level, BlockPos pos, IChest chest) {
         if (type == WallType.REDSTONE && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
             wall.updateRedstoneSignal();
         }

@@ -14,6 +14,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.advancement.ChestFormedTriggerConfig;
 import org.cyclops.colossalchests2.advancement.MaterialChangedTriggerConfig;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
@@ -40,7 +41,6 @@ import org.cyclops.colossalchests2.material.ItemMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.network.ChestNetwork;
 import org.cyclops.colossalchests2.proxy.ClientProxyFabric;
 import org.cyclops.colossalchests2.proxy.CommonProxyFabric;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.ItemChestUpgradeConfig;
 import org.cyclops.cyclopscore.config.ConfigHandlerCommon;
@@ -118,9 +118,9 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         }
         if (GameTestAddon.isEnabled()) {
             GameTestAddon.register();
-            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
-            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
-            configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, GameTestAddon.UPGRADE));
+            configHandler.addConfigurable(new GameTestAddon.MaterialWallConfig<>(this));
+            configHandler.addConfigurable(new GameTestAddon.MaterialCoreConfig<>(this));
+            configHandler.addConfigurable(new GameTestAddon.UpgradeConfig<>(this));
             configHandler.addConfigurable(new GameTestAddon.WallConfig<>(this));
         }
         configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));

@@ -1,5 +1,9 @@
 package org.cyclops.colossalchests2;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
@@ -19,6 +23,7 @@ import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigForge;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigForge;
 import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestConfig;
 import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestForge;
+import org.cyclops.colossalchests2.command.CommandBuildChest;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
@@ -85,6 +90,12 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
     protected CreativeModeTab.Builder constructDefaultCreativeModeTab(CreativeModeTab.Builder builder) {
         return super.constructDefaultCreativeModeTab(builder)
                 .icon(() -> new ItemStack(RegistryEntries.ITEM_CHEST));
+    }
+
+    @Override
+    protected LiteralArgumentBuilder<CommandSourceStack> constructBaseCommand(Commands.CommandSelection selection, CommandBuildContext context) {
+        return super.constructBaseCommand(selection, context)
+                .then(CommandBuildChest.make());
     }
 
     @Override

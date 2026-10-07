@@ -6,6 +6,9 @@ import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentMap;
@@ -25,6 +28,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -62,6 +66,7 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
@@ -2760,4 +2765,115 @@ public class GameTestsCommon {
         }
         return sounds;
     }
+
+    // Build command
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testBuildCommandAtPosition(GameTestHelper helper) {
+        BlockPos min = helper.absolutePos(MIN_A);
+        List<Component> messages = runCommand(helper, Vec3.atCenterOf(helper.absolutePos(MIN_A.offset(2, 0, -1))), 0, Commands.LEVEL_GAMEMASTERS,
+                "colossalchests2 build iron 5 " + min.getX() + " " + min.getY() + " " + min.getZ());
+        assertMessage(helper, messages, "command.colossalchests2.build.success");
+        // The core is on the side facing the source.
+        BlockPos corePos = MIN_A.offset(2, 2, 0);
+        helper.assertBlockPresent(core(ChestMaterial.IRON), corePos);
+        assertFormed(helper, corePos, MIN_A, 5);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testBuildCommandInFront(GameTestHelper helper) {
+        // Looking south, so the chest goes from z 2 to 4, centered on x 5.
+        List<Component> messages = runCommand(helper, Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(5, 1, 0))), 0,
+                Commands.LEVEL_GAMEMASTERS, "colossalchests2 build wood 3");
+        assertMessage(helper, messages, "command.colossalchests2.build.success");
+        assertFormed(helper, new BlockPos(5, 2, 2), new BlockPos(4, 1, 2), 3);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testBuildCommandRefusals(GameTestHelper helper) {
+        BlockPos min = helper.absolutePos(MIN_A);
+        String at = " " + min.getX() + " " + min.getY() + " " + min.getZ();
+        Vec3 source = Vec3.atCenterOf(helper.absolutePos(MIN_A.offset(2, 0, -1)));
+
+        assertMessage(helper, runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS, "colossalchests2 build wood 4" + at),
+                "command.colossalchests2.build.too_large");
+        assertMessage(helper, runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS, "colossalchests2 build plastic 3" + at),
+                "command.colossalchests2.build.unknown_material");
+        assertMessage(helper, runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS,
+                "colossalchests2 build wood 3 " + min.getX() + " " + (helper.getLevel().getMaxBuildHeight() - 1) + " " + min.getZ()),
+                "command.colossalchests2.build.not_loaded");
+        runCommand(helper, source, 0, Commands.LEVEL_ALL, "colossalchests2 build wood 3" + at);
+        helper.assertBlockNotPresent(wall(ChestMaterial.WOOD), MIN_A);
+
+        // A chest with items on the shell and stone inside are in the way.
+        helper.setBlock(MIN_A.offset(2, 2, 2), Blocks.STONE);
+        helper.setBlock(MIN_A, Blocks.CHEST);
+        if (helper.getBlockEntity(MIN_A) instanceof Container chest) {
+            chest.setItem(0, new ItemStack(Items.DIAMOND));
+        }
+        List<Component> messages = runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS, "colossalchests2 build iron 5" + at);
+        assertMessage(helper, messages, "command.colossalchests2.build.obstructed");
+        TranslatableContents obstructed = getTranslation(messages.getFirst());
+        helper.assertValueEqual(List.of(obstructed.getArgs()), List.of(2, min.getX(), min.getY(), min.getZ()), "obstruction count and first position");
+        helper.assertBlockNotPresent(wall(ChestMaterial.IRON), MIN_A.offset(4, 4, 4));
+
+        // Replacing overwrites them without dropping anything.
+        assertMessage(helper, runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS, "colossalchests2 build iron 5" + at + " replace"),
+                "command.colossalchests2.build.success");
+        assertFormed(helper, MIN_A.offset(2, 2, 0), MIN_A, 5);
+        helper.assertBlockPresent(Blocks.AIR, MIN_A.offset(2, 2, 2));
+        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(min).inflate(8));
+        helper.assertTrue(drops.isEmpty(), "Expected no drops, got " + drops);
+        helper.succeed();
+    }
+
+    /**
+     * Run a command as a non-player source.
+     * @return The messages sent back to the source.
+     */
+    private static List<Component> runCommand(GameTestHelper helper, Vec3 position, float yRot, int permission, String command) {
+        List<Component> messages = Lists.newArrayList();
+        CommandSource output = new CommandSource() {
+            @Override
+            public void sendSystemMessage(Component message) {
+                messages.add(message);
+            }
+
+            @Override
+            public boolean acceptsSuccess() {
+                return true;
+            }
+
+            @Override
+            public boolean acceptsFailure() {
+                return true;
+            }
+
+            @Override
+            public boolean shouldInformAdmins() {
+                return false;
+            }
+        };
+        MinecraftServer server = helper.getLevel().getServer();
+        CommandSourceStack source = new CommandSourceStack(output, position, new Vec2(0, yRot), helper.getLevel(), permission,
+                "test", Component.literal("test"), server, null);
+        server.getCommands().performPrefixedCommand(source, command);
+        return messages;
+    }
+
+    /**
+     * @return The translation of a message, which failures wrap in a styled empty component.
+     */
+    private static TranslatableContents getTranslation(Component message) {
+        Component inner = message.getContents() instanceof TranslatableContents || message.getSiblings().isEmpty() ? message : message.getSiblings().getFirst();
+        return inner.getContents() instanceof TranslatableContents contents ? contents : null;
+    }
+
+    private static void assertMessage(GameTestHelper helper, List<Component> messages, String key) {
+        helper.assertTrue(messages.size() == 1 && getTranslation(messages.getFirst()) != null
+                && getTranslation(messages.getFirst()).getKey().equals(key), "Expected one message " + key + ", got " + messages);
+    }
+
 }

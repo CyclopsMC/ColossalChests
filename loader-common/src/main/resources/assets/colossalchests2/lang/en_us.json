@@ -183,5 +183,11 @@
   "advancement.colossalchests2.material_changed": "A Change of Material",
   "advancement.colossalchests2.material_changed.desc": "Change a chest's material with the Chest Material Upgrade Tool.",
   "advancement.colossalchests2.uncolossal": "The most colossal of 'em all!",
-  "advancement.colossalchests2.uncolossal.desc": "Obtain an Uncolossal Chest."
+  "advancement.colossalchests2.uncolossal.desc": "Obtain an Uncolossal Chest.",
+  "command.colossalchests2.build.unknown_material": "Unknown chest material: %s",
+  "command.colossalchests2.build.too_large": "%1$s Colossal Chests can be at most %2$sx%2$sx%2$s.",
+  "command.colossalchests2.build.not_loaded": "The chest must be inside the world's height and in loaded chunks.",
+  "command.colossalchests2.build.obstructed": "%1$s blocks are in the way, the first at %2$s, %3$s, %4$s. Add 'replace' to overwrite them.",
+  "command.colossalchests2.build.not_formed": "The blocks were placed, but the chest did not form.",
+  "command.colossalchests2.build.success": "Built a %1$sx%1$sx%1$s %2$s Colossal Chest with its core at %3$s, %4$s, %5$s."
 }

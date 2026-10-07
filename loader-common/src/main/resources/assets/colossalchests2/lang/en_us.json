@@ -121,7 +121,7 @@
   "gui.colossalchests2.over_capacity": "%s slots are over capacity: take items out until they fit",
   "gui.colossalchests2.count": "%s of %s",
   "gui.colossalchests2.slot_over_capacity": "Over capacity: take items out until it fits again.",
-  "chest.colossalchests2.material_change.no_target": "Pick a material first: use the tool on anything but a chest.",
+  "chest.colossalchests2.material_change.no_target": "No material has been selected yet. Right click in the air.",
   "chest.colossalchests2.material_change.not_formed": "Only a formed chest can change material.",
   "chest.colossalchests2.material_change.same": "This chest is already %s.",
   "chest.colossalchests2.material_change.too_large": "%s chests can be at most %s blocks wide.",

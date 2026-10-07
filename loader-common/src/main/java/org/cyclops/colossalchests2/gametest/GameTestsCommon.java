@@ -7,6 +7,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
@@ -27,12 +29,14 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -61,6 +65,7 @@ import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
+import org.cyclops.colossalchests2.block.BlockUncolossalChest;
 import org.cyclops.colossalchests2.block.ChestInteractions;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.ChestSounds;
@@ -68,6 +73,7 @@ import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
+import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChest;
 import org.cyclops.colossalchests2.blockentity.DisplayOption;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.WallAccess;
@@ -82,6 +88,7 @@ import org.cyclops.colossalchests2.inventory.ContainerInterface;
 import org.cyclops.colossalchests2.inventory.ContainerMagnet;
 import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeTool;
 import org.cyclops.colossalchests2.inventory.ContainerRedstone;
+import org.cyclops.colossalchests2.inventory.ContainerUncolossalChest;
 import org.cyclops.colossalchests2.material.ItemMaterialUpgradeTool;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -2241,6 +2248,8 @@ public class GameTestsCommon {
         assertCrafts(helper, CraftingInput.of(3, 3, List.of(p, p, p, p, new ItemStack(Items.SPRUCE_LOG), p, p, p, p)),
                 modItem("chest_wall_wood").copyWithCount(2));
         assertCrafts(helper, CraftingInput.of(2, 1, List.of(ironWall, new ItemStack(Items.CHEST))), modItem("chest_core_iron"));
+        assertCrafts(helper, CraftingInput.of(2, 1, List.of(modItem("chest_wall_wood"), new ItemStack(Items.ACACIA_PLANKS))),
+                modItem("uncolossal_chest"));
         // Functional walls accept any plain wall.
         assertCrafts(helper, CraftingInput.of(2, 1, List.of(modItem("chest_wall_gold"), new ItemStack(Items.HOPPER))),
                 modItem("chest_wall_interface"));
@@ -2473,6 +2482,96 @@ public class GameTestsCommon {
         return result;
     }
 
+    // Uncolossal chest
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestMenuAndLid(GameTestHelper helper) {
+        BlockPos pos = placeUncolossalChest(helper, Direction.EAST);
+        BlockEntityUncolossalChest chest = getUncolossalChest(helper, pos);
+        helper.assertValueEqual(chest.getContainerSize(), 5, "slots");
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ContainerUncolossalChest menu = new ContainerUncolossalChest(1, player.getInventory(), chest);
+        player.containerMenu = menu;
+        helper.assertValueEqual(menu.getType(), MenuType.HOPPER, "menu type");
+        helper.assertValueEqual(menu.slots.size(), 5 + 36, "menu slots");
+        helper.assertValueEqual(chest.getOpenerCount(), 1, "openers while open");
+        // Shift-clicking stone from the player inventory fills the chest.
+        player.getInventory().setItem(0, new ItemStack(Items.STONE, 64));
+        menu.quickMoveStack(player, 5 + 27);
+        helper.assertValueEqual(chest.getItem(0).getCount(), 64, "moved into the chest");
+        player.closeContainer();
+        helper.assertValueEqual(chest.getOpenerCount(), 0, "openers after closing");
+        helper.assertBlockProperty(pos, BlockUncolossalChest.FACING, Direction.EAST);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestDropsContentsAndKeepsName(GameTestHelper helper) {
+        BlockPos pos = placeUncolossalChest(helper, Direction.NORTH);
+        BlockEntityUncolossalChest chest = getUncolossalChest(helper, pos);
+        // Like placing a renamed item, which also sets the (here empty) contents.
+        chest.applyComponents(DataComponentMap.builder().set(DataComponents.CUSTOM_NAME, Component.literal("Tiny")).build(), DataComponentPatch.EMPTY);
+        chest.setItem(0, new ItemStack(Items.STONE, 10));
+        chest.setItem(4, new ItemStack(Items.DIAMOND, 3));
+        helper.assertValueEqual(chest.getDisplayName().getString(), "Tiny", "name");
+        helper.getLevel().destroyBlock(helper.absolutePos(pos), true);
+        List<ItemStack> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(pos)).inflate(2))
+                .stream().map(ItemEntity::getItem).toList();
+        helper.assertTrue(drops.stream().anyMatch(stack -> stack.is(Items.STONE) && stack.getCount() == 10), "Expected the stone to drop, got " + drops);
+        helper.assertTrue(drops.stream().anyMatch(stack -> stack.is(Items.DIAMOND) && stack.getCount() == 3), "Expected the diamonds to drop");
+        helper.assertTrue(drops.stream().anyMatch(stack -> stack.is(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value().asItem())
+                && "Tiny".equals(stack.getHoverName().getString())), "Expected the named chest to drop, got " + drops);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestComparator(GameTestHelper helper) {
+        BlockPos pos = placeUncolossalChest(helper, Direction.NORTH);
+        BlockPos comparatorPos = pos.south();
+        helper.setBlock(comparatorPos.below(), Blocks.STONE);
+        helper.setBlock(comparatorPos, Blocks.COMPARATOR.defaultBlockState().setValue(ComparatorBlock.FACING, Direction.NORTH));
+        BlockEntityUncolossalChest chest = getUncolossalChest(helper, pos);
+        helper.startSequence()
+                .thenExecute(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 0, "empty signal"))
+                .thenExecute(() -> {
+                    for (int slot = 0; slot < 5; slot++) {
+                        chest.setItem(slot, new ItemStack(Items.STONE, 64));
+                    }
+                })
+                .thenWaitUntil(() -> helper.assertValueEqual(getComparatorOutput(helper, comparatorPos), 15, "full signal"))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestHoppers(GameTestHelper helper) {
+        BlockPos pos = placeUncolossalChest(helper, Direction.NORTH);
+        HopperBlockEntity above = placeHopper(helper, pos.above(), new ItemStack(Items.STONE, 5));
+        helper.setBlock(pos.below(), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.NORTH));
+        BlockPos sinkPos = pos.below().north();
+        helper.setBlock(sinkPos, Blocks.CHEST);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    helper.assertValueEqual(countInHopper(above, Items.STONE), 0, "stone left in the top hopper");
+                    helper.assertTrue(helper.getBlockEntity(sinkPos) instanceof Container sink && sink.countItem(Items.STONE) == 5,
+                            "Expected all stone to pass through the chest");
+                })
+                .thenSucceed();
+    }
+
+    private static BlockPos placeUncolossalChest(GameTestHelper helper, Direction facing) {
+        BlockPos pos = new BlockPos(2, 2, 2);
+        helper.setBlock(pos.below(), Blocks.STONE);
+        helper.setBlock(pos, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value().defaultBlockState().setValue(BlockUncolossalChest.FACING, facing));
+        return pos;
+    }
+
+    private static BlockEntityUncolossalChest getUncolossalChest(GameTestHelper helper, BlockPos pos) {
+        if (!(helper.getBlockEntity(pos) instanceof BlockEntityUncolossalChest chest)) {
+            throw new GameTestAssertException("No uncolossal chest at " + pos);
+        }
+        return chest;
+    }
+
     // Sounds
 
     @GameTest(template = TEMPLATE_EMPTY)
@@ -2500,6 +2599,18 @@ public class GameTestsCommon {
                             SoundEvents.CHEST_CLOSE);
                 })
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestSounds(GameTestHelper helper) {
+        BlockPos pos = placeUncolossalChest(helper, Direction.NORTH);
+        BlockEntityUncolossalChest chest = getUncolossalChest(helper, pos);
+        ListeningPlayer listening = makeListeningPlayer(helper);
+        ServerPlayer player = listening.player();
+        assertSounds(helper, listening.channel(), pos, 1, () -> player.containerMenu = new ContainerUncolossalChest(1, player.getInventory(), chest),
+                SoundEvents.CHEST_OPEN);
+        assertSounds(helper, listening.channel(), pos, 1, player::closeContainer, SoundEvents.CHEST_CLOSE);
+        helper.succeed();
     }
 
     /**

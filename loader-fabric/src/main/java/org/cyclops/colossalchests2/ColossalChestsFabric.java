@@ -10,11 +10,13 @@ import net.minecraft.world.item.ItemStack;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.BlockUncolossalChestConfigFabric;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigFabric;
+import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestConfigFabric;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
@@ -101,6 +103,8 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         }
         configHandler.addConfigurable(new BlockEntityChestCoreConfigFabric<>(this));
         configHandler.addConfigurable(new BlockEntityChestWallConfigFabric<>(this));
+        configHandler.addConfigurable(new BlockUncolossalChestConfigFabric<>(this));
+        configHandler.addConfigurable(new BlockEntityUncolossalChestConfigFabric<>(this));
         configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
         configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));

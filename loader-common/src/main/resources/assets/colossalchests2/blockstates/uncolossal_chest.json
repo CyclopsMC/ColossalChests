@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "colossalchests2:block/uncolossal_chest"
+    }
+  }
+}

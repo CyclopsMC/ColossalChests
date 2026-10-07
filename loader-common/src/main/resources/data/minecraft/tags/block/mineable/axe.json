@@ -1,6 +1,7 @@
 {
   "values": [
     "colossalchests2:chest_wall_wood",
-    "colossalchests2:chest_core_wood"
+    "colossalchests2:chest_core_wood",
+    "colossalchests2:uncolossal_chest"
   ]
 }

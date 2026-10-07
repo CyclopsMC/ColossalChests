@@ -13,11 +13,13 @@ import org.apache.logging.log4j.Level;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.BlockUncolossalChestConfigNeoForge;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigNeoForge;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigNeoForge;
+import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestConfigNeoForge;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
@@ -112,6 +114,8 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         }
         configHandler.addConfigurable(new BlockEntityChestCoreConfigNeoForge<>(this));
         configHandler.addConfigurable(new BlockEntityChestWallConfigNeoForge<>(this));
+        configHandler.addConfigurable(new BlockUncolossalChestConfigNeoForge<>(this));
+        configHandler.addConfigurable(new BlockEntityUncolossalChestConfigNeoForge<>(this));
         configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
         configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));

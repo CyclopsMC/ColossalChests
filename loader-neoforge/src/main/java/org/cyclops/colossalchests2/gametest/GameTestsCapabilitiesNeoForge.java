@@ -1,22 +1,24 @@
 package org.cyclops.colossalchests2.gametest;
 
-import net.minecraft.gametest.framework.GameTest;
-import org.cyclops.colossalchests2.block.ChestMaterial;
-import org.cyclops.colossalchests2.block.WallType;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.InvWrapper;
-import net.minecraft.world.SimpleContainer;
 import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerChestStorage;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.modcompat.InventoryStateChestStorage;
@@ -146,6 +148,18 @@ public class GameTestsCapabilitiesNeoForge {
                     helper.assertTrue(helper.getLevel().getCapability(org.cyclops.commoncapabilities.api.capability.Capabilities.InventoryState.BLOCK, helper.absolutePos(corePos), Direction.NORTH) == null, "Expected no inventory state on a dormant core");
                 })
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestItemHandler(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value());
+        IItemHandler handler = helper.getLevel().getCapability(Capabilities.ItemHandler.BLOCK, helper.absolutePos(pos), Direction.UP);
+        helper.assertTrue(handler != null, "Expected an item handler");
+        helper.assertValueEqual(handler.getSlots(), 5, "slots");
+        helper.assertTrue(handler.insertItem(4, new ItemStack(Items.STONE, 10), false).isEmpty(), "Expected the stone to fit");
+        helper.assertValueEqual(((Container) helper.getBlockEntity(pos)).getItem(4).getCount(), 10, "stored count");
+        helper.succeed();
     }
 
 }

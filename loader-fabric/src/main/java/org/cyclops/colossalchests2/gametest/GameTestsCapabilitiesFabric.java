@@ -1,23 +1,25 @@
 package org.cyclops.colossalchests2.gametest;
 
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageUtil;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import net.minecraft.gametest.framework.GameTest;
-import org.cyclops.colossalchests2.block.ChestMaterial;
-import org.cyclops.colossalchests2.block.WallType;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
-import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ChestStorageFabric;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
@@ -194,6 +196,20 @@ public class GameTestsCapabilitiesFabric {
                     helper.assertValueEqual(GameTestsCommon.getCore(helper, corePos).getStorage().getSlot(0).getCount(), 10L, "kept count");
                 })
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestItemStorage(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value());
+        Storage<ItemVariant> storage = ItemStorage.SIDED.find(helper.getLevel(), helper.absolutePos(pos), Direction.UP);
+        helper.assertTrue(storage != null, "Expected item storage");
+        try (Transaction transaction = Transaction.openOuter()) {
+            helper.assertValueEqual(storage.insert(ItemVariant.of(Items.STONE), 400, transaction), 320L, "inserted into 5 slots");
+            transaction.commit();
+        }
+        helper.assertValueEqual(((Container) helper.getBlockEntity(pos)).getItem(4).getCount(), 64, "last slot count");
+        helper.succeed();
     }
 
 }

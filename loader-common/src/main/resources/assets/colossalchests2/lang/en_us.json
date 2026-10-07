@@ -25,6 +25,8 @@
   "block.colossalchests2.chest_core_obsidian": "Obsidian Chest Core",
   "block.colossalchests2.chest_wall_netherite": "Netherite Chest Wall",
   "block.colossalchests2.chest_core_netherite": "Netherite Chest Core",
+  "block.colossalchests2.uncolossal_chest": "Uncolossal Chest",
+  "block.colossalchests2.uncolossal_chest.info": "The most colossal of 'em all!",
   "material.colossalchests2.wood": "Wooden",
   "material.colossalchests2.copper": "Copper",
   "material.colossalchests2.iron": "Iron",

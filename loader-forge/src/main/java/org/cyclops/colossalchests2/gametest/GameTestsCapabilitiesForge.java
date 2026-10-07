@@ -1,22 +1,24 @@
 package org.cyclops.colossalchests2.gametest;
 
-import net.minecraft.gametest.framework.GameTest;
-import org.cyclops.colossalchests2.block.ChestMaterial;
-import org.cyclops.colossalchests2.block.WallType;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.InvWrapper;
-import net.minecraft.world.SimpleContainer;
 import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ItemHandlerChestStorageForge;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
@@ -138,6 +140,18 @@ public class GameTestsCapabilitiesForge {
                             "Expected no item handler on a dormant interface");
                 })
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestItemHandler(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value());
+        IItemHandler handler = helper.getBlockEntity(pos).getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP).orElse(null);
+        helper.assertTrue(handler != null, "Expected an item handler");
+        helper.assertValueEqual(handler.getSlots(), 5, "slots");
+        helper.assertTrue(handler.insertItem(4, new ItemStack(Items.STONE, 10), false).isEmpty(), "Expected the stone to fit");
+        helper.assertValueEqual(((Container) helper.getBlockEntity(pos)).getItem(4).getCount(), 10, "stored count");
+        helper.succeed();
     }
 
 }

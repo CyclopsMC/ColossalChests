@@ -9,11 +9,14 @@ import net.minecraftforge.fml.common.Mod;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
+import org.cyclops.colossalchests2.block.BlockUncolossalChestConfigForge;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigForge;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigForge;
+import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestConfig;
+import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestForge;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
@@ -105,6 +108,8 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         }
         configHandler.addConfigurable(new BlockEntityChestCoreConfigForge<>(this));
         configHandler.addConfigurable(new BlockEntityChestWallConfigForge<>(this));
+        configHandler.addConfigurable(new BlockUncolossalChestConfigForge<>(this));
+        configHandler.addConfigurable(new BlockEntityUncolossalChestConfig<>(this, BlockEntityUncolossalChestForge::new));
         configHandler.addConfigurable(new ContainerInterfaceConfig<>(this));
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
         configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));

@@ -13,6 +13,27 @@ All stable releases (including deobfuscated builds) can be found on [CurseForge]
 
 [Development builds](https://github.com/CyclopsMC/packages/packages/) are hosted as GitHub packages.
 
+### Extending
+Addons can add chest materials, upgrades and functional walls.
+Register them while your mod is constructed.
+[`GameTestAddon`](loader-common/src/main/java/org/cyclops/colossalchests2/gametest/GameTestAddon.java) contains an example of each.
+
+Materials:
+* `ChestMaterial.register(new ChestMaterial(id, soundType, hardness, needsPickaxe, blastResistance, after, defaultProperties))`, where `after` is the material it comes after, such as `ChestMaterial.COPPER.id()`.
+* Register the blocks `<ns>:chest_wall_<name>` and `<ns>:chest_core_<name>`, for example with `BlockChestWallConfig` and `BlockChestCoreConfig`.
+* Add the giant chest texture `textures/entity/chest/<name>.png` and the lang key `material.<ns>.<name>`.
+* Optionally make it tunable in `data/<ns>/colossalchests2/material/<name>.json`, which can also set `upgrade_limits`.
+
+Upgrades:
+* `ChestUpgrades.register(new ChestUpgrade(id, defaultProperties) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.
+* Register the item `<ns>:upgrade_<name>`, for example with `ItemChestUpgradeConfig`.
+* Optionally make it tunable in `data/<ns>/colossalchests2/upgrade/<name>.json`.
+
+Functional walls:
+* Extend `BlockChestWall` with the `BlockChestWall(Properties)` constructor, so it fits any material.
+* Get the chest with `ChestCoreIndex.findFormedCore`, and override `onChestContentsChanged` to react to changes.
+* Optionally draw on the giant chest with `ChestOverlays.register`.
+
 ### Contributing
 * Before submitting a pull request containing a new feature, please discuss this first with one of the lead developers.
 * When fixing an accepted bug, make sure to declare this in the issue so that no duplicate fixes exist.

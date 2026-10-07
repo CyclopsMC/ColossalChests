@@ -31,3 +31,9 @@ eval "server.submit({ def inv = server.overworld().getBlockEntity(dev.pos(1, -55
 open-gui 1 -55 2
 wait --ticks 20
 tooltip --at 270,148
+world-load clientdevbridge
+teleport 0 -60 0
+eval "server.submit({ def be = server.overworld().getBlockEntity(dev.pos(1, -55, 2)); def inv = be.getUpgrades(); (0..5).each { inv.setItem(it, dev.item('colossalchests2:upgrade_depth')) }; inv.setItem(6, dev.item('colossalchests2:upgrade_slot_expansion')); 'ok' } as java.util.function.Supplier).get()"
+open-gui 1 -55 2
+wait --ticks 20
+screenshot --name maxed-gui-per-slot

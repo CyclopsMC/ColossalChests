@@ -77,7 +77,7 @@ public class TestChestTables {
     public void testRegisteredMaterialUsesItsDefaults() {
         MaterialProperties defaults = new MaterialProperties(3, 6, true, Map.of(ChestUpgrades.DEPTH.getId(), 2));
         ChestMaterial material = new ChestMaterial(ResourceLocation.fromNamespaceAndPath("othermod", "tables_test"),
-                SoundType.METAL, 1, true, 1, 35, defaults);
+                SoundType.METAL, 1, true, 1, ChestMaterial.IRON.id(), defaults);
         ChestMaterial.register(material);
         assertEquals(defaults, ChestTables.DEFAULT.getMaterial(material.id()));
         assertEquals(2, ChestTables.DEFAULT.getMaxUpgradeCount(ChestUpgrades.DEPTH.getId(), material.id()));

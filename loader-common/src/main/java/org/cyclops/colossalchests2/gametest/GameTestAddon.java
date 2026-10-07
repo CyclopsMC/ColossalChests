@@ -16,10 +16,10 @@ import java.util.Map;
 public final class GameTestAddon {
 
     /**
-     * Between gold and diamond, with its depth limit set by the material instead of the upgrade.
+     * After gold, with its depth limit set by the material instead of the upgrade.
      */
     public static final ChestMaterial MATERIAL = new ChestMaterial(
-            ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon"), SoundType.AMETHYST, 2.5F, false, 6.0F, 45,
+            ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon"), SoundType.AMETHYST, 2.5F, false, 6.0F, ChestMaterial.GOLD.id(),
             new MaterialProperties(4, 5, false, Map.of(ChestUpgrades.DEPTH.getId(), 3)));
 
     private GameTestAddon() {

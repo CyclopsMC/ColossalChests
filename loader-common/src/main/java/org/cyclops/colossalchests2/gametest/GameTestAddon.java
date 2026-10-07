@@ -1,13 +1,10 @@
 package org.cyclops.colossalchests2.gametest;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.ChestMaterial;
-import org.cyclops.colossalchests2.config.MaterialProperties;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
-
-import java.util.Map;
 
 /**
  * Content registered like an addon would, only on game test servers, to test the extension points.
@@ -16,11 +13,11 @@ import java.util.Map;
 public final class GameTestAddon {
 
     /**
-     * After gold, with its depth limit set by the material instead of the upgrade.
+     * Defined by data/colossalchests2test/colossalchests2/material/test_addon.json: after gold, with its depth limit set
+     * by the material instead of the upgrade. That file does nothing outside game tests, as the blocks are missing.
+     * Its namespace differs from its blocks', like a material of another mod.
      */
-    public static final ChestMaterial MATERIAL = new ChestMaterial(
-            ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon"), SoundType.AMETHYST, 2.5F, false, 6.0F, ChestMaterial.GOLD.id(),
-            new MaterialProperties(4, 5, false, Map.of(ChestUpgrades.DEPTH.getId(), 3)));
+    public static final ChestMaterial MATERIAL = new ChestMaterial(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID + "test", "test_addon"));
 
     private GameTestAddon() {
     }
@@ -34,10 +31,10 @@ public final class GameTestAddon {
     }
 
     /**
-     * Register the addon materials, after which the caller registers their blocks.
+     * @return New properties for a wall or core of the test material.
      */
-    public static void registerMaterials() {
-        ChestMaterial.register(MATERIAL);
+    public static Block.Properties createProperties() {
+        return Block.Properties.of().strength(2.5F, 6.0F).sound(SoundType.AMETHYST);
     }
 
 }

@@ -48,7 +48,7 @@ public final class MaterialChanges {
             return Result.fail(message("not_formed"));
         }
         ChestMaterial current = coreBlock.getMaterial();
-        if (current == target) {
+        if (current.equals(target)) {
             return Result.fail(message("same", target.getDisplayName()));
         }
         MaterialChangeRules.Problem problem = MaterialChangeRules.check(structure.size(), core.getUpgradeSet(), target);

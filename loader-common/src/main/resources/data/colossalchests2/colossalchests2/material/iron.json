@@ -1,1 +1,1 @@
-{ "upgrade_slots": 3, "max_size": 5 }
+{ "after": "colossalchests2:copper", "upgrade_slots": 3, "max_size": 5 }

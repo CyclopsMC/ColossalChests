@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.SoundType;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.junit.Test;
@@ -16,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -44,13 +44,32 @@ public class TestChestTables {
     @Test
     public void testShippedFilesMatchDefaults() throws Exception {
         Map<ResourceLocation, JsonElement> files = Maps.newHashMap();
-        for (ResourceLocation id : ChestTables.DEFAULT.materials().keySet()) {
-            files.put(material(id), read(ChestTablesLoader.DIRECTORY_MATERIAL + "/" + id.getPath() + ".json"));
-        }
         for (ResourceLocation id : ChestTables.DEFAULT.upgrades().keySet()) {
             files.put(upgrade(id), read(ChestTablesLoader.DIRECTORY_UPGRADE + "/" + id.getPath() + ".json"));
         }
-        assertEquals(ChestTables.DEFAULT, ChestTablesLoader.fromJson(files));
+        assertEquals(ChestTables.DEFAULT.upgrades(), ChestTablesLoader.fromJson(files).upgrades());
+    }
+
+    @Test
+    public void testShippedMaterials() throws Exception {
+        Map<ResourceLocation, JsonElement> files = Maps.newHashMap();
+        for (ChestMaterial material : ChestMaterial.BUILT_IN) {
+            files.put(material(material.id()), read(ChestTablesLoader.DIRECTORY_MATERIAL + "/" + material.getName() + ".json"));
+        }
+        ChestTables tables = ChestTablesLoader.fromJson(files);
+        assertEquals(new MaterialProperties(1, 3, false), tables.getMaterial(ChestMaterial.WOOD.id()));
+        assertEquals(new MaterialProperties(7, 10, true, Map.of(), Optional.of(ChestMaterial.OBSIDIAN.id())),
+                tables.getMaterial(ChestMaterial.NETHERITE.id()));
+        // Each material comes after the previous one.
+        for (int i = 1; i < ChestMaterial.BUILT_IN.size(); i++) {
+            assertEquals(Optional.of(ChestMaterial.BUILT_IN.get(i - 1).id()), tables.getMaterial(ChestMaterial.BUILT_IN.get(i).id()).after());
+        }
+    }
+
+    @Test
+    public void testMaterialAfter() {
+        ChestTables tables = ChestTablesLoader.fromJson(Map.of(material(TIN), JsonParser.parseString("{\"after\": \"colossalchests2:copper\"}")));
+        assertEquals(Optional.of(ChestMaterial.COPPER.id()), tables.getMaterial(TIN).after());
     }
 
     @Test
@@ -71,19 +90,6 @@ public class TestChestTables {
         // The upgrade's own limit for a material wins.
         assertEquals(4, tables.getMaxUpgradeCount(depth, copper));
         assertEquals(2, tables.getMaxUpgradeCount(depth, ResourceLocation.fromNamespaceAndPath("othermod", "lead")));
-    }
-
-    @Test
-    public void testRegisteredMaterialUsesItsDefaults() {
-        MaterialProperties defaults = new MaterialProperties(3, 6, true, Map.of(ChestUpgrades.DEPTH.getId(), 2));
-        ChestMaterial material = new ChestMaterial(ResourceLocation.fromNamespaceAndPath("othermod", "tables_test"),
-                SoundType.METAL, 1, true, 1, ChestMaterial.IRON.id(), defaults);
-        ChestMaterial.register(material);
-        assertEquals(defaults, ChestTables.DEFAULT.getMaterial(material.id()));
-        assertEquals(2, ChestTables.DEFAULT.getMaxUpgradeCount(ChestUpgrades.DEPTH.getId(), material.id()));
-        // A data file still wins.
-        ChestTables tables = ChestTablesLoader.fromJson(Map.of(material(material.id()), JsonParser.parseString("{\"max_size\": 4}")));
-        assertEquals(4, tables.getMaterial(material.id()).maxSize());
     }
 
     @Test

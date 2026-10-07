@@ -2,7 +2,9 @@ package org.cyclops.colossalchests2.network;
 
 import net.minecraft.server.level.ServerPlayer;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
+import org.cyclops.colossalchests2.config.ChestTablesLoader;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
+import org.cyclops.colossalchests2.network.packet.ClientboundChestTablesPacket;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 import java.util.function.BiPredicate;
@@ -34,6 +36,13 @@ public final class ChestNetwork {
         if (canReceive.test(player, packet)) {
             ColossalChestsInstance.MOD.getPacketHandlerCommon().sendToPlayer(packet, player);
         }
+    }
+
+    /**
+     * Send the loaded material and upgrade tables, when a player joins and after datapacks are reloaded.
+     */
+    public static void sendTables(ServerPlayer player) {
+        sendToPlayer(new ClientboundChestTablesPacket(ChestTablesLoader.get()), player);
     }
 
 }

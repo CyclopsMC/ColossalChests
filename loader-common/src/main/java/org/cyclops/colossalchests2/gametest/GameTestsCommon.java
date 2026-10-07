@@ -103,6 +103,7 @@ import org.cyclops.colossalchests2.multiblock.ChestStructure;
 import org.cyclops.colossalchests2.multiblock.StructureDiagnosis;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestSlotsPacket;
 import org.cyclops.colossalchests2.network.packet.ClientboundChestStatePacket;
+import org.cyclops.colossalchests2.network.packet.ClientboundChestTablesPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestClickPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestDragPacket;
 import org.cyclops.colossalchests2.network.packet.ServerboundChestFormPacket;
@@ -125,6 +126,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -146,7 +148,9 @@ public class GameTestsCommon {
         // Proves the mod's template and classes load on this loader.
         helper.setBlock(POS, Blocks.CHEST);
         helper.assertBlockPresent(Blocks.CHEST, POS);
-        helper.assertValueEqual(ChestTablesLoader.get().materials().size(), ChestTables.DEFAULT.materials().size(), "material count");
+        for (ChestMaterial material : ChestMaterial.BUILT_IN) {
+            helper.assertTrue(ChestTablesLoader.get().materials().containsKey(material.id()), "Expected the data file of " + material.id());
+        }
         helper.succeed();
     }
 
@@ -2897,7 +2901,7 @@ public class GameTestsCommon {
                     helper.assertValueEqual(core.getMaxUpgradeCount(ChestUpgrades.DEPTH), 3, "depth limit");
                     helper.assertTrue(core.getDisplayName().getContents() instanceof TranslatableContents title
                                     && title.getArgs()[0] instanceof Component name && name.getContents() instanceof TranslatableContents key
-                                    && key.getKey().equals("material.colossalchests2.test_addon"),
+                                    && key.getKey().equals("material.colossalchests2test.test_addon"),
                             "Expected the material name in the title, got " + core.getDisplayName());
                 })
                 .thenSucceed();
@@ -2920,6 +2924,18 @@ public class GameTestsCommon {
         ContainerMaterialUpgradeTool menu = new ContainerMaterialUpgradeTool(0, player.getInventory(), InteractionHand.OFF_HAND);
         helper.assertTrue(menu.clickMenuButton(player, ChestMaterial.getAll().indexOf(material)), "Expected the button to work");
         helper.assertValueEqual(ItemMaterialUpgradeTool.getTarget(player.getOffhandItem()).orElse(null), material, "target");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testChestTablesFromDataAndSynced(GameTestHelper helper) {
+        ChestTables tables = ChestTablesLoader.get();
+        // Loaded from this mod's data files, there are no material values in code.
+        helper.assertValueEqual(tables.getMaterial(ChestMaterial.NETHERITE.id()).maxSize(), 10, "netherite size");
+        helper.assertValueEqual(tables.getMaterial(ChestMaterial.NETHERITE.id()).after(), Optional.of(ChestMaterial.OBSIDIAN.id()), "netherite after");
+        helper.assertValueEqual(ChestMaterial.getAll().subList(0, 3), List.of(ChestMaterial.WOOD, ChestMaterial.COPPER, ChestMaterial.IRON), "order");
+        ClientboundChestTablesPacket packet = roundTrip(helper, new ClientboundChestTablesPacket(tables), ClientboundChestTablesPacket.CODEC);
+        helper.assertValueEqual(packet.getTables(), tables, "synced tables");
         helper.succeed();
     }
 

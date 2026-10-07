@@ -18,6 +18,25 @@ Addons can add chest materials, upgrades and functional walls.
 Register blocks and items while your mod is constructed.
 [`GameTestAddon`](loader-common/src/main/java/org/cyclops/colossalchests2/gametest/GameTestAddon.java) contains an example of each.
 
+Depend on this mod and Cyclops Core from [GitHub Packages](https://github.com/CyclopsMC/packages/packages/), which needs a GitHub token with `read:packages`.
+Replace `neoforge` with `fabric`, `forge` or `common` (for multi-loader common code) as needed:
+```groovy
+repositories {
+    maven {
+        url "https://maven.pkg.github.com/CyclopsMC/packages"
+        credentials {
+            username = System.getenv("GITHUB_USER")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
+dependencies {
+    implementation "org.cyclops.colossalchests2:colossalchests2-1.21.1-neoforge:<version>:deobf"
+    implementation "org.cyclops.cyclopscore:cyclopscore-1.21.1-neoforge:<version>:deobf"
+}
+```
+
 Materials:
 * Register a `BlockChestWall` and a `BlockChestCore` with `new ChestMaterial(id)`, for example with `BlockChestWallConfig` and `BlockChestCoreConfig`.
 * Define the material in `data/<ns>/colossalchests2/material/<name>.json`, with `after` (such as `colossalchests2:copper`), `max_size`, `upgrade_slots`, `blast_resistant` and `upgrade_limits`. This mod's materials are defined the same way, so datapacks can change or reorder them.

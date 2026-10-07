@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
  */
 public record ChestMaterial(ResourceLocation id) {
 
+    // Ids of this mod's materials, for code that refers to them. Materials are not registered here.
     public static final ChestMaterial WOOD = new ChestMaterial(id("wood"));
     public static final ChestMaterial COPPER = new ChestMaterial(id("copper"));
     public static final ChestMaterial IRON = new ChestMaterial(id("iron"));

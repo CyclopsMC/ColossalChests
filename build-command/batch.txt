@@ -1,0 +1,15 @@
+teleport 0 -60 0
+look --yaw 0 --pitch 0
+command "execute as @p at @p run colossalchests2 build netherite 10"
+command "colossalchests2 build wood 4 20 -60 0"
+command "execute as @p at @p run colossalchests2 build iron 5"
+wait --ticks 10
+command "colossalchests2 build diamond 7 -14 -60 4"
+command "colossalchests2 build wood 3 -20 -60 6"
+teleport -4 -54 -12
+look --yaw -20 --pitch 15
+wait --ticks 40
+teleport -8 -60 -24
+look --yaw -12 --pitch -12
+wait --ticks 40
+screenshot --name build-command

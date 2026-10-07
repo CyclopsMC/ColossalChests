@@ -2936,6 +2936,8 @@ public class GameTestsCommon {
     public void testAddonUpgradeHooks(GameTestHelper helper) {
         ChestUpgrade upgrade = GameTestAddon.UPGRADE;
         helper.assertValueEqual(ChestUpgrades.byId(upgrade.getId()), upgrade, "registered upgrade");
+        helper.assertValueEqual(ColossalChestsApi.get().getUpgrade(upgrade.getId()), upgrade, "upgrade through the api");
+        helper.assertTrue(ColossalChestsApi.get().getUpgrades().contains(upgrade), "Expected the upgrade in the api list");
         helper.assertTrue(ItemChestUpgrade.getUpgrade(upgradeItem(upgrade)) == upgrade, "Expected an upgrade item");
         helper.assertValueEqual(((TranslatableContents) upgrade.getDisplayName().getContents()).getKey(),
                 "item.colossalchests2.upgrade_test_addon", "name key");
@@ -2947,6 +2949,7 @@ public class GameTestsCommon {
                     // From its data file.
                     helper.assertValueEqual(core.getMaxUpgradeCount(upgrade), 1, "limit");
                     core.getUpgrades().setItem(0, upgradeItem(upgrade));
+                    helper.assertValueEqual(core.getUpgradeCount(upgrade), 1, "installed through the api");
                     helper.assertValueEqual(core.getStorage().insert(new ItemStack(Items.DIRT), 5, false), 0L, "dirt inserted");
                     helper.assertValueEqual(core.getStorage().insert(STONE, 5, false), 5L, "stone inserted");
                 })
@@ -2985,6 +2988,12 @@ public class GameTestsCommon {
                     changesBefore[0] = wall.getContentsChanges();
                     helper.assertValueEqual(chest.insert(STONE, 5, false), 5L, "inserted through the api");
                     helper.assertValueEqual(chest.getSlotAmount(0), 5L, "amount through the api");
+                    helper.assertValueEqual(chest.getCorePos(), helper.absolutePos(corePos), "core position");
+                    helper.assertValueEqual(chest.getChestSize(), 3, "size");
+                    helper.assertValueEqual(chest.getChestMaterial(), ChestMaterial.IRON, "material");
+                    helper.assertTrue(chest.getSlotType(0).is(STONE.getItem()), "Expected stone in the first slot");
+                    helper.assertValueEqual(chest.extract(STONE, 2, false), 2L, "extracted through the api");
+                    helper.assertValueEqual(chest.insert(STONE, 2, false), 2L, "inserted back through the api");
                 })
                 .thenWaitUntil(() -> helper.assertTrue(wall.getContentsChanges() > changesBefore[0], "Expected the wall to hear the change"))
                 .thenExecute(() -> {

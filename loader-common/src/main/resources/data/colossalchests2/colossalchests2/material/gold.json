@@ -1,1 +1,5 @@
-{ "after": "colossalchests2:iron", "upgrade_slots": 4, "max_size": 6 }
+{
+  "after": "colossalchests2:iron",
+  "upgrade_slots": 4,
+  "max_size": 6
+}

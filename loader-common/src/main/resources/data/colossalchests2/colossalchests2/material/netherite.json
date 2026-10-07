@@ -1,1 +1,6 @@
-{ "after": "colossalchests2:obsidian", "upgrade_slots": 7, "max_size": 10, "blast_resistant": true }
+{
+  "after": "colossalchests2:obsidian",
+  "upgrade_slots": 7,
+  "max_size": 10,
+  "blast_resistant": true
+}

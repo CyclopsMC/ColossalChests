@@ -24,9 +24,9 @@ Materials:
 * Add the giant chest texture `textures/entity/chest/<name>.png` and the lang key `material.<ns>.<name>`.
 
 Upgrades:
-* `ChestUpgrades.register(new ChestUpgrade(id, defaultProperties) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.
+* `ChestUpgrades.register(new ChestUpgrade(id) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.
 * Register the item `<ns>:upgrade_<name>`, for example with `ItemChestUpgradeConfig`.
-* Optionally make it tunable in `data/<ns>/colossalchests2/upgrade/<name>.json`.
+* Define its limits and strength in `data/<ns>/colossalchests2/upgrade/<name>.json`, with `max_count`, `max_count_by_material` and `value`. Without this file, the upgrade is disabled.
 
 Functional walls:
 * Extend `BlockChestWall` with the `BlockChestWall(Properties)` constructor, so it fits any material.

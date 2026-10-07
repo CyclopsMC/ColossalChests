@@ -1,0 +1,15 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "fill -3 3 -3 12 3 12 minecraft:stone"
+command "gamemode survival"
+teleport 3 4 0 --yaw 0 --pitch 0
+command "give @p minecraft:chest"
+wait --ticks 10
+command "fill 2 4 2 4 6 4 colossalchests2:chest_wall_wood hollow"
+command "setblock 3 5 2 colossalchests2:chest_core_wood"
+wait --ticks 20
+screenshot --name advancement-toast
+command "give @p colossalchests2:uncolossal_chest"
+wait --ticks 10
+key L
+wait --ticks 10
+screenshot --name advancements-tab

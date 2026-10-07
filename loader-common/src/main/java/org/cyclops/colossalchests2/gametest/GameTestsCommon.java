@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +31,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -2550,6 +2552,22 @@ public class GameTestsCommon {
             throw new GameTestAssertException("No uncolossal chest at " + pos);
         }
         return chest;
+    }
+
+    // Tooltips
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testWallAndCoreTooltipsShowMaterialLimits(GameTestHelper helper) {
+        for (ChestMaterial material : ChestMaterial.VALUES) {
+            for (Block block : List.of(wall(material), core(material))) {
+                List<Component> lines = new ItemStack(block).getTooltipLines(Item.TooltipContext.EMPTY, null, TooltipFlag.NORMAL);
+                helper.assertTrue(lines.stream().anyMatch(line -> line.getContents() instanceof TranslatableContents contents
+                                && contents.getKey().equals("material.colossalchests2.limits")
+                                && List.of(contents.getArgs()).equals(List.of(material.getProperties().maxSize(), material.getProperties().upgradeSlots()))),
+                        "Expected the limits of " + material.getName() + " on " + block + ", got " + lines);
+            }
+        }
+        helper.succeed();
     }
 
 }

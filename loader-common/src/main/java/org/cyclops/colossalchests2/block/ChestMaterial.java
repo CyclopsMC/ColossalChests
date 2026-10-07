@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -59,6 +60,15 @@ public record ChestMaterial(ResourceLocation id, SoundType soundType, float hard
 
     public Block getCoreBlock() {
         return BuiltInRegistries.BLOCK.get(id.withPrefix("chest_core_"));
+    }
+
+    /**
+     * @return A tooltip line with this material's limits.
+     */
+    public Component getLimitsTooltip() {
+        MaterialProperties properties = getProperties();
+        return Component.translatable("material.colossalchests2.limits", properties.maxSize(), properties.upgradeSlots())
+                .withStyle(ChatFormatting.GRAY);
     }
 
     public Component getDisplayName() {

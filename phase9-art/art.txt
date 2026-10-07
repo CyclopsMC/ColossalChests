@@ -1,0 +1,22 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "fill -3 3 -3 14 3 10 minecraft:stone"
+command "fill 0 4 3 2 6 5 colossalchests2:chest_wall_diamond hollow"
+command "setblock 1 5 3 colossalchests2:chest_core_diamond"
+command "fill 5 4 3 7 6 5 colossalchests2:chest_wall_obsidian hollow"
+command "setblock 6 5 3 colossalchests2:chest_core_obsidian"
+command "setblock 10 4 4 colossalchests2:chest_wall_obsidian"
+command "setblock 11 4 4 colossalchests2:chest_core_obsidian"
+command "setblock 12 4 4 colossalchests2:chest_wall_diamond"
+wait --ticks 30
+teleport 6 5 -4 --yaw 0 --pitch 0
+look --at 6,5,4
+wait --ticks 10
+screenshot --name art-obsidian-vs-diamond
+command "gamemode survival"
+command "clear @p"
+command "give @p colossalchests2:chest_wall_diamond"
+command "give @p colossalchests2:chest_wall_obsidian"
+command "give @p colossalchests2:chest_core_obsidian"
+command "give @p colossalchests2:chest_wall_netherite"
+wait --ticks 5
+screenshot --name art-hotbar

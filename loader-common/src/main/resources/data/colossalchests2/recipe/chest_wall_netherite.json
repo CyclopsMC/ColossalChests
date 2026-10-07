@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:gold_ingot"
+  },
+  "base": {
+    "item": "colossalchests2:chest_wall_diamond"
+  },
+  "addition": {
+    "item": "minecraft:netherite_scrap"
+  },
+  "result": {
+    "id": "colossalchests2:chest_wall_netherite",
+    "count": 2
+  }
+}

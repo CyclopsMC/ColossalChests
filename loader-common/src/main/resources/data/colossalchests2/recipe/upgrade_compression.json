@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IPI",
+    "PCP",
+    "IPI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    },
+    "C": {
+      "tag": "colossalchests2:chest_walls"
+    }
+  },
+  "result": {
+    "id": "colossalchests2:upgrade_compression",
+    "count": 1
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " X ",
+    "XCX",
+    " X "
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:cactus"
+    },
+    "C": {
+      "tag": "colossalchests2:chest_walls"
+    }
+  },
+  "result": {
+    "id": "colossalchests2:upgrade_void",
+    "count": 1
+  }
+}

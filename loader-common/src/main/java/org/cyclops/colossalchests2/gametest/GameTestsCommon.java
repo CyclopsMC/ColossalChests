@@ -21,6 +21,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.sounds.SoundEvent;
@@ -37,6 +38,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmithingRecipeInput;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -107,6 +112,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author rubensworks
@@ -2210,6 +2216,69 @@ public class GameTestsCommon {
                     helper.assertValueEqual(storage.insert(stoneShulker, 1, false), 1L, "shulker box with stone inserted");
                 })
                 .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testRecipes(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        RecipeManager recipes = level.getRecipeManager();
+        // Every item of this mod is craftable.
+        Set<Item> results = recipes.getRecipes().stream()
+                .map(r -> r.value().getResultItem(level.registryAccess()).getItem())
+                .collect(Collectors.toSet());
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Reference.MOD_ID)) {
+                helper.assertTrue(results.contains(item), "No recipe for " + item);
+            }
+        }
+
+        ItemStack ironWall = modItem("chest_wall_iron");
+        ItemStack i = new ItemStack(Items.IRON_INGOT);
+        ItemStack l = new ItemStack(Items.OAK_LOG);
+        // Plain walls make two.
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, i, i, i, l, i, i, i, i)), ironWall.copyWithCount(2));
+        ItemStack p = new ItemStack(Items.BIRCH_PLANKS);
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(p, p, p, p, new ItemStack(Items.SPRUCE_LOG), p, p, p, p)),
+                modItem("chest_wall_wood").copyWithCount(2));
+        assertCrafts(helper, CraftingInput.of(2, 1, List.of(ironWall, new ItemStack(Items.CHEST))), modItem("chest_core_iron"));
+        // Functional walls accept any plain wall.
+        assertCrafts(helper, CraftingInput.of(2, 1, List.of(modItem("chest_wall_gold"), new ItemStack(Items.HOPPER))),
+                modItem("chest_wall_interface"));
+        assertCrafts(helper, CraftingInput.of(2, 2, List.of(ironWall, new ItemStack(Items.ENDER_PEARL), i, new ItemStack(Items.REDSTONE))),
+                modItem("chest_wall_magnet"));
+        assertCrafts(helper, CraftingInput.of(2, 1, List.of(modItem("chest_wall_display"), new ItemStack(Items.HOPPER))), null);
+        // Upgrades are built around any plain wall, not a chest, so they do not clash with other mods.
+        ItemStack d = new ItemStack(Items.DIAMOND);
+        ItemStack w = modItem("chest_wall_wood");
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, w, d, i, d, i)), modItem("upgrade_depth"));
+        ItemStack c = new ItemStack(Items.CHEST);
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, c, d, i, d, i)), null);
+
+        SmithingRecipeInput smithing = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), modItem("chest_wall_diamond"),
+                new ItemStack(Items.NETHERITE_SCRAP));
+        ItemStack netherite = recipes.getRecipeFor(RecipeType.SMITHING, smithing, level)
+                .map(r -> r.value().assemble(smithing, level.registryAccess()))
+                .orElse(ItemStack.EMPTY);
+        helper.assertTrue(ItemStack.isSameItem(netherite, modItem("chest_wall_netherite")) && netherite.getCount() == 2,
+                "Expected two netherite walls, got " + netherite);
+        helper.succeed();
+    }
+
+    private static ItemStack modItem(String path) {
+        return new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, path)));
+    }
+
+    private static void assertCrafts(GameTestHelper helper, CraftingInput input, @Nullable ItemStack expected) {
+        ServerLevel level = helper.getLevel();
+        ItemStack result = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
+                .map(r -> r.value().assemble(input, level.registryAccess()))
+                .orElse(ItemStack.EMPTY);
+        if (expected == null) {
+            helper.assertTrue(result.isEmpty(), "Expected no result, got " + result);
+        } else {
+            helper.assertTrue(ItemStack.isSameItem(result, expected) && result.getCount() == expected.getCount(),
+                    "Expected " + expected + ", got " + result);
+        }
     }
 
     // Material upgrades

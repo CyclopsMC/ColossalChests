@@ -39,9 +39,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFW;
 
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -79,6 +77,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     private static final int SETTINGS_WIDTH = 16;
     private static final int SETTINGS_HEIGHT = 15;
     private static final int SEARCH_Y = 18;
+    private static final int INFO_GAP = 6;
     private static final int SEARCH_HEIGHT = 12;
     private static final int UPGRADE_PANEL_X = ContainerChest.UPGRADE_SLOT_X - 7;
     private static final int UPGRADE_PANEL_Y = ContainerChest.UPGRADE_SLOT_Y - 4;
@@ -355,10 +354,22 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
                 : Component.translatable("gui.colossalchests2.capacity.none")).withStyle(ChatFormatting.GRAY);
     }
 
-    private Component getCapacityInfo() {
+    private Component getFullCapacityInfo() {
         long depth = menu.getProfile().depth();
         return depth == 1 ? Component.translatable("gui.colossalchests2.stacks_per_slot.one")
                 : Component.translatable("gui.colossalchests2.stacks_per_slot", formatCount(depth));
+    }
+
+    /**
+     * @return The capacity per slot, shortened until it fits next to the slots info.
+     */
+    private Component getCapacityInfo() {
+        long depth = menu.getProfile().depth();
+        int available = getGridWidth() - 1 - font.width(getSlotsInfo()) - INFO_GAP;
+        List<Component> candidates = List.of(getFullCapacityInfo(),
+                Component.translatable("gui.colossalchests2.stacks_per_slot", CountFormat.compact(depth)),
+                Component.translatable("gui.colossalchests2.stacks_per_slot.short", CountFormat.compact(depth)));
+        return candidates.stream().filter(candidate -> font.width(candidate) <= available).findFirst().orElse(candidates.getLast());
     }
 
     /**
@@ -420,10 +431,13 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
             }
             guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
         } else if (x >= right - font.width(getCapacityInfo()) && x < right) {
-            guiGraphics.renderTooltip(font, List.of(
-                    Component.translatable("gui.colossalchests2.stacks_per_slot.info"),
-                    getCapacityLine("stack_64", 64), getCapacityLine("stack_16", 16), getCapacityLine("stack_1", 1)),
-                    Optional.empty(), mouseX, mouseY);
+            List<Component> lines = Lists.newArrayList(Component.translatable("gui.colossalchests2.stacks_per_slot.info"));
+            Component full = getFullCapacityInfo();
+            if (!getCapacityInfo().equals(full)) {
+                lines.add(full);
+            }
+            lines.addAll(List.of(getCapacityLine("stack_64", 64), getCapacityLine("stack_16", 16), getCapacityLine("stack_1", 1)));
+            guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY);
         }
     }
 
@@ -652,7 +666,7 @@ public class ContainerScreenChest extends AbstractContainerScreen<ContainerChest
     }
 
     private static String formatCount(long count) {
-        return NumberFormat.getIntegerInstance(Locale.ROOT).format(count);
+        return CountFormat.full(count);
     }
 
     /**

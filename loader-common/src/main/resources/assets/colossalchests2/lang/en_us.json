@@ -145,6 +145,7 @@
   "gui.colossalchests2.slots_full": "%s of them are full",
   "gui.colossalchests2.stacks_per_slot": "%s stacks per slot",
   "gui.colossalchests2.stacks_per_slot.one": "1 stack per slot",
+  "gui.colossalchests2.stacks_per_slot.short": "%s stacks/slot",
   "gui.colossalchests2.stacks_per_slot.info": "Items per slot",
   "gui.colossalchests2.capacity.stack_64": "Stacking to 64: %s",
   "gui.colossalchests2.capacity.stack_16": "Stacking to 16: %s",

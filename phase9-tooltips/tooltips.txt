@@ -1,0 +1,8 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "gamemode survival"
+command "clear @p"
+command "give @p colossalchests2:chest_wall_iron"
+command "give @p colossalchests2:chest_core_netherite"
+key E
+wait --ticks 5
+snapshot

@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_wall_diamond"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.largest.diamond"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.largest.diamond.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests2:formed/diamond",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:diamond",
+        "minimum_size": 7
+      }
+    }
+  }
+}

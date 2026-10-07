@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_wall_netherite"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.largest.netherite"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.largest.netherite.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests2:formed/netherite",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:netherite",
+        "minimum_size": 10
+      }
+    }
+  }
+}

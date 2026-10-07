@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_wall_gold"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.largest.gold"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.largest.gold.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests2:formed/gold",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:gold",
+        "minimum_size": 6
+      }
+    }
+  }
+}

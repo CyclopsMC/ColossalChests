@@ -2242,7 +2242,15 @@ public class GameTestsCommon {
         ItemStack c = new ItemStack(Items.CHEST);
         assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, d, i, d, c, d, i, d, i)), null);
 
-        SmithingRecipeInput smithing = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), modItem("chest_wall_diamond"),
+        // Obsidian walls build on diamond walls, and netherite walls on obsidian walls.
+        ItemStack dw = modItem("chest_wall_diamond");
+        ItemStack o = new ItemStack(Items.OBSIDIAN);
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(dw, o, dw, o, ItemStack.EMPTY, o, dw, o, dw)),
+                modItem("chest_wall_obsidian").copyWithCount(4));
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(o, o, o, o, new ItemStack(Items.OAK_LOG), o, o, o, o)), null);
+        SmithingRecipeInput fromDiamond = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), dw, new ItemStack(Items.NETHERITE_SCRAP));
+        helper.assertTrue(recipes.getRecipeFor(RecipeType.SMITHING, fromDiamond, level).isEmpty(), "Expected no netherite walls from diamond walls");
+        SmithingRecipeInput smithing = new SmithingRecipeInput(new ItemStack(Items.GOLD_INGOT), modItem("chest_wall_obsidian"),
                 new ItemStack(Items.NETHERITE_SCRAP));
         ItemStack netherite = recipes.getRecipeFor(RecipeType.SMITHING, smithing, level)
                 .map(r -> r.value().assemble(smithing, level.registryAccess()))

@@ -295,6 +295,25 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     }
 
     /**
+     * Validate the structure now instead of on the next tick.
+     */
+    public void validateNow() {
+        if (!registered) {
+            ChestCoreIndex.register(level, worldPosition);
+            registered = true;
+        }
+        validationRequested = false;
+        validate();
+    }
+
+    /**
+     * Move all upgrades to the first slots, so they fit when the slot count shrinks.
+     */
+    public void compactUpgrades() {
+        upgrades.load(upgrades.getItems().stream().filter(stack -> !stack.isEmpty()).toList());
+    }
+
+    /**
      * Revalidate the structure on the next tick. Cheap to call often, validation happens at most once per tick.
      */
     public void requestValidation() {

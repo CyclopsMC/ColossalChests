@@ -1,0 +1,8 @@
+# Started with JAVA_TOOL_OPTIONS=-Dforge.gameTestServer=true so the test material registers
+world-reset
+eval "net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(dev.rl('colossalchests2:chest_wall_test_addon'))"
+give colossalchests2:material_upgrade_tool
+hold 0
+use-item
+wait --ticks 10
+screenshot --name tool-wrapped

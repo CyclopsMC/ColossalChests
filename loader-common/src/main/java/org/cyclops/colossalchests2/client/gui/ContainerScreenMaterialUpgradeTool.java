@@ -24,6 +24,7 @@ public class ContainerScreenMaterialUpgradeTool extends AbstractContainerScreen<
     private static final int BUTTON_Y = 20;
     private static final int BUTTON_SIZE = 20;
     private static final int BUTTON_SPACING = 22;
+    private static final int COLUMNS = 7;
     private static final int COLOR_LABEL = 0x404040;
     private static final int COLOR_HINT = 0x707070;
 
@@ -32,23 +33,40 @@ public class ContainerScreenMaterialUpgradeTool extends AbstractContainerScreen<
     public ContainerScreenMaterialUpgradeTool(ContainerMaterialUpgradeTool menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         this.imageWidth = WIDTH;
-        this.imageHeight = HEIGHT;
+        this.imageHeight = HEIGHT + (getRows() - 1) * BUTTON_SPACING;
     }
 
+    private static int getRows() {
+        return Math.max(1, (ChestMaterial.getAll().size() + COLUMNS - 1) / COLUMNS);
+    }
+
+    /**
+     * Buttons wrap into rows, each centered.
+     */
     private int getButtonX(int index) {
-        return leftPos + (WIDTH - ChestMaterial.VALUES.size() * BUTTON_SPACING + BUTTON_SPACING - BUTTON_SIZE) / 2 + index * BUTTON_SPACING;
+        int row = index / COLUMNS;
+        int inRow = Math.min(COLUMNS, ChestMaterial.getAll().size() - row * COLUMNS);
+        return leftPos + (WIDTH - inRow * BUTTON_SPACING + BUTTON_SPACING - BUTTON_SIZE) / 2 + (index % COLUMNS) * BUTTON_SPACING;
+    }
+
+    private int getButtonY(int index) {
+        return topPos + BUTTON_Y + (index / COLUMNS) * BUTTON_SPACING;
+    }
+
+    private int getLabelY() {
+        return BUTTON_Y + (getRows() - 1) * BUTTON_SPACING + BUTTON_SIZE + 6;
     }
 
     @Override
     protected void init() {
         super.init();
         buttons.clear();
-        for (int i = 0; i < ChestMaterial.VALUES.size(); i++) {
+        for (int i = 0; i < ChestMaterial.getAll().size(); i++) {
             int index = i;
             buttons.add(addRenderableWidget(Button.builder(Component.empty(),
                             b -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, index))
-                    .bounds(getButtonX(i), topPos + BUTTON_Y, BUTTON_SIZE, BUTTON_SIZE)
-                    .tooltip(Tooltip.create(ChestMaterial.VALUES.get(i).getDisplayName()))
+                    .bounds(getButtonX(i), getButtonY(i), BUTTON_SIZE, BUTTON_SIZE)
+                    .tooltip(Tooltip.create(ChestMaterial.getAll().get(i).getDisplayName()))
                     .build()));
         }
     }
@@ -73,17 +91,17 @@ public class ContainerScreenMaterialUpgradeTool extends AbstractContainerScreen<
         int target = menu.getTarget();
         Component label = target < 0
                 ? Component.translatable("gui.colossalchests2.material_upgrade_tool.no_target")
-                : Component.translatable("gui.colossalchests2.material_upgrade_tool.target", ChestMaterial.VALUES.get(target).getDisplayName());
-        guiGraphics.drawString(font, label, (WIDTH - font.width(label)) / 2, BUTTON_Y + BUTTON_SIZE + 6, COLOR_LABEL, false);
+                : Component.translatable("gui.colossalchests2.material_upgrade_tool.target", ChestMaterial.getAll().get(target).getDisplayName());
+        guiGraphics.drawString(font, label, (WIDTH - font.width(label)) / 2, getLabelY(), COLOR_LABEL, false);
         Component hint = Component.translatable("gui.colossalchests2.material_upgrade_tool.hint");
-        guiGraphics.drawString(font, hint, (WIDTH - font.width(hint)) / 2, BUTTON_Y + BUTTON_SIZE + 20, COLOR_HINT, false);
+        guiGraphics.drawString(font, hint, (WIDTH - font.width(hint)) / 2, getLabelY() + 14, COLOR_HINT, false);
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        for (int i = 0; i < ChestMaterial.VALUES.size(); i++) {
-            guiGraphics.renderItem(new ItemStack(ChestMaterial.VALUES.get(i).getWallBlock()), getButtonX(i) + 2, topPos + BUTTON_Y + 2);
+        for (int i = 0; i < ChestMaterial.getAll().size(); i++) {
+            guiGraphics.renderItem(new ItemStack(ChestMaterial.getAll().get(i).getWallBlock()), getButtonX(i) + 2, getButtonY(i) + 2);
         }
         renderTooltip(guiGraphics, mouseX, mouseY);
     }

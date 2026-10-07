@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.SoundType;
+import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.junit.Test;
 
@@ -55,6 +57,33 @@ public class TestChestTables {
     public void testMissingFieldsUseDefaults() {
         ChestTables tables = ChestTablesLoader.fromJson(Map.of(material(TIN), JsonParser.parseString("{\"max_size\": 4}")));
         assertEquals(new MaterialProperties(MaterialProperties.DEFAULT.upgradeSlots(), 4, false), tables.getMaterial(TIN));
+    }
+
+    @Test
+    public void testMaterialUpgradeLimits() {
+        ResourceLocation depth = ChestUpgrades.DEPTH.getId();
+        ResourceLocation copper = ResourceLocation.fromNamespaceAndPath("othermod", "copper");
+        ChestTables tables = ChestTablesLoader.fromJson(Map.of(
+                upgrade(depth), JsonParser.parseString("{\"max_count\": 2, \"max_count_by_material\": {\"othermod:copper\": 4}}"),
+                material(TIN), JsonParser.parseString("{\"upgrade_limits\": {\"colossalchests2:depth\": 5}}"),
+                material(copper), JsonParser.parseString("{\"upgrade_limits\": {\"colossalchests2:depth\": 5}}")));
+        assertEquals(5, tables.getMaxUpgradeCount(depth, TIN));
+        // The upgrade's own limit for a material wins.
+        assertEquals(4, tables.getMaxUpgradeCount(depth, copper));
+        assertEquals(2, tables.getMaxUpgradeCount(depth, ResourceLocation.fromNamespaceAndPath("othermod", "lead")));
+    }
+
+    @Test
+    public void testRegisteredMaterialUsesItsDefaults() {
+        MaterialProperties defaults = new MaterialProperties(3, 6, true, Map.of(ChestUpgrades.DEPTH.getId(), 2));
+        ChestMaterial material = new ChestMaterial(ResourceLocation.fromNamespaceAndPath("othermod", "tables_test"),
+                SoundType.METAL, 1, true, 1, 35, defaults);
+        ChestMaterial.register(material);
+        assertEquals(defaults, ChestTables.DEFAULT.getMaterial(material.id()));
+        assertEquals(2, ChestTables.DEFAULT.getMaxUpgradeCount(ChestUpgrades.DEPTH.getId(), material.id()));
+        // A data file still wins.
+        ChestTables tables = ChestTablesLoader.fromJson(Map.of(material(material.id()), JsonParser.parseString("{\"max_size\": 4}")));
+        assertEquals(4, tables.getMaterial(material.id()).maxSize());
     }
 
     @Test

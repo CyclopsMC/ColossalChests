@@ -14,9 +14,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
-import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
@@ -165,7 +163,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
         if (material == ChestMaterial.WOOD) {
             return christmas ? Sheets.CHEST_XMAS_LOCATION : Sheets.CHEST_LOCATION;
         }
-        return new Material(Sheets.CHEST_SHEET, ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "entity/chest/" + material.getName()));
+        return new Material(Sheets.CHEST_SHEET, material.id().withPrefix("entity/chest/"));
     }
 
     @Override

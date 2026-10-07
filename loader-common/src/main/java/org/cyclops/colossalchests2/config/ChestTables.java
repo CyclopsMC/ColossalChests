@@ -1,5 +1,7 @@
 package org.cyclops.colossalchests2.config;
 
+import org.cyclops.colossalchests2.block.ChestMaterial;
+
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
 import org.cyclops.colossalchests2.Reference;
@@ -15,22 +17,14 @@ import java.util.Map;
  *     <li>data/[namespace]/colossalchests2/upgrade/[name].json for upgrade values and per-material limits</li>
  * </ul>
  * Chest-wide values such as slot counts and depth by size are in {@link org.cyclops.colossalchests2.GeneralConfig}.
- * @param materials Material properties by material id.
+ * @param materials Material properties by material id. Materials without an entry use their registered defaults.
  * @param upgrades Upgrade properties by upgrade id.
  * @author rubensworks
  */
 public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, Map<ResourceLocation, UpgradeProperties> upgrades) {
 
     public static final ChestTables DEFAULT = new ChestTables(
-            ImmutableMap.<ResourceLocation, MaterialProperties>builder()
-                    .put(id("wood"), new MaterialProperties(1, 3, false))
-                    .put(id("copper"), new MaterialProperties(2, 4, false))
-                    .put(id("iron"), new MaterialProperties(3, 5, false))
-                    .put(id("gold"), new MaterialProperties(4, 6, false))
-                    .put(id("diamond"), new MaterialProperties(5, 7, false))
-                    .put(id("obsidian"), new MaterialProperties(6, 8, true))
-                    .put(id("netherite"), new MaterialProperties(7, 10, true))
-                    .build(),
+            ChestMaterial.BUILT_IN.stream().collect(ImmutableMap.toImmutableMap(ChestMaterial::id, ChestMaterial::defaultProperties)),
             ImmutableMap.<ResourceLocation, UpgradeProperties>builder()
                     .put(id("depth"), new UpgradeProperties(0, ImmutableMap.<ResourceLocation, Integer>builder()
                             .put(id("wood"), 0)
@@ -54,7 +48,26 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
      * @return The properties of the material, or the defaults if no file defines it.
      */
     public MaterialProperties getMaterial(ResourceLocation material) {
-        return materials.getOrDefault(material, MaterialProperties.DEFAULT);
+        MaterialProperties properties = materials.get(material);
+        if (properties == null) {
+            properties = ChestMaterial.byId(material).map(ChestMaterial::defaultProperties).orElse(MaterialProperties.DEFAULT);
+        }
+        return properties;
+    }
+
+    /**
+     * The upgrade's own limit for the material wins, then the material's limit for the upgrade, then the upgrade's general limit.
+     * @param upgrade An upgrade id.
+     * @param material A material id.
+     * @return How many of the upgrade a chest of the material takes.
+     */
+    public int getMaxUpgradeCount(ResourceLocation upgrade, ResourceLocation material) {
+        UpgradeProperties properties = getUpgrade(upgrade);
+        Integer limit = properties.maxCountByMaterial().get(material);
+        if (limit == null) {
+            limit = getMaterial(material).upgradeLimits().get(upgrade);
+        }
+        return limit != null ? limit : properties.maxCount();
     }
 
     /**

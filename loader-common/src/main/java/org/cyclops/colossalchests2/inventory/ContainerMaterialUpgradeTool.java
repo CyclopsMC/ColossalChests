@@ -12,7 +12,7 @@ import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.material.ItemMaterialUpgradeTool;
 
 /**
- * Picks the material of a held Material Upgrade Tool. Button ids are indexes in {@link ChestMaterial#VALUES}.
+ * Picks the material of a held Material Upgrade Tool. Button ids are indexes in {@link ChestMaterial#getAll()}.
  * @author rubensworks
  */
 public class ContainerMaterialUpgradeTool extends AbstractContainerMenu {
@@ -38,7 +38,7 @@ public class ContainerMaterialUpgradeTool extends AbstractContainerMenu {
             @Override
             public int get() {
                 return player.level().isClientSide ? value : ItemMaterialUpgradeTool.getTarget(getTool())
-                        .map(ChestMaterial.VALUES::indexOf).orElse(-1);
+                        .map(ChestMaterial.getAll()::indexOf).orElse(-1);
             }
 
             @Override
@@ -62,10 +62,10 @@ public class ContainerMaterialUpgradeTool extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         ItemStack tool = getTool();
-        if (id < 0 || id >= ChestMaterial.VALUES.size() || !(tool.getItem() instanceof ItemMaterialUpgradeTool)) {
+        if (id < 0 || id >= ChestMaterial.getAll().size() || !(tool.getItem() instanceof ItemMaterialUpgradeTool)) {
             return false;
         }
-        ItemMaterialUpgradeTool.setTarget(tool, ChestMaterial.VALUES.get(id));
+        ItemMaterialUpgradeTool.setTarget(tool, ChestMaterial.getAll().get(id));
         return true;
     }
 

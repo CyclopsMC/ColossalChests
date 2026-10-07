@@ -153,11 +153,11 @@ public class GameTestsCommon {
     // Helpers
 
     public static Block wall(ChestMaterial material) {
-        return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "chest_wall_" + material.getName()));
+        return material.getWallBlock();
     }
 
     public static Block core(ChestMaterial material) {
-        return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "chest_core_" + material.getName()));
+        return material.getCoreBlock();
     }
 
     /**
@@ -2237,12 +2237,13 @@ public class GameTestsCommon {
     public void testRecipes(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         RecipeManager recipes = level.getRecipeManager();
-        // Every item of this mod is craftable.
+        // Every item of this mod is craftable, besides test content.
         Set<Item> results = recipes.getRecipes().stream()
                 .map(r -> r.value().getResultItem(level.registryAccess()).getItem())
                 .collect(Collectors.toSet());
+        Set<Item> testItems = Set.of(wall(GameTestAddon.MATERIAL).asItem(), core(GameTestAddon.MATERIAL).asItem());
         for (Item item : BuiltInRegistries.ITEM) {
-            if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Reference.MOD_ID)) {
+            if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Reference.MOD_ID) && !testItems.contains(item)) {
                 helper.assertTrue(results.contains(item), "No recipe for " + item);
             }
         }
@@ -2321,9 +2322,9 @@ public class GameTestsCommon {
                     int slots = core.getStorage().getSlotCount();
                     ServerPlayer player = makePlayerNorthOf(helper, corePos);
                     player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
-                    for (int i = 1; i < ChestMaterial.VALUES.size(); i++) {
-                        ChestMaterial previous = ChestMaterial.VALUES.get(i - 1);
-                        ChestMaterial target = ChestMaterial.VALUES.get(i);
+                    for (int i = 1; i < ChestMaterial.getAll().size(); i++) {
+                        ChestMaterial previous = ChestMaterial.getAll().get(i - 1);
+                        ChestMaterial target = ChestMaterial.getAll().get(i);
                         // 24 plain walls and the core, the interface stays.
                         giveWalls(player, target, 25);
                         helper.assertTrue(useMaterialUpgrade(helper, player, corePos, target).consumesAction(),
@@ -2451,10 +2452,10 @@ public class GameTestsCommon {
         player.setItemInHand(InteractionHand.OFF_HAND, tool);
         ContainerMaterialUpgradeTool menu = new ContainerMaterialUpgradeTool(0, player.getInventory(), InteractionHand.OFF_HAND);
         helper.assertValueEqual(menu.getTarget(), -1, "target without a material");
-        helper.assertTrue(menu.clickMenuButton(player, ChestMaterial.VALUES.indexOf(ChestMaterial.DIAMOND)), "Expected the button to work");
+        helper.assertTrue(menu.clickMenuButton(player, ChestMaterial.getAll().indexOf(ChestMaterial.DIAMOND)), "Expected the button to work");
         helper.assertValueEqual(ItemMaterialUpgradeTool.getTarget(player.getOffhandItem()).orElse(null), ChestMaterial.DIAMOND, "target");
-        helper.assertValueEqual(menu.getTarget(), ChestMaterial.VALUES.indexOf(ChestMaterial.DIAMOND), "menu target");
-        helper.assertFalse(menu.clickMenuButton(player, ChestMaterial.VALUES.size()), "Expected an unknown button to fail");
+        helper.assertValueEqual(menu.getTarget(), ChestMaterial.getAll().indexOf(ChestMaterial.DIAMOND), "menu target");
+        helper.assertFalse(menu.clickMenuButton(player, ChestMaterial.getAll().size()), "Expected an unknown button to fail");
         helper.assertTrue(menu.stillValid(player), "Expected the menu to be valid while holding the tool");
         player.setItemInHand(InteractionHand.OFF_HAND, ItemStack.EMPTY);
         helper.assertFalse(menu.stillValid(player), "Expected the menu to close without the tool");
@@ -2584,7 +2585,7 @@ public class GameTestsCommon {
 
     @GameTest(template = TEMPLATE_EMPTY)
     public void testWallAndCoreTooltipsShowMaterialLimits(GameTestHelper helper) {
-        for (ChestMaterial material : ChestMaterial.VALUES) {
+        for (ChestMaterial material : ChestMaterial.getAll()) {
             for (Block block : List.of(wall(material), core(material))) {
                 List<Component> lines = new ItemStack(block).getTooltipLines(Item.TooltipContext.EMPTY, null, TooltipFlag.NORMAL);
                 helper.assertTrue(lines.stream().anyMatch(line -> line.getContents() instanceof TranslatableContents contents
@@ -2874,6 +2875,52 @@ public class GameTestsCommon {
     private static void assertMessage(GameTestHelper helper, List<Component> messages, String key) {
         helper.assertTrue(messages.size() == 1 && getTranslation(messages.getFirst()) != null
                 && getTranslation(messages.getFirst()).getKey().equals(key), "Expected one message " + key + ", got " + messages);
+    }
+
+    // Addon materials
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAddonMaterialFormsChest(GameTestHelper helper) {
+        ChestMaterial material = GameTestAddon.MATERIAL;
+        helper.assertValueEqual(ChestMaterial.byId(material.id()).orElse(null), material, "registered material");
+        helper.assertTrue(ChestMaterial.getAll().indexOf(material) == ChestMaterial.getAll().indexOf(ChestMaterial.GOLD) + 1,
+                "Expected the material between gold and diamond, got " + ChestMaterial.getAll());
+        helper.assertTrue(wall(material) instanceof BlockChestWall wall && wall.getMaterial() == material, "Expected a wall block");
+        helper.assertTrue(core(material) instanceof BlockChestCore core && core.getMaterial() == material, "Expected a core block");
+        BlockPos corePos = buildChest(helper, MIN_A, 5, material);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 5))
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    helper.assertValueEqual(core.getUpgrades().getContainerSize(), 4, "upgrade slots");
+                    // Set by the material, as the depth upgrade has no limit for it.
+                    helper.assertValueEqual(core.getMaxUpgradeCount(ChestUpgrades.DEPTH), 3, "depth limit");
+                    helper.assertTrue(core.getDisplayName().getContents() instanceof TranslatableContents title
+                                    && title.getArgs()[0] instanceof Component name && name.getContents() instanceof TranslatableContents key
+                                    && key.getKey().equals("material.colossalchests2.test_addon"),
+                            "Expected the material name in the title, got " + core.getDisplayName());
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAddonMaterialInCommandAndTool(GameTestHelper helper) {
+        ChestMaterial material = GameTestAddon.MATERIAL;
+        BlockPos min = helper.absolutePos(MIN_A);
+        String at = " " + min.getX() + " " + min.getY() + " " + min.getZ();
+        Vec3 source = Vec3.atCenterOf(helper.absolutePos(MIN_A.offset(2, 0, -1)));
+        assertMessage(helper, runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS, "colossalchests2 build " + material.id() + " 6" + at),
+                "command.colossalchests2.build.too_large");
+        assertMessage(helper, runCommand(helper, source, 0, Commands.LEVEL_GAMEMASTERS, "colossalchests2 build test_addon 5" + at),
+                "command.colossalchests2.build.success");
+        assertFormed(helper, MIN_A.offset(2, 2, 0), MIN_A, 5);
+
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(materialUpgradeTool()));
+        ContainerMaterialUpgradeTool menu = new ContainerMaterialUpgradeTool(0, player.getInventory(), InteractionHand.OFF_HAND);
+        helper.assertTrue(menu.clickMenuButton(player, ChestMaterial.getAll().indexOf(material)), "Expected the button to work");
+        helper.assertValueEqual(ItemMaterialUpgradeTool.getTarget(player.getOffhandItem()).orElse(null), material, "target");
+        helper.succeed();
     }
 
 }

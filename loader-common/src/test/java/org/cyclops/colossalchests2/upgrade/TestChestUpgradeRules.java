@@ -34,8 +34,8 @@ public class TestChestUpgradeRules extends BootstrapTest {
     @Test
     public void testMaxCountsByMaterial() {
         int[] depth = {0, 1, 2, 3, 4, 5, 6};
-        for (int i = 0; i < ChestMaterial.VALUES.size(); i++) {
-            ResourceLocation material = ChestMaterial.VALUES.get(i).id();
+        for (int i = 0; i < ChestMaterial.BUILT_IN.size(); i++) {
+            ResourceLocation material = ChestMaterial.BUILT_IN.get(i).id();
             assertEquals(material.toString(), depth[i], ChestUpgradeRules.getMaxCount(ChestUpgrades.DEPTH, material));
             assertEquals(material.toString(), 3, ChestUpgradeRules.getMaxCount(ChestUpgrades.SLOT_EXPANSION, material));
             assertEquals(material.toString(), 1, ChestUpgradeRules.getMaxCount(ChestUpgrades.LOCK, material));

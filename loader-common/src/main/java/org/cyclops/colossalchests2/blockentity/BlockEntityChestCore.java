@@ -290,7 +290,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     @Override
     public Component getDisplayName() {
         return getBlockState().getBlock() instanceof BlockChestCore block
-                ? Component.translatable("container.colossalchests2.chest", Component.translatable("material.colossalchests2." + block.getMaterial().getName()))
+                ? Component.translatable("container.colossalchests2.chest", block.getMaterial().getDisplayName())
                 : Component.translatable("container.colossalchests2.chest", "");
     }
 

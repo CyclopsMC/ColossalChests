@@ -36,9 +36,9 @@ public class TestMaterialChangeRules extends BootstrapTest {
     @Test
     public void testUpgradesAlwaysAllowed() {
         // Any jump upward, at every size and with every upgrade the lower material allows.
-        for (int i = 0; i < ChestMaterial.VALUES.size(); i++) {
-            ChestMaterial from = ChestMaterial.VALUES.get(i);
-            for (ChestMaterial to : ChestMaterial.VALUES.subList(i + 1, ChestMaterial.VALUES.size())) {
+        for (int i = 0; i < ChestMaterial.BUILT_IN.size(); i++) {
+            ChestMaterial from = ChestMaterial.BUILT_IN.get(i);
+            for (ChestMaterial to : ChestMaterial.BUILT_IN.subList(i + 1, ChestMaterial.BUILT_IN.size())) {
                 for (int size = 2; size <= from.getProperties().maxSize(); size++) {
                     assertEquals(MaterialChangeRules.Problem.NONE, MaterialChangeRules.check(size, UpgradeSet.EMPTY, to));
                 }

@@ -98,7 +98,7 @@ public class DisplayWallOverlay implements IChestOverlay {
                              int light, int overlay) {
         // A frame of the chest's material, so the panel looks built into it.
         if (core.getBlockState().getBlock() instanceof BlockChestCore block) {
-            ResourceLocation frame = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_wall_" + block.getMaterial().getName());
+            ResourceLocation frame = block.getMaterial().id().withPrefix("block/chest_wall_");
             TextureAtlasSprite frameSprite = atlas.getSprite(frame);
             ChestOverlayHelpers.renderSprite(poseStack, buffers, frameSprite, 0, 0, 1, 1, light, overlay);
             ChestOverlayHelpers.renderSides(poseStack, buffers, frameSprite, RenderChestCore.OVERLAY_OFFSET, light, overlay);

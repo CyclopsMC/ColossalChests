@@ -28,6 +28,7 @@ import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
 import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
+import org.cyclops.colossalchests2.gametest.GameTestAddon;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
@@ -113,9 +114,14 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, upgrade));
         }
-        for (ChestMaterial material : ChestMaterial.VALUES) {
+        for (ChestMaterial material : ChestMaterial.BUILT_IN) {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
+        }
+        if (GameTestAddon.isEnabled()) {
+            GameTestAddon.registerMaterials();
+            configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL));
+            configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL));
         }
         configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));
         for (WallType type : WallType.VALUES) {

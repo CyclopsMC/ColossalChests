@@ -1,1 +1,4 @@
-{ "upgrade_slots": 1, "max_size": 3 }
+{
+  "upgrade_slots": 1,
+  "max_size": 3
+}

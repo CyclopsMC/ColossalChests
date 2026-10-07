@@ -2,8 +2,8 @@ package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -68,6 +68,7 @@ public class BlockChestCore extends BaseEntityBlock {
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
+        tooltip.add(material.getLimitsTooltip());
         UpgradeSet upgrades = UpgradeSet.of(stack.getOrDefault(RegistryEntries.COMPONENT_CHEST_UPGRADES.value(), ItemContainerContents.EMPTY)
                 .nonEmptyItems());
         if (!upgrades.counts().isEmpty()) {

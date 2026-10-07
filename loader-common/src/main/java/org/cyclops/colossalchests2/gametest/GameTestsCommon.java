@@ -2223,10 +2223,11 @@ public class GameTestsCommon {
         ItemStack ironWall = modItem("chest_wall_iron");
         ItemStack i = new ItemStack(Items.IRON_INGOT);
         ItemStack l = new ItemStack(Items.OAK_LOG);
-        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, i, i, i, l, i, i, i, i)), ironWall);
+        // Plain walls make two.
+        assertCrafts(helper, CraftingInput.of(3, 3, List.of(i, i, i, i, l, i, i, i, i)), ironWall.copyWithCount(2));
         ItemStack p = new ItemStack(Items.BIRCH_PLANKS);
         assertCrafts(helper, CraftingInput.of(3, 3, List.of(p, p, p, p, new ItemStack(Items.SPRUCE_LOG), p, p, p, p)),
-                modItem("chest_wall_wood"));
+                modItem("chest_wall_wood").copyWithCount(2));
         assertCrafts(helper, CraftingInput.of(2, 1, List.of(ironWall, new ItemStack(Items.CHEST))), modItem("chest_core_iron"));
         // Functional walls accept any plain wall.
         assertCrafts(helper, CraftingInput.of(2, 1, List.of(modItem("chest_wall_gold"), new ItemStack(Items.HOPPER))),
@@ -2246,7 +2247,8 @@ public class GameTestsCommon {
         ItemStack netherite = recipes.getRecipeFor(RecipeType.SMITHING, smithing, level)
                 .map(r -> r.value().assemble(smithing, level.registryAccess()))
                 .orElse(ItemStack.EMPTY);
-        helper.assertTrue(ItemStack.isSameItem(netherite, modItem("chest_wall_netherite")), "Expected a netherite wall, got " + netherite);
+        helper.assertTrue(ItemStack.isSameItem(netherite, modItem("chest_wall_netherite")) && netherite.getCount() == 2,
+                "Expected two netherite walls, got " + netherite);
         helper.succeed();
     }
 

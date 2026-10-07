@@ -34,7 +34,7 @@
   "material.colossalchests2.diamond": "Diamond",
   "material.colossalchests2.obsidian": "Obsidian",
   "material.colossalchests2.netherite": "Netherite",
-  "material.colossalchests2.limits": "Chests up to %1$sx%1$sx%1$s, upgrade slots: %2$s",
+  "material.colossalchests2.limits": "Max chest size: %1$sx%1$sx%1$s, upgrade slots: %2$s",
   "block.colossalchests2.chest_core.upgrades": "Upgrades:",
   "block.colossalchests2.chest_core.upgrade": " %sx %s",
   "item.colossalchests2.upgrade_depth": "Depth Upgrade",

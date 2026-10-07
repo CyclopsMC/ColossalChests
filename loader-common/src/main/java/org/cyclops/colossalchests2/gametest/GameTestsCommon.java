@@ -2242,7 +2242,7 @@ public class GameTestsCommon {
                 .map(r -> r.value().getResultItem(level.registryAccess()).getItem())
                 .collect(Collectors.toSet());
         Set<Item> testItems = Set.of(wall(GameTestAddon.MATERIAL).asItem(), core(GameTestAddon.MATERIAL).asItem(),
-                upgradeItem(GameTestAddon.UPGRADE).getItem());
+                upgradeItem(GameTestAddon.UPGRADE).getItem(), BuiltInRegistries.ITEM.get(GameTestAddon.WALL));
         for (Item item : BuiltInRegistries.ITEM) {
             if (BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Reference.MOD_ID) && !testItems.contains(item)) {
                 helper.assertTrue(results.contains(item), "No recipe for " + item);
@@ -2951,6 +2951,37 @@ public class GameTestsCommon {
                     core.getUpgrades().setItem(0, ItemStack.EMPTY);
                     helper.assertValueEqual(core.getStorage().insert(new ItemStack(Items.DIRT), 5, false), 5L, "dirt inserted without the upgrade");
                 })
+                .thenSucceed();
+    }
+
+    // Addon walls
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAddonWall(GameTestHelper helper) {
+        helper.assertTrue(BuiltInRegistries.BLOCK.get(GameTestAddon.WALL) instanceof GameTestAddon.Wall, "Expected the test wall");
+        GameTestAddon.Wall wall = (GameTestAddon.Wall) BuiltInRegistries.BLOCK.get(GameTestAddon.WALL);
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
+        BlockPos wallPos = MIN_A.offset(1, 2, 1);
+        helper.setBlock(wallPos, wall);
+        int[] changesBefore = new int[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    assertFormed(helper, corePos, MIN_A, 3);
+                    helper.assertBlockProperty(wallPos, BlockChestWall.FORMED, true);
+                })
+                .thenExecute(() -> {
+                    BlockEntityChestCore core = getCore(helper, corePos);
+                    helper.assertValueEqual(ChestCoreIndex.findFormedCore(helper.getLevel(), helper.absolutePos(wallPos)).orElse(null), core, "core of the wall");
+                    helper.assertTrue(core.getDecoratedPositions().contains(helper.absolutePos(wallPos)), "Expected the wall to be decorated");
+                    changesBefore[0] = wall.getContentsChanges();
+                    core.getStorage().insert(STONE, 5, false);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(wall.getContentsChanges() > changesBefore[0], "Expected the wall to hear the change"))
+                .thenExecute(() -> {
+                    // Removing it breaks the chest like any wall.
+                    helper.setBlock(wallPos, Blocks.AIR);
+                })
+                .thenWaitUntil(() -> assertDormant(helper, corePos))
                 .thenSucceed();
     }
 

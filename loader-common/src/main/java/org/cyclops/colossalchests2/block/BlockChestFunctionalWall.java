@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.material.ItemMaterialUpgradeTool;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -122,5 +123,12 @@ public class BlockChestFunctionalWall extends BlockChestWall implements EntityBl
             case MAGNET -> (l, p, s, be) -> MagnetWall.tick(l, p, (BlockEntityChestWall) be);
             default -> null;
         };
+    }
+
+    @Override
+    public void onChestContentsChanged(BlockState state, Level level, BlockPos pos, BlockEntityChestCore core) {
+        if (type == WallType.REDSTONE && level.getBlockEntity(pos) instanceof BlockEntityChestWall wall) {
+            wall.updateRedstoneSignal();
+        }
     }
 }

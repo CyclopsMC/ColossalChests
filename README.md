@@ -15,14 +15,13 @@ All stable releases (including deobfuscated builds) can be found on [CurseForge]
 
 ### Extending
 Addons can add chest materials, upgrades and functional walls.
-Register them while your mod is constructed.
+Register blocks and items while your mod is constructed.
 [`GameTestAddon`](loader-common/src/main/java/org/cyclops/colossalchests2/gametest/GameTestAddon.java) contains an example of each.
 
 Materials:
-* `ChestMaterial.register(new ChestMaterial(id, soundType, hardness, needsPickaxe, blastResistance, after, defaultProperties))`, where `after` is the material it comes after, such as `ChestMaterial.COPPER.id()`.
-* Register the blocks `<ns>:chest_wall_<name>` and `<ns>:chest_core_<name>`, for example with `BlockChestWallConfig` and `BlockChestCoreConfig`.
+* Register a `BlockChestWall` and a `BlockChestCore` with `new ChestMaterial(id)`, for example with `BlockChestWallConfig` and `BlockChestCoreConfig`.
+* Define the material in `data/<ns>/colossalchests2/material/<name>.json`, with `after` (such as `colossalchests2:copper`), `max_size`, `upgrade_slots`, `blast_resistant` and `upgrade_limits`. This mod's materials are defined the same way, so datapacks can change or reorder them.
 * Add the giant chest texture `textures/entity/chest/<name>.png` and the lang key `material.<ns>.<name>`.
-* Optionally make it tunable in `data/<ns>/colossalchests2/material/<name>.json`, which can also set `upgrade_limits`.
 
 Upgrades:
 * `ChestUpgrades.register(new ChestUpgrade(id, defaultProperties) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.

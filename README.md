@@ -18,15 +18,23 @@ Addons can add chest materials, upgrades and functional walls.
 Register blocks and items while your mod is constructed.
 [`GameTestAddon`](loader-common/src/main/java/org/cyclops/colossalchests2/gametest/GameTestAddon.java) contains an example of each.
 
-Depend on this mod and Cyclops Core from [GitHub Packages](https://github.com/CyclopsMC/packages/packages/), which needs a GitHub token with `read:packages`.
-Replace `neoforge` with `fabric`, `forge` or `common` (for multi-loader common code) as needed:
+Depend on this mod and Cyclops Core from [GitHub Packages](https://github.com/CyclopsMC/packages/packages/).
+This needs a [Maven token](https://github.com/settings/tokens/new?scopes=read:packages&description=GPR%20for%20Gradle).
+Add it to `~/.gradle/gradle.properties`:
+```
+gpr.user=<YOUR GITHUB USERNAME>
+gpr.key=<YOUR TOKEN>
+```
+Alternatively, use the environment variables `MAVEN_USERNAME` (your github username) and `MAVEN_KEY` (your token).
+
+Then add the dependencies, replacing `neoforge` with `fabric`, `forge` or `common` (for multi-loader common code) as needed:
 ```groovy
 repositories {
     maven {
         url "https://maven.pkg.github.com/CyclopsMC/packages"
         credentials {
-            username = System.getenv("GITHUB_USER")
-            password = System.getenv("GITHUB_TOKEN")
+            username = project.findProperty("gpr.user") ?: System.getenv("MAVEN_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("MAVEN_KEY")
         }
     }
 }

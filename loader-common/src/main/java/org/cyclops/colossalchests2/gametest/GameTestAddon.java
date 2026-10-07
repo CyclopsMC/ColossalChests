@@ -1,16 +1,23 @@
 package org.cyclops.colossalchests2.gametest;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
+import org.cyclops.cyclopscore.config.extendedconfig.BlockConfigCommon;
+import org.cyclops.cyclopscore.init.IModBase;
 
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Content registered like an addon would, only on game test servers, to test the extension points.
@@ -43,6 +50,11 @@ public final class GameTestAddon {
         }
     };
 
+    /**
+     * The id of the wall, registered by {@link WallConfig}.
+     */
+    public static final ResourceLocation WALL = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "test_addon_wall");
+
     private GameTestAddon() {
     }
 
@@ -59,6 +71,36 @@ public final class GameTestAddon {
      */
     public static void register() {
         ChestUpgrades.register(UPGRADE);
+    }
+
+    /**
+     * A functional wall that counts how often the contents of its chest changed.
+     */
+    public static class Wall extends BlockChestWall {
+
+        private final AtomicInteger contentsChanges = new AtomicInteger();
+
+        public Wall(Properties properties) {
+            super(properties);
+        }
+
+        public int getContentsChanges() {
+            return contentsChanges.get();
+        }
+
+        @Override
+        public void onChestContentsChanged(BlockState state, Level level, BlockPos pos, BlockEntityChestCore core) {
+            contentsChanges.incrementAndGet();
+        }
+    }
+
+    /**
+     * Config for the {@link Wall}.
+     */
+    public static class WallConfig<M extends IModBase> extends BlockConfigCommon<M> {
+        public WallConfig(M mod) {
+            super(mod, WALL.getPath(), eConfig -> new Wall(Block.Properties.of().strength(2.5F)), getDefaultItemConstructor(mod));
+        }
     }
 
     /**

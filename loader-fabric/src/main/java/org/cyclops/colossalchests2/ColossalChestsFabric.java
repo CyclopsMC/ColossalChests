@@ -121,6 +121,7 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, GameTestAddon.MATERIAL, GameTestAddon::createProperties));
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, GameTestAddon.UPGRADE));
+            configHandler.addConfigurable(new GameTestAddon.WallConfig<>(this));
         }
         configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));
         for (WallType type : WallType.VALUES) {

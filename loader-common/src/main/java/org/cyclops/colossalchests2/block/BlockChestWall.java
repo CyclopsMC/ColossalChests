@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.StructureView;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +28,10 @@ import java.util.List;
 
 /**
  * A wall of a chest structure. Changes to walls or their surroundings make nearby cores revalidate.
+ * Addons make functional walls by extending this with {@link #BlockChestWall(Properties)}. Such walls fit chests of any
+ * material and are never replaced by the Material Upgrade Tool. They reach their chest with
+ * {@link ChestCoreIndex#findFormedCore}, and can draw on the giant chest with
+ * {@link org.cyclops.colossalchests2.client.render.ChestOverlays}.
  * @author rubensworks
  */
 public class BlockChestWall extends Block {
@@ -43,6 +48,13 @@ public class BlockChestWall extends Block {
      */
     public BlockChestWall(Properties properties, ChestMaterial material) {
         this(properties, material, true);
+    }
+
+    /**
+     * A wall without a material, which fits chests of any material.
+     */
+    public BlockChestWall(Properties properties) {
+        this(properties, null, false);
     }
 
     protected BlockChestWall(Properties properties, @Nullable ChestMaterial material, boolean plain) {
@@ -89,6 +101,17 @@ public class BlockChestWall extends Block {
      */
     public Object getMemberMaterial() {
         return material == null ? StructureView.Member.ANY_MATERIAL : material.id();
+    }
+
+    /**
+     * Called on the server, at most once per tick, after the contents of the formed chest changed. Only called for
+     * walls that are not plain.
+     * @param state The state of this wall.
+     * @param level The level.
+     * @param pos The position of this wall.
+     * @param core The chest.
+     */
+    public void onChestContentsChanged(BlockState state, Level level, BlockPos pos, BlockEntityChestCore core) {
     }
 
     @Override

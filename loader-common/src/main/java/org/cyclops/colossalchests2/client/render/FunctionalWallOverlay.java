@@ -23,7 +23,14 @@ public class FunctionalWallOverlay implements IChestOverlay {
     private final ResourceLocation texture;
 
     public FunctionalWallOverlay(WallType type) {
-        this.texture = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/" + type.getRegistryName() + "_icon");
+        this(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/" + type.getRegistryName() + "_icon"));
+    }
+
+    /**
+     * @param texture A block atlas texture, such as othermod:block/chest_wall_example_icon.
+     */
+    public FunctionalWallOverlay(ResourceLocation texture) {
+        this.texture = texture;
     }
 
     @Override

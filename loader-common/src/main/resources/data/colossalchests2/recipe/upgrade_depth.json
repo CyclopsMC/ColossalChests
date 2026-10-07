@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IDI",
+    "DCD",
+    "IDI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "C": {
+      "tag": "colossalchests2:chest_walls"
+    }
+  },
+  "result": {
+    "id": "colossalchests2:upgrade_depth",
+    "count": 1
+  }
+}

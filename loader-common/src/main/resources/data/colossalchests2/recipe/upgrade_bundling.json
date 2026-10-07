@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "LSL",
+    "SCS",
+    "LSL"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "S": {
+      "item": "minecraft:string"
+    },
+    "C": {
+      "tag": "colossalchests2:chest_walls"
+    }
+  },
+  "result": {
+    "id": "colossalchests2:upgrade_bundling",
+    "count": 1
+  }
+}

@@ -1,8 +1,12 @@
 package org.cyclops.colossalchests2;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.CreativeModeTab;
@@ -19,6 +23,7 @@ import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigFabric;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigFabric;
 import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChestConfigFabric;
+import org.cyclops.colossalchests2.command.CommandBuildChest;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
 import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
@@ -80,6 +85,12 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
     protected CreativeModeTab.Builder constructDefaultCreativeModeTab(CreativeModeTab.Builder builder) {
         return super.constructDefaultCreativeModeTab(builder)
                 .icon(() -> new ItemStack(RegistryEntries.ITEM_CHEST));
+    }
+
+    @Override
+    protected LiteralArgumentBuilder<CommandSourceStack> constructBaseCommand(Commands.CommandSelection selection, CommandBuildContext context) {
+        return super.constructBaseCommand(selection, context)
+                .then(CommandBuildChest.make());
     }
 
     @Override

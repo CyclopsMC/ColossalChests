@@ -2942,7 +2942,7 @@ public class GameTestsCommon {
                 .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
                 .thenExecute(() -> {
                     BlockEntityChestCore core = getCore(helper, corePos);
-                    // From its code defaults, as it has no data file.
+                    // From its data file.
                     helper.assertValueEqual(core.getMaxUpgradeCount(upgrade), 1, "limit");
                     core.getUpgrades().setItem(0, upgradeItem(upgrade));
                     helper.assertValueEqual(core.getStorage().insert(new ItemStack(Items.DIRT), 5, false), 0L, "dirt inserted");

@@ -13,6 +13,53 @@ All stable releases (including deobfuscated builds) can be found on [CurseForge]
 
 [Development builds](https://github.com/CyclopsMC/packages/packages/) are hosted as GitHub packages.
 
+### Extending
+Addons can add chest materials, upgrades and functional walls.
+Register blocks and items while your mod is constructed.
+[`GameTestAddon`](loader-common/src/main/java/org/cyclops/colossalchests2/gametest/GameTestAddon.java) contains an example of each.
+
+Depend on this mod and Cyclops Core from [GitHub Packages](https://github.com/CyclopsMC/packages/packages/).
+This needs a [Maven token](https://github.com/settings/tokens/new?scopes=read:packages&description=GPR%20for%20Gradle).
+Add it to `~/.gradle/gradle.properties`:
+```
+gpr.user=<YOUR GITHUB USERNAME>
+gpr.key=<YOUR TOKEN>
+```
+Alternatively, use the environment variables `MAVEN_USERNAME` (your github username) and `MAVEN_KEY` (your token).
+
+Then add the dependencies, replacing `neoforge` with `fabric`, `forge` or `common` (for multi-loader common code) as needed:
+```groovy
+repositories {
+    maven {
+        url "https://maven.pkg.github.com/CyclopsMC/packages"
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("MAVEN_USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("MAVEN_KEY")
+        }
+    }
+}
+
+dependencies {
+    implementation "org.cyclops.colossalchests2:colossalchests2-1.21.1-neoforge:<version>:deobf"
+    implementation "org.cyclops.cyclopscore:cyclopscore-1.21.1-neoforge:<version>:deobf"
+}
+```
+
+Materials:
+* Register a `BlockChestWall` and a `BlockChestCore` with `new ChestMaterial(id)`, for example with `BlockChestWallConfig` and `BlockChestCoreConfig`.
+* Define the material in `data/<ns>/colossalchests2/material/<name>.json`, with `after` (such as `colossalchests2:copper`), `max_size`, `upgrade_slots`, `blast_resistant` and `upgrade_limits`. This mod's materials are defined the same way, so datapacks can change or reorder them.
+* Add the giant chest texture `textures/entity/chest/<name>.png` and the lang key `material.<ns>.<name>`.
+
+Upgrades:
+* `ChestUpgrades.register(new ChestUpgrade(id) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.
+* Register the item `<ns>:upgrade_<name>`, for example with `ItemChestUpgradeConfig`.
+* Define its limits and strength in `data/<ns>/colossalchests2/upgrade/<name>.json`, with `max_count`, `max_count_by_material` and `value`. Without this file, the upgrade is disabled.
+
+Functional walls:
+* Extend `BlockChestWall` with the `BlockChestWall(Properties)` constructor.
+* Get the chest with `ChestCoreIndex.findFormedCore`, and override `onChestContentsChanged` to react to changes.
+* Optionally draw on the giant chest with `ChestOverlays.register`.
+
 ### Contributing
 * Before submitting a pull request containing a new feature, please discuss this first with one of the lead developers.
 * When fixing an accepted bug, make sure to declare this in the issue so that no duplicate fixes exist.

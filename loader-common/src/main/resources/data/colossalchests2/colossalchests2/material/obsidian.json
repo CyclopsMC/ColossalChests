@@ -1,1 +1,6 @@
-{ "after": "colossalchests2:diamond", "upgrade_slots": 6, "max_size": 8, "blast_resistant": true }
+{
+  "after": "colossalchests2:diamond",
+  "upgrade_slots": 6,
+  "max_size": 8,
+  "blast_resistant": true
+}

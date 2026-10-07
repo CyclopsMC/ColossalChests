@@ -1,0 +1,117 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "setblock 0 4 2 minecraft:crafting_table"
+command "setblock 2 4 2 minecraft:smithing_table"
+teleport 1 4 0 --yaw 0 --pitch 30
+open-gui 0 4 2
+wait --ticks 5
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:oak_planks","minecraft:oak_planks","minecraft:oak_planks","minecraft:oak_planks","minecraft:oak_log","minecraft:oak_planks","minecraft:oak_planks","minecraft:oak_planks","minecraft:oak_planks"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_wood
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:copper_ingot","minecraft:copper_ingot","minecraft:copper_ingot","minecraft:copper_ingot","minecraft:oak_log","minecraft:copper_ingot","minecraft:copper_ingot","minecraft:copper_ingot","minecraft:copper_ingot"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_copper
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:iron_ingot","minecraft:iron_ingot","minecraft:iron_ingot","minecraft:iron_ingot","minecraft:oak_log","minecraft:iron_ingot","minecraft:iron_ingot","minecraft:iron_ingot","minecraft:iron_ingot"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_iron
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:gold_ingot","minecraft:gold_ingot","minecraft:gold_ingot","minecraft:gold_ingot","minecraft:oak_log","minecraft:gold_ingot","minecraft:gold_ingot","minecraft:gold_ingot","minecraft:gold_ingot"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_gold
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:diamond","minecraft:diamond","minecraft:diamond","minecraft:diamond","minecraft:oak_log","minecraft:diamond","minecraft:diamond","minecraft:diamond","minecraft:diamond"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_diamond
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:obsidian","minecraft:obsidian","minecraft:obsidian","minecraft:obsidian","minecraft:oak_log","minecraft:obsidian","minecraft:obsidian","minecraft:obsidian","minecraft:obsidian"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_obsidian
+close-screen
+open-gui 2 4 2
+wait --ticks 5
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:gold_ingot","colossalchests2:chest_wall_diamond","minecraft:netherite_scrap"]; def sl = [0, 1, 2]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(3).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_netherite
+close-screen
+open-gui 0 4 2
+wait --ticks 5
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_wood","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_wood
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_copper","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_copper
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_iron","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_iron
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_gold","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_gold
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_diamond","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_diamond
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_obsidian","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_obsidian
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_netherite","minecraft:chest",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_core_netherite
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_wood","minecraft:hopper",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_interface
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_interface","minecraft:cactus",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_void
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_wood","minecraft:item_frame",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_display
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_wood","minecraft:comparator",null,null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_redstone
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_wood","minecraft:ender_pearl","minecraft:iron_ingot","minecraft:redstone",null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-chest_wall_magnet
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = [null,"minecraft:iron_ingot",null,"minecraft:iron_ingot","colossalchests2:chest_wall_wood","minecraft:iron_ingot",null,"minecraft:iron_ingot",null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-upgrade_slot_expansion
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:iron_ingot","minecraft:diamond","minecraft:iron_ingot","minecraft:diamond","colossalchests2:chest_wall_wood","minecraft:diamond","minecraft:iron_ingot","minecraft:diamond","minecraft:iron_ingot"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-upgrade_depth
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = [null,"minecraft:iron_nugget",null,"minecraft:iron_nugget","colossalchests2:chest_wall_wood","minecraft:iron_nugget","minecraft:iron_ingot","minecraft:iron_ingot","minecraft:iron_ingot"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-upgrade_lock
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:leather","minecraft:string","minecraft:leather","minecraft:string","colossalchests2:chest_wall_wood","minecraft:string","minecraft:leather","minecraft:string","minecraft:leather"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-upgrade_bundling
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = [null,"minecraft:cactus",null,"minecraft:cactus","colossalchests2:chest_wall_wood","minecraft:cactus",null,"minecraft:cactus",null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-upgrade_void
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:iron_ingot","minecraft:piston","minecraft:iron_ingot","minecraft:piston","colossalchests2:chest_wall_wood","minecraft:piston","minecraft:iron_ingot","minecraft:piston","minecraft:iron_ingot"]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-upgrade_compression
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:stick","colossalchests2:chest_wall_wood","minecraft:stick",null,null,null,null,null,null]; def sl = [1, 2, 3, 4, 5, 6, 7, 8, 9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-material_upgrade_tool
+close-screen

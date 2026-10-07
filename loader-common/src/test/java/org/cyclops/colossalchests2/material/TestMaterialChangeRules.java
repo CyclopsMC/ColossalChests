@@ -1,10 +1,15 @@
 package org.cyclops.colossalchests2.material;
 
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.config.ChestTables;
+import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.config.ShippedTables;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
@@ -15,6 +20,16 @@ import static org.junit.Assert.*;
  * @author rubensworks
  */
 public class TestMaterialChangeRules extends BootstrapTest {
+
+    @Before
+    public void loadTables() {
+        ChestTablesLoader.set(ShippedTables.load());
+    }
+
+    @After
+    public void resetTables() {
+        ChestTablesLoader.set(ChestTables.DEFAULT);
+    }
 
     private static UpgradeSet upgrades(ChestUpgrade upgrade, int count) {
         return new UpgradeSet(Map.of(upgrade, count));
@@ -36,9 +51,9 @@ public class TestMaterialChangeRules extends BootstrapTest {
     @Test
     public void testUpgradesAlwaysAllowed() {
         // Any jump upward, at every size and with every upgrade the lower material allows.
-        for (int i = 0; i < ChestMaterial.VALUES.size(); i++) {
-            ChestMaterial from = ChestMaterial.VALUES.get(i);
-            for (ChestMaterial to : ChestMaterial.VALUES.subList(i + 1, ChestMaterial.VALUES.size())) {
+        for (int i = 0; i < ChestMaterial.BUILT_IN.size(); i++) {
+            ChestMaterial from = ChestMaterial.BUILT_IN.get(i);
+            for (ChestMaterial to : ChestMaterial.BUILT_IN.subList(i + 1, ChestMaterial.BUILT_IN.size())) {
                 for (int size = 2; size <= from.getProperties().maxSize(); size++) {
                     assertEquals(MaterialChangeRules.Problem.NONE, MaterialChangeRules.check(size, UpgradeSet.EMPTY, to));
                 }

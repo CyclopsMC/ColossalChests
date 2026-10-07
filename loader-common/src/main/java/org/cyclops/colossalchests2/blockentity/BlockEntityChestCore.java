@@ -140,18 +140,15 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     }
 
     /**
-     * @return The material id of this core, or wood if the block is not a core.
+     * @return The material id of this core, or null if the block is not a core.
      */
+    @Nullable
     public ResourceLocation getMaterialId() {
-        return getMaterial(getBlockState()).id();
-    }
-
-    private static ChestMaterial getMaterial(BlockState state) {
-        return state.getBlock() instanceof BlockChestCore block ? block.getMaterial() : ChestMaterial.WOOD;
+        return getBlockState().getBlock() instanceof BlockChestCore block ? block.getMaterial().id() : null;
     }
 
     private static MaterialProperties getMaterialProperties(BlockState state) {
-        return getMaterial(state).getProperties();
+        return state.getBlock() instanceof BlockChestCore block ? block.getMaterial().getProperties() : MaterialProperties.DEFAULT;
     }
 
     /**
@@ -159,12 +156,15 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
      * @return How many of the upgrade this chest takes.
      */
     public int getMaxUpgradeCount(ChestUpgrade upgrade) {
-        return ChestUpgradeRules.getMaxCount(upgrade, getMaterialId());
+        ResourceLocation material = getMaterialId();
+        return material == null ? 0 : ChestUpgradeRules.getMaxCount(upgrade, material);
     }
 
     @Override
     public boolean canAddUpgrade(int slot, ChestUpgrade upgrade) {
-        return slot < getMaterialProperties(getBlockState()).upgradeSlots() && ChestUpgradeRules.canAdd(getUpgradeSet(), upgrade, getMaterialId());
+        ResourceLocation material = getMaterialId();
+        return material != null && slot < getMaterialProperties(getBlockState()).upgradeSlots()
+                && ChestUpgradeRules.canAdd(getUpgradeSet(), upgrade, material);
     }
 
     /**
@@ -290,7 +290,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     @Override
     public Component getDisplayName() {
         return getBlockState().getBlock() instanceof BlockChestCore block
-                ? Component.translatable("container.colossalchests2.chest", Component.translatable("material.colossalchests2." + block.getMaterial().getName()))
+                ? Component.translatable("container.colossalchests2.chest", block.getMaterial().getDisplayName())
                 : Component.translatable("container.colossalchests2.chest", "");
     }
 

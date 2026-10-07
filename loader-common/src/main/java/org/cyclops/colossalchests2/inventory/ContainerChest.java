@@ -136,7 +136,7 @@ public class ContainerChest extends AbstractContainerMenu {
     }
 
     private static int[] getBetterMaterialTakesMore(BlockEntityChestCore core) {
-        return ChestUpgrades.VALUES.stream().mapToInt(upgrade -> ChestMaterial.VALUES.stream()
+        return ChestUpgrades.VALUES.stream().mapToInt(upgrade -> ChestMaterial.getAll().stream()
                 .anyMatch(material -> ChestUpgradeRules.getMaxCount(upgrade, material.id()) > core.getMaxUpgradeCount(upgrade)) ? 1 : 0).toArray();
     }
 

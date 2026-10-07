@@ -35,7 +35,7 @@ public class ChestUpgrade {
      * @return How many of this upgrade a chest of that material takes.
      */
     public int getMaxCount(ResourceLocation material) {
-        return getProperties().getMaxCount(material);
+        return ChestTablesLoader.get().getMaxUpgradeCount(id, material);
     }
 
     /**

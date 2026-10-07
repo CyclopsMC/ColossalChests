@@ -1,1 +1,5 @@
-{ "upgrade_slots": 5, "max_size": 7 }
+{
+  "after": "colossalchests2:gold",
+  "upgrade_slots": 5,
+  "max_size": 7
+}

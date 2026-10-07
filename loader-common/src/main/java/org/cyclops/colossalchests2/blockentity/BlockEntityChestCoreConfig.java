@@ -2,9 +2,8 @@ package org.cyclops.colossalchests2.blockentity;
 
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests2.block.BlockChestCore;
-import org.cyclops.colossalchests2.client.render.ChestOverlays;
-import org.cyclops.colossalchests2.client.render.CoreMarkerOverlay;
 import org.cyclops.colossalchests2.client.render.RenderChestCore;
 import org.cyclops.cyclopscore.config.extendedconfig.BlockEntityConfigCommon;
 import org.cyclops.cyclopscore.init.IModBase;
@@ -21,7 +20,13 @@ public class BlockEntityChestCoreConfig<M extends IModBase> extends BlockEntityC
         super(
                 mod,
                 "chest_core",
-                eConfig -> new BlockEntityType<>(supplier, Set.copyOf(BlockChestCore.getInstances()), null)
+                eConfig -> new BlockEntityType<>(supplier, Set.copyOf(BlockChestCore.getInstances()), null) {
+                    // Also accept cores of added materials, which may be registered later.
+                    @Override
+                    public boolean isValid(BlockState state) {
+                        return state.getBlock() instanceof BlockChestCore;
+                    }
+                }
         );
     }
 
@@ -38,9 +43,6 @@ public class BlockEntityChestCoreConfig<M extends IModBase> extends BlockEntityC
         super.onForgeRegistered();
         if (getMod().getModHelpers().getMinecraftHelpers().isClientSide()) {
             getMod().getProxy().registerRenderer(getInstance(), getRendererProvider());
-            for (BlockChestCore core : BlockChestCore.getInstances()) {
-                ChestOverlays.register(core, CoreMarkerOverlay.INSTANCE);
-            }
         }
     }
 

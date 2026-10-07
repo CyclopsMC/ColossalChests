@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 
@@ -28,7 +27,7 @@ public class CoreMarkerOverlay implements IChestOverlay {
         if (!(core.getBlockState().getBlock() instanceof BlockChestCore block) || !isVisible()) {
             return;
         }
-        ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/chest_core_" + block.getMaterial().getName());
+        ResourceLocation texture = block.getMaterial().id().withPrefix("block/chest_core_");
         ChestOverlayHelpers.renderSprite(poseStack, buffers, Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture),
                 MIN, MIN, MAX, MAX, light, overlay);
     }

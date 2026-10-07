@@ -1,0 +1,8 @@
+{
+  "after": "colossalchests2:gold",
+  "upgrade_slots": 4,
+  "max_size": 5,
+  "upgrade_limits": {
+    "colossalchests2:depth": 3
+  }
+}

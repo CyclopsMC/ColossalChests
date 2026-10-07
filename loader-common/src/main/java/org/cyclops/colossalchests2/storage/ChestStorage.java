@@ -10,6 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.cyclops.colossalchests2.api.IChestContents;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
  * This ensures that lowering capacity never deletes items.
  * @author rubensworks
  */
-public class ChestStorage {
+public class ChestStorage implements IChestContents {
 
     public static final Codec<Contents> CODEC = Contents.CODEC;
 
@@ -49,8 +50,19 @@ public class ChestStorage {
         this.profile = profile;
     }
 
+    @Override
     public int getSlotCount() {
         return slots.length;
+    }
+
+    @Override
+    public ItemStack getSlotType(int slot) {
+        return getSlot(slot).getPrototype();
+    }
+
+    @Override
+    public long getSlotAmount(int slot) {
+        return getSlot(slot).getCount();
     }
 
     public CapacityProfile getProfile() {

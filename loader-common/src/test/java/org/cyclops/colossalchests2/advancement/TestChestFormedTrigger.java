@@ -3,7 +3,7 @@ package org.cyclops.colossalchests2.advancement;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.junit.Test;
 

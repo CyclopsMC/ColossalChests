@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests2;
 
+import org.cyclops.colossalchests2.api.MaterialProperties;
 import org.cyclops.cyclopscore.config.ConfigurablePropertyCommon;
 import org.cyclops.cyclopscore.config.ModConfigLocation;
 import org.cyclops.cyclopscore.config.extendedconfig.DummyConfigCommon;
@@ -12,8 +13,8 @@ import org.cyclops.cyclopscore.init.IModBase;
  */
 public class GeneralConfig<M extends IModBase> extends DummyConfigCommon<M> {
 
-    public static final int MIN_SIZE = 2;
-    public static final int HARD_MAX_SIZE = 10;
+    public static final int MIN_SIZE = MaterialProperties.MIN_SIZE;
+    public static final int HARD_MAX_SIZE = MaterialProperties.MAX_SIZE;
     public static final int HARD_MAX_SLOTS = 108;
     public static final int HARD_MAX_MAGNET_RADIUS = 128;
 

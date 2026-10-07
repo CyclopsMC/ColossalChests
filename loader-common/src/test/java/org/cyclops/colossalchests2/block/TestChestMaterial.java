@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class TestChestMaterial {
     }
 
     private List<ChestMaterial> order(ChestMaterial... added) {
-        return ChestMaterial.order(ImmutableList.<ChestMaterial>builder().add(added).addAll(ChestMaterial.BUILT_IN).build(), after::get);
+        return ChestMaterials.order(ImmutableList.<ChestMaterial>builder().add(added).addAll(ChestMaterial.BUILT_IN).build(), after::get);
     }
 
     private static List<ChestMaterial> with(ChestMaterial after, ChestMaterial... inserted) {

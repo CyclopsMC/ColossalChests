@@ -5,8 +5,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
+import org.cyclops.colossalchests2.api.block.IChestMember;
 import org.cyclops.colossalchests2.block.BlockChestCore;
-import org.cyclops.colossalchests2.block.BlockChestWall;
 
 /**
  * Fabric ignores render types in model files, so the invisible formed models need the cutout layer set here.
@@ -21,7 +21,7 @@ public final class ChestRenderLayersFabric {
     public static void register() {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(),
                 BuiltInRegistries.BLOCK.stream()
-                        .filter(block -> block instanceof BlockChestWall || block instanceof BlockChestCore)
+                        .filter(block -> block instanceof IChestMember || block instanceof BlockChestCore)
                         .toArray(Block[]::new)));
     }
 }

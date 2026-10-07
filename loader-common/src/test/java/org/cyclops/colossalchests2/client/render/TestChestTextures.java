@@ -1,13 +1,13 @@
 package org.cyclops.colossalchests2.client.render;
 
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.junit.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.imageio.ImageIO;
 
 import static org.junit.Assert.*;
 

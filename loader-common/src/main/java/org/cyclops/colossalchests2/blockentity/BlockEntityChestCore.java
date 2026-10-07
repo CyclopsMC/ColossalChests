@@ -32,13 +32,16 @@ import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests2.ColossalChestsInstance;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.IChest;
+import org.cyclops.colossalchests2.api.MaterialProperties;
+import org.cyclops.colossalchests2.api.block.IChestMember;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
-import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.ChestSounds;
 import org.cyclops.colossalchests2.capability.ItemHandlerLogic;
 import org.cyclops.colossalchests2.capability.StorageSignals;
-import org.cyclops.colossalchests2.config.MaterialProperties;
 import org.cyclops.colossalchests2.inventory.ContainerChest;
 import org.cyclops.colossalchests2.multiblock.ChestCoreIndex;
 import org.cyclops.colossalchests2.multiblock.ChestShape;
@@ -50,7 +53,6 @@ import org.cyclops.colossalchests2.storage.ChestStorage;
 import org.cyclops.colossalchests2.storage.CompressionFamilies;
 import org.cyclops.colossalchests2.storage.CompressionFamiliesCache;
 import org.cyclops.colossalchests2.storage.ResizeResult;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
@@ -70,7 +72,7 @@ import java.util.Set;
  * While the structure is broken the core is dormant: contents stay, but its item storage is not exposed.
  * @author rubensworks
  */
-public class BlockEntityChestCore extends BlockEntity implements MenuProvider, ChestUpgradeInventory.Owner {
+public class BlockEntityChestCore extends BlockEntity implements MenuProvider, ChestUpgradeInventory.Owner, IChest {
 
     public static final int DATA_VERSION = 1;
     /**
@@ -132,6 +134,52 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         return storage;
     }
 
+    @Override
+    public BlockPos getCorePos() {
+        return getBlockPos();
+    }
+
+    @Nullable
+    @Override
+    public ChestMaterial getChestMaterial() {
+        return getBlockState().getBlock() instanceof BlockChestCore block ? block.getMaterial() : null;
+    }
+
+    @Override
+    public int getChestSize() {
+        return structure == null ? 0 : structure.size();
+    }
+
+    @Override
+    public int getSlotCount() {
+        return storage.getSlotCount();
+    }
+
+    @Override
+    public ItemStack getSlotType(int slot) {
+        return storage.getSlotType(slot);
+    }
+
+    @Override
+    public long getSlotAmount(int slot) {
+        return storage.getSlotAmount(slot);
+    }
+
+    @Override
+    public long insert(ItemStack type, long amount, boolean simulate) {
+        return isFormed() ? storage.insertAutomated(type, amount, simulate) : 0;
+    }
+
+    @Override
+    public long extract(ItemStack type, long amount, boolean simulate) {
+        return isFormed() ? storage.extract(type, amount, simulate) : 0;
+    }
+
+    @Override
+    public int getUpgradeCount(ChestUpgrade upgrade) {
+        return getUpgradeSet().count(upgrade);
+    }
+
     public ChestUpgradeInventory getUpgrades() {
         return upgrades;
     }
@@ -145,7 +193,8 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
      */
     @Nullable
     public ResourceLocation getMaterialId() {
-        return getBlockState().getBlock() instanceof BlockChestCore block ? block.getMaterial().id() : null;
+        ChestMaterial material = getChestMaterial();
+        return material == null ? null : material.id();
     }
 
     private static MaterialProperties getMaterialProperties(BlockState state) {
@@ -225,6 +274,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     /**
      * @return If the structure is formed, so contents can be accessed.
      */
+    @Override
     public boolean isFormed() {
         return structure != null;
     }
@@ -391,8 +441,8 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
             level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
             for (BlockPos pos : decoratedPositions) {
                 BlockState state = level.getBlockState(pos);
-                if (state.getBlock() instanceof BlockChestWall wall) {
-                    wall.onChestContentsChanged(state, level, pos, this);
+                if (state.getBlock() instanceof IChestMember member) {
+                    member.onChestContentsChanged(state, level, pos, this);
                 }
             }
         }
@@ -549,8 +599,8 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
      */
     private boolean setWallFormed(BlockPos pos, boolean formed) {
         BlockState state = level.getBlockState(pos);
-        if (state.getBlock() instanceof BlockChestWall && state.getValue(BlockChestWall.FORMED) != formed) {
-            level.setBlock(pos, state.setValue(BlockChestWall.FORMED, formed), Block.UPDATE_CLIENTS);
+        if (state.getBlock() instanceof IChestMember && state.getValue(IChestMember.FORMED) != formed) {
+            level.setBlock(pos, state.setValue(IChestMember.FORMED, formed), Block.UPDATE_CLIENTS);
             return true;
         }
         return false;

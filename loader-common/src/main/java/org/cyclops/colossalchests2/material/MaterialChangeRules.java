@@ -1,7 +1,7 @@
 package org.cyclops.colossalchests2.material;
 
-import org.cyclops.colossalchests2.block.ChestMaterial;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 

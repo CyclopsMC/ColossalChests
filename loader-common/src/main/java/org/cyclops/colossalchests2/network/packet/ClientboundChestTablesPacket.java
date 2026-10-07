@@ -8,10 +8,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.cyclops.colossalchests2.Reference;
+import org.cyclops.colossalchests2.api.MaterialProperties;
+import org.cyclops.colossalchests2.api.UpgradeProperties;
 import org.cyclops.colossalchests2.config.ChestTables;
 import org.cyclops.colossalchests2.config.ChestTablesLoader;
-import org.cyclops.colossalchests2.config.MaterialProperties;
-import org.cyclops.colossalchests2.config.UpgradeProperties;
 import org.cyclops.cyclopscore.network.PacketBase;
 
 import java.util.HashMap;

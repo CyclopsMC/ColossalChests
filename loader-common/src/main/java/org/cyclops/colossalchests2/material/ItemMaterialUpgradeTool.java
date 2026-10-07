@@ -17,10 +17,10 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.block.IChestMember;
 import org.cyclops.colossalchests2.block.BlockChestCore;
-import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestInteractions;
-import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeTool;
 import org.cyclops.cyclopscore.helper.IModHelpers;
@@ -55,7 +55,7 @@ public class ItemMaterialUpgradeTool extends Item {
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
         Player player = context.getPlayer();
-        if (player == null || !(state.getBlock() instanceof BlockChestWall || state.getBlock() instanceof BlockChestCore)) {
+        if (player == null || !(state.getBlock() instanceof IChestMember || state.getBlock() instanceof BlockChestCore)) {
             return InteractionResult.PASS;
         }
         if (level.isClientSide) {

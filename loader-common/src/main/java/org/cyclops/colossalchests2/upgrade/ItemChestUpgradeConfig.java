@@ -1,6 +1,7 @@
 package org.cyclops.colossalchests2.upgrade;
 
 import net.minecraft.world.item.Item;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.cyclopscore.config.extendedconfig.ItemConfigCommon;
 import org.cyclops.cyclopscore.init.IModBase;
 

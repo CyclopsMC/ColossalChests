@@ -15,6 +15,7 @@ All stable releases (including deobfuscated builds) can be found on [CurseForge]
 
 ### Extending
 Addons can add chest materials, upgrades and functional walls.
+Only use the `org.cyclops.colossalchests2.api` package, starting from `ColossalChestsApi.get()`.
 Register blocks and items while your mod is constructed.
 [`GameTestAddon`](loader-common/src/main/java/org/cyclops/colossalchests2/gametest/GameTestAddon.java) contains an example of each.
 
@@ -46,18 +47,18 @@ dependencies {
 ```
 
 Materials:
-* Register a `BlockChestWall` and a `BlockChestCore` with `new ChestMaterial(id)`, for example with `BlockChestWallConfig` and `BlockChestCoreConfig`.
+* Register a wall and a core from `createWall` and `createCore` with `new ChestMaterial(id)`.
 * Define the material in `data/<ns>/colossalchests2/material/<name>.json`, with `after` (such as `colossalchests2:copper`), `max_size`, `upgrade_slots`, `blast_resistant` and `upgrade_limits`. This mod's materials are defined the same way, so datapacks can change or reorder them.
 * Add the giant chest texture `textures/entity/chest/<name>.png` and the lang key `material.<ns>.<name>`.
 
 Upgrades:
-* `ChestUpgrades.register(new ChestUpgrade(id) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.
-* Register the item `<ns>:upgrade_<name>`, for example with `ItemChestUpgradeConfig`.
+* `registerUpgrade(new ChestUpgrade(id) { ... })`, overriding hooks such as `applyProfile`, `getExtraSlots`, `canInsert` and `tick`.
+* Register the item `<ns>:upgrade_<name>` from `createUpgradeItem`.
 * Define its limits and strength in `data/<ns>/colossalchests2/upgrade/<name>.json`, with `max_count`, `max_count_by_material` and `value`. Without this file, the upgrade is disabled.
 
 Functional walls:
-* Extend `BlockChestWall` with the `BlockChestWall(Properties)` constructor.
-* Get the chest with `ChestCoreIndex.findFormedCore`, and override `onChestContentsChanged` to react to changes.
+* Extend `ChestMemberBlock`, or implement `IChestMember` for other block classes.
+* Get the chest with `getChest`, and override `onChestContentsChanged` to react to changes.
 * Optionally draw on the giant chest with `ChestOverlays.register`.
 
 ### Contributing

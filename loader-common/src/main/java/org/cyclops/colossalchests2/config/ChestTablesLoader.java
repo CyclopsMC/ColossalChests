@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.resources.ResourceLocation;
+import org.cyclops.colossalchests2.api.MaterialProperties;
+import org.cyclops.colossalchests2.api.UpgradeProperties;
 
 import java.util.Map;
 import java.util.function.Consumer;

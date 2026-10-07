@@ -2,6 +2,7 @@ package org.cyclops.colossalchests2.block;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 
 /**
  * The block properties of this mod's materials. Everything else about them is in their data files.

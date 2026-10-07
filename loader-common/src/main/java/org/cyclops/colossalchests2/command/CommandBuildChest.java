@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import org.cyclops.colossalchests2.GeneralConfig;
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.cyclops.colossalchests2.multiblock.ChestBuilder;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
 

@@ -7,8 +7,10 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.block.BlockChestCore;
-import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.IChest;
+import org.cyclops.colossalchests2.api.client.ChestOverlayHelpers;
+import org.cyclops.colossalchests2.api.client.IChestOverlay;
 
 /**
  * Marks where the core of a formed chest is, while the player sneaks.
@@ -22,12 +24,13 @@ public class CoreMarkerOverlay implements IChestOverlay {
     private static final float MAX = 11F / 16F;
 
     @Override
-    public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
+    public void render(IChest chest, BlockPos pos, Direction face, float partialTick,
                        PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
-        if (!(core.getBlockState().getBlock() instanceof BlockChestCore block) || !isVisible()) {
+        ChestMaterial material = chest.getChestMaterial();
+        if (material == null || !isVisible()) {
             return;
         }
-        ResourceLocation texture = block.getMaterial().id().withPrefix("block/chest_core_");
+        ResourceLocation texture = material.id().withPrefix("block/chest_core_");
         ChestOverlayHelpers.renderSprite(poseStack, buffers, Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture),
                 MIN, MIN, MAX, MAX, light, overlay);
     }

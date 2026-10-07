@@ -18,7 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.RegistryEntries;
-import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.api.ChestMaterial;
 import org.cyclops.colossalchests2.block.WallType;
 import org.cyclops.colossalchests2.capability.ChestStorageFabric;
 import org.cyclops.colossalchests2.storage.CapacityProfile;

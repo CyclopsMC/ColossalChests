@@ -15,8 +15,11 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.client.ChestOverlays;
+import org.cyclops.colossalchests2.api.client.IChestOverlay;
 import org.cyclops.colossalchests2.block.BlockChestCore;
-import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.multiblock.ChestShape;
 import org.cyclops.colossalchests2.multiblock.ChestStructure;
@@ -108,7 +111,8 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
         Level level = core.getLevel();
         BlockPos origin = core.getBlockPos();
         for (BlockPos pos : core.getDecoratedPositions()) {
-            IChestOverlay chestOverlay = ChestOverlays.get(level.getBlockState(pos).getBlock());
+            Block block = level.getBlockState(pos).getBlock();
+            IChestOverlay chestOverlay = block instanceof BlockChestCore ? CoreMarkerOverlay.INSTANCE : ChestOverlays.get(block);
             if (chestOverlay == null) {
                 continue;
             }

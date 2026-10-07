@@ -71,11 +71,14 @@ import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.Reference;
 import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.ColossalChestsApi;
+import org.cyclops.colossalchests2.api.IChest;
+import org.cyclops.colossalchests2.api.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.BlockUncolossalChest;
 import org.cyclops.colossalchests2.block.ChestInteractions;
-import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.block.ChestSounds;
 import org.cyclops.colossalchests2.block.DisplayWallInteractions;
 import org.cyclops.colossalchests2.block.WallType;
@@ -116,7 +119,6 @@ import org.cyclops.colossalchests2.storage.CompressionFamily;
 import org.cyclops.colossalchests2.storage.DeepSlot;
 import org.cyclops.colossalchests2.storage.DisplayStats;
 import org.cyclops.colossalchests2.storage.NestedChests;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeInventory;
 import org.cyclops.colossalchests2.upgrade.ChestUpgradeRules;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
@@ -2967,6 +2969,8 @@ public class GameTestsCommon {
         BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.IRON);
         BlockPos wallPos = MIN_A.offset(1, 2, 1);
         helper.setBlock(wallPos, wall);
+        // Before forming, a click explains why the chest does not form, like on any wall.
+        helper.assertValueEqual(click(helper, makeViewer(helper), wallPos), InteractionResult.CONSUME, "click result");
         int[] changesBefore = new int[1];
         helper.startSequence()
                 .thenWaitUntil(() -> {
@@ -2975,10 +2979,12 @@ public class GameTestsCommon {
                 })
                 .thenExecute(() -> {
                     BlockEntityChestCore core = getCore(helper, corePos);
-                    helper.assertValueEqual(ChestCoreIndex.findFormedCore(helper.getLevel(), helper.absolutePos(wallPos)).orElse(null), core, "core of the wall");
+                    IChest chest = ColossalChestsApi.get().getChest(helper.getLevel(), helper.absolutePos(wallPos)).orElse(null);
+                    helper.assertValueEqual(chest, core, "chest of the wall");
                     helper.assertTrue(core.getDecoratedPositions().contains(helper.absolutePos(wallPos)), "Expected the wall to be decorated");
                     changesBefore[0] = wall.getContentsChanges();
-                    core.getStorage().insert(STONE, 5, false);
+                    helper.assertValueEqual(chest.insert(STONE, 5, false), 5L, "inserted through the api");
+                    helper.assertValueEqual(chest.getSlotAmount(0), 5L, "amount through the api");
                 })
                 .thenWaitUntil(() -> helper.assertTrue(wall.getContentsChanges() > changesBefore[0], "Expected the wall to hear the change"))
                 .thenExecute(() -> {

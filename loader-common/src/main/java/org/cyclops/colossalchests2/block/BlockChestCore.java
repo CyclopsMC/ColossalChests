@@ -29,9 +29,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.cyclops.colossalchests2.RegistryEntries;
+import org.cyclops.colossalchests2.api.ChestMaterial;
+import org.cyclops.colossalchests2.api.block.IChestMember;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.upgrade.UpgradeSet;
 import org.jetbrains.annotations.Nullable;
@@ -46,7 +47,7 @@ import java.util.List;
  */
 public class BlockChestCore extends BaseEntityBlock {
 
-    public static final BooleanProperty FORMED = BooleanProperty.create("formed");
+    public static final BooleanProperty FORMED = IChestMember.FORMED;
 
     private static final List<BlockChestCore> INSTANCES = Lists.newArrayList();
 
@@ -93,24 +94,6 @@ public class BlockChestCore extends BaseEntityBlock {
     }
 
     /**
-     * Formed members must not hide the faces of neighbouring blocks, as the giant chest does not cover them while its lid is open.
-     */
-    public static VoxelShape getFormedOcclusionShape(BlockState state, VoxelShape unformedShape) {
-        return state.getValue(FORMED) ? Shapes.empty() : unformedShape;
-    }
-
-    /**
-     * Formed members let light through, so blocks next to an open lid are not drawn dark.
-     */
-    public static int getFormedLightBlock(BlockState state, int unformedLightBlock) {
-        return state.getValue(FORMED) ? 0 : unformedLightBlock;
-    }
-
-    public static boolean getFormedPropagatesSkylightDown(BlockState state, boolean unformedPropagates) {
-        return state.getValue(FORMED) || unformedPropagates;
-    }
-
-    /**
      * Formed members are drawn by the core's giant chest. Their formed model is invisible,
      * but it is still a model so vanilla draws the breaking crack on it.
      */
@@ -131,17 +114,17 @@ public class BlockChestCore extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
-        return getFormedOcclusionShape(state, super.getOcclusionShape(state, level, pos));
+        return IChestMember.getFormedOcclusionShape(state, super.getOcclusionShape(state, level, pos));
     }
 
     @Override
     protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
-        return getFormedLightBlock(state, super.getLightBlock(state, level, pos));
+        return IChestMember.getFormedLightBlock(state, super.getLightBlock(state, level, pos));
     }
 
     @Override
     protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
-        return getFormedPropagatesSkylightDown(state, super.propagatesSkylightDown(state, level, pos));
+        return IChestMember.getFormedPropagatesSkylightDown(state, super.propagatesSkylightDown(state, level, pos));
     }
 
     @Nullable

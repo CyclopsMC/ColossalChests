@@ -1,4 +1,4 @@
-package org.cyclops.colossalchests2.client.render;
+package org.cyclops.colossalchests2.api.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -7,9 +7,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.Reference;
-import org.cyclops.colossalchests2.block.WallType;
-import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
+import org.cyclops.colossalchests2.api.IChest;
 
 /**
  * Shows a functional wall's icon on its outer faces of the giant chest while the player sneaks, like the core marker.
@@ -22,10 +20,6 @@ public class FunctionalWallOverlay implements IChestOverlay {
 
     private final ResourceLocation texture;
 
-    public FunctionalWallOverlay(WallType type) {
-        this(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "block/" + type.getRegistryName() + "_icon"));
-    }
-
     /**
      * @param texture A block atlas texture, such as othermod:block/chest_wall_example_icon.
      */
@@ -34,7 +28,7 @@ public class FunctionalWallOverlay implements IChestOverlay {
     }
 
     @Override
-    public void render(BlockEntityChestCore core, BlockPos pos, Direction face, float partialTick,
+    public void render(IChest chest, BlockPos pos, Direction face, float partialTick,
                        PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
         if (!ChestOverlayHelpers.isRevealingMembers()) {
             return;

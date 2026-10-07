@@ -2,7 +2,6 @@ package org.cyclops.colossalchests2.config;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.block.ChestMaterial;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
 import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 
@@ -17,14 +16,19 @@ import java.util.Map;
  *     <li>data/[namespace]/colossalchests2/upgrade/[name].json for upgrade values and per-material limits</li>
  * </ul>
  * Chest-wide values such as slot counts and depth by size are in {@link org.cyclops.colossalchests2.GeneralConfig}.
- * @param materials Material properties by material id. Materials without an entry use their registered defaults.
+ * @param materials Material properties by material id, only from data files.
  * @param upgrades Upgrade properties by upgrade id.
  * @author rubensworks
  */
 public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, Map<ResourceLocation, UpgradeProperties> upgrades) {
 
+    public ChestTables {
+        materials = ImmutableMap.copyOf(materials);
+        upgrades = ImmutableMap.copyOf(upgrades);
+    }
+
     public static final ChestTables DEFAULT = new ChestTables(
-            ChestMaterial.BUILT_IN.stream().collect(ImmutableMap.toImmutableMap(ChestMaterial::id, ChestMaterial::defaultProperties)),
+            Map.of(),
             ChestUpgrades.BUILT_IN.stream().collect(ImmutableMap.toImmutableMap(ChestUpgrade::getId, ChestUpgrade::getDefaultProperties))
     );
 
@@ -33,11 +37,7 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
      * @return The properties of the material, or the defaults if no file defines it.
      */
     public MaterialProperties getMaterial(ResourceLocation material) {
-        MaterialProperties properties = materials.get(material);
-        if (properties == null) {
-            properties = ChestMaterial.byId(material).map(ChestMaterial::defaultProperties).orElse(MaterialProperties.DEFAULT);
-        }
-        return properties;
+        return materials.getOrDefault(material, MaterialProperties.DEFAULT);
     }
 
     /**

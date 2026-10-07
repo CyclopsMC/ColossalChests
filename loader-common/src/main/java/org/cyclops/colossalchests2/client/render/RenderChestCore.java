@@ -160,7 +160,7 @@ public class RenderChestCore implements BlockEntityRenderer<BlockEntityChestCore
     }
 
     protected Material getMaterial(ChestMaterial material) {
-        if (material == ChestMaterial.WOOD) {
+        if (ChestMaterial.WOOD.equals(material)) {
             return christmas ? Sheets.CHEST_XMAS_LOCATION : Sheets.CHEST_LOCATION;
         }
         return new Material(Sheets.CHEST_SHEET, material.id().withPrefix("entity/chest/"));

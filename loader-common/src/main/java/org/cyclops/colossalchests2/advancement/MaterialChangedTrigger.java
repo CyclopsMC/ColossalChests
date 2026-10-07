@@ -39,7 +39,7 @@ public class MaterialChangedTrigger extends SimpleCriterionTrigger<MaterialChang
     public record Instance(Optional<ContextAwarePredicate> player, Optional<ChestMaterial> from,
                            Optional<ChestMaterial> to) implements SimpleCriterionTrigger.SimpleInstance {
         public boolean matches(ChestMaterial from, ChestMaterial to) {
-            return this.from.map(m -> m == from).orElse(true) && this.to.map(m -> m == to).orElse(true);
+            return this.from.map(m -> m.equals(from)).orElse(true) && this.to.map(m -> m.equals(to)).orElse(true);
         }
     }
 

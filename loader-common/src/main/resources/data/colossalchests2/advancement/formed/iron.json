@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_core_iron"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.formed.iron"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.formed.iron.desc"
+    }
+  },
+  "parent": "colossalchests2:formed/copper",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:iron"
+      }
+    }
+  }
+}

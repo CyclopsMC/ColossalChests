@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_wall_wood"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.largest.wood"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.largest.wood.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests2:formed/wood",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:wood",
+        "minimum_size": 3
+      }
+    }
+  }
+}

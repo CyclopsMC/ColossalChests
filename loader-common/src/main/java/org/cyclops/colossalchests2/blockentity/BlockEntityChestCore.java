@@ -77,6 +77,10 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
 
     public static final int DATA_VERSION = 1;
     /**
+     * How far from a chest players are credited with forming it.
+     */
+    public static final int FORMED_TRIGGER_RANGE = 16;
+    /**
      * Block event that carries the number of viewers, which opens the lid on clients.
      */
     public static final int EVENT_VIEWERS = 1;
@@ -472,6 +476,9 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
             }
             lastSize = newStructure.size();
             applyProfile(false);
+            if (!newStructure.equals(oldStructure) && getBlockState().getBlock() instanceof BlockChestCore coreBlock) {
+                onFormed(newStructure, coreBlock.getMaterial());
+            }
         }
         level.setBlock(worldPosition, getBlockState().setValue(BlockChestCore.FORMED, newStructure != null), Block.UPDATE_CLIENTS);
         invalidateCapabilities(oldStructure);
@@ -479,6 +486,17 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         contentsChanged = true;
         setChanged();
         syncToClients();
+    }
+
+    /**
+     * Credit players near a chest that just formed, as it forms by itself once its last block is placed.
+     */
+    private void onFormed(ChestStructure structure, ChestMaterial material) {
+        AABB area = new AABB(structure.min().getX(), structure.min().getY(), structure.min().getZ(),
+                structure.max().getX() + 1, structure.max().getY() + 1, structure.max().getZ() + 1).inflate(FORMED_TRIGGER_RANGE);
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, area)) {
+            RegistryEntries.TRIGGER_CHEST_FORMED.value().trigger(player, material, structure.size());
+        }
     }
 
     private List<BlockPos> findDecoratedPositions(@Nullable ChestStructure structure) {

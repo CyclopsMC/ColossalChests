@@ -1,0 +1,24 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_wall_copper"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.largest.copper"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.largest.copper.desc"
+    },
+    "frame": "challenge"
+  },
+  "parent": "colossalchests2:formed/copper",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:copper",
+        "minimum_size": 4
+      }
+    }
+  }
+}

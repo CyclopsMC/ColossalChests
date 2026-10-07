@@ -6,6 +6,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.cyclops.colossalchests2.advancement.ChestFormedTriggerConfig;
+import org.cyclops.colossalchests2.advancement.MaterialChangedTriggerConfig;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
@@ -90,6 +92,8 @@ public class ColossalChestsForge extends ModBaseForge<ColossalChestsForge> {
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig<>(this));
+        configHandler.addConfigurable(new ChestFormedTriggerConfig<>(this));
+        configHandler.addConfigurable(new MaterialChangedTriggerConfig<>(this));
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));

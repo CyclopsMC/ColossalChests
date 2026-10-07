@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockChestCore;
 import org.cyclops.colossalchests2.block.BlockChestWall;
 import org.cyclops.colossalchests2.block.ChestMaterial;
@@ -83,6 +84,10 @@ public final class MaterialChanges {
             give(player, current.getWallBlock().asItem(), blocks);
         }
         swap(level, core, walls, target);
+        if (player instanceof ServerPlayer serverPlayer) {
+            RegistryEntries.TRIGGER_MATERIAL_CHANGED.value().trigger(serverPlayer, current, target);
+            RegistryEntries.TRIGGER_CHEST_FORMED.value().trigger(serverPlayer, target, structure.size());
+        }
         return Result.success(message("changed", target.getDisplayName()));
     }
 

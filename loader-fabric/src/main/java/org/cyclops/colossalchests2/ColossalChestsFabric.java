@@ -7,6 +7,8 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import org.cyclops.colossalchests2.advancement.ChestFormedTriggerConfig;
+import org.cyclops.colossalchests2.advancement.MaterialChangedTriggerConfig;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
@@ -85,6 +87,8 @@ public class ColossalChestsFabric extends ModBaseFabric<ColossalChestsFabric> im
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig<>(this));
+        configHandler.addConfigurable(new ChestFormedTriggerConfig<>(this));
+        configHandler.addConfigurable(new MaterialChangedTriggerConfig<>(this));
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));

@@ -1,0 +1,59 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_core_wood"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.root"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.root.desc"
+    },
+    "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "has_chest": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:chest"
+          }
+        ]
+      }
+    }
+  },
+  "rewards": {
+    "recipes": [
+      "colossalchests2:chest_core_copper",
+      "colossalchests2:chest_core_diamond",
+      "colossalchests2:chest_core_gold",
+      "colossalchests2:chest_core_iron",
+      "colossalchests2:chest_core_netherite",
+      "colossalchests2:chest_core_obsidian",
+      "colossalchests2:chest_core_wood",
+      "colossalchests2:chest_wall_copper",
+      "colossalchests2:chest_wall_diamond",
+      "colossalchests2:chest_wall_display",
+      "colossalchests2:chest_wall_gold",
+      "colossalchests2:chest_wall_interface",
+      "colossalchests2:chest_wall_iron",
+      "colossalchests2:chest_wall_magnet",
+      "colossalchests2:chest_wall_netherite",
+      "colossalchests2:chest_wall_obsidian",
+      "colossalchests2:chest_wall_redstone",
+      "colossalchests2:chest_wall_void",
+      "colossalchests2:chest_wall_wood",
+      "colossalchests2:material_upgrade_tool",
+      "colossalchests2:uncolossal_chest",
+      "colossalchests2:upgrade_bundling",
+      "colossalchests2:upgrade_compression",
+      "colossalchests2:upgrade_depth",
+      "colossalchests2:upgrade_lock",
+      "colossalchests2:upgrade_slot_expansion",
+      "colossalchests2:upgrade_void"
+    ]
+  }
+}

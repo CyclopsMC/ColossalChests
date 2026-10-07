@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentMap;
@@ -2572,6 +2573,86 @@ public class GameTestsCommon {
         return chest;
     }
 
+    // Advancements
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementChestFormed(GameTestHelper helper) {
+        // The player is nearby before the last block goes in, like a player building the chest.
+        ServerPlayer player = makePlayerNorthOf(helper, MIN_A.offset(1, 1, 0));
+        BlockPos corePosA = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        BlockPos corePosB = buildChest(helper, MIN_B, 3, ChestMaterial.COPPER);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    assertFormed(helper, corePosA, MIN_A, 3);
+                    assertFormed(helper, corePosB, MIN_B, 3);
+                })
+                .thenExecute(() -> {
+                    assertAdvancement(helper, player, "formed/wood", true);
+                    // 3x3 is the largest wooden chest, but not the largest copper one.
+                    assertAdvancement(helper, player, "largest/wood", true);
+                    assertAdvancement(helper, player, "formed/copper", true);
+                    assertAdvancement(helper, player, "largest/copper", false);
+                    assertAdvancement(helper, player, "formed/iron", false);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementChestFormedOutOfRange(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        BlockPos far = helper.absolutePos(MIN_A).offset(0, 0, -(BlockEntityChestCore.FORMED_TRIGGER_RANGE + 5));
+        player.moveTo(far.getX(), far.getY(), far.getZ());
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.GOLD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> assertAdvancement(helper, player, "formed/gold", false))
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementMaterialChanged(GameTestHelper helper) {
+        BlockPos corePos = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
+        helper.startSequence()
+                .thenWaitUntil(() -> assertFormed(helper, corePos, MIN_A, 3))
+                .thenExecute(() -> {
+                    ServerPlayer player = makePlayerNorthOf(helper, corePos);
+                    player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+                    assertAdvancement(helper, player, "material_changed", false);
+                    giveWalls(player, ChestMaterial.DIAMOND, 26);
+                    helper.assertTrue(useMaterialUpgrade(helper, player, corePos, ChestMaterial.DIAMOND).consumesAction(),
+                            "Expected the change to diamond");
+                    assertAdvancement(helper, player, "material_changed", true);
+                    // Changing material also counts as forming a chest of the new material.
+                    assertAdvancement(helper, player, "formed/diamond", true);
+                })
+                .thenSucceed();
+    }
+
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testAdvancementRootAndUncolossal(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ResourceLocation wallRecipe = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "chest_wall_iron");
+        assertAdvancement(helper, player, "root", false);
+        helper.assertFalse(player.getRecipeBook().contains(wallRecipe), "Expected the recipe to be locked");
+        // Picking up a chest unlocks the tab and the recipes.
+        player.getInventory().add(new ItemStack(Items.CHEST));
+        player.inventoryMenu.broadcastChanges();
+        assertAdvancement(helper, player, "root", true);
+        helper.assertTrue(player.getRecipeBook().contains(wallRecipe), "Expected the recipe to be unlocked");
+        assertAdvancement(helper, player, "uncolossal", false);
+        player.getInventory().add(new ItemStack(RegistryEntries.BLOCK_UNCOLOSSAL_CHEST.value()));
+        player.inventoryMenu.broadcastChanges();
+        assertAdvancement(helper, player, "uncolossal", true);
+        helper.succeed();
+    }
+
+    private static void assertAdvancement(GameTestHelper helper, ServerPlayer player, String path, boolean done) {
+        AdvancementHolder advancement = helper.getLevel().getServer().getAdvancements()
+                .get(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, path));
+        helper.assertTrue(advancement != null, "Expected advancement " + path + " to exist");
+        helper.assertValueEqual(player.getAdvancements().getOrStartProgress(advancement).isDone(), done, "advancement " + path + " done");
+    }
+
     // Sounds
 
     @GameTest(template = TEMPLATE_EMPTY)
@@ -2661,5 +2742,4 @@ public class GameTestsCommon {
         }
         return sounds;
     }
-
 }

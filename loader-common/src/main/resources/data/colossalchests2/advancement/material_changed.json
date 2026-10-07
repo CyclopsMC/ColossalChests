@@ -1,0 +1,20 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:material_upgrade_tool"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.material_changed"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.material_changed.desc"
+    }
+  },
+  "parent": "colossalchests2:formed/wood",
+  "criteria": {
+    "changed": {
+      "trigger": "colossalchests2:material_changed",
+      "conditions": {}
+    }
+  }
+}

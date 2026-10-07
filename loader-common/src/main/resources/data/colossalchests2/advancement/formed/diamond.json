@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_core_diamond"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.formed.diamond"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.formed.diamond.desc"
+    }
+  },
+  "parent": "colossalchests2:formed/gold",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:diamond"
+      }
+    }
+  }
+}

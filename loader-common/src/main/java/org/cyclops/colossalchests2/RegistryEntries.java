@@ -1,5 +1,6 @@
 package org.cyclops.colossalchests2;
 
+import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -8,6 +9,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import org.cyclops.colossalchests2.advancement.ChestFormedTrigger;
+import org.cyclops.colossalchests2.advancement.MaterialChangedTrigger;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestCore;
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWall;
 import org.cyclops.colossalchests2.blockentity.BlockEntityUncolossalChest;
@@ -31,6 +34,10 @@ public class RegistryEntries {
     public static final DeferredHolderCommon<BlockEntityType<?>, BlockEntityType<BlockEntityChestCore>> BLOCK_ENTITY_CHEST_CORE = DeferredHolderCommon.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests2:chest_core"));
 
     public static final DeferredHolderCommon<BlockEntityType<?>, BlockEntityType<BlockEntityChestWall>> BLOCK_ENTITY_CHEST_WALL = DeferredHolderCommon.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.parse("colossalchests2:chest_wall"));
+
+    public static final DeferredHolderCommon<CriterionTrigger<?>, ChestFormedTrigger> TRIGGER_CHEST_FORMED = DeferredHolderCommon.create(Registries.TRIGGER_TYPE, ResourceLocation.parse("colossalchests2:chest_formed"));
+
+    public static final DeferredHolderCommon<CriterionTrigger<?>, MaterialChangedTrigger> TRIGGER_MATERIAL_CHANGED = DeferredHolderCommon.create(Registries.TRIGGER_TYPE, ResourceLocation.parse("colossalchests2:material_changed"));
 
     public static final DeferredHolderCommon<Block, Block> BLOCK_UNCOLOSSAL_CHEST = DeferredHolderCommon.create(Registries.BLOCK, ResourceLocation.parse("colossalchests2:uncolossal_chest"));
 

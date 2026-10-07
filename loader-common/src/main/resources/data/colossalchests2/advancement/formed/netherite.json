@@ -1,0 +1,22 @@
+{
+  "display": {
+    "icon": {
+      "id": "colossalchests2:chest_core_netherite"
+    },
+    "title": {
+      "translate": "advancement.colossalchests2.formed.netherite"
+    },
+    "description": {
+      "translate": "advancement.colossalchests2.formed.netherite.desc"
+    }
+  },
+  "parent": "colossalchests2:formed/obsidian",
+  "criteria": {
+    "formed": {
+      "trigger": "colossalchests2:chest_formed",
+      "conditions": {
+        "material": "colossalchests2:netherite"
+      }
+    }
+  }
+}

@@ -10,6 +10,8 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import org.apache.logging.log4j.Level;
+import org.cyclops.colossalchests2.advancement.ChestFormedTriggerConfig;
+import org.cyclops.colossalchests2.advancement.MaterialChangedTriggerConfig;
 import org.cyclops.colossalchests2.block.BlockChestCoreConfig;
 import org.cyclops.colossalchests2.block.BlockChestFunctionalWallConfig;
 import org.cyclops.colossalchests2.block.BlockChestWallConfig;
@@ -96,6 +98,8 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         super.onConfigsRegister(configHandler);
 
         configHandler.addConfigurable(new GeneralConfig<>(this));
+        configHandler.addConfigurable(new ChestFormedTriggerConfig<>(this));
+        configHandler.addConfigurable(new MaterialChangedTriggerConfig<>(this));
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));

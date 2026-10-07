@@ -1,6 +1,8 @@
 package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +34,10 @@ public record ChestMaterial(ResourceLocation id, SoundType soundType, float hard
     public static final ChestMaterial DIAMOND = new ChestMaterial(id("diamond"), SoundType.METAL, 5.0F, true, 6.0F);
     public static final ChestMaterial OBSIDIAN = new ChestMaterial(id("obsidian"), SoundType.STONE, 10.0F, true, 1200.0F);
     public static final ChestMaterial NETHERITE = new ChestMaterial(id("netherite"), SoundType.NETHERITE_BLOCK, 10.0F, true, 1200.0F);
+
+    public static final Codec<ChestMaterial> CODEC = ResourceLocation.CODEC.comapFlatMap(
+            id -> byId(id).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Unknown chest material: " + id)),
+            ChestMaterial::id);
 
     public static final List<ChestMaterial> VALUES = ImmutableList.of(WOOD, COPPER, IRON, GOLD, DIAMOND, OBSIDIAN, NETHERITE);
 

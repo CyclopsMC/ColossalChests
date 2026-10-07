@@ -2,8 +2,6 @@ package org.cyclops.colossalchests2.config;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.resources.ResourceLocation;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrade;
-import org.cyclops.colossalchests2.upgrade.ChestUpgrades;
 
 import java.util.Map;
 
@@ -17,7 +15,7 @@ import java.util.Map;
  * </ul>
  * Chest-wide values such as slot counts and depth by size are in {@link org.cyclops.colossalchests2.GeneralConfig}.
  * @param materials Material properties by material id, only from data files.
- * @param upgrades Upgrade properties by upgrade id.
+ * @param upgrades Upgrade properties by upgrade id, only from data files.
  * @author rubensworks
  */
 public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, Map<ResourceLocation, UpgradeProperties> upgrades) {
@@ -27,10 +25,10 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
         upgrades = ImmutableMap.copyOf(upgrades);
     }
 
-    public static final ChestTables DEFAULT = new ChestTables(
-            Map.of(),
-            ChestUpgrades.BUILT_IN.stream().collect(ImmutableMap.toImmutableMap(ChestUpgrade::getId, ChestUpgrade::getDefaultProperties))
-    );
+    /**
+     * The tables before data is loaded, or sent by the server.
+     */
+    public static final ChestTables DEFAULT = new ChestTables(Map.of(), Map.of());
 
     /**
      * @param material A material id.
@@ -57,15 +55,10 @@ public record ChestTables(Map<ResourceLocation, MaterialProperties> materials, M
 
     /**
      * @param upgrade An upgrade id.
-     * @return The properties of the upgrade, or its registered defaults if no file defines it.
+     * @return The properties of the upgrade, or disabled if no file defines it.
      */
     public UpgradeProperties getUpgrade(ResourceLocation upgrade) {
-        UpgradeProperties properties = upgrades.get(upgrade);
-        if (properties == null) {
-            ChestUpgrade registered = ChestUpgrades.byId(upgrade);
-            properties = registered != null ? registered.getDefaultProperties() : UpgradeProperties.DISABLED;
-        }
-        return properties;
+        return upgrades.getOrDefault(upgrade, UpgradeProperties.DISABLED);
     }
 
 }

@@ -5,9 +5,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.cyclops.colossalchests2.GeneralConfig;
 import org.cyclops.colossalchests2.block.ChestMaterial;
+import org.cyclops.colossalchests2.config.ChestTables;
+import org.cyclops.colossalchests2.config.ChestTablesLoader;
+import org.cyclops.colossalchests2.config.ShippedTables;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.cyclops.colossalchests2.storage.CapacityProfile;
 import org.cyclops.colossalchests2.storage.ChestStorage;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -19,6 +24,16 @@ import static org.junit.Assert.*;
  * @author rubensworks
  */
 public class TestChestUpgradeRules extends BootstrapTest {
+
+    @Before
+    public void loadTables() {
+        ChestTablesLoader.set(ShippedTables.load());
+    }
+
+    @After
+    public void resetTables() {
+        ChestTablesLoader.set(ChestTables.DEFAULT);
+    }
 
     private static final ItemStack STONE = new ItemStack(Items.STONE);
     private static final ItemStack SWORD = new ItemStack(Items.DIAMOND_SWORD);

@@ -1,0 +1,32 @@
+resize --width 1600 --height 900 --gui-scale 2
+command "setblock 0 4 2 minecraft:crafting_table"
+command "setblock 2 4 2 minecraft:smithing_table"
+teleport 1 4 0 --yaw 0 --pitch 30
+open-gui 0 4 2
+wait --ticks 5
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["colossalchests2:chest_wall_diamond","minecraft:obsidian","colossalchests2:chest_wall_diamond","minecraft:obsidian",null,"minecraft:obsidian","colossalchests2:chest_wall_diamond","minecraft:obsidian","colossalchests2:chest_wall_diamond"]; def sl = [1,2,3,4,5,6,7,8,9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-new-obsidian
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:obsidian","minecraft:obsidian","minecraft:obsidian","minecraft:obsidian","minecraft:oak_log","minecraft:obsidian","minecraft:obsidian","minecraft:obsidian","minecraft:obsidian"]; def sl = [1,2,3,4,5,6,7,8,9]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(0).getItem().toString() } as java.util.function.Supplier).get()'
+wait --ticks 4
+screenshot --name recipe-old-obsidian
+close-screen
+open-gui 2 4 2
+wait --ticks 5
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:gold_ingot","colossalchests2:chest_wall_obsidian","minecraft:netherite_scrap"]; def sl = [0,1,2]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(3).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 4
+screenshot --name recipe-new-netherite
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:gold_ingot","colossalchests2:chest_wall_diamond","minecraft:netherite_scrap"]; def sl = [0,1,2]; sl.eachWithIndex { s, i -> m.getSlot(s).set(ids[i] ? IS.newInstance(BR.ITEM.get(RL.parse(ids[i]))) : IS.EMPTY) }; m.broadcastChanges(); m.getSlot(3).getItem().toString() } as java.util.function.Supplier).get()'
+wait --ticks 4
+screenshot --name recipe-old-netherite
+close-screen
+open-gui 2 4 2
+wait --ticks 5
+eval 'server.submit({ def cl = mc.class.classLoader; def BR = cl.loadClass("net.minecraft.core.registries.BuiltInRegistries"); def RL = cl.loadClass("net.minecraft.resources.ResourceLocation"); def IS = cl.loadClass("net.minecraft.world.item.ItemStack"); def m = server.playerList.players[0].containerMenu; def ids = ["minecraft:gold_ingot","colossalchests2:chest_wall_diamond","minecraft:netherite_scrap"]; [0,1,2].eachWithIndex { s, i -> m.getSlot(s).set(IS.newInstance(BR.ITEM.get(RL.parse(ids[i])))) }; m.broadcastChanges(); m.getSlot(3).getItem().toString() } as java.util.function.Supplier).get()'
+mouse-move 20,20
+wait --ticks 20
+eval 'screen.menu.getSlot(3).getItem().toString() + " / base: " + screen.menu.getSlot(1).getItem().toString()'
+screenshot --name recipe-old-netherite
+close-screen

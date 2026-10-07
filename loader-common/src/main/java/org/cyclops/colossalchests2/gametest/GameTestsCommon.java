@@ -2476,7 +2476,7 @@ public class GameTestsCommon {
     // Sounds
 
     @GameTest(template = TEMPLATE_EMPTY)
-    public void testChestSoundsBySizeAndMaterial(GameTestHelper helper) {
+    public void testChestSoundsBySize(GameTestHelper helper) {
         BlockPos corePosA = buildChest(helper, MIN_A, 3, ChestMaterial.WOOD);
         BlockPos corePosB = buildChest(helper, MIN_B, 4, ChestMaterial.COPPER);
         helper.startSequence()
@@ -2491,13 +2491,13 @@ public class GameTestsCommon {
                     assertSounds(helper, channel, MIN_A, 3, () -> openChest(helper, player, corePosA), SoundEvents.CHEST_OPEN);
                     assertSounds(helper, channel, MIN_A, 3, player::closeContainer, SoundEvents.CHEST_CLOSE);
                     assertSounds(helper, channel, MIN_B, 4, () -> openChest(helper, player, corePosB),
-                            SoundEvents.CHEST_OPEN, SoundEvents.COPPER_TRAPDOOR_OPEN);
+                            SoundEvents.CHEST_OPEN);
                     // A second viewer makes no sound.
                     ServerPlayer other = makeViewer(helper);
                     assertSounds(helper, channel, MIN_B, 4, () -> openChest(helper, other, corePosB));
                     assertSounds(helper, channel, MIN_B, 4, player::closeContainer);
                     assertSounds(helper, channel, MIN_B, 4, other::closeContainer,
-                            SoundEvents.CHEST_CLOSE, SoundEvents.COPPER_TRAPDOOR_CLOSE);
+                            SoundEvents.CHEST_CLOSE);
                 })
                 .thenSucceed();
     }
@@ -2531,7 +2531,6 @@ public class GameTestsCommon {
             float pitch = ChestSounds.getPitch(size);
             helper.assertTrue(packet.getPitch() >= pitch * 0.95F - 0.001F && packet.getPitch() <= pitch * 1.05F + 0.001F,
                     "Expected a pitch around " + pitch + ", got " + packet.getPitch());
-            helper.assertTrue(packet.getPitch() == sounds.get(0).getPitch(), "Expected layers at the same pitch");
             helper.assertTrue(packet.getSource() == SoundSource.BLOCKS, "Expected a block sound");
         }
         if (sounds.size() > 0) {

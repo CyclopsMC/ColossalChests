@@ -120,9 +120,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
         if (structure != null) {
             core.lid.setSpeed(ChestSounds.getLidSpeed(structure.size()));
         }
-        if (core.lid.tick() && structure != null && structure.size() >= ChestSounds.THUD_MIN_SIZE) {
-            ChestSounds.playThud(level, core.getCenter(structure), structure.size(), getMaterial(state));
-        }
+        core.lid.tick();
     }
 
     public ChestStorage getStorage() {
@@ -347,7 +345,7 @@ public class BlockEntityChestCore extends BlockEntity implements MenuProvider, C
     private void onViewersChanged(@Nullable Boolean open) {
         level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_VIEWERS, viewers.size());
         if (open != null && structure != null) {
-            ChestSounds.play(level, getCenter(structure), structure.size(), getMaterial(getBlockState()), open);
+            ChestSounds.play(level, getCenter(structure), structure.size(), open);
         }
     }
 

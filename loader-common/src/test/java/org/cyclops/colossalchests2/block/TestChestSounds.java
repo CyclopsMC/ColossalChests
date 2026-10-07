@@ -1,11 +1,8 @@
 package org.cyclops.colossalchests2.block;
 
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import org.cyclops.colossalchests2.storage.BootstrapTest;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -47,22 +44,6 @@ public class TestChestSounds extends BootstrapTest {
         }
         // Under a second for the largest chests.
         assertTrue(Math.ceil(1 / ChestSounds.getLidSpeed(10)) <= 20);
-    }
-
-    @Test
-    public void testLayersByMaterial() {
-        assertEquals(List.of(new ChestSounds.Layer(SoundEvents.CHEST_OPEN, 1.0F)), ChestSounds.getLayers(ChestMaterial.WOOD, true));
-        assertEquals(List.of(new ChestSounds.Layer(SoundEvents.CHEST_CLOSE, 1.0F), new ChestSounds.Layer(SoundEvents.COPPER_TRAPDOOR_CLOSE, 0.4F)),
-                ChestSounds.getLayers(ChestMaterial.COPPER, false));
-        assertEquals(List.of(new ChestSounds.Layer(SoundEvents.CHEST_OPEN, 1.0F), new ChestSounds.Layer(SoundEvents.IRON_TRAPDOOR_OPEN, 0.4F)),
-                ChestSounds.getLayers(ChestMaterial.DIAMOND, true));
-        assertEquals(List.of(new ChestSounds.Layer(SoundEvents.ENDER_CHEST_CLOSE, 1.0F)), ChestSounds.getLayers(ChestMaterial.NETHERITE, false));
-        for (ChestMaterial material : ChestMaterial.VALUES) {
-            assertFalse(material.getName(), ChestSounds.getLayers(material, true).isEmpty());
-            assertNotEquals(material.getName(), ChestSounds.getLayers(material, true), ChestSounds.getLayers(material, false));
-        }
-        assertEquals(SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, ChestSounds.getThud(ChestMaterial.WOOD));
-        assertEquals(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, ChestSounds.getThud(ChestMaterial.OBSIDIAN));
     }
 
     @Test

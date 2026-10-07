@@ -17,18 +17,13 @@ public class ChestLid {
         this.speed = speed;
     }
 
-    /**
-     * @return If the lid landed this tick.
-     */
-    public boolean tick() {
+    public void tick() {
         oOpenness = openness;
         if (!shouldBeOpen && openness > 0.0F) {
             openness = Math.max(openness - speed, 0.0F);
-            return openness == 0.0F;
         } else if (shouldBeOpen && openness < 1.0F) {
             openness = Math.min(openness + speed, 1.0F);
         }
-        return false;
     }
 
     public float getOpenness(float partialTick) {

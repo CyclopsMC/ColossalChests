@@ -2601,6 +2601,18 @@ public class GameTestsCommon {
                 .thenSucceed();
     }
 
+    @GameTest(template = TEMPLATE_EMPTY)
+    public void testUncolossalChestSounds(GameTestHelper helper) {
+        BlockPos pos = placeUncolossalChest(helper, Direction.NORTH);
+        BlockEntityUncolossalChest chest = getUncolossalChest(helper, pos);
+        ListeningPlayer listening = makeListeningPlayer(helper);
+        ServerPlayer player = listening.player();
+        assertSounds(helper, listening.channel(), pos, 1, () -> player.containerMenu = new ContainerUncolossalChest(1, player.getInventory(), chest),
+                SoundEvents.CHEST_OPEN);
+        assertSounds(helper, listening.channel(), pos, 1, player::closeContainer, SoundEvents.CHEST_CLOSE);
+        helper.succeed();
+    }
+
     /**
      * Like {@link GameTestHelper#makeMockServerPlayerInLevel()}, but the packets it receives can be read from the channel.
      */

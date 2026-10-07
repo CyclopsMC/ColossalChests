@@ -6,9 +6,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,8 +17,10 @@ import net.minecraft.world.level.block.entity.ChestLidController;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.cyclops.colossalchests2.RegistryEntries;
 import org.cyclops.colossalchests2.block.BlockUncolossalChest;
+import org.cyclops.colossalchests2.block.ChestSounds;
 import org.cyclops.colossalchests2.inventory.ContainerUncolossalChest;
 
 /**
@@ -36,12 +35,12 @@ public class BlockEntityUncolossalChest extends BaseContainerBlockEntity impleme
     private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
         @Override
         protected void onOpen(Level level, BlockPos pos, BlockState state) {
-            playSound(level, pos, SoundEvents.CHEST_OPEN);
+            ChestSounds.play(level, Vec3.atCenterOf(pos), 1, true);
         }
 
         @Override
         protected void onClose(Level level, BlockPos pos, BlockState state) {
-            playSound(level, pos, SoundEvents.CHEST_CLOSE);
+            ChestSounds.play(level, Vec3.atCenterOf(pos), 1, false);
         }
 
         @Override
@@ -63,14 +62,6 @@ public class BlockEntityUncolossalChest extends BaseContainerBlockEntity impleme
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, BlockEntityUncolossalChest chest) {
         chest.lidController.tickLid();
-    }
-
-    /**
-     * Higher pitched than a vanilla chest, as it is so small.
-     */
-    private static void playSound(Level level, BlockPos pos, SoundEvent sound) {
-        level.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, sound, SoundSource.BLOCKS,
-                0.5F, level.random.nextFloat() * 0.2F + 1.15F);
     }
 
     @Override

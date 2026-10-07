@@ -1,14 +1,14 @@
 package org.cyclops.colossalchests2.block;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.SoundType;
-import org.cyclops.colossalchests2.config.MaterialProperties;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -17,16 +17,26 @@ import static org.junit.Assert.*;
  */
 public class TestChestMaterial {
 
-    private static ChestMaterial material(String namespace, String path, ChestMaterial after) {
-        return material(namespace, path, after == null ? null : after.id());
+    private final Map<ChestMaterial, ResourceLocation> after = Maps.newHashMap();
+
+    public TestChestMaterial() {
+        for (int i = 1; i < ChestMaterial.BUILT_IN.size(); i++) {
+            after.put(ChestMaterial.BUILT_IN.get(i), ChestMaterial.BUILT_IN.get(i - 1).id());
+        }
     }
 
-    private static ChestMaterial material(String namespace, String path, ResourceLocation after) {
-        return new ChestMaterial(ResourceLocation.fromNamespaceAndPath(namespace, path), SoundType.METAL, 1, true, 1, after, MaterialProperties.DEFAULT);
+    private ChestMaterial material(String namespace, String path, ChestMaterial after) {
+        return material(namespace, path, after.id());
     }
 
-    private static List<ChestMaterial> order(ChestMaterial... added) {
-        return ChestMaterial.order(ImmutableList.<ChestMaterial>builder().addAll(ChestMaterial.BUILT_IN).add(added).build());
+    private ChestMaterial material(String namespace, String path, ResourceLocation after) {
+        ChestMaterial material = new ChestMaterial(ResourceLocation.fromNamespaceAndPath(namespace, path));
+        this.after.put(material, after);
+        return material;
+    }
+
+    private List<ChestMaterial> order(ChestMaterial... added) {
+        return ChestMaterial.order(ImmutableList.<ChestMaterial>builder().add(added).addAll(ChestMaterial.BUILT_IN).build(), after::get);
     }
 
     private static List<ChestMaterial> with(ChestMaterial after, ChestMaterial... inserted) {
@@ -37,8 +47,7 @@ public class TestChestMaterial {
 
     @Test
     public void testBuiltInOrder() {
-        assertEquals(ChestMaterial.BUILT_IN, ChestMaterial.order(ChestMaterial.BUILT_IN));
-        assertEquals(ChestMaterial.BUILT_IN, ChestMaterial.getAll().stream().filter(ChestMaterial.BUILT_IN::contains).toList());
+        assertEquals(ChestMaterial.BUILT_IN, order());
     }
 
     @Test
@@ -84,22 +93,18 @@ public class TestChestMaterial {
     }
 
     @Test
-    public void testRegister() {
-        ChestMaterial ruby = material("othermod", "material_test_ruby", ChestMaterial.DIAMOND);
-        ChestMaterial.register(ruby);
-        assertEquals(ChestMaterial.getAll().indexOf(ChestMaterial.DIAMOND) + 1, ChestMaterial.getAll().indexOf(ruby));
-        assertEquals(ruby, ChestMaterial.byId(ruby.id()).orElseThrow());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testRegisterDuplicate() {
-        ChestMaterial.register(ChestMaterial.IRON);
+    public void testReorderedBuiltIn() {
+        // A datapack can move this mod's materials too.
+        after.put(ChestMaterial.COPPER, ChestMaterial.GOLD.id());
+        after.put(ChestMaterial.IRON, ChestMaterial.WOOD.id());
+        assertEquals(List.of(ChestMaterial.WOOD, ChestMaterial.IRON, ChestMaterial.GOLD, ChestMaterial.COPPER, ChestMaterial.DIAMOND,
+                ChestMaterial.OBSIDIAN, ChestMaterial.NETHERITE), order());
     }
 
     @Test
     public void testDisplayNameUsesNamespace() {
         assertEquals("material.othermod.ruby",
-                ((TranslatableContents) material("othermod", "ruby", ChestMaterial.COPPER).getDisplayName().getContents()).getKey());
+                ((TranslatableContents) new ChestMaterial(ResourceLocation.fromNamespaceAndPath("othermod", "ruby")).getDisplayName().getContents()).getKey());
         assertEquals("material.colossalchests2.iron", ((TranslatableContents) ChestMaterial.IRON.getDisplayName().getContents()).getKey());
     }
 

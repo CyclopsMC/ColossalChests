@@ -1,0 +1,15 @@
+# Fresh world. An iron 3x3 with a Magnet wall left of the core and a Display wall right of it, seen while sneaking.
+resize --width 1600 --height 900 --gui-scale 2
+command "fill 2 4 4 4 6 6 colossalchests2:chest_wall_iron hollow"
+command "setblock 2 5 4 colossalchests2:chest_wall_magnet"
+command "setblock 4 5 4 colossalchests2:chest_wall_display"
+command "setblock 3 5 4 colossalchests2:chest_core_iron"
+wait --ticks 20
+teleport 3.5 4 1 --yaw 0 --pitch 0
+look --at 3.5,5.5,4
+eval "mc.options.keyShift.setDown(true)"
+wait --ticks 20
+screenshot --name api-1-overlays-sneaking
+eval "mc.options.keyShift.setDown(false)"
+wait --ticks 20
+screenshot --name api-2-overlays-standing

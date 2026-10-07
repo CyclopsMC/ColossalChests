@@ -20,12 +20,15 @@ import org.cyclops.colossalchests2.blockentity.BlockEntityChestCoreConfigNeoForg
 import org.cyclops.colossalchests2.blockentity.BlockEntityChestWallConfigNeoForge;
 import org.cyclops.colossalchests2.component.DataComponentChestContentsConfig;
 import org.cyclops.colossalchests2.component.DataComponentChestUpgradesConfig;
+import org.cyclops.colossalchests2.component.DataComponentMaterialTargetConfig;
 import org.cyclops.colossalchests2.config.ChestTablesReloadListener;
 import org.cyclops.colossalchests2.inventory.ContainerChestConfig;
 import org.cyclops.colossalchests2.inventory.ContainerDisplayConfig;
 import org.cyclops.colossalchests2.inventory.ContainerInterfaceConfig;
 import org.cyclops.colossalchests2.inventory.ContainerMagnetConfig;
+import org.cyclops.colossalchests2.inventory.ContainerMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.inventory.ContainerRedstoneConfig;
+import org.cyclops.colossalchests2.material.ItemMaterialUpgradeToolConfig;
 import org.cyclops.colossalchests2.modcompat.CommonCapabilitiesModCompat;
 import org.cyclops.colossalchests2.proxy.ClientProxy;
 import org.cyclops.colossalchests2.proxy.CommonProxy;
@@ -94,6 +97,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
 
         configHandler.addConfigurable(new DataComponentChestContentsConfig<>(this));
         configHandler.addConfigurable(new DataComponentChestUpgradesConfig<>(this));
+        configHandler.addConfigurable(new DataComponentMaterialTargetConfig<>(this));
         configHandler.addConfigurable(new ContainerChestConfig<>(this));
         for (ChestUpgrade upgrade : ChestUpgrades.VALUES) {
             configHandler.addConfigurable(new ItemChestUpgradeConfig<>(this, upgrade));
@@ -102,6 +106,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
             configHandler.addConfigurable(new BlockChestWallConfig<>(this, material));
             configHandler.addConfigurable(new BlockChestCoreConfig<>(this, material));
         }
+        configHandler.addConfigurable(new ItemMaterialUpgradeToolConfig<>(this));
         for (WallType type : WallType.VALUES) {
             configHandler.addConfigurable(new BlockChestFunctionalWallConfig<>(this, type));
         }
@@ -111,6 +116,7 @@ public class ColossalChests extends ModBaseVersionable<ColossalChests> {
         configHandler.addConfigurable(new ContainerDisplayConfig<>(this));
         configHandler.addConfigurable(new ContainerRedstoneConfig<>(this));
         configHandler.addConfigurable(new ContainerMagnetConfig<>(this));
+        configHandler.addConfigurable(new ContainerMaterialUpgradeToolConfig<>(this));
     }
 
     /**
